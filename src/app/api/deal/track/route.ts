@@ -33,7 +33,8 @@ export async function POST(request: Request) {
     request.headers.get('x-real-ip')?.trim() ??
     '127.0.0.1';
 
-  const rl = await checkRateLimit(`deal-track:${ip}`, 'api');
+  // از limiter مخصوص deal-track استفاده کن (۲۰/دقیقه) — نه api عمومی (۱۰۰/دقیقه)
+  const rl = await checkRateLimit(`deal-track:${ip}`, 'deal-track');
   if (!rl.success) {
     const retryAfter = Math.ceil((rl.reset - Date.now()) / 1000);
     return NextResponse.json(

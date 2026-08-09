@@ -1,6 +1,7 @@
 'use client';
 
 import { getCoinMarketCapUrl } from '@/lib/utils';
+import { rialToToman } from '@/lib/market-rates/units';
 import type { CryptoTickerRate } from '@/types/types';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
@@ -22,7 +23,7 @@ interface CryptoTickerCardProps {
  *  - قیمت USD با precision پویا: زیر ۱ دلار ۴ رقم اعشار، بالای ۱ دلار
  *    تا ۲ رقم اعشار (برای SHIB و امثال آن که قیمت‌های زیر ۰.۰۰۰۱ دارن
  *    و قبلاً `$0.00` نشون داده می‌شد).
- *  - قیمت تومان: از `irrPrice/10` به دست میاد. اگر عدد نهایی زیر ۱ باشه
+ *  - قیمت تومان: از `rialToToman(irrPrice)` به دست میاد. اگر عدد نهایی زیر ۱ باشه
  *    (مثل SHIB)، ۴ رقم اعشار نشون داده می‌شه تا «۰ تومان» بی‌معنا
  *    ظاهر نشه.
  */
@@ -32,7 +33,7 @@ export function CryptoTickerCard({ rate }: CryptoTickerCardProps) {
 
   // قیمت تومان: بیشتر ارزها عدد بزرگی دارن، ولی SHIB و امثال آن
   // زیر ۱ تومان هستن. فرمت‌کننده بر اساس بزرگی عدد عوض می‌شه.
-  const tomanValue = irrPrice / 10;
+  const tomanValue = rialToToman(irrPrice);
   const formattedToman =
     tomanValue >= 1
       ? Math.floor(tomanValue).toLocaleString('fa-IR')

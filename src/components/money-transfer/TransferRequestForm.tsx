@@ -34,6 +34,7 @@ import {
   CreditCard,
   DollarSign,
   Globe,
+  LogIn,
   Mail,
   Phone,
   ReceiptText,
@@ -50,6 +51,26 @@ import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import { z } from 'zod';
 import PhoneVerifyModal from './PhoneVerifyModal';
 import s from './TransferRequestForm.module.css';
+
+/** برگشت به همین فرم بعد از ورود/ثبت‌نام */
+const AUTH_CALLBACK = encodeURIComponent('/money-transfer#contact');
+
+/** پیش‌نویس فرم — قبل از رفتن به ثبت‌نام ذخیره می‌شود تا اطلاعات از دست نرود */
+const TRANSFER_FORM_DRAFT_KEY = 'mt_form_draft';
+
+interface FormDraft {
+  serviceType: ServiceTypeKey;
+  amount?: string;
+  currency?: string;
+  destinationCountry?: string;
+  bankName?: string;
+  description?: string;
+  platformName?: string;
+  platformUsername?: string;
+  walletAddress?: string;
+  cryptoNetwork?: string;
+  urgency?: 'NORMAL' | 'URGENT';
+}
 
 // ─── Service Types ────────────────────────────────────────────────────────── //
 
@@ -318,6 +339,8 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
   // اطلاعات user از server
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
+  // وضعیت احراز هویت — برای مهمان‌ها پیام ورود نمایش می‌دهیم (نه خطای مبهم)
+  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'guest'>('loading');
   const [showPhoneModal, setShowPhoneModal] = useState(false);
 
   const idempotencyKey = useRef(crypto.randomUUID());
@@ -328,6 +351,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     register,
     trigger,
     reset,
+    setError,
     setValue,
     watch,
     formState: { errors },
@@ -365,9 +389,45 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     getUserServiceProfile()
       .then((res) => {
         setProfileLoading(false);
-        if (res.success) setUserProfile(res.data);
+        if (res.success) {
+          setUserProfile(res.data);
+          setAuthState('authenticated');
+        } else if (res.error?.code === 'UNAUTHENTICATED') {
+          // کاربر مهمان — فرم باید پیام ورود نشان دهد
+          setAuthState('guest');
+        }
       })
-      .catch(() => setProfileLoading(false));
+      .catch(() => {
+        setProfileLoading(false);
+        setAuthState('guest');
+      });
+
+    // بازیابی پیش‌نویس فرم (بعد از ثبت‌نام/ورود برگشت — بدون از دست دادن اطلاعات)
+    try {
+      const draftRaw = sessionStorage.getItem(TRANSFER_FORM_DRAFT_KEY);
+      if (draftRaw) {
+        sessionStorage.removeItem(TRANSFER_FORM_DRAFT_KEY);
+        const draft = JSON.parse(draftRaw) as FormDraft;
+        if (draft.serviceType) {
+          setSelectedService(draft.serviceType);
+          setValue('serviceType', draft.serviceType);
+          setValue('currency', draft.currency ?? 'USD');
+          if (draft.amount) setValue('amount', draft.amount);
+          if (draft.destinationCountry) setValue('destinationCountry', draft.destinationCountry);
+          if (draft.bankName) setValue('bankName', draft.bankName);
+          if (draft.description) setValue('description', draft.description);
+          if (draft.platformName) setValue('platformName', draft.platformName);
+          if (draft.platformUsername) setValue('platformUsername', draft.platformUsername);
+          if (draft.walletAddress) setValue('walletAddress', draft.walletAddress);
+          if (draft.cryptoNetwork) setValue('cryptoNetwork', draft.cryptoNetwork);
+          setPanelDir('fwd');
+          setStep(2);
+          return; // پیش‌نویس مهم‌تر از prefill هیرو است
+        }
+      }
+    } catch {
+      // sessionStorage parse error
+    }
 
     // pre-fill از HeroConverter
     try {
@@ -440,6 +500,14 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     setSelectedService(key);
     setValue('serviceType', key);
     setValue('currency', getDefaultCurrency(key));
+    // فیلدهای شرطی سرویس قبلی را پاک کن — در غیر این صورت مقادیر قدیمی
+    // (مثلاً آدرس کیف پول سرویس کریپتو قبلی) بی‌صدا با درخواست جدید ارسال می‌شوند.
+    setValue('destinationCountry', '');
+    setValue('bankName', '');
+    setValue('walletAddress', '');
+    setValue('cryptoNetwork', '');
+    setValue('platformName', '');
+    setValue('platformUsername', '');
     setPanelDir('fwd');
     setStep(1);
   };
@@ -447,15 +515,21 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
   // ── Navigation ─────────────────────────────────────────────────────────── //
   const goNext = useCallback(async () => {
     if (step === 1) {
-      const fields: (keyof RequestFormData)[] = ['amount', 'currency'];
-      if (needsDestinationCountry(svcType)) fields.push('destinationCountry');
-      const ok = await trigger(fields);
-      if (ok) {
-        setPanelDir('fwd');
-        setStep(2);
+      const ok = await trigger(['amount', 'currency']);
+      if (!ok) return;
+      // کشور مقصد برای حواله «الزامی» است (در UI با * مشخص شده) ولی در اسکیمای
+      // سراسری optional است — این‌جا صریح enforce می‌شود.
+      if (needsDestinationCountry(svcType) && !watch('destinationCountry')) {
+        setError('destinationCountry', {
+          type: 'required',
+          message: 'کشور مقصد را انتخاب کنید',
+        });
+        return;
       }
+      setPanelDir('fwd');
+      setStep(2);
     }
-  }, [step, svcType, trigger]);
+  }, [step, svcType, trigger, watch, setError]);
 
   const goBack = useCallback(() => {
     setPanelDir('back');
@@ -468,12 +542,48 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     }
   }, [step, setValue]);
 
+  // ذخیره پیش‌نویس فرم — قبل از رفتن به ثبت‌نام (تدریجی، بدون از دست دادن ورودی)
+  const saveDraft = useCallback(() => {
+    try {
+      const v = watch();
+      const draft: FormDraft = {
+        serviceType: svcType,
+        amount: v.amount,
+        currency: v.currency,
+        destinationCountry: v.destinationCountry,
+        bankName: v.bankName,
+        description: v.description,
+        platformName: v.platformName,
+        platformUsername: v.platformUsername,
+        walletAddress: v.walletAddress,
+        cryptoNetwork: v.cryptoNetwork,
+        urgency: v.urgency,
+      };
+      sessionStorage.setItem(TRANSFER_FORM_DRAFT_KEY, JSON.stringify(draft));
+    } catch {
+      // sessionStorage ممکن است در دسترس نباشد
+    }
+  }, [svcType, watch]);
+
   // ── Submit ─────────────────────────────────────────────────────────────── //
   const doSubmit = useCallback(async () => {
     if (step !== 2) return;
+    // مهمان → تدریجی: پیش‌نویس را نگه دار و به ثبت‌نام ببر (گیتِ نهایی، تأیید موبایل است)
+    if (authState === 'guest') {
+      saveDraft();
+      window.location.href = `/auth?callbackUrl=${AUTH_CALLBACK}`;
+      return;
+    }
     // اگر شماره موبایل ندارد → modal باز کن، submit نکن
     if (userProfile && !userProfile.phone) {
       setShowPhoneModal(true);
+      return;
+    }
+    // دفاع دوم برای کشور مقصد — در صورتی که کاربر از مرحلهٔ ۱ رد شده باشد
+    if (needsDestinationCountry(svcType) && !watch('destinationCountry')) {
+      setFormError('برای حواله بین‌المللی کشور مقصد را انتخاب کنید.');
+      setSubmitShake(true);
+      setTimeout(() => setSubmitShake(false), 400);
       return;
     }
     setSubmitting(true);
@@ -489,6 +599,8 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
         ...(formVals.destinationCountry ? { destinationCountry: formVals.destinationCountry } : {}),
         ...(formVals.bankName ? { bankName: formVals.bankName } : {}),
         ...(formVals.description ? { description: formVals.description } : {}),
+        ...(formVals.walletAddress ? { walletAddress: formVals.walletAddress } : {}),
+        ...(formVals.cryptoNetwork ? { cryptoNetwork: formVals.cryptoNetwork } : {}),
         ...(formVals.platformName ? { platformName: formVals.platformName } : {}),
         ...(formVals.platformUsername ? { platformUsername: formVals.platformUsername } : {}),
       });
@@ -496,6 +608,13 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
         // اگر شماره موبایل نداشت (race condition) → modal باز کن
         if (res.error.code === 'PHONE_REQUIRED') {
           setShowPhoneModal(true);
+          return;
+        }
+        // race: authState هنوز loading بود ولی سرور فهمید مهمان است
+        // (فرم هیچ‌جا نام/شماره نمی‌گیرد — MISSING_CONTACT یعنی حساب لازم است)
+        if (res.error.code === 'MISSING_CONTACT') {
+          saveDraft();
+          window.location.href = `/auth?callbackUrl=${AUTH_CALLBACK}`;
           return;
         }
         setFormError(res.error.message);
@@ -512,7 +631,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     } finally {
       setSubmitting(false);
     }
-  }, [step, userProfile, svcType, watch]);
+  }, [step, userProfile, svcType, watch, authState, saveDraft]);
 
   // ── Auto-submit بعد از تأیید موبایل ──────────────────────────────────── //
   useEffect(() => {
@@ -579,6 +698,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
           <button type="button" onClick={resetAll} className={s.btnOutline}>
             درخواست جدید
           </button>
+          {/* /track/[code] هر دو نوع کد (معامله و درخواست سرویس) را پشتیبانی می‌کند */}
           <a href={`/track/${trackingCode}`} className={s.btnFill}>
             مشاهده وضعیت ←
           </a>
@@ -700,6 +820,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                     aria-describedby={errors.amount ? `${formId}-err-amount` : undefined}
                     autoComplete="off"
                   />
+                  <span className={s.amountDivider} aria-hidden />
                   <CurrencySelect
                     items={currencyList}
                     value={currency}
@@ -925,62 +1046,69 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
               </dl>
 
               {/* اطلاعات کاربر — از session، نه از فرم */}
-              <div className={s.userCard}>
-                <p className={s.userCardTitle}>
-                  <BadgeCheck size={13} aria-hidden="true" />
-                  اطلاعات حساب کاربری شما
+              {authState === 'guest' ? (
+                <p className={s.guestNote} role="note">
+                  <LogIn size={13} aria-hidden="true" />
+                  برای ثبت درخواست باید شمارهٔ موبایل تأیید شود — با «ثبت‌نام و ادامه» شروع کنید.
                 </p>
-                {profileLoading ? (
-                  <div className={s.profileSkeleton} aria-busy="true">
-                    <span className={s.skeletonLine} />
-                    <span className={s.skeletonLine} style={{ width: '60%' }} />
-                  </div>
-                ) : userProfile ? (
-                  <dl className={s.userRows}>
-                    {userProfile.name && (
-                      <div className={s.userRow}>
-                        <User size={12} aria-hidden="true" />
-                        <dt className={s.srOnly}>نام</dt>
-                        <dd>{userProfile.name}</dd>
-                      </div>
-                    )}
-                    <div className={s.userRow}>
-                      <Phone size={12} aria-hidden="true" />
-                      <dt className={s.srOnly}>موبایل</dt>
-                      {userProfile.phone ? (
-                        <dd dir="ltr" className={s.userPhone}>
-                          {maskPhone(userProfile.phone)}
-                          <span className={s.verifiedBadge} aria-label="تأیید شده">
-                            <BadgeCheck size={11} />
-                          </span>
-                        </dd>
-                      ) : (
-                        <dd className={s.phoneWarning}>
-                          <CircleAlert size={11} aria-hidden="true" />
-                          شماره موبایل ثبت نشده
-                          <button
-                            type="button"
-                            className={s.phoneWarningLink}
-                            onClick={() => setShowPhoneModal(true)}
-                          >
-                            افزودن شماره ←
-                          </button>
-                        </dd>
-                      )}
-                    </div>
-                    <div className={s.userRow}>
-                      <Mail size={12} aria-hidden="true" />
-                      <dt className={s.srOnly}>ایمیل</dt>
-                      <dd dir="ltr">{userProfile.email}</dd>
-                    </div>
-                  </dl>
-                ) : (
-                  <p className={s.profileError} role="alert">
-                    <AlertCircle size={12} aria-hidden="true" />
-                    اطلاعات حساب بارگذاری نشد.
+              ) : (
+                <div className={s.userCard}>
+                  <p className={s.userCardTitle}>
+                    <BadgeCheck size={13} aria-hidden="true" />
+                    اطلاعات حساب کاربری شما
                   </p>
-                )}
-              </div>
+                  {profileLoading ? (
+                    <div className={s.profileSkeleton} aria-busy="true">
+                      <span className={s.skeletonLine} />
+                      <span className={s.skeletonLine} style={{ width: '60%' }} />
+                    </div>
+                  ) : userProfile ? (
+                    <dl className={s.userRows}>
+                      {userProfile.name && (
+                        <div className={s.userRow}>
+                          <User size={12} aria-hidden="true" />
+                          <dt className={s.srOnly}>نام</dt>
+                          <dd>{userProfile.name}</dd>
+                        </div>
+                      )}
+                      <div className={s.userRow}>
+                        <Phone size={12} aria-hidden="true" />
+                        <dt className={s.srOnly}>موبایل</dt>
+                        {userProfile.phone ? (
+                          <dd dir="ltr" className={s.userPhone}>
+                            {maskPhone(userProfile.phone)}
+                            <span className={s.verifiedBadge} aria-label="تأیید شده">
+                              <BadgeCheck size={11} />
+                            </span>
+                          </dd>
+                        ) : (
+                          <dd className={s.phoneWarning}>
+                            <CircleAlert size={11} aria-hidden="true" />
+                            شماره موبایل ثبت نشده
+                            <button
+                              type="button"
+                              className={s.phoneWarningLink}
+                              onClick={() => setShowPhoneModal(true)}
+                            >
+                              افزودن شماره ←
+                            </button>
+                          </dd>
+                        )}
+                      </div>
+                      <div className={s.userRow}>
+                        <Mail size={12} aria-hidden="true" />
+                        <dt className={s.srOnly}>ایمیل</dt>
+                        <dd dir="ltr">{userProfile.email}</dd>
+                      </div>
+                    </dl>
+                  ) : (
+                    <p className={s.profileError} role="alert">
+                      <AlertCircle size={12} aria-hidden="true" />
+                      اطلاعات حساب بارگذاری نشد.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* هشدار اگر موبایل نداشت — با trigger برای modal */}
               {userProfile && !userProfile.phone && (
@@ -1039,6 +1167,11 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                   <>
                     <Phone size={14} aria-hidden="true" />
                     <span>تأیید موبایل و ثبت درخواست</span>
+                  </>
+                ) : authState === 'guest' ? (
+                  <>
+                    <LogIn size={14} aria-hidden="true" />
+                    <span>ثبت‌نام و ادامه</span>
                   </>
                 ) : (
                   <>

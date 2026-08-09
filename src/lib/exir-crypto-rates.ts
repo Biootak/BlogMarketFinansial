@@ -1,4 +1,5 @@
 import type { CryptoTickerRate, CryptoTickerResult } from '@/types/types';
+import { tomanToRial } from '@/lib/market-rates/units';
 import { cache } from 'react';
 
 // Exir API Base URL
@@ -169,7 +170,7 @@ function processExirRates(tickers: ExirTickersResponse): CryptoTickerRate[] {
         rates.push({
           symbol: 'USDT',
           usdtPrice: 1,
-          irrPrice: ticker.last * 10, // تبدیل تومان به ریال
+          irrPrice: tomanToRial(ticker.last), // تبدیل تومان به ریال
           change: calculateDayChange(ticker.open, ticker.close),
           globalPrice: 1,
         });
@@ -195,7 +196,7 @@ function processExirRates(tickers: ExirTickersResponse): CryptoTickerRate[] {
       rates.push({
         symbol: currency,
         usdtPrice,
-        irrPrice: irtPrice * 10, // تبدیل تومان به ریال
+        irrPrice: tomanToRial(irtPrice), // تبدیل تومان به ریال
         change: usdtTicker
           ? calculateDayChange(usdtTicker.open, usdtTicker.close)
           : irtTicker

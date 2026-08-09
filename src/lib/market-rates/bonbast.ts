@@ -1,4 +1,5 @@
 // src/lib/market-rates/bonbast.ts
+import { rialToToman, tomanToRial } from '@/lib/market-rates/units';
 //
 // Scraper for bonbast.com — reliable Iranian FX rate aggregator.
 //
@@ -235,7 +236,8 @@ export async function fetchBonbastBuySell(): Promise<BonbastBuySellRates | null>
  */
 export function crossRateToToman(crossRate: number, irrPerEur: number): number {
   if (crossRate <= 0 || irrPerEur <= 0) return 0;
-  return ((1 / crossRate) * irrPerEur) / 10;
+  // (1 / crossRate) * irrPerEur = نرخ به «ریال» → تومان
+  return rialToToman((1 / crossRate) * irrPerEur);
 }
 
 /**
@@ -253,9 +255,9 @@ export function fetchBonbastRatesFromBuySell(bs: BonbastBuySellRates): BonbastRa
     midRates[code] = (rate.buy + rate.sell) / 2;
   }
 
-  // irrPerEur = EUR mid × 10 (convert Toman → Rial)
+  // irrPerEur = EUR mid (Toman) → Rial
   const eurMid = midRates.EUR ?? 0;
-  const irrPerEur = eurMid * 10;
+  const irrPerEur = tomanToRial(eurMid);
 
   if (irrPerEur > 0) {
     // Build cross-rates (units per 1 EUR) from Toman mid-rates

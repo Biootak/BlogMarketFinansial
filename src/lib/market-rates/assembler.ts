@@ -304,7 +304,8 @@ function assembleFromRow(
   // Priority 4: USDT-derived برای IRAN_USD
   if (rawValue === null && symbol === 'IRAN_USD' && usdt) {
     const premium = getUsdtPremiumPercent();
-    rawValue = usdt.toman * (1 + premium / 100) * 10;
+    // × divisor (نه ×10 هاردکد) — تا با divisor تنظیم‌شده در DB/registry سازگار بماند
+    rawValue = usdt.toman * (1 + premium / 100) * divisor;
     changePercent = usdt.change;
   }
 
@@ -314,7 +315,7 @@ function assembleFromRow(
     const fxCode = symbol.replace('IRAN_', '').slice(0, 3);
     const perUsd = fx[fxCode];
     if (perUsd && perUsd > 0) {
-      rawValue = (usdt.toman / perUsd) * 10;
+      rawValue = (usdt.toman / perUsd) * divisor;
       changePercent = usdt.change;
     }
   }

@@ -2,6 +2,7 @@
 // جدا شده از src/lib/exir-crypto-rates.ts در بازسازی.
 
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
+import { rialToToman } from '@/lib/market-rates/units';
 
 export interface UsdtRate {
   /** تومان (نه ریال) */
@@ -18,7 +19,7 @@ export async function getUsdtRate(): Promise<UsdtRate | null> {
     if (!usdt) return null;
     const irr = usdt.irrPrice; // Exir: ریال
     if (!Number.isFinite(irr) || irr <= 0) return null;
-    return { toman: irr / 10, change: usdt.change }; // Rial → Toman
+    return { toman: rialToToman(irr), change: usdt.change }; // Exir → Rial → Toman
   } catch {
     return null;
   }

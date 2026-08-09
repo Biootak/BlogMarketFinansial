@@ -278,6 +278,16 @@ export async function getMyDeals(
 
 /** پیگیری معامله با کد — عمومی (بدون auth) */
 export async function getDealByTracking(trackingCode: string): Promise<DealRow | null> {
+  // DoS/scan guard — فقط کدهای با فرمت معتبر به دیتابیس می‌رسند تا کوئری روی
+  // ورودی‌های garbage هدر نرود. کدهای واقعی: `DL-XXXXXXXX-XXXX` (۱۲ hex).
+  if (!/^[A-Z0-9][A-Z0-9-]{5,23}$/.test(trackingCode)) return null;
+  // Anti-enumeration — rate limiter مخصوص `deal-track` (۲۰/دقیقه per IP).
+  // این صفحه revalidate=60 دارد، پس کاربر عادی حداکثر ۱ کوئری در دقیقه می‌زند؛
+  // این لیمیت فقط اسکن/شمارش کدهای مختلف را می‌گیرد.
+  if (process.env.NODE_ENV === 'production') {
+    const rl = await checkRateLimit(`deal-track:${await getClientIp()}`, 'deal-track');
+    if (!rl.success) return null;
+  }
   const row = await prisma.currencyDeal.findUnique({
     where: { trackingCode },
     include: {

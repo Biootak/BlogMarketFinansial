@@ -169,7 +169,12 @@ const ServiceRequestInputSchema = z.object({
     'PAYPAL_TRANSFER',
     'OTHER',
   ]),
-  amount: z.string().min(1).max(50).transform(sanitizeInput),
+  amount: z
+    .string()
+    .min(1)
+    .max(50)
+    .refine((v) => /^[\d.,]+$/.test(v), { message: 'مبلغ نامعتبر است' })
+    .transform(sanitizeInput),
   currency: z.string().min(1).max(10),
   destinationCountry: z
     .string()
@@ -179,6 +184,18 @@ const ServiceRequestInputSchema = z.object({
     .string()
     .optional()
     .transform((val) => val || null),
+  // B1-fix: آدرس کیف پول و شبکه کریپتو قبلاً فقط در تایپ ورودی بودند و در اسکیمای
+  // zod نبودند → zod keyهای ناشناخته را strip می‌کرد و داده‌ی مهم کریپتو گم می‌شد.
+  walletAddress: z
+    .string()
+    .max(200)
+    .optional()
+    .transform((val) => (val ? sanitizeInput(val) : null)),
+  cryptoNetwork: z
+    .string()
+    .max(50)
+    .optional()
+    .transform((val) => (val ? sanitizeInput(val) : null)),
   websiteUrl: z
     .string()
     .optional()
@@ -298,6 +315,17 @@ export async function createServiceRequest(
 
     const data = validationResult.data;
 
+    // B2-fix: کشور مقصد برای حواله بین‌المللی الزامی است — هرگز به کلاینت اعتماد نکن
+    if (data.serviceType === 'INTERNATIONAL_TRANSFER' && !data.destinationCountry) {
+      return {
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'برای حواله بین‌المللی کشور مقصد الزامی است.',
+        },
+      };
+    }
+
     // Idempotency check
     if (data.idempotencyKey) {
       const existing = await prisma.serviceRequest.findUnique({
@@ -375,6 +403,8 @@ export async function createServiceRequest(
       studentId: data.studentId ?? null,
       platformName: data.platformName ?? null,
       platformUsername: data.platformUsername ?? null,
+      walletAddress: data.walletAddress ?? null,
+      cryptoNetwork: data.cryptoNetwork ?? null,
       softwareName: data.softwareName ?? null,
       subscriptionType: data.subscriptionType ?? null,
       giftCardBrand: data.giftCardBrand ?? null,
@@ -508,6 +538,36 @@ export async function getServiceRequestByTrackingCode(trackingCode: string): Pro
     }>;
   }>
 > {
+  // DoS/scan guard — فقط کدهای با فرمت معتبر به دیتابیس می‌رسند
+  if (!/^[A-Z0-9][A-Z0-9-]{5,23}$/.test(trackingCode)) {
+    return {
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'درخواستی با این کد پیگیری یافت نشد.' },
+    };
+  }
+  // Anti-enumeration — rate limiter مخصوص deal-track (۲۰/دقیقه per IP)
+  if (process.env.NODE_ENV === 'production') {
+    const headersList = await headers();
+    const _xff = headersList.get('x-forwarded-for') ?? '';
+    const ip =
+      _xff
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean)
+        .pop() ||
+      headersList.get('x-real-ip')?.trim() ||
+      'unknown';
+    const rl = await checkRateLimit(`deal-track:${ip}`, 'deal-track');
+    if (!rl.success) {
+      return {
+        success: false,
+        error: {
+          code: 'RATE_LIMITED',
+          message: 'تعداد درخواست‌ها زیاد است. کمی بعد دوباره تلاش کنید.',
+        },
+      };
+    }
+  }
   try {
     const request = await prisma.serviceRequest.findUnique({
       where: { trackingCode },

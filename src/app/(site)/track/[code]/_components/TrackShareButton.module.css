@@ -1,0 +1,32 @@
+/* TrackShareButton — دکمه اشتراک‌گذاری لینک پیگیری (روی هیروی تیره) */
+
+.shareBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid oklch(55% 0.1 265 / 0.4);
+  background: oklch(28% 0.08 265 / 0.45);
+  color: oklch(85% 0.05 265);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: background 180ms cubic-bezier(0.22, 1, 0.36, 1), border-color 180ms, transform 180ms
+    cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.shareBtn:hover {
+  background: oklch(32% 0.09 265 / 0.55);
+  border-color: oklch(60% 0.12 265 / 0.55);
+}
+
+.shareBtn:active {
+  transform: scale(0.96);
+}
+
+.shareBtn:focus-visible {
+  outline: 2px solid oklch(65% 0.12 265);
+  outline-offset: 2px;
+}

@@ -1,4 +1,4 @@
-/* track.module.css — صفحه پیگیری معامله ارزی */
+/* track.module.css — صفحه پیگیری معامله ارزی (پریمیوم ۲۰۲۶) */
 
 /* ── Shell ──────────────────────────────────────────────────────────────────── */
 .page {
@@ -113,8 +113,25 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   font-variant-numeric: tabular-nums;
-  font-family: "SF Mono", "Consolas", ui-monospace, monospace;
+  font-family: var(--ds-font-mono);
   color: oklch(92% 0.04 265);
+}
+
+.heroUpdated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: oklch(70% 0.05 265 / 0.85);
+  margin-block-start: 4px;
+}
+
+.heroUpdatedDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: oklch(70% 0.18 145);
+  box-shadow: 0 0 6px oklch(70% 0.18 145 / 0.6);
 }
 
 /* ── Content ─────────────────────────────────────────────────────────────────── */
@@ -126,11 +143,13 @@
 
 /* ── Summary Card ─────────────────────────────────────────────────────────────── */
 .summaryCard {
+  position: relative;
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-xl, 1.25rem);
   padding: var(--ds-space-6);
   margin-block-end: var(--ds-space-4);
+  box-shadow: var(--ds-shadow-md);
   animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -179,18 +198,81 @@
   transform: scaleX(-1); /* RTL arrow flip */
 }
 
-.rateRow {
-  text-align: center;
+.metaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
   margin-block-start: var(--ds-space-3);
-  font-size: 0.8rem;
-  color: var(--ds-text-muted);
   padding-block-start: var(--ds-space-3);
   border-block-start: 1px solid var(--ds-border-subtle);
 }
 
+.rateRow {
+  font-size: 0.8rem;
+  color: var(--ds-text-muted);
+}
+
 .rateValue {
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.channelChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
   font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-secondary);
+}
+
+.feeRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-block-start: var(--ds-space-2-5);
+  font-size: 0.75rem;
+  color: var(--ds-text-muted);
+  background: var(--ds-canvas-subtle);
+  border: 1px dashed var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  padding-block: var(--ds-space-1-5);
+}
+
+.feeValue {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--ds-text-secondary);
+}
+
+.noteBox {
+  margin-block-start: var(--ds-space-3);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-canvas-subtle);
+  border-inline-start: 3px solid var(--ds-brand-300);
+}
+
+.noteLabel {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  margin-block-end: 3px;
+}
+
+.noteText {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.7;
   color: var(--ds-text-secondary);
 }
 
@@ -204,6 +286,7 @@
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-md, 0.75rem);
   margin-block-end: var(--ds-space-5);
+  background: var(--ds-surface);
   animation: fadeUp 0.4s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -217,218 +300,605 @@
   font-size: 0.78rem;
   color: var(--ds-text-muted);
   margin-inline-start: var(--ds-space-1);
+  padding-inline-start: var(--ds-space-2);
+  border-inline-start: 1px solid var(--ds-border-subtle);
 }
 
-/* ── Timeline ────────────────────────────────────────────────────────────────── */
-.timelineTitle {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--ds-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+/* ── Timeline — Steps Card ───────────────────────────────────────────────────── */
+.stepsCard {
+  position: relative;
+  overflow: hidden;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl, 1.25rem);
+  padding: var(--ds-space-5);
+  margin-block-end: var(--ds-space-5);
+  box-shadow: var(--ds-shadow-md);
+  animation: fadeUp 0.45s 0.05s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ambient hairline — حس «زنده ولی آرام» */
+.stepsCard::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(90deg, transparent, var(--ds-brand-300) 40%, transparent 90%);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.stepsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
   margin-block-end: var(--ds-space-4);
 }
 
+.stepsHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+}
+
+.stepsIcon {
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: var(--ds-radius-md);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--ds-brand-50);
+  border: 1px solid var(--ds-brand-100);
+  color: var(--ds-brand-600);
+}
+
+.stepsTitle {
+  margin: 0;
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  line-height: 1.3;
+}
+
+.stepsSubtitle {
+  margin: 2px 0 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.stepsCounter {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-secondary);
+  white-space: nowrap;
+}
+
+/* ── Progress rail ──────────────────────────────────────────────────────────── */
+.progressMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 6px;
+}
+
+.progressLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+}
+
+.progressPct {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ds-brand-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.progressPctTerminal {
+  color: var(--ds-status-cancelled-fg);
+}
+
+.progressTrack {
+  position: relative;
+  block-size: 8px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+  overflow: hidden;
+  margin-block-end: var(--ds-space-3);
+}
+
+.progressFill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  transform-origin: right; /* RTL: رشد از راست */
+  transform: scaleX(var(--p, 0));
+  background: linear-gradient(90deg, var(--ds-brand-500), var(--ds-brand-400));
+  border-radius: var(--ds-radius-full);
+  animation: fillProgress 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.progressFillTerminal {
+  background: linear-gradient(90deg, var(--ds-status-cancelled-fg), var(--ds-rose));
+}
+
+@keyframes fillProgress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(var(--p, 0));
+  }
+}
+
+/* ── Status explainer ───────────────────────────────────────────────────────── */
+.statusLine {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  line-height: 1.7;
+  color: var(--ds-text-secondary);
+  background: var(--ds-canvas-subtle);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  margin-block-end: var(--ds-space-4);
+}
+
+.statusLineIcon {
+  flex-shrink: 0;
+  color: var(--ds-brand-500);
+  margin-block-start: 3px;
+}
+
+.statusLineTerminal .statusLineIcon {
+  color: var(--ds-status-cancelled-fg);
+}
+
+/* ── Timeline steps ─────────────────────────────────────────────────────────── */
 .timeline {
   position: relative;
-  margin-block-end: var(--ds-space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .timelineStep {
   display: flex;
-  flex-direction: row;
   gap: var(--ds-space-3);
   position: relative;
-  padding-block-end: var(--ds-space-5);
-  animation: fadeUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  padding-block-end: var(--ds-space-4);
+  animation: fadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .timelineStep:nth-child(1) {
-  animation-delay: 0ms;
+  animation-delay: 120ms;
 }
 .timelineStep:nth-child(2) {
-  animation-delay: 80ms;
+  animation-delay: 180ms;
 }
 .timelineStep:nth-child(3) {
-  animation-delay: 160ms;
-}
-.timelineStep:nth-child(4) {
   animation-delay: 240ms;
 }
-.timelineStep:nth-child(5) {
-  animation-delay: 320ms;
+.timelineStep:nth-child(4) {
+  animation-delay: 300ms;
 }
 
+/* connector — بین گره‌ها */
 .timelineStep:not(:last-child)::before {
   content: "";
   position: absolute;
-  inset-inline-start: 11px;
-  inset-block-start: 24px;
+  inset-inline-start: 15px;
+  inset-block-start: 34px;
   inset-block-end: 0;
-  inline-size: 1px;
+  inline-size: 2px;
   background: var(--ds-border-default);
 }
 
-.timelineStep.stepPending:not(:last-child)::before {
-  background: var(--ds-border-subtle);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--ds-border-subtle) 0,
-    var(--ds-border-subtle) 4px,
-    transparent 4px,
-    transparent 8px
-  );
+.timelineStep.stepDone:not(:last-child)::before,
+.timelineStep.stepActive:not(:last-child)::before {
+  background: linear-gradient(180deg, var(--ds-brand-500), var(--ds-brand-300));
 }
 
-.stepCircle {
-  width: 24px;
-  height: 24px;
+.timelineStep.stepCancelled:not(:last-child)::before {
+  background: var(--ds-status-error-border);
+}
+
+/* node — دایره هر مرحله */
+.stepNode {
+  position: relative;
+  inline-size: 32px;
+  block-size: 32px;
   border-radius: 50%;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
+  z-index: 1;
   border: 2px solid var(--ds-border-default);
   background: var(--ds-surface);
-  z-index: 1;
-  transition: box-shadow 0.2s;
+  color: var(--ds-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.stepDone .stepCircle {
-  background: var(--ds-brand-500);
+.timelineStep:hover .stepNode {
+  transform: scale(1.08);
+}
+
+.stepDone .stepNode {
+  background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-600));
+  border-color: transparent;
+  color: var(--ds-brand-on);
+  box-shadow: 0 4px 14px -6px var(--ds-brand-500);
+}
+
+.stepActive .stepNode {
+  background: var(--ds-surface);
   border-color: var(--ds-brand-500);
+  color: var(--ds-brand-600);
+  box-shadow: 0 0 0 5px oklch(58% 0.12 165 / 0.14);
 }
 
-.stepActive .stepCircle {
-  background: var(--ds-brand-500);
-  border-color: var(--ds-brand-500);
-  box-shadow: 0 0 0 4px oklch(50% 0.2 265 / 0.25);
+.stepActive .stepNode svg {
+  animation: spinSlow 1.6s linear infinite;
 }
 
-.stepPending .stepCircle {
-  background: var(--ds-surface-recessed, var(--ds-surface));
-  border-color: var(--ds-border-subtle);
+@keyframes spinSlow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* هاله‌ی تنفس برای مرحله‌ی فعال */
+.stepPulse {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--ds-brand-400);
+  pointer-events: none;
+  animation: pulseRing 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  70%,
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+
+.stepPending .stepNode {
+  background: var(--ds-surface-recessed);
   border-style: dashed;
+  border-color: var(--ds-border-strong);
+  color: var(--ds-text-muted);
 }
 
-.stepCancelled .stepCircle {
-  background: oklch(35% 0.12 15 / 0.3);
-  border-color: oklch(55% 0.18 15 / 0.6);
+.stepCancelled .stepNode {
+  background: var(--ds-status-error-bg);
+  border-color: var(--ds-status-error-border);
+  color: var(--ds-status-error-fg);
 }
 
 .stepBody {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-block-start: 2px;
+  gap: 3px;
+  padding-block-start: 5px;
+  min-inline-size: 0;
 }
 
 .stepLabel {
-  font-size: 0.88rem;
+  font-size: var(--ds-text-sm);
   font-weight: 600;
   color: var(--ds-text-primary);
 }
 
 .stepPending .stepLabel {
   color: var(--ds-text-muted);
+  font-weight: 500;
 }
 
 .stepTime {
-  font-size: 0.75rem;
+  font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
-}
-
-.stepNote {
-  font-size: 0.78rem;
-  color: var(--ds-text-secondary);
-  margin-block-start: 2px;
-}
-
-/* ── Status badges ────────────────────────────────────────────────────────────── */
-.statusBadge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 14px;
-  border-radius: 99px;
-  font-size: 0.78rem;
-  font-weight: 600;
 }
 
+.stepTime::before {
+  content: "";
+  inline-size: 3px;
+  block-size: 3px;
+  border-radius: 50%;
+  background: var(--ds-border-strong);
+  flex-shrink: 0;
+}
+
+.stepNote {
+  font-size: var(--ds-text-xs);
+  line-height: 1.6;
+  color: var(--ds-text-secondary);
+  background: var(--ds-canvas-subtle);
+  border-inline-start: 2px solid var(--ds-brand-300);
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-block-start: 3px;
+  max-inline-size: 36ch;
+  overflow-wrap: anywhere;
+}
+
+/* ── Terminal callout ───────────────────────────────────────────────────────── */
+.terminalCallout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-status-cancelled-border);
+  background: var(--ds-status-cancelled-bg);
+  margin-block-start: var(--ds-space-2);
+  animation: fadeUp 0.4s 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.terminalCalloutIcon {
+  flex-shrink: 0;
+  margin-block-start: 2px;
+}
+
+.terminalCalloutTitle {
+  display: block;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.terminalCalloutTime {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 3px;
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.terminalCalloutTime::before {
+  content: "";
+  inline-size: 3px;
+  block-size: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.terminalCalloutText {
+  margin: 5px 0 0;
+  font-size: var(--ds-text-xs);
+  line-height: 1.7;
+  opacity: 0.78;
+}
+
+/* ── Status badges ──────────────────────────────────────────────────────────────
+   رنگ‌های پایه برای پس‌زمینه‌ی تیره (هیرو) روشن هستند؛ روی سطوح روشن
+   (stepsCounter / terminalCallout) با override پایین‌تر تیره می‌شوند تا
+   کنتراست ≥۴.۵:۱ حفظ شود.
+   ───────────────────────────────────────────────────────────────────────────── */
 .statusPending {
   background: oklch(35% 0.1 75 / 0.2);
   border: 1px solid oklch(55% 0.15 75 / 0.4);
-  color: oklch(75% 0.15 75);
+  color: oklch(78% 0.12 75);
 }
 
 .statusConfirmed {
   background: oklch(35% 0.1 250 / 0.2);
   border: 1px solid oklch(55% 0.15 250 / 0.4);
-  color: oklch(72% 0.15 250);
+  color: oklch(78% 0.12 250);
 }
 
 .statusProcessing {
   background: oklch(35% 0.1 300 / 0.2);
   border: 1px solid oklch(55% 0.15 300 / 0.4);
-  color: oklch(72% 0.15 300);
+  color: oklch(78% 0.12 300);
 }
 
 .statusCompleted {
   background: oklch(35% 0.1 145 / 0.2);
   border: 1px solid oklch(55% 0.15 145 / 0.4);
-  color: oklch(72% 0.18 145);
+  color: oklch(78% 0.14 145);
 }
 
 .statusCancelled {
   background: oklch(35% 0.1 15 / 0.2);
   border: 1px solid oklch(55% 0.15 15 / 0.4);
-  color: oklch(72% 0.18 15);
+  color: oklch(78% 0.14 15);
 }
 
 .statusDisputed {
   background: oklch(35% 0.1 45 / 0.2);
   border: 1px solid oklch(55% 0.15 45 / 0.4);
-  color: oklch(72% 0.18 45);
+  color: oklch(78% 0.14 45);
 }
 
 .statusRefunded {
   background: oklch(35% 0.04 265 / 0.15);
   border: 1px solid var(--ds-border-default);
-  color: var(--ds-text-muted);
+  color: oklch(85% 0.04 265 / 0.9);
+}
+
+/* روی سطوح روشن (کارت مراحل / کال‌اوت) — متن تیره برای کنتراست */
+.stepsCounter.statusPending,
+.terminalCallout.statusPending {
+  color: oklch(46% 0.14 75);
+}
+.stepsCounter.statusConfirmed,
+.terminalCallout.statusConfirmed {
+  color: oklch(46% 0.14 250);
+}
+.stepsCounter.statusProcessing,
+.terminalCallout.statusProcessing {
+  color: oklch(46% 0.14 300);
+}
+.stepsCounter.statusCompleted,
+.terminalCallout.statusCompleted {
+  color: oklch(42% 0.14 145);
+}
+.stepsCounter.statusCancelled,
+.terminalCallout.statusCancelled {
+  color: oklch(46% 0.14 15);
+}
+.stepsCounter.statusDisputed,
+.terminalCallout.statusDisputed {
+  color: oklch(46% 0.14 45);
+}
+.stepsCounter.statusRefunded,
+.terminalCallout.statusRefunded {
+  color: var(--ds-text-secondary);
 }
 
 /* ── Dates section ────────────────────────────────────────────────────────────── */
 .datesSection {
-  display: flex;
-  flex-direction: row;
-  gap: var(--ds-space-4);
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ds-space-3);
   padding: var(--ds-space-4);
-  background: var(--ds-surface-recessed, var(--ds-surface));
+  background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-md, 0.75rem);
+  border-radius: var(--ds-radius-lg);
   margin-block-end: var(--ds-space-5);
+  animation: fadeUp 0.4s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .dateItem {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
+  position: relative;
+  min-inline-size: 0;
+}
+
+.dateItem:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: calc(-1 * var(--ds-space-3) / 2);
+  inset-block-start: 10px;
+  inset-block-end: 10px;
+  inline-size: 1px;
+  background: var(--ds-border-subtle);
+}
+
+.dateIcon {
+  color: var(--ds-brand-500);
+  display: inline-flex;
+  margin-block-end: 2px;
 }
 
 .dateLabel {
-  font-size: 0.7rem;
-  color: var(--ds-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
+  font-size: 0.68rem;
   font-weight: 600;
+  color: var(--ds-text-muted);
 }
 
 .dateValue {
-  font-size: 0.82rem;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--ds-text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Support CTA ──────────────────────────────────────────────────────────────── */
+.supportCard {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+  border: 1px dashed var(--ds-border-strong);
+  background: linear-gradient(180deg, var(--ds-surface), var(--ds-canvas-subtle));
+  margin-block-end: var(--ds-space-5);
+  animation: fadeUp 0.4s 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.supportIcon {
+  inline-size: 42px;
+  block-size: 42px;
+  border-radius: var(--ds-radius-md);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--ds-brand-50);
+  border: 1px solid var(--ds-brand-100);
+  color: var(--ds-brand-600);
+}
+
+.supportBody {
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.supportTitle {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.supportText {
+  margin: 3px 0 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.supportLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-brand-500);
+  color: var(--ds-brand-on);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 180ms, transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.supportLink:hover {
+  background: var(--ds-brand-600);
+}
+
+.supportLink:active {
+  transform: scale(0.97);
+}
+
+.supportLink:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
 }
 
 /* ── Back link ────────────────────────────────────────────────────────────────── */
@@ -448,12 +918,13 @@
   padding: var(--ds-space-2) var(--ds-space-3);
   border-radius: var(--ds-radius-md);
   border: 1px solid var(--ds-border-subtle);
-  transition: color 0.15s, border-color 0.15s;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
 
 .backLink:hover {
   color: var(--ds-text-primary);
   border-color: var(--ds-border-default);
+  background: var(--ds-surface);
 }
 
 .backLink:focus-visible {
@@ -461,65 +932,231 @@
   outline-offset: 2px;
 }
 
-/* ── Not Found ────────────────────────────────────────────────────────────────── */
-.notFoundWrap {
-  min-block-size: 60dvh;
+/* ── Not Found (premium) ─────────────────────────────────────────────────────── */
+.nfSection {
+  position: relative;
+  overflow: hidden;
+  min-block-size: calc(100dvh - 0px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--ds-space-8) var(--ds-space-4);
+  padding: clamp(3rem, 10vw, 6rem) var(--ds-space-4);
+  background: oklch(12% 0.05 265);
+  direction: rtl;
 }
 
-.notFoundCard {
-  max-inline-size: 480px;
+.nfAmbient {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      ellipse 60% 55% at 50% 30%,
+      oklch(26% 0.09 265 / 0.22) 0%,
+      transparent 70%
+    ), radial-gradient(ellipse 45% 40% at 15% 80%, oklch(22% 0.07 300 / 0.14) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 40% at 85% 75%, oklch(18% 0.06 220 / 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.nfHairline {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(55% 0.12 265 / 0.4) 40%,
+    oklch(65% 0.1 280 / 0.3) 60%,
+    transparent
+  );
+}
+
+.nfInner {
+  position: relative;
+  max-inline-size: 520px;
   width: 100%;
-  background: var(--ds-surface);
-  border: 1px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-xl);
-  padding: var(--ds-space-8) var(--ds-space-6);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-4);
 }
 
-.notFoundIcon {
-  color: var(--ds-text-muted);
-  opacity: 0.5;
+/* آیکون در حلقه‌ی نوری */
+.nfIconRing {
+  position: relative;
+  inline-size: 92px;
+  block-size: 92px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: oklch(22% 0.06 265 / 0.6);
+  border: 1px solid oklch(50% 0.1 265 / 0.4);
+  color: oklch(82% 0.07 265);
+  animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.notFoundTitle {
-  font-size: clamp(1.1rem, 3vw, 1.4rem);
-  font-weight: 700;
-  color: var(--ds-text-primary);
+.nfIconHalo {
+  position: absolute;
+  inset: -14px;
+  border-radius: 50%;
+  border: 1px solid oklch(55% 0.12 265 / 0.25);
+  background: radial-gradient(circle, oklch(55% 0.12 265 / 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.nfTitle {
   margin: 0;
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+  font-weight: 800;
+  color: oklch(97% 0.005 240);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  animation: fadeUp 0.5s 0.08s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.notFoundSub {
-  font-size: 0.88rem;
-  color: var(--ds-text-muted);
-  line-height: 1.6;
-  max-inline-size: 360px;
+.nfSub {
+  margin: 0;
+  font-size: var(--ds-text-sm);
+  color: oklch(72% 0.04 265 / 0.9);
+  line-height: 1.8;
+  animation: fadeUp 0.5s 0.14s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.notFoundLink {
+.nfCode {
+  direction: ltr;
+  font-family: var(--ds-font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: oklch(90% 0.05 265);
+  background: oklch(26% 0.07 265 / 0.7);
+  border: 1px solid oklch(48% 0.1 265 / 0.45);
+  border-radius: 8px;
+  padding: 2px 10px;
+  unicode-bidi: isolate;
+}
+
+/* نکات بررسی */
+.nfHints {
+  margin: var(--ds-space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  text-align: start;
+  max-inline-size: 380px;
+  width: 100%;
+  animation: fadeUp 0.5s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.nfHints li {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: oklch(74% 0.04 265 / 0.85);
+  line-height: 1.7;
+  padding: 8px 12px;
+  border-radius: var(--ds-radius-md);
+  background: oklch(20% 0.04 265 / 0.4);
+  border: 1px solid oklch(45% 0.07 265 / 0.22);
+}
+
+.nfHints li::before {
+  content: "";
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: 50%;
+  background: var(--ds-brand-400);
+  box-shadow: 0 0 6px var(--ds-brand-400);
+  flex-shrink: 0;
+  margin-block-start: 9px;
+}
+
+.nfHintCode {
+  direction: ltr;
+  font-family: var(--ds-font-mono);
+  font-size: 0.72rem;
+  color: oklch(88% 0.06 265);
+  unicode-bidi: isolate;
+}
+
+/* اقدام‌ها */
+.nfActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+  margin-block-start: var(--ds-space-1);
+  animation: fadeUp 0.5s 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.nfPrimary {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1);
-  padding: var(--ds-space-2) var(--ds-space-4);
-  background: var(--ds-brand-500);
-  color: var(--ds-text-on-brand, oklch(100% 0 0));
-  border-radius: var(--ds-radius-md);
+  gap: 7px;
+  padding: 11px 22px;
+  border-radius: var(--ds-radius-full);
+  background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-600));
+  color: var(--ds-brand-on);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid oklch(60% 0.12 165 / 0.5);
+  box-shadow: 0 8px 24px -10px oklch(55% 0.14 165 / 0.55);
+  transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 180ms;
+}
+
+.nfPrimary:hover {
+  filter: brightness(1.08);
+}
+
+.nfPrimary:active {
+  transform: scale(0.97);
+}
+
+.nfPrimary:focus-visible {
+  outline: 2px solid oklch(70% 0.12 165);
+  outline-offset: 2px;
+}
+
+.nfSecondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 22px;
+  border-radius: var(--ds-radius-full);
+  background: oklch(24% 0.05 265 / 0.5);
+  color: oklch(80% 0.05 265);
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
-  margin-block-start: var(--ds-space-2);
-  transition: opacity 0.15s;
+  border: 1px solid oklch(50% 0.08 265 / 0.4);
+  transition: background 180ms, border-color 180ms;
 }
 
-.notFoundLink:hover {
-  opacity: 0.85;
+.nfSecondary:hover {
+  background: oklch(28% 0.06 265 / 0.6);
+  border-color: oklch(55% 0.09 265 / 0.5);
+}
+
+.nfSecondary:focus-visible {
+  outline: 2px solid oklch(65% 0.1 265);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nfIconRing,
+  .nfTitle,
+  .nfSub,
+  .nfHints,
+  .nfActions {
+    animation: none;
+  }
 }
 
 /* ── Animation ────────────────────────────────────────────────────────────────── */
@@ -544,17 +1181,37 @@
     transform: rotate(90deg) scaleX(-1);
   }
   .datesSection {
-    flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+  .dateItem:not(:last-child)::after {
+    display: none;
+  }
+  .supportLink {
+    inline-size: 100%;
+    justify-content: center;
+  }
+  .stepsHead {
+    align-items: flex-start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .timelineStep,
   .summaryCard,
-  .exchangeInfo {
+  .exchangeInfo,
+  .stepsCard,
+  .datesSection,
+  .supportCard,
+  .terminalCallout {
     animation: none !important;
   }
-  .heroBadgeDot {
+  .heroBadgeDot,
+  .stepPulse,
+  .stepActive .stepNode svg {
     animation: none;
+  }
+  .progressFill {
+    animation: none;
+    transform: scaleX(var(--p, 0));
   }
 }

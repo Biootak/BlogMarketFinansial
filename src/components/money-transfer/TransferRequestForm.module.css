@@ -279,6 +279,8 @@
   background: var(--ds-surface);
   overflow: visible;
   position: relative;
+  /* مارجین داخلی — پیل ارز و عدد نباید به لبه‌های باکس بچسبند */
+  padding: var(--ds-space-1) var(--ds-space-2);
   transition: border-color 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms
     cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -303,6 +305,16 @@
 .amountBox > *:first-child {
   border-start-start-radius: calc(var(--ds-radius-xl) - 1.5px);
   border-end-start-radius: calc(var(--ds-radius-xl) - 1.5px);
+}
+
+/* جداکنندهٔ مبلغ و ارز — مثل RateComparisonTable و hero؛
+   بدون این، پیل ارز (compact) چسبیده به عدد دیده می‌شد */
+.amountDivider {
+  inline-size: 1px;
+  align-self: stretch;
+  margin-block: 12px;
+  background: var(--ds-border-subtle);
+  flex-shrink: 0;
 }
 .amountBox > *:last-child {
   border-start-end-radius: calc(var(--ds-radius-xl) - 1.5px);
@@ -1576,4 +1588,22 @@
   padding: var(--ds-space-3) var(--ds-space-4);
   font-size: var(--ds-text-sm);
   color: oklch(42% 0.15 15);
+}
+
+/* ── مهمان — یادداشت ملایم (بدون کارت/دیوار) — گیت نهایی تأیید موبایل است ── */
+.guestNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+  border: 1px dashed var(--ds-border-default);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  background: var(--ds-surface);
+}
+
+.guestNote svg {
+  color: var(--ds-brand-500);
+  flex-shrink: 0;
 }

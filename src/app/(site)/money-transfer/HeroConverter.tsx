@@ -37,7 +37,7 @@ import {
 } from '@/lib/money-transfer/hero';
 import { ArrowDown, ArrowLeftRight, Bitcoin, Coins, Lock, Send, Wallet } from 'lucide-react';
 import { useSession } from 'next-auth/react';
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styles from './HeroConverter.module.css';
 
 /** کلید sessionStorage برای پاس دادن اطلاعات تبدیل به فرم ثبت درخواست */
@@ -104,6 +104,40 @@ const PRESETS_BY_CATEGORY: Record<CategoryId, readonly number[]> = {
 
 const DEFAULT_AMOUNT_STR = '1000';
 
+/**
+ * ارزهای پیش‌فرض هر تب — وقتی تب عوض می‌شود این‌ها فعال می‌شوند.
+ *  - مبدا: USD برای همه (در تب افغانی هم دلار مبدأ طبیعی صراف کابل است)
+ *  - مقصد تب ارز: AED → EUR
+ *  - مقصد تب افغانی: AFN (افغانی — واحد اصلی بازار کابل)
+ *  - مقصد تب رمزارز: دومین جفت (مثل BTC → ETH)
+ */
+function getCategoryDefaults(
+  category: CategoryId,
+  pairs: HeroPair[],
+): { from: HeroPair | undefined; to: HeroPair | undefined } {
+  const from =
+    pairs.find((p) => p.code === 'USD') ?? pairs.find((p) => p.code === 'EUR') ?? pairs[0];
+
+  let to: HeroPair | undefined;
+  if (category === 'afghan') {
+    to =
+      pairs.find((p) => p.code === 'AFN') ??
+      pairs.find((p) => p.code === 'USD') ??
+      pairs[1] ??
+      pairs[0];
+  } else if (category === 'crypto') {
+    to = pairs[1] ?? pairs[0];
+  } else {
+    to =
+      pairs.find((p) => p.code === 'AED') ??
+      pairs.find((p) => p.code === 'EUR') ??
+      pairs[1] ??
+      pairs[0];
+  }
+
+  return { from, to };
+}
+
 /* ────────────────────────────────────────────────────────────────────────
    MODULE-LEVEL FORMATTERS — the converter re-renders on every keystroke,
    so formatters are hoisted instead of re-allocated per render.
@@ -155,10 +189,14 @@ export default function HeroConverter({
     return pairs.filter((p) => p.category === category);
   }, [pairs, category]);
 
-  // وقتی category یا لیست pairs عوض شد، selection های نامعتبر را fix می‌کنیم.
+  // وقتی category یا لیست pairs عوض شد، selection را با تب هماهنگ می‌کنیم.
   const [fromId, setFromId] = useState<string>('');
   const [toId, setToId] = useState<string>('');
   const [amountRaw, setAmountRaw] = useState<string>(DEFAULT_AMOUNT_STR);
+
+  // آخرین تب دیده‌شده — وقتی تب عوض می‌شود، پیش‌فرض‌های همان تب اجباری ست می‌شوند
+  // (حتی اگر سلیکشن قبلی در لیست جدید معتبر باشد، مثلاً USD/AED در تب افغانی هم هست).
+  const prevCategoryRef = useRef<CategoryId>(category);
 
   useEffect(() => {
     if (filteredPairs.length === 0) {
@@ -167,26 +205,19 @@ export default function HeroConverter({
       if (toId) setToId('');
       return;
     }
-    // اطمینان از این‌که selection هنوز در filteredPairs است
-    if (!filteredPairs.some((p) => p.id === fromId)) {
-      // default مبدا: USD برای همه دسته‌ها
-      const preferredFrom = filteredPairs.find((p) => p.code === 'USD') ?? filteredPairs[0];
-      setFromId(preferredFrom.id);
+
+    const categoryChanged = prevCategoryRef.current !== category;
+    prevCategoryRef.current = category;
+
+    const { from: defaultFrom, to: defaultTo } = getCategoryDefaults(category, filteredPairs);
+    if (!defaultFrom || !defaultTo) return;
+
+    // تغییر تب → پیش‌فرض‌های همان تب؛ در غیر این صورت فقط selection نامعتبر را fix کن
+    if (categoryChanged || !filteredPairs.some((p) => p.id === fromId)) {
+      setFromId(defaultFrom.id);
     }
-    if (!filteredPairs.some((p) => p.id === toId)) {
-      // تب افغانی: مقصد default = AFN (افغانی — واحد اصلی بازار کابل)
-      // تب forex/crypto: AED → EUR → دومین
-      const preferredTo =
-        category === 'afghan'
-          ? (filteredPairs.find((p) => p.code === 'AFN') ??
-            filteredPairs.find((p) => p.code === 'USD') ??
-            filteredPairs[1] ??
-            filteredPairs[0])
-          : (filteredPairs.find((p) => p.code === 'AED') ??
-            filteredPairs.find((p) => p.code === 'EUR') ??
-            filteredPairs[1] ??
-            filteredPairs[0]);
-      setToId(preferredTo.id);
+    if (categoryChanged || !filteredPairs.some((p) => p.id === toId)) {
+      setToId(defaultTo.id);
     }
   }, [filteredPairs, fromId, toId, category]);
 

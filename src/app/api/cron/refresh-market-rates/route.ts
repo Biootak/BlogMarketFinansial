@@ -9,7 +9,7 @@
 import { primeMarketRatesCache } from '@/actions/market-rates';
 import { verifyCronSecret } from '@/lib/cron-auth';
 import prisma from '@/lib/db';
-import { assembleMarketRates } from '@/lib/market-rates';
+import { assembleMarketRates, type MarketRateItem } from '@/lib/market-rates';
 import { updateChangePercentBatch } from '@/lib/market-rates/change-cache';
 import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
 import { revalidateTag } from '@/lib/revalidate';
@@ -53,13 +53,15 @@ async function handleRefresh(req: Request) {
   // home/money-transfer همیشه از کش تازه بخوانند و هرگز منتظر scrape نمانند.
   await primeMarketRatesCache(items);
 
-  // ذخیره نرخ‌های محاسبه‌شده در DB (fqr آیتم‌هایی که provider='auto').
-  // فقط singleRate و changePercent را به‌روز می‌کنیم تا override های ادمین حفظ شوند.
+  // ذخیره نرخ‌های محاسبه‌شده در DB (فقط آیتم‌هایی که provider='auto')
+  // با یک $transaction — قبلاً ۶۰ round-trip پشت‌سرهم بود (هر دقیقه).
+  // فقط singleRate و changePercent به‌روز می‌شوند تا override های ادمین حفظ شوند.
   let updated = 0;
   let skipped = 0;
   const errors: { symbol: string; reason: string }[] = [];
   const changeUpdates: { symbol: string; changePercent: number }[] = [];
 
+  const toUpdate: { item: MarketRateItem; rawValue: number }[] = [];
   for (const item of items) {
     if (item.provider !== 'auto') continue;
     // value در MarketRateItem = rawValue / divisor (به‌واحد unit). برای ذخیره ریال خام:
@@ -69,41 +71,50 @@ async function handleRefresh(req: Request) {
       skipped++;
       continue;
     }
+    toUpdate.push({ item, rawValue });
+  }
+
+  if (toUpdate.length > 0) {
+    const apply = (withChange: boolean) =>
+      prisma.$transaction(
+        toUpdate.map(({ item, rawValue }) =>
+          prisma.exchangeRate.updateMany({
+            where: { symbol: item.symbol, provider: 'auto', active: true },
+            data: {
+              singleRate: rawValue.toString(),
+              ...(withChange
+                ? { lastChangePercent: item.changePercent, lastChangeAt: new Date() }
+                : {}),
+            },
+          }),
+        ),
+      );
+
+    let results: Awaited<ReturnType<typeof apply>>;
     try {
-      // Try to update with lastChangePercent (if migration is applied)
-      const affected = await prisma.exchangeRate.updateMany({
-        where: { symbol: item.symbol, provider: 'auto', active: true },
-        data: {
-          singleRate: rawValue.toString(),
-          lastChangePercent: item.changePercent,
-          lastChangeAt: new Date(),
-        },
-      });
-      if (affected.count > 0) {
+      results = await apply(true);
+    } catch {
+      // ستون‌های change در این محیط migration نشده‌اند → فقط singleRate
+      try {
+        results = await apply(false);
+      } catch (e) {
+        const err = e as { message?: string };
+        errors.push({ symbol: 'batch', reason: err.message ?? 'db error' });
+        results = [];
+      }
+    }
+    results.forEach((r, i) => {
+      if (r.count > 0) {
         updated++;
         // جمع change percents برای ذخیره در cache (fallback)
-        changeUpdates.push({ symbol: item.symbol, changePercent: item.changePercent });
+        changeUpdates.push({
+          symbol: toUpdate[i].item.symbol,
+          changePercent: toUpdate[i].item.changePercent,
+        });
       } else {
         skipped++;
       }
-    } catch {
-      // If migration not applied, fallback to updating only singleRate
-      try {
-        const affected = await prisma.exchangeRate.updateMany({
-          where: { symbol: item.symbol, provider: 'auto', active: true },
-          data: { singleRate: rawValue.toString() },
-        });
-        if (affected.count > 0) {
-          updated++;
-          changeUpdates.push({ symbol: item.symbol, changePercent: item.changePercent });
-        } else {
-          skipped++;
-        }
-      } catch (e2: unknown) {
-        const err = e2 as { message?: string };
-        errors.push({ symbol: item.symbol, reason: err.message ?? 'unknown' });
-      }
-    }
+    });
   }
 
   // ذخیره change percents در cache (fallback if DB migration not applied)

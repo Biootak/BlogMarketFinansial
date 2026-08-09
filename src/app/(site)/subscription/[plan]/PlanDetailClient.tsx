@@ -1,5 +1,6 @@
 'use client';
 
+import { rialToToman } from '@/lib/market-rates/units';
 import { type PlanId, getPlan } from '@/lib/subscription-plans';
 import {
   ArrowLeft,
@@ -22,8 +23,8 @@ type PlanDetailClientProps = {
 };
 
 function toFaPrice(rial: number): string {
-  // plan prices are in ریال (rial) — convert to تومان by /10
-  return (rial / 10).toLocaleString('fa-IR');
+  // plan prices are in ریال (rial) — convert to تومان via units.ts
+  return rialToToman(rial).toLocaleString('fa-IR');
 }
 
 export function PlanDetailClient({ planId }: PlanDetailClientProps) {
