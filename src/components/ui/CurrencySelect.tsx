@@ -167,16 +167,26 @@ export function CurrencySelect({
     }
     const t = setTimeout(() => {
       searchRef.current?.focus();
-      // Clamp panel so it never overflows the viewport horizontally
+      // Clamp panel so it never overflows the viewport (horizontal + vertical)
       if (panelRef.current) {
         const rect = panelRef.current.getBoundingClientRect();
-        if (rect.right > window.innerWidth - 8) {
-          // panel bleeds off the inline-end (left in RTL) edge — anchor to inline-end
-          setPanelStyle({ insetInlineStart: 'auto', insetInlineEnd: 0 });
-        } else if (rect.left < 8) {
-          // panel bleeds off the inline-start (right in RTL) edge — anchor to inline-start
-          setPanelStyle({ insetInlineEnd: 'auto', insetInlineStart: 0 });
+        const pad = 8;
+        let style: CSSProperties = {};
+        if (rect.left < pad) {
+          // پنل از لبه‌ی چپ (inline-end در RTL) بیرون می‌زند — لبه‌ی چپ پنل را به wrap بچسبان
+          style.insetInlineStart = 'auto';
+          style.insetInlineEnd = 0;
+        } else if (rect.right > window.innerWidth - pad) {
+          // پنل از لبه‌ی راست (inline-start در RTL) بیرون می‌زند — لبه‌ی راست پنل را به wrap بچسبان
+          style.insetInlineStart = 0;
+          style.insetInlineEnd = 'auto';
         }
+        if (rect.bottom > window.innerHeight - pad) {
+          // پایین trigger فضای کافی نیست — پنل را به سمت بالا باز کن
+          style.insetBlockStart = 'auto';
+          style.insetBlockEnd = 'calc(100% + 6px)';
+        }
+        setPanelStyle(style);
       }
     }, 20);
     return () => clearTimeout(t);

@@ -54,7 +54,9 @@
   border-radius: var(--ds-radius-lg);
   border: 1.5px solid var(--ds-border-default);
   background: var(--ds-surface);
-  overflow: hidden;
+  /* overflow:hidden پنل dropdown (که پایینِ این گروه باز می‌شود) را می‌بُرید —
+     مثل converter card: گوشه‌های داخلی با border-radius خود input حل می‌شود */
+  overflow: visible;
   transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
     var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
@@ -67,6 +69,9 @@
   width: 100px;
   padding: var(--ds-space-2) var(--ds-space-3);
   border: none;
+  /* گوشه‌های بیرونی (سمت start در RTL) هم‌گام با گردی گروه — چون overflow:hidden حذف شده */
+  border-start-start-radius: var(--ds-radius-lg);
+  border-end-start-radius: var(--ds-radius-lg);
   background: transparent;
   font-size: var(--ds-text-base);
   font-weight: 700;

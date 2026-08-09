@@ -357,6 +357,22 @@ export function computeSpreadStats(pairs: HeroPair[]): SpreadStat {
 export function buildSarafiPairs(marketItems: MarketRateItem[]): HeroPair[] {
   const pairs: HeroPair[] = [];
 
+  // pivot افغانی (AFN) — مثل IRT در تب forex: buy=sell=1 تا نرخ «۱ USD = X افغانی»
+  // مستقیماً از buy/sell صرافی سرای شاهزاده (AFN) قابل نمایش باشد. بدون این pair،
+  // انتخاب پیش‌فرض تب افغانی به USD برمی‌گشت و نرخ‌های افغانستان دیده نمی‌شد.
+  pairs.push({
+    id: 'sara-AFN',
+    code: 'AFN',
+    fullCode: 'SARA_AFN',
+    name: 'افغانی',
+    category: 'afghan',
+    buy: 1,
+    sell: 1,
+    updatedAt: new Date(),
+    unit: 'afn',
+    decimals: 2,
+  });
+
   for (const r of marketItems) {
     if (!r.symbol.startsWith('SARA_')) continue;
     // buy/sell باید موجود باشند (سرای شاهزاده همیشه هر دو را می‌دهد)
@@ -384,8 +400,8 @@ export function buildSarafiPairs(marketItems: MarketRateItem[]): HeroPair[] {
     });
   }
 
-  // ترتیب: USD, EUR, AED اول — بقیه alphabetical
-  const priority = ['USD', 'EUR', 'AED', 'GBP', 'SAR', 'TRY', 'CNY', 'CAD', 'AUD'];
+  // ترتیب: AFN (pivot) اول، سپس USD, EUR, AED — بقیه alphabetical
+  const priority = ['AFN', 'USD', 'EUR', 'AED', 'GBP', 'SAR', 'TRY', 'CNY', 'CAD', 'AUD'];
   pairs.sort((a, b) => {
     const ai = priority.indexOf(a.code);
     const bi = priority.indexOf(b.code);

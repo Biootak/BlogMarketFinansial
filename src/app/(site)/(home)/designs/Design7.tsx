@@ -656,7 +656,7 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
 
                       {/* Content */}
                       <div className="absolute bottom-0 start-0 end-0 p-2.5 sm:p-4 z-10">
-                        <h3 className="text-[13px] sm:text-sm font-bold text-white line-clamp-3 sm:line-clamp-2 leading-snug">
+                        <h3 className="text-[11.5px] sm:text-sm font-bold text-white line-clamp-3 sm:line-clamp-2 leading-snug">
                           {post.title}
                         </h3>
                         <div className="flex items-center gap-1.5 mt-1.5">
