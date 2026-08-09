@@ -525,7 +525,8 @@ export async function getServiceRequestByTrackingCode(trackingCode: string): Pro
     currency: string;
     status: string;
     urgency: string;
-    adminNotes: string | null;
+    description: string | null;
+    contactMethod: string | null;
     estimatedCompletionAt: Date | null;
     externalTxId: string | null;
     createdAt: Date;
@@ -579,7 +580,9 @@ export async function getServiceRequestByTrackingCode(trackingCode: string): Pro
         currency: true,
         status: true,
         urgency: true,
-        adminNotes: true,
+        // adminNotes عمداً حذف شد — یادداشت‌های داخلی تیم نباید با کد عمومی لو برود
+        description: true,
+        contactMethod: true,
         estimatedCompletionAt: true,
         externalTxId: true,
         createdAt: true,

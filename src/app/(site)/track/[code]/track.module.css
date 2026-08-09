@@ -233,6 +233,30 @@
   color: var(--ds-text-secondary);
 }
 
+/* نرخ بازار در زمان ثبت — شفافیت نسبت به نرخ اعمال‌شده */
+.marketRate {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--ds-text-muted);
+  border: 1px dashed var(--ds-border-strong);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.marketRate::before {
+  content: "";
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: 50%;
+  background: var(--ds-brand-400);
+  box-shadow: 0 0 6px var(--ds-brand-400);
+  flex-shrink: 0;
+}
+
 .feeRow {
   display: flex;
   align-items: center;
@@ -1213,5 +1237,16 @@
   .progressFill {
     animation: none;
     transform: scaleX(var(--p, 0));
+  }
+}
+
+/* ── Print — رسید چاپی ─────────────────────────────────────────────────────────
+   وقتی معامله کامل شده و دکمه‌ی «دریافت رسید» وجود دارد، main کلاس
+   pageWithReceipt می‌گیرد و در چاپ مخفی می‌شود تا فقط برگه‌ی رسید دیده شود
+   (برگه توسط PrintReceiptButton به body پورت می‌شود).
+   ───────────────────────────────────────────────────────────────────────────── */
+@media print {
+  .pageWithReceipt {
+    display: none !important;
   }
 }

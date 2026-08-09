@@ -24,6 +24,7 @@ import {
   CalendarPlus,
   CheckCircle2,
   Clock,
+  History,
   LifeBuoy,
   ListChecks,
   PackageCheck,
@@ -34,9 +35,12 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
+import PrintReceiptButton, { type ReceiptData } from './_components/PrintReceiptButton';
 import TrackSearchBox from './_components/TrackSearchBox';
 import TrackShareButton from './_components/TrackShareButton';
+import TrackStatusPoller from './_components/TrackStatusPoller';
 import TrackingPageClient, { type TrackingData } from './_components/TrackingPageClient';
+import sc from './_components/TrackingPageClient.module.css';
 import s from './track.module.css';
 
 export const revalidate = 60;
@@ -170,8 +174,9 @@ export default async function TrackPage({ params }: Props) {
 
   // درخواست سرویس → TrackingPageClient (public tracking)
   if (!deal && serviceRes.success && serviceRes.data) {
+    const isCompleted = serviceRes.data.status === 'COMPLETED';
     return (
-      <main className={s.page}>
+      <main className={`${s.page} ${isCompleted ? s.pageWithReceipt : ''}`}>
         <TrackingPageClient
           code={normalized}
           initialData={serviceRes.data as unknown as TrackingData}
@@ -185,6 +190,18 @@ export default async function TrackPage({ params }: Props) {
     deal && deal.status in STATUS_CONFIG ? STATUS_CONFIG[deal.status as DealStatus] : null;
 
   const StatusIcon = statusCfg?.icon ?? AlertCircle;
+
+  const statusLogs =
+    (
+      deal as {
+        statusLogs?: Array<{
+          toStatus: string;
+          fromStatus: string | null;
+          note: string | null;
+          createdAt: Date;
+        }>;
+      }
+    ).statusLogs ?? [];
 
   if (!deal) {
     return (
@@ -259,18 +276,6 @@ export default async function TrackPage({ params }: Props) {
       minute: '2-digit',
     }).format(new Date(d));
 
-  const statusLogs =
-    (
-      deal as {
-        statusLogs?: Array<{
-          toStatus: string;
-          fromStatus: string | null;
-          note: string | null;
-          createdAt: Date;
-        }>;
-      }
-    ).statusLogs ?? [];
-
   const isTerminal = TERMINAL_STATUSES.includes(deal.status as DealStatus);
   const terminalLog = isTerminal
     ? (statusLogs.find((l) => l.toStatus === deal.status) ?? null)
@@ -291,8 +296,47 @@ export default async function TrackPage({ params }: Props) {
     ? (statusCfg?.labelFa ?? deal.status)
     : `مرحله ${FA_DIGITS[Math.max(0, activeIdx)] ?? '—'} از ۴`;
 
+  // رسید چاپی فقط برای معامله‌ی تکمیل‌شده — با portal به body رندر می‌شود
+  const receipt: ReceiptData | null =
+    deal.status === 'COMPLETED'
+      ? {
+          docTitle: 'رسید معامله ارزی',
+          trackingCode: deal.trackingCode,
+          statusFa: 'تکمیل شد',
+          completedAtFa: deal.completedAt ? formatDate(deal.completedAt) : undefined,
+          primaryLabel: 'مبلغ پرداختی',
+          primaryValue: `${formatAmount(fromAmountNum)} ${deal.fromCurrency}`,
+          secondaryLabel: 'مبلغ دریافتی',
+          secondaryValue: `${formatAmount(toAmountNum)} ${deal.toCurrency}`,
+          lines: [
+            { label: 'نرخ اعمال‌شده', value: formatRate(appliedRateNum) },
+            ...(deal.marketRateRef
+              ? [
+                  {
+                    label: 'نرخ بازار',
+                    value: formatRate(Number.parseFloat(deal.marketRateRef)),
+                  },
+                ]
+              : []),
+            ...(feeNum > 0
+              ? [{ label: 'کارمزد', value: `${formatAmount(feeNum)} ${deal.toCurrency}` }]
+              : []),
+            { label: 'تاریخ ثبت', value: formatDate(deal.createdAt) },
+            ...(deal.confirmedAt
+              ? [{ label: 'تاریخ تأیید', value: formatDate(deal.confirmedAt) }]
+              : []),
+            ...(deal.completedAt
+              ? [{ label: 'تاریخ تکمیل', value: formatDate(deal.completedAt) }]
+              : []),
+          ],
+          exchangeName: deal.exchangeName ?? undefined,
+          exchangeCity: deal.exchangeCity ?? undefined,
+          footerNote: 'این رسید توسط سامانه‌ی کیف پول دیجیتال صادر شده است.',
+        }
+      : null;
+
   return (
-    <main className={s.page}>
+    <main className={`${s.page} ${receipt ? s.pageWithReceipt : ''}`}>
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className={s.hero} aria-label="اطلاعات معامله">
         <div className={s.heroAmbient} aria-hidden />
@@ -317,6 +361,7 @@ export default async function TrackPage({ params }: Props) {
             </span>
             <CopyButton text={deal.trackingCode} label="کپی" />
             <TrackShareButton />
+            {receipt && <PrintReceiptButton receipt={receipt} />}
           </div>
 
           {/* Last update */}
@@ -369,6 +414,11 @@ export default async function TrackPage({ params }: Props) {
                 {formatRate(appliedRateNum)}
               </span>
             </div>
+            {deal.marketRateRef && (
+              <span className={s.marketRate} title="نرخ مرجع بازار در زمان ثبت معامله">
+                بازار: <span dir="ltr">{formatRate(Number.parseFloat(deal.marketRateRef))}</span>
+              </span>
+            )}
             {CHANNEL_LABELS[deal.channel] && (
               <span className={s.channelChip}>{CHANNEL_LABELS[deal.channel]}</span>
             )}
@@ -506,6 +556,35 @@ export default async function TrackPage({ params }: Props) {
           )}
         </section>
 
+        {/* ── History — تاریخچه کامل وضعیت ──────────────────────────────────── */}
+        {statusLogs.length > 0 && (
+          <section className={sc.historyCard} aria-label="تاریخچه وضعیت">
+            <div className={sc.historyHeader}>
+              <History size={13} aria-hidden />
+              <span>تاریخچه وضعیت</span>
+            </div>
+            <ol className={sc.historyList}>
+              {[...statusLogs].reverse().map((log, i) => {
+                const toCfg = STATUS_CONFIG[log.toStatus as DealStatus];
+                const fromCfg = log.fromStatus ? STATUS_CONFIG[log.fromStatus as DealStatus] : null;
+                return (
+                  <li key={`${log.toStatus}-${i}`} className={sc.historyItem}>
+                    <span className={sc.historyDot} aria-hidden />
+                    <div className={sc.historyBody}>
+                      <span className={sc.historyStatus}>
+                        {fromCfg ? `${fromCfg.labelFa} ← ` : ''}
+                        {toCfg?.labelFa ?? log.toStatus}
+                      </span>
+                      {log.note && <span className={sc.historyNote}>{log.note}</span>}
+                      <time className={sc.historyTime}>{formatDate(log.createdAt)}</time>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        )}
+
         {/* ── Dates ────────────────────────────────────────────────────────── */}
         <div className={s.datesSection} aria-label="تاریخ‌های مهم">
           <div className={s.dateItem}>
@@ -565,6 +644,9 @@ export default async function TrackPage({ params }: Props) {
           </Link>
         </div>
       </div>
+
+      {/* پلر زنده‌ی وضعیت — بنر «وضعیت تغییر کرد» (fixed) */}
+      <TrackStatusPoller code={deal.trackingCode} initialStatus={deal.status} />
     </main>
   );
 }

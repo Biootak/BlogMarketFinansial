@@ -112,9 +112,10 @@ const CreateDealSchema = z.object({
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 // C2: crypto.randomBytes به جای Math.random() — غیرقابل پیش‌بینی
+// آنتروپی: ۶ بایت (۱۲ hex) + ۳ بایت (۶ hex) = ۷۲ بیت — ضد brute-force/تخمین
 function generateTrackingCode(): string {
-  const a = randomBytes(4).toString('hex').toUpperCase();
-  const b = randomBytes(2).toString('hex').toUpperCase();
+  const a = randomBytes(6).toString('hex').toUpperCase();
+  const b = randomBytes(3).toString('hex').toUpperCase();
   return `DL-${a}-${b}`;
 }
 
@@ -277,7 +278,41 @@ export async function getMyDeals(
 }
 
 /** پیگیری معامله با کد — عمومی (بدون auth) */
-export async function getDealByTracking(trackingCode: string): Promise<DealRow | null> {
+/**
+ * خروجی عمومی پیگیری — فقط فیلدهایی که مشتری باید ببیند.
+ *
+ * امنیت (least-privilege): این تابع از سمت سرور (server component) صدا زده
+ * می‌شود ولی خروجی‌اش باید حداقلی باشد تا اگر روزی از سمت کلاینت یا یک
+ * route دیگر صدا زده شد، هیچ داده‌ی حساسی (نام/تلفن/ایمیل/internalNote/
+ * شناسه‌های داخلی) از مرز action خارج نشود.
+ */
+export type PublicDealTracking = {
+  trackingCode: string;
+  fromCurrency: string;
+  toCurrency: string;
+  fromAmount: string;
+  toAmount: string;
+  appliedRate: string;
+  feeAmount: string;
+  marketRateRef: string | null;
+  channel: string;
+  status: string;
+  note: string | null;
+  confirmedAt: Date | null;
+  completedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  exchangeName: string;
+  exchangeCity: string | null;
+  statusLogs: Array<{
+    fromStatus: string | null;
+    toStatus: string;
+    note: string | null;
+    createdAt: Date;
+  }>;
+};
+
+export async function getDealByTracking(trackingCode: string): Promise<PublicDealTracking | null> {
   // DoS/scan guard — فقط کدهای با فرمت معتبر به دیتابیس می‌رسند تا کوئری روی
   // ورودی‌های garbage هدر نرود. کدهای واقعی: `DL-XXXXXXXX-XXXX` (۱۲ hex).
   if (!/^[A-Z0-9][A-Z0-9-]{5,23}$/.test(trackingCode)) return null;
@@ -296,17 +331,28 @@ export async function getDealByTracking(trackingCode: string): Promise<DealRow |
     },
   });
   if (!row) return null;
+  // DTO عمومی — deliberately هیچ فیلد حساسی برنمی‌گرداند
   return {
-    ...mapDeal(row),
+    trackingCode: row.trackingCode,
+    fromCurrency: row.fromCurrency,
+    toCurrency: row.toCurrency,
+    fromAmount: row.fromAmount.toString(),
+    toAmount: row.toAmount.toString(),
+    appliedRate: row.appliedRate.toString(),
+    feeAmount: row.feeAmount.toString(),
+    marketRateRef: row.marketRateRef != null ? row.marketRateRef.toString() : null,
+    channel: row.channel,
+    status: row.status,
+    note: row.note,
+    confirmedAt: row.confirmedAt,
+    completedAt: row.completedAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
     exchangeName: row.Exchange.displayName ?? row.Exchange.name,
     exchangeCity: row.Exchange.city,
     statusLogs: row.StatusLogs.map((l) => ({
-      id: l.id,
-      dealId: l.dealId,
       fromStatus: l.fromStatus ?? null,
       toStatus: l.toStatus,
-      actorId: l.actorId ?? null,
-      actorRole: l.actorRole ?? null,
       note: l.note ?? null,
       createdAt: l.createdAt,
     })),

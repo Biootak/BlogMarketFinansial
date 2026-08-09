@@ -1,0 +1,114 @@
+/* TrackStatusPoller — بنر «وضعیت تغییر کرد» */
+
+.banner {
+  position: fixed;
+  bottom: 1.25rem;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  width: min(calc(100% - 2rem), 26rem);
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  border: 1px solid oklch(62% 0.14 265 / 0.4);
+  background: oklch(26% 0.08 265 / 0.92);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 48px oklch(10% 0.06 265 / 0.6), 0 2px 10px oklch(10% 0.06 265 / 0.45);
+  animation: bannerIn 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  /* RTL: در RTL باید از راست بیاید؛ inset-inline-start با translate جور نمی‌شود،
+     پس جهت ترجمه را با margin منطقی تنظیم می‌کنیم */
+  margin-inline-start: 0;
+}
+
+@keyframes bannerIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: oklch(60% 0.15 265 / 0.22);
+  color: oklch(80% 0.13 265);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  color: oklch(93% 0.02 265);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.sub {
+  color: oklch(78% 0.05 265);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding: 0.45rem 0.95rem;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, oklch(62% 0.14 265), oklch(55% 0.16 295));
+  color: oklch(98% 0.01 265);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: filter 160ms ease, transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn:hover {
+  filter: brightness(1.12);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn:focus-visible {
+  outline: 2px solid oklch(75% 0.12 265);
+  outline-offset: 2px;
+}
+
+.errorTip {
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  inset-inline-start: 1rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  background: oklch(30% 0.09 30 / 0.95);
+  color: oklch(88% 0.06 30);
+  font-size: 0.7rem;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner {
+    animation: none;
+  }
+}

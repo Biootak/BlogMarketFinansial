@@ -336,6 +336,39 @@
   margin: 0;
 }
 
+/* ── توضیحات کاربر ─────────────────────────────────────────────────────────── */
+.descCard {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-inline-start: 3px solid var(--ds-brand-500);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-4);
+  margin-block-end: var(--ds-space-5);
+  animation: fadeUp 0.4s 0.12s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.descHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-text-secondary);
+  margin-block-end: var(--ds-space-2);
+}
+
+.descHeader svg {
+  color: var(--ds-brand-500);
+}
+
+.descText {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-normal);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 @keyframes fadeUp {
   from {
     opacity: 0;

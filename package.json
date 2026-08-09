@@ -24,6 +24,7 @@
     "db:reset": "node scripts/reset-and-seed-50-posts.js",
     "db:fresh": "prisma migrate reset --force && npm run db:seed",
     "db:stats": "node scripts/db-stats.js",
+    "db:migrate-tracking-codes": "node scripts/migrate-tracking-codes.mjs",
     "db:seed:scheduled": "node scripts/seed-scheduled-posts.js",
     "db:up": "docker-compose up -d db",
     "db:down": "docker-compose down",

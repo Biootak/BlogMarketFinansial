@@ -22,13 +22,15 @@ import {
   History,
   LifeBuoy,
   ListChecks,
+  MessageCircle,
   MessageSquare,
   RefreshCw,
   XCircle,
 } from 'lucide-react';
 import Link from 'next/link';
-import { type CSSProperties, useCallback, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useState } from 'react';
 import t from '../track.module.css';
+import PrintReceiptButton, { type ReceiptData } from './PrintReceiptButton';
 import TrackShareButton from './TrackShareButton';
 import s from './TrackingPageClient.module.css';
 
@@ -122,7 +124,8 @@ export interface TrackingData {
   currency: string;
   status: StatusKey;
   urgency: string;
-  adminNotes: string | null;
+  description: string | null;
+  contactMethod: string | null;
   estimatedCompletionAt: Date | string | null;
   externalTxId: string | null;
   createdAt: Date | string;
@@ -194,9 +197,48 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
     setTimeout(() => setCopied(false), 2000);
   }, []);
 
+  // ── Auto-refresh (polling) ──────────────────────────────────────────────── //
+  // هر ۴۵ ثانیه وضعیت را تازه می‌کند؛ وقتی وضعیت پایانی شد (کامل/لغو) یا
+  // تب مخفی بود پل نمی‌کند. دکمه‌ی رفرش دستی همیشه در دسترس است.
+  const currentStatus = data?.status;
+  useEffect(() => {
+    if (!currentStatus || currentStatus === 'COMPLETED' || currentStatus === 'CANCELLED') {
+      return;
+    }
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') void refresh();
+    }, 45_000);
+    return () => clearInterval(id);
+  }, [currentStatus, refresh]);
+
   const status = data ? STATUS_CONFIG[data.status] : null;
   const StatusIcon = status?.icon;
   const isCancelled = data?.status === 'CANCELLED';
+
+  // رسید چاپی فقط برای درخواست تکمیل‌شده
+  const receiptData: ReceiptData | null =
+    data?.status === 'COMPLETED'
+      ? {
+          docTitle: 'رسید درخواست خدمات',
+          trackingCode: data.trackingCode,
+          statusFa: 'تکمیل شده',
+          completedAtFa: (() => {
+            const doneLog = data.statusLogs.find((l) => l.toStatus === 'COMPLETED');
+            return doneLog ? formatDate(doneLog.createdAt) : undefined;
+          })(),
+          primaryLabel: 'مبلغ درخواست',
+          primaryValue: `${data.amount} ${data.currency}`,
+          lines: [
+            { label: 'نوع سرویس', value: SERVICE_LABELS[data.serviceType] ?? data.serviceType },
+            { label: 'تاریخ ثبت', value: formatDate(data.createdAt) },
+            ...(data.estimatedCompletionAt
+              ? [{ label: 'زمان تخمینی تکمیل', value: formatDate(data.estimatedCompletionAt) }]
+              : []),
+            ...(data.externalTxId ? [{ label: 'شناسه تراکنش', value: data.externalTxId }] : []),
+          ],
+          footerNote: 'این رسید توسط سامانه‌ی کیف پول دیجیتال صادر شده است.',
+        }
+      : null;
 
   // پیشرفت: PENDING=0, IN_PROGRESS=50, COMPLETED=100؛ لغو → آخرین مرحله‌ی رسیده
   const terminalLog = isCancelled
@@ -260,6 +302,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                   {copied ? 'کپی شد!' : 'کپی'}
                 </button>
                 <TrackShareButton />
+                {receiptData && <PrintReceiptButton receipt={receiptData} />}
                 <button
                   type="button"
                   onClick={refresh}
@@ -335,8 +378,30 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                     </dd>
                   </div>
                 )}
+                {data.contactMethod && (
+                  <div className={s.infoRow}>
+                    <dt className={s.infoLabel}>
+                      <MessageCircle size={12} aria-hidden />
+                      روش تماس
+                    </dt>
+                    <dd className={s.infoValue}>
+                      {data.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'}
+                    </dd>
+                  </div>
+                )}
               </dl>
             </section>
+
+            {/* ── توضیحات کاربر ── */}
+            {data.description && (
+              <section className={s.descCard} aria-label="توضیحات">
+                <div className={s.descHeader}>
+                  <MessageSquare size={13} aria-hidden />
+                  <span>توضیحات شما</span>
+                </div>
+                <p className={s.descText}>{data.description}</p>
+              </section>
+            )}
 
             {/* ── Steps card ── */}
             <section className={t.stepsCard} aria-label="مراحل درخواست">
@@ -467,17 +532,6 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                     </li>
                   ))}
                 </ol>
-              </section>
-            )}
-
-            {/* ── Admin note ── */}
-            {data.adminNotes && (
-              <section className={s.noteCard} aria-label="یادداشت تیم">
-                <div className={s.noteHeader}>
-                  <MessageSquare size={13} aria-hidden />
-                  <span>یادداشت تیم</span>
-                </div>
-                <p className={s.noteText}>{data.adminNotes}</p>
               </section>
             )}
 
