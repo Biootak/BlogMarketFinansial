@@ -29,6 +29,7 @@ vi.mock('@/lib/db', () => ({ default: prismaMock }));
 import {
   consumeTelegramLinkToken,
   createTelegramLinkToken,
+  formatTelegramPhone,
   getTelegramBotUsername,
   getTelegramLinkUrl,
   isTelegramWebhookSecretValid,
@@ -96,6 +97,25 @@ describe('sendTelegramMessage', () => {
       text: 'کد شما: 123456',
       parse_mode: 'HTML',
     });
+  });
+});
+
+describe('formatTelegramPhone', () => {
+  it('E.164 ایران → گروه‌بندی خوانا', () => {
+    expect(formatTelegramPhone('+989165200952')).toBe('+98 916 520 0952');
+  });
+
+  it('E.164 افغانستان → گروه‌بندی خوانا', () => {
+    expect(formatTelegramPhone('+93700000000')).toBe('+93 700 000 000');
+  });
+
+  it('بدون + → همان رفتار', () => {
+    expect(formatTelegramPhone('989165200952')).toBe('+98 916 520 0952');
+  });
+
+  it('کوتاه/نامعتبر → بدون تغییر', () => {
+    expect(formatTelegramPhone('+98')).toBe('+98');
+    expect(formatTelegramPhone('')).toBe('');
   });
 });
 

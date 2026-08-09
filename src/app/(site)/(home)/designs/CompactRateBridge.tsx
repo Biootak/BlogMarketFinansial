@@ -42,6 +42,10 @@ interface CompactRateBridgeProps {
   rotateInterval?: number;
   /** لینک پایه برای ثبت سفارش */
   orderLinkBase?: string;
+  /** واحد پول ثابت — اگر نباشد از units[] استفاده می‌شود */
+  unit?: string;
+  /** واحد پول per-item — اگر داده شود به جای unit ثابت، واحد هر آیتم جداگانه است */
+  units?: string[];
 }
 
 export default function CompactRateBridge({
@@ -52,6 +56,8 @@ export default function CompactRateBridge({
   autoRotate = true,
   rotateInterval = 6000,
   orderLinkBase = '/money-transfer',
+  unit,
+  units,
 }: CompactRateBridgeProps) {
   const [internalIndex, setInternalIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -98,6 +104,11 @@ export default function CompactRateBridge({
   const sellDisplay = sellBase;
   const sellSuffix = current?.sellSuffix ?? '';
 
+  // واحد پول: اگر units[] داده شده از index فعال می‌خونیم، وگرنه unit ثابت یا پیش‌فرض تومان
+  const valueSuffix = (buySuffix || sellSuffix || '').trim();
+  const displayUnit = (units ? (units[activeIndex] ?? units[0] ?? 'تومان') : (unit || 'تومان')).trim();
+  const showUnitBadge = true;
+
   const orderHref = `${orderLinkBase}?currency=${encodeURIComponent(current?.title || '')}&type=INTERNATIONAL_TRANSFER#contact`;
 
   const goPrev = () => {
@@ -122,11 +133,15 @@ export default function CompactRateBridge({
   };
 
   return (
-    <div
-      className="group/bridge inline-flex items-stretch backdrop-blur-xl bg-black/45 border border-white/20 rounded-2xl shadow-2xl overflow-hidden"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="group/bridge relative inline-flex w-fit max-w-full sm:pb-0 pb-3" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      {/* بج واحد پول — corner badge، خارج از overflow-hidden */}
+      {showUnitBadge && (
+        <span className="absolute bottom-0 translate-y-1/2 end-3 z-10 inline-flex items-center px-1.5 py-[2px] rounded-full bg-amber-400/90 border border-amber-300/60 text-[8px] sm:text-[9px] font-bold text-amber-950 leading-none shadow-sm shadow-amber-500/30 pointer-events-none select-none">
+          {displayUnit}
+        </span>
+      )}
+      {/* inner: overflow-hidden برای clip کردن animation های داخل */}
+      <div className="inline-flex items-stretch w-fit backdrop-blur-xl bg-black/45 border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
       {/* Title block */}
       <div className="flex flex-col items-start justify-center gap-0.5 px-2.5 sm:px-3 py-1.5 sm:py-2 border-l border-white/10 min-w-0 sm:min-w-[100px]">
         <div className="flex items-center gap-1">
@@ -156,7 +171,7 @@ export default function CompactRateBridge({
         }}
         onMouseDown={(e) => e.stopPropagation()}
         // target-size: w-8 (32px → ~24px actual با rem scale) — حداقل لمسی 24px
-        className="hidden sm:flex w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
+        className="flex w-7 sm:w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
         aria-label="نرخ قبلی"
       >
         <ChevronRight className="w-3 h-3" />
@@ -186,15 +201,16 @@ export default function CompactRateBridge({
             </span>
 
             {/* Buy + Sell row */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-nowrap">
               {/* خرید (سبز) */}
               {current?.buy && (
-                <div className="flex items-baseline gap-1 flex-1 min-w-0">
-                  <span className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-300 shrink-0">
+                <div className="flex items-baseline gap-1 shrink-0">
+                  {/* برچسب «خرید» فقط در sm+ — در موبایل رنگ سبز کافی است و عدد کامل دیده شود */}
+                  <span className="hidden sm:flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-300 shrink-0">
                     <TrendingUp className="w-2.5 h-2.5" />
                     خرید
                   </span>
-                  <span className="text-[12px] sm:text-[13px] font-bold text-emerald-200 tabular-nums">
+                  <span className="text-[12px] sm:text-[13px] font-bold text-emerald-200 tabular-nums whitespace-nowrap">
                     {buyDisplay > 0 ? buyDisplay.toLocaleString('fa-IR') : current?.buy}
                   </span>
                   {buySuffix && (
@@ -207,12 +223,13 @@ export default function CompactRateBridge({
 
               {/* فروش (قرمز) — فقط اگه جدا باشه */}
               {current?.sell ? (
-                <div className="flex items-baseline gap-1 flex-1 min-w-0 border-r border-white/10 pr-2 sm:pr-3">
-                  <span className="flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-rose-300 shrink-0">
+                <div className="flex items-baseline gap-1 shrink-0 border-r border-white/10 pr-2 sm:pr-3">
+                  {/* برچسب «فروش» فقط در sm+ — در موبایل رنگ قرمز کافی است و عدد کامل دیده شود */}
+                  <span className="hidden sm:flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-rose-300 shrink-0">
                     <TrendingDown className="w-2.5 h-2.5" />
                     فروش
                   </span>
-                  <span className="text-[12px] sm:text-[13px] font-bold text-rose-200 tabular-nums">
+                  <span className="text-[12px] sm:text-[13px] font-bold text-rose-200 tabular-nums whitespace-nowrap">
                     {sellDisplay > 0 ? sellDisplay.toLocaleString('fa-IR') : current?.sell}
                   </span>
                   {sellSuffix && (
@@ -245,7 +262,7 @@ export default function CompactRateBridge({
         }}
         onMouseDown={(e) => e.stopPropagation()}
         // target-size: w-8 (32px → ~24px actual با rem scale) — حداقل لمسی 24px
-        className="hidden sm:flex w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
+        className="flex w-7 sm:w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
         aria-label="نرخ بعدی"
       >
         <ChevronLeft className="w-3 h-3" />
@@ -269,6 +286,7 @@ export default function CompactRateBridge({
           <Pause className="w-3 h-3" fill="currentColor" />
         )}
       </button>
+      </div>{/* /inner overflow-hidden */}
     </div>
   );
 }

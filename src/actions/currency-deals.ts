@@ -32,9 +32,11 @@ import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { screenTransaction } from '@/lib/fraud/screener';
 import { notifyDealStatusChange, notifyNewDeal } from '@/lib/notifications/fintech';
+import { notifyTelegramUser } from '@/lib/notifications/telegram-user';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { getPortalUrl } from '@/lib/telegram';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -506,6 +508,18 @@ export async function createDeal(
     exchangeName: exchangeId,
   });
 
+  // اعلان به تلگرامِ خودِ مشتری — «معامله ثبت شد» (وعدهٔ طراحی)
+  if (userId) {
+    void notifyTelegramUser(
+      userId,
+      `🆕 <b>معامله ثبت شد</b>\n\n🔑 کد پیگیری: <code>${trackingCode}</code>\n💱 ${fromAmount} ${fromCurrency} → ${inputToAmount ?? '—'} ${toCurrency}\n📌 وضعیت: در انتظار بررسی`,
+      {
+        inlineKeyboard: [[{ text: '🌐 پیگیری معامله', url: getPortalUrl('/customer/dashboard') }]],
+      },
+      { dedupeKey: `deal-created:${deal.id}` },
+    );
+  }
+
   return { success: true, data: { id: deal.id, trackingCode } };
 }
 
@@ -946,6 +960,7 @@ export async function completeDeal(
     .findUnique({
       where: { id: dealId },
       select: {
+        id: true,
         trackingCode: true,
         customerName: true,
         customerPhone: true,
@@ -953,6 +968,7 @@ export async function completeDeal(
         toCurrency: true,
         fromAmount: true,
         toAmount: true,
+        userId: true,
         Exchange: { select: { name: true, displayName: true } },
       },
     })
@@ -973,6 +989,20 @@ export async function completeDeal(
       },
       'COMPLETED',
     );
+
+    // اعلان به تلگرامِ صاحب معامله — «معامله تکمیل شد»
+    if (completedDeal.userId) {
+      void notifyTelegramUser(
+        completedDeal.userId,
+        `✅ <b>معامله تکمیل شد</b>\n\n🔑 کد پیگیری: <code>${completedDeal.trackingCode}</code>\n💱 ${completedDeal.fromAmount} ${completedDeal.fromCurrency} → ${completedDeal.toAmount} ${completedDeal.toCurrency}`,
+        {
+          inlineKeyboard: [
+            [{ text: '🌐 پیگیری معامله', url: getPortalUrl('/customer/dashboard') }],
+          ],
+        },
+        { dedupeKey: `deal-completed:${completedDeal.id}` },
+      );
+    }
   }
 
   return { success: true, data: { id: dealId } };
@@ -989,7 +1019,14 @@ export async function cancelDeal(
 
   const deal = await prisma.currencyDeal.findUnique({
     where: { id: dealId },
-    select: { id: true, status: true, quoteId: true, userId: true, exchangeId: true },
+    select: {
+      id: true,
+      trackingCode: true,
+      status: true,
+      quoteId: true,
+      userId: true,
+      exchangeId: true,
+    },
   });
   if (!deal) return { success: false, error: { code: 'NOT_FOUND', message: 'معامله یافت نشد' } };
   if (['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(deal.status)) {
@@ -1061,6 +1098,19 @@ export async function cancelDeal(
   });
 
   revalidateDealCaches();
+
+  // اعلان به تلگرامِ صاحب معامله — «معامله لغو شد»
+  if (deal.userId) {
+    void notifyTelegramUser(
+      deal.userId,
+      `❌ <b>معامله لغو شد</b>\n\n🔑 کد پیگیری: <code>${deal.trackingCode}</code>\n📌 دلیل: ${reason}`,
+      {
+        inlineKeyboard: [[{ text: '🌐 پیگیری معامله', url: getPortalUrl('/customer/dashboard') }]],
+      },
+      { dedupeKey: `deal-cancelled:${deal.id}` },
+    );
+  }
+
   return { success: true, data: { id: dealId } };
 }
 

@@ -16,12 +16,28 @@ const telegramMock = vi.hoisted(() => ({
   isTelegramWebhookSecretValid: vi.fn(),
   consumeTelegramLinkToken: vi.fn(),
   sendTelegramMessage: vi.fn(),
+  sendTelegramChatAction: vi.fn(),
   answerTelegramCallback: vi.fn(),
   editTelegramMessage: vi.fn(),
   getPortalUrl: vi.fn(() => 'https://financialmarket.page'),
+  formatTelegramPhone: vi.fn(() => '+98 916 520 0952'),
 }));
 
 vi.mock('@/lib/telegram', () => telegramMock);
+
+const prismaMock = vi.hoisted(() => ({
+  user: {
+    findUnique: vi.fn(),
+  },
+}));
+
+vi.mock('@/lib/db', () => ({ default: prismaMock }));
+
+const phoneKycMock = vi.hoisted(() => ({
+  autoVerifyPhoneFromTelegram: vi.fn(),
+}));
+
+vi.mock('@/lib/phone-kyc', () => phoneKycMock);
 
 import { POST } from './route';
 
@@ -36,6 +52,11 @@ function makeRequest(body: unknown, secret?: string): Request {
     },
     body: JSON.stringify(body),
   });
+}
+
+/** زنجیره‌های asyncِ after() را قبل از assert تخلیه می‌کند */
+async function flushAsync(): Promise<void> {
+  await new Promise((r) => setTimeout(r, 0));
 }
 
 // ─── تست‌ها ───────────────────────────────────────────────────────────────────
@@ -98,13 +119,160 @@ describe('POST /api/telegram/webhook', () => {
     expect(text).toContain('موفقیت');
   });
 
-  it('اگر توکن expired → پیام خطا ارسال می‌شود', async () => {
+  it('اگر توکن expired → پیام خطا + دکمهٔ پورتال ارسال می‌شود', async () => {
     telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
     telegramMock.consumeTelegramLinkToken.mockResolvedValue({ ok: false, reason: 'expired' });
 
     await POST(makeRequest({ message: { chat: { id: 9 }, text: '/start link_old' } }));
 
-    const [, text] = telegramMock.sendTelegramMessage.mock.calls[0];
+    const [, text, markup] = telegramMock.sendTelegramMessage.mock.calls[0];
     expect(text).toContain('منقضی');
+    // طراحی اسکرین ۷: خطای لینک همراه دکمهٔ باز کردن پورتال است
+    expect(markup).toEqual({
+      inlineKeyboard: [[{ text: '🌐 باز کردن پورتال', url: 'https://financialmarket.page' }]],
+    });
+  });
+
+  it('callback status → پیام وضعیت با نوار پیشرفت ویرایش می‌شود', async () => {
+    telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
+    prismaMock.user.findUnique.mockResolvedValue({
+      email: 'ali@mail.com',
+      pendingPhone: null,
+      Customer: { kycLevel: 'LEVEL_1', kycStatus: 'APPROVED', phone: null },
+    });
+
+    await POST(
+      makeRequest({
+        callback_query: {
+          id: 'cb1',
+          data: 'status',
+          message: { chat: { id: 7 }, message_id: 55 },
+        },
+      }),
+    );
+
+    await flushAsync();
+    expect(telegramMock.answerTelegramCallback).toHaveBeenCalledWith('cb1');
+    const [chat, messageId, text, markup] = telegramMock.editTelegramMessage.mock.calls[0];
+    expect(chat).toBe('7');
+    expect(messageId).toBe(55);
+    // طراحی اسکرین ۴: سطح ۱ → ۱ از ۳ قدم + مرحلهٔ بعد
+    expect(text).toContain('سطح امنیت: <b>سطح ۱</b>');
+    expect(text).toContain('▰▱▱');
+    expect(text).toContain('۳۳٪');
+    expect(text).toContain('مرحلهٔ بعد: مدرک و سلفی (سطح ۲)');
+    expect(markup.inlineKeyboard[1][0]).toMatchObject({ text: '🔄 بروزرسانی' });
+  });
+
+  it('callback refresh → «بروزرسانی» دوباره وضعیت را می‌خواند', async () => {
+    telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
+    prismaMock.user.findUnique.mockResolvedValue({
+      email: 'ali@mail.com',
+      pendingPhone: null,
+      Customer: { kycLevel: 'NONE', kycStatus: 'NOT_STARTED', phone: null },
+    });
+
+    await POST(
+      makeRequest({
+        callback_query: {
+          id: 'cb2',
+          data: 'refresh',
+          message: { chat: { id: 7 }, message_id: 55 },
+        },
+      }),
+    );
+
+    await flushAsync();
+    expect(telegramMock.answerTelegramCallback).toHaveBeenCalledWith('cb2', 'به‌روزرسانی شد ✅');
+    const [, , text] = telegramMock.editTelegramMessage.mock.calls[0];
+    expect(text).toContain('▱▱▱');
+    expect(text).toContain('مرحلهٔ بعد: تأیید شماره موبایل (سطح ۱)');
+  });
+
+  it('شماره یکی نیست → typing + پیام خطا + دکمهٔ پورتال', async () => {
+    telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      pendingPhone: '+989165200952',
+      telegramUserId: '111',
+      Customer: { id: 'c1', exchangeId: 'e1', kycLevel: 'NONE', status: 'ACTIVE' },
+    });
+    phoneKycMock.autoVerifyPhoneFromTelegram.mockResolvedValue({
+      ok: false,
+      reason: 'mismatch',
+    });
+
+    await POST(
+      makeRequest({
+        message: {
+          chat: { id: 3 },
+          contact: { phone_number: '+989111111111', user_id: 111 },
+        },
+      }),
+    );
+
+    // طراحی اسکرین ۳: نشانگر typing قبل از نتیجه
+    await flushAsync();
+    expect(telegramMock.sendTelegramChatAction).toHaveBeenCalledWith('3', 'typing');
+    const [, text, markup] = telegramMock.sendTelegramMessage.mock.calls[0];
+    expect(text).toContain('تأیید نشد');
+    expect(text).toContain('یکی نیست');
+    expect(markup).toEqual({
+      inlineKeyboard: [[{ text: '🌐 باز کردن پورتال', url: 'https://financialmarket.page' }]],
+    });
+  });
+
+  it('تأیید موفق → شمارهٔ خوانا + دکمهٔ ادامه احراز هویت', async () => {
+    telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      pendingPhone: '+989165200952',
+      telegramUserId: '111',
+      Customer: { id: 'c1', exchangeId: 'e1', kycLevel: 'NONE', status: 'ACTIVE' },
+    });
+    phoneKycMock.autoVerifyPhoneFromTelegram.mockResolvedValue({ ok: true });
+
+    await POST(
+      makeRequest({
+        message: {
+          chat: { id: 3 },
+          contact: { phone_number: '+989165200952', user_id: 111 },
+        },
+      }),
+    );
+
+    await flushAsync();
+    const [, text, markup] = telegramMock.sendTelegramMessage.mock.calls[0];
+    expect(text).toContain('هویت شما تأیید شد');
+    expect(text).toContain('<code>+98 916 520 0952</code>');
+    expect(markup.inlineKeyboard[0][0]).toMatchObject({ text: '🚀 ادامه احراز هویت' });
+  });
+
+  it('حساب مسدود → بدون دکمه (طراحی اسکرین ۸)', async () => {
+    telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
+    prismaMock.user.findUnique.mockResolvedValue({
+      id: 'u1',
+      pendingPhone: '+989165200952',
+      telegramUserId: '111',
+      Customer: { id: 'c1', exchangeId: 'e1', kycLevel: 'NONE', status: 'FROZEN' },
+    });
+    phoneKycMock.autoVerifyPhoneFromTelegram.mockResolvedValue({
+      ok: false,
+      reason: 'account-blocked',
+    });
+
+    await POST(
+      makeRequest({
+        message: {
+          chat: { id: 3 },
+          contact: { phone_number: '+989165200952', user_id: 111 },
+        },
+      }),
+    );
+
+    await flushAsync();
+    const [, text, markup] = telegramMock.sendTelegramMessage.mock.calls[0];
+    expect(text).toContain('مسدود');
+    expect(markup).toBeUndefined();
   });
 });

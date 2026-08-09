@@ -13,5 +13,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # ---------- نرخ‌های بازار: هر ۱ دقیقه ----------
 * * * * * curl -fsS -m 30 -H "Authorization: Bearer ${CRON_SECRET}" ${APP_URL}/api/cron/refresh-market-rates >> /var/log/cron.log 2>&1
 
+# ---------- صف اعلان تلگرام: هر ۱ دقیقه (retry/backoff) ----------
+* * * * * curl -fsS -m 30 -H "Authorization: Bearer ${CRON_SECRET}" ${APP_URL}/api/cron/telegram-notifications >> /var/log/cron.log 2>&1
+
 # ---------- TGJU sync: هر ۱۰ دقیقه ----------
 */10 * * * * curl -fsS -m 60 -H "Authorization: Bearer ${CRON_SECRET}" ${APP_URL}/api/cron/sync-bazaar >> /var/log/cron.log 2>&1

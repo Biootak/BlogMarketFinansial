@@ -307,7 +307,7 @@ export default function HeroVisual({
         <div className={s.badge}>
           <span className={s.badgeDot} aria-hidden />
           <span>پلتفرم مالی معتمد</span>
-          <span className={s.badgeHighlight}>افغانستان ۱۴۰۴</span>
+          <span className={s.badgeHighlight}>۱۴۰۵</span>
         </div>
 
         {/* Headline */}

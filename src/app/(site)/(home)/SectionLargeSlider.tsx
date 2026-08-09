@@ -1,6 +1,8 @@
 import { getFeaturedPosts } from '@/actions/getFeaturedPosts';
+import { getMarketRates } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';
 import Empty from '@/components/Empty';
+import type { MarketRateItem } from '@/lib/market-rates';
 import type { RateListData } from '@/types/types';
 import DeferredDesign7 from './deferred/DeferredDesign7';
 
@@ -14,7 +16,12 @@ import DeferredDesign7 from './deferred/DeferredDesign7';
 // بالاتر (page.tsx) منتقل شد، سپس همان‌جا هم حذف شد. نوار بازار فقط در
 // داشبورد (AtelierDeck) نمایش داده می‌شود.
 export default async function SectionLargeSlider() {
-  const [postsResult, rateLists] = await Promise.all([getFeaturedPosts(3), getRateLists()]);
+  const [postsResult, rateLists, marketRates] = await Promise.all([
+    getFeaturedPosts(3),
+    getRateLists(),
+    // نرخ‌های اسکریپر (SARA_* = سرای شاهزاده، به افغانی) — snapshot-fast و safeCached است
+    getMarketRates().catch(() => [] as MarketRateItem[]),
+  ]);
 
   if (postsResult.error) {
     // Silent fail — featured posts section simply won't render if unavailable
@@ -32,6 +39,7 @@ export default async function SectionLargeSlider() {
       <DeferredDesign7
         initialPosts={postsResult.data}
         rateLists={activeRateLists}
+        marketRates={marketRates}
         className="pt-4 pb-3 md:py-5 lg:pt-5"
       />
     </div>

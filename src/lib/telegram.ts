@@ -52,6 +52,51 @@ export function getPortalUrl(path = '/customer/dashboard'): string {
 }
 
 /**
+ * formatTelegramPhone — نمایش خوانای شمارهٔ E.164 در پیام‌های ربات.
+ * `+989165200952` → `+98 916 520 0952` (کد کشور + گروه‌های ۳-۳-۴).
+ */
+export function formatTelegramPhone(e164: string): string {
+  const digits = e164.replace(/\D/g, '');
+  if (digits.length < 4) return e164;
+  const cc = digits.slice(0, 2);
+  const rest = digits.slice(2);
+  if (rest.length <= 4) return `+${cc} ${rest}`;
+  const groups: string[] = [];
+  for (let i = 0; i < rest.length; i += 3) {
+    if (rest.length - i <= 4) {
+      groups.push(rest.slice(i));
+      break;
+    }
+    groups.push(rest.slice(i, i + 3));
+  }
+  return `+${cc} ${groups.join(' ')}`;
+}
+
+/**
+ * sendTelegramChatAction — نشانگر «در حال نوشتن» (typing) قبل از پاسخ ربات.
+ * مطابق طراحی: بعد از دریافت شمارهٔ تماس، ربات چند لحظه typing نشان می‌دهد
+ * و سپس نتیجه را می‌فرستد. بدون throw — همیشه نتیجه برمی‌گرداند.
+ */
+export async function sendTelegramChatAction(
+  chatId: string,
+  action: 'typing' = 'typing',
+): Promise<TelegramSendResult> {
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  if (!token) return { success: false, errorCode: 'NOT_CONFIGURED' };
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendChatAction`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, action }),
+    });
+    if (!res.ok) return { success: false, errorCode: 'TG_ERROR' };
+    return { success: true };
+  } catch {
+    return { success: false, errorCode: 'NETWORK_ERROR' };
+  }
+}
+
+/**
  * sendTelegramMessage — ارسال پیام به یک chat (بدون throw)
  */
 export async function sendTelegramMessage(

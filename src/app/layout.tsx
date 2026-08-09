@@ -30,6 +30,11 @@ import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';
 import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
 
+// ابزار بررسی ظاهری — فقط در development؛ روی همهٔ صفحات سرور dev ظاهر می‌شود
+// (بررسی المان + QA خودکار + تنظیمات؛ به‌صورت پیش‌فرض جمع‌شده). در build
+// پروداکشن به‌کلی حذف می‌شود چون شرط NODE_ENV در رندر سمت سرور false است.
+import DevInspector from '@/components/dev/DevInspector';
+
 /* ============================================================================
    SEO Metadata (vercel.com-style defaults)
    ----------------------------------------------------------------------------
@@ -165,6 +170,7 @@ export default function RootLayout({
           {children}
         </Providers>
         <Toaster />
+        {process.env.NODE_ENV === 'development' && <DevInspector />}
       </body>
     </html>
   );

@@ -23,6 +23,7 @@ import { SafeImage } from '@/components/SafeImage';
 import CardLarge1Skeleton from '@/components/Skeletons/CardLarge1Skeleton';
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { getPostLink } from '@/lib/getPostLink';
+import type { MarketRateItem } from '@/lib/market-rates';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { formatRelativeTime } from '@/lib/utils';
 import type { PostWithRelations, RateItem, RateListData } from '@/types/types';
@@ -50,12 +51,14 @@ import { getCategoryTheme } from './categoryTheme';
 type Props = {
   initialPosts: PostWithRelations[];
   rateLists?: RateListData[];
+  /** نرخ‌های بازار از اسکریپرها (market-rates) — برای نرخ‌های AFN سرای شاهزاده (SARA_*) */
+  marketRates?: MarketRateItem[];
   className?: string;
 };
 
 const AUTO_PLAY_INTERVAL = 8000; // ۸ ثانیه (قبلاً ۶ — کندتر برای کاهش re-render)
 
-export default function Design7({ initialPosts, rateLists, className = '' }: Props) {
+export default function Design7({ initialPosts, rateLists, marketRates, className = '' }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   // Stable ref so the keydown handler never needs to be recreated
@@ -169,6 +172,48 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
     return items;
   }, [rateLists, initialPosts, activeIndex]);
 
+  // نرخ‌های چرخشی به افغانی — مستقیم از اسکریپر سرای شاهزاده (sarafi.af):
+  // نمادهای SARA_* نرخ خرید/فروش واقعی به افغانی هستند (بدون هیچ تبدیلی)
+  const sarafiBridgeRates: RateItem[] = useMemo(() => {
+    if (!marketRates || marketRates.length === 0) return [];
+    return marketRates.flatMap((r) => {
+      if (
+        !r.symbol.startsWith('SARA_') ||
+        r.buyValue == null ||
+        r.sellValue == null ||
+        r.buyValue <= 0 ||
+        r.sellValue <= 0
+      ) {
+        return [];
+      }
+      const d = r.divisor > 0 ? r.divisor : 1;
+      return [
+        {
+          title: r.displayNameFa || r.symbol.replace('SARA_', ''),
+          value: `${(r.buyValue / d).toFixed(r.decimals)}|${(r.sellValue / d).toFixed(r.decimals)}`,
+        },
+      ];
+    });
+  }, [marketRates]);
+
+  // interleave: یکی افغانی، یکی تومان — داخل useMemo تا reference ثابت بمونه
+  const { bridgeRates, bridgeUnits } = useMemo(() => {
+    const maxLen = Math.max(sarafiBridgeRates.length, transferRateItems.length);
+    const rates: RateItem[] = [];
+    const units: string[] = [];
+    for (let i = 0; i < maxLen; i++) {
+      if (i < sarafiBridgeRates.length) {
+        rates.push(sarafiBridgeRates[i]);
+        units.push('افغانی');
+      }
+      if (i < transferRateItems.length) {
+        rates.push(transferRateItems[i]);
+        units.push('تومان');
+      }
+    }
+    return { bridgeRates: rates, bridgeUnits: units };
+  }, [sarafiBridgeRates, transferRateItems]);
+
   // State برای pause کردن auto-rotate bridge نرخ‌ها از بیرون
   const [isBridgePaused, setIsBridgePaused] = useState(false);
 
@@ -208,16 +253,17 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
               {/* ─── Rotating Compact Transfer Rate Bridge — چرخش خودکار بین نرخ‌های حواله ───
                   بیرون از AnimatePresence نگه‌ش داشتیم تا موقع تعویض پست unmount نشه
                   و شمارنده چرخش از 0 ریست نشه. والدش همین column هست که relative هست. */}
-              {/* CompactRateBridge — فقط sm+ نمایش می‌شود (در موبایل overflow می‌زند) */}
+              {/* CompactRateBridge — در همه اندازه‌ها نمایش می‌شود (در موبایل هم نمایش داده می‌شود) */}
               {transferRateItems.length > 0 && (
                 <motion.div
                   initial={{ y: -10, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ delay: 0.35, type: 'spring', stiffness: 200 }}
-                  className="hidden sm:block absolute top-16 start-4 sm:start-6 z-20"
+                  className="absolute top-16 start-4 sm:start-6 z-20"
                 >
                   <CompactRateBridge
-                    rates={transferRateItems}
+                    rates={bridgeRates}
+                    units={bridgeUnits}
                     externalPaused={isBridgePaused}
                     onHoverChange={setIsBridgePaused}
                   />
@@ -229,7 +275,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                   key={mainPost.id}
                   tiltStrength={0.4}
                   enableHolographic
-                  className="relative group h-[min(56dvh,320px)] sm:h-[380px] @lg/main-hero:h-[440px] @3xl/main-hero:h-[520px] overflow-hidden"
+                  className="relative group h-[min(56dvh,320px)] sm:h-[380px] @min-[512px]/main-hero:h-[440px] @min-[768px]/main-hero:h-[520px] overflow-hidden"
                   innerClassName="relative h-full"
                 >
                   <motion.div
@@ -504,8 +550,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
               {/* ─── Navigation Arrows — داخل main card col تا روی تصویر باشند ─── */}
               <div
                 className="absolute z-30 flex items-center pointer-events-none
-                           top-[40%] -translate-y-1/2 start-0 end-0 justify-between px-2
-                           sm:top-1/2
+                           top-1/2 -translate-y-1/2 start-0 end-0 justify-between px-2
                            sm:px-3"
               >
                 <button
@@ -548,7 +593,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + i * 0.1 }}
-                    className="flex-1 h-[160px] sm:h-[180px] @md/main-hero:flex-1 @lg/main-hero:h-auto"
+                    className="flex-1 h-[160px] sm:h-[180px] @min-[448px]/main-hero:flex-1"
                     onClick={() => setActiveIndex(initialPosts.findIndex((p) => p.id === post.id))}
                   >
                     <MagneticSpotlightCard
@@ -611,7 +656,7 @@ export default function Design7({ initialPosts, rateLists, className = '' }: Pro
 
                       {/* Content */}
                       <div className="absolute bottom-0 start-0 end-0 p-2.5 sm:p-4 z-10">
-                        <h3 className="text-[13px] sm:text-sm font-bold text-white line-clamp-2 leading-snug">
+                        <h3 className="text-[13px] sm:text-sm font-bold text-white line-clamp-3 sm:line-clamp-2 leading-snug">
                           {post.title}
                         </h3>
                         <div className="flex items-center gap-1.5 mt-1.5">

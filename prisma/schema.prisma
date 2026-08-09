@@ -388,6 +388,32 @@ model BackgroundJob {
   @@index([createdAt(sort: Desc)])
 }
 
+// ─── Telegram notification queue ─────────────────────────────
+// صف اعلان تلگرام: ارسال با retry/backoff + dedupe (in-flight).
+// کارگر: processTelegramQueue() — claim اتمیک (FOR UPDATE SKIP LOCKED)
+// به‌همراه cron هر دقیقه (retry موارد معلق) + اجرای best-effort بعد از enqueue.
+// status: pending, processing, retry, sent, failed, dead
+model TelegramNotification {
+  id            String   @id @default(cuid())
+  chatId        String
+  text          String
+  replyMarkup   Json?
+  // dedupe: یک‌تاست تا زمانی که رکورد terminal شود (بعد از terminal پاک می‌شود)
+  dedupeKey     String?  @unique
+  status        String   @default("pending")
+  attempts      Int      @default(0)
+  maxAttempts   Int      @default(5)
+  nextAttemptAt DateTime @default(now())
+  lastError     String?
+  sentAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([status, nextAttemptAt])
+  @@index([createdAt(sort: Desc)])
+}
+
 // ─── Helpdesk / Tickets models (Tier 1) ────────────────────
 model SupportTicket {
   id              String    @id @default(cuid())

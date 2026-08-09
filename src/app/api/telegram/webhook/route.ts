@@ -1,11 +1,14 @@
 import prisma from '@/lib/db';
+import { formatFaNumber } from '@/lib/fa-number';
 import { autoVerifyPhoneFromTelegram } from '@/lib/phone-kyc';
 import {
   answerTelegramCallback,
   consumeTelegramLinkToken,
   editTelegramMessage,
+  formatTelegramPhone,
   getPortalUrl,
   isTelegramWebhookSecretValid,
+  sendTelegramChatAction,
   sendTelegramMessage,
 } from '@/lib/telegram';
 import { after } from 'next/server';
@@ -62,6 +65,18 @@ const MENU_KEYBOARD = [
   ],
 ];
 
+/** کیبورد وضعیت حساب — مطابق طراحی: پورتال + بروزرسانی + راهنما */
+const STATUS_KEYBOARD = [
+  [PORTAL_BTN],
+  [
+    { text: '🔄 بروزرسانی', callback_data: 'refresh' },
+    { text: '📖 راهنما', callback_data: 'help' },
+  ],
+];
+
+/** دکمهٔ پورتال به‌تنهایی — برای پیام‌های خطا (طراحی: اسکرین‌های ۶ و ۷) */
+const PORTAL_KEYBOARD = [[PORTAL_BTN]];
+
 function welcomeMessage(): string {
   return (
     `✨ <b>${BOT_NAME}</b>\n${BOT_TAGLINE}\n\n` +
@@ -86,7 +101,7 @@ function helpMessage(): string {
   );
 }
 
-/** وضعیت حساب + احراز هویت از DB */
+/** وضعیت حساب + احراز هویت از DB — مطابق طراحی (اسکرین ۴): سطح، پیشرفت و مرحلهٔ بعد */
 async function statusMessage(chatId: string): Promise<string> {
   try {
     const user = await prisma.user.findUnique({
@@ -101,25 +116,44 @@ async function statusMessage(chatId: string): Promise<string> {
       return `⚠️ حساب شما هنوز به تلگرام متصل نشده است.\n\nاز <b>پورتال حساب</b> روی «اتصال تلگرام» بزنید و سپس /start را اجرا کنید.`;
     }
 
+    const level = user.Customer?.kycLevel ?? 'NONE';
     const levelFa: Record<string, string> = {
       NONE: 'بدون تأیید',
-      LEVEL_1: 'سطح ۱ — موبایل و تلگرام',
-      LEVEL_2: 'سطح ۲ — مدرک و سلفی',
-      LEVEL_3: 'سطح ۳ — آدرس و صورتحساب',
+      LEVEL_1: 'سطح ۱',
+      LEVEL_2: 'سطح ۲',
+      LEVEL_3: 'سطح ۳',
     };
     const statusFa: Record<string, string> = {
       NOT_STARTED: 'شروع نشده',
       PENDING: 'در حال بررسی',
-      APPROVED: 'تأیید شده ✅',
+      APPROVED: '✅ تأیید شده',
       REJECTED: 'رد شده ❌',
+      EXPIRED: 'منقضی شده',
+    };
+
+    // پیشرفت احراز هویت: ۳ سطح → نوار ▰▱▱ + درصد (طراحی: ۳۳٪ برای سطح ۱)
+    const stepIndex: Record<string, number> = { NONE: 0, LEVEL_1: 1, LEVEL_2: 2, LEVEL_3: 3 };
+    const steps = stepIndex[level] ?? 0;
+    const stepsBar = '▰'.repeat(steps) + '▱'.repeat(3 - steps);
+    const pct = Math.round((steps / 3) * 100);
+
+    const nextStep: Record<string, string> = {
+      NONE: 'مرحلهٔ بعد: تأیید شماره موبایل (سطح ۱)',
+      LEVEL_1: 'مرحلهٔ بعد: مدرک و سلفی (سطح ۲)',
+      LEVEL_2: 'مرحلهٔ بعد: آدرس و صورتحساب (سطح ۳)',
+      LEVEL_3: '🎉 احراز هویت کامل — همهٔ سطح‌ها تأیید شده',
     };
 
     return (
       `📊 <b>وضعیت حساب</b>\n\n` +
       `👤 حساب: <code>${user.email}</code>\n` +
-      `🏅 سطح امنیت: <b>${levelFa[user.Customer?.kycLevel ?? 'NONE'] ?? '—'}</b>\n` +
-      `📋 وضعیت: ${statusFa[user.Customer?.kycStatus ?? 'NOT_STARTED'] ?? '—'}\n` +
-      (user.pendingPhone ? `⏳ شماره در انتظار تأیید: <code>${user.pendingPhone}</code>\n` : '')
+      `🏅 سطح امنیت: <b>${levelFa[level] ?? '—'}</b>\n` +
+      `📋 وضعیت: ${statusFa[user.Customer?.kycStatus ?? 'NOT_STARTED'] ?? '—'}\n\n` +
+      `${stepsBar}  ${formatFaNumber(pct)}٪ — سطح ${formatFaNumber(steps)} از ۳\n` +
+      `${nextStep[level] ?? ''}\n` +
+      (user.pendingPhone
+        ? `\n⏳ شماره در انتظار تأیید: <code>${formatTelegramPhone(user.pendingPhone)}</code>`
+        : '')
     );
   } catch {
     return '⚠️ خطا در دریافت وضعیت. لطفاً دوباره تلاش کنید.';
@@ -136,11 +170,13 @@ async function handleCallback(
   const chatStr = String(chat);
   const data = cb.data ?? '';
 
-  if (data === 'status') {
-    await answerTelegramCallback(cb.id);
+  if (data === 'status' || data === 'refresh') {
+    // «بروزرسانی» همان پیام را دوباره از DB می‌خواند و در همان‌جا ویرایش می‌کند
+    if (data === 'refresh') await answerTelegramCallback(cb.id, 'به‌روزرسانی شد ✅');
+    else await answerTelegramCallback(cb.id);
     const msg = await statusMessage(chatStr);
     await editTelegramMessage(chatStr, messageId, msg, {
-      inlineKeyboard: MENU_KEYBOARD,
+      inlineKeyboard: STATUS_KEYBOARD,
     });
   } else if (data === 'help') {
     await answerTelegramCallback(cb.id);
@@ -175,15 +211,18 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
 
       if (!result.ok) {
         const replies: Record<string, string> = {
-          'not-found': '❌ لینک اتصال نامعتبر است.\nاز صفحه سایت دوباره «اتصال تلگرام» را بزنید.',
-          used: '❌ این لینک قبلاً استفاده شده است.\nاز صفحه سایت لینک جدید بگیرید.',
+          'not-found': '❌ لینک اتصال نامعتبر است.\nاز صفحهٔ سایت دوباره «اتصال تلگرام» را بزنید.',
+          used: '❌ این لینک قبلاً استفاده شده است.\nاز صفحهٔ سایت لینک جدید بگیرید.',
           expired:
-            '⏰ لینک اتصال منقضی شده است (۱۵ دقیقه).\nاز صفحه سایت دوباره «اتصال تلگرام» را بزنید.',
+            '⏰ لینک اتصال <b>منقضی</b> شده است (۱۵ دقیقه).\nاز صفحهٔ سایت دوباره «اتصال تلگرام» را بزنید.',
           'chat-linked':
             '❌ این گفتگوی تلگرام قبلاً به حساب دیگری متصل شده است.\nبرای تغییر حساب، از پورتال کمک بگیرید.',
           'db-error': '❌ خطای سرور رخ داد. لطفاً دوباره تلاش کنید.',
         };
-        await sendTelegramMessage(chat, replies[result.reason] ?? replies['db-error']);
+        // مطابق طراحی (اسکرین ۷): هر خطای لینک با دکمهٔ باز کردن پورتال همراه است
+        await sendTelegramMessage(chat, replies[result.reason] ?? replies['db-error'], {
+          inlineKeyboard: PORTAL_KEYBOARD,
+        });
         return;
       }
 
@@ -203,7 +242,7 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
           chat,
           `🛡️ <b>${BOT_NAME}</b> — تأیید امن هویت\n\n` +
             `👤 حساب: <code>${account}</code>\n` +
-            `📱 شماره: <code>${result.pendingPhone}</code>\n\n` +
+            `📱 شماره: <code>${formatTelegramPhone(result.pendingPhone)}</code>\n\n` +
             `اگر این حساب و شماره متعلق به <b>شما</b> است، دکمهٔ زیر را بزنید تا شماره به‌صورت خودکار و بدون کد تأیید شود. 🔐`,
           { requestContact: true },
         );
@@ -226,7 +265,7 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
     // ── جریان ۴: /status ─────────────────────────────────────────────────
     if (text === '/status') {
       const msg = await statusMessage(chat);
-      await sendTelegramMessage(chat, msg, { inlineKeyboard: MENU_KEYBOARD });
+      await sendTelegramMessage(chat, msg, { inlineKeyboard: STATUS_KEYBOARD });
       return;
     }
 
@@ -255,19 +294,23 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
         });
 
         const msgs: Record<string, string> = {
-          ok: `✅ <b>هویت شما تأیید شد</b>\n\n📱 شماره: <code>${contactPhone}</code>\n🏅 سطح امنیت حساب: <b>سطح ۱</b>\n\nمرحلهٔ بعدی (مدرک و سلفی) در پورتال شما فعال شده است.`,
+          ok: `✅ <b>هویت شما تأیید شد</b>\n\n📱 شماره: <code>${formatTelegramPhone(contactPhone)}</code>\n🏅 سطح امنیت حساب: <b>سطح ۱</b>\n\nمرحلهٔ بعدی (مدرک و سلفی) در پورتال شما فعال شده است.`,
           'no-pending':
             'ℹ️ شماره‌ای در انتظار تأیید نیست.\nبرای تأیید شماره، از پورتال حساب دوباره درخواست بدهید.',
           mismatch:
-            '❌ <b>تأیید نشد</b>\n\nشمارهٔ تلگرام شما با شماره‌ای که در حساب وارد کرده‌اید یکی نیست.\nلطفاً در پورتال همان شمارهٔ تلگرام خود را وارد کنید و دوباره تلاش کنید.',
+            '❌ <b>تأیید نشد</b>\n\nشمارهٔ تلگرام شما با شماره‌ای که در حساب وارد کرده‌اید <b>یکی نیست</b>.\nلطفاً در پورتال همان شمارهٔ تلگرام خود را وارد کنید و دوباره تلاش کنید.',
           'telegram-identity-mismatch':
             '❌ این شماره از حساب تلگرام دیگری ارسال شده است.\nلطفاً با همان تلگرامی که Start زده‌اید دوباره تلاش کنید.',
           'account-blocked':
-            '⛔ حساب شما مسدود است و امکان تأیید شماره وجود ندارد.\nبا پشتیبانی تماس بگیرید.',
+            '⛔ حساب شما <b>مسدود</b> است و امکان تأیید شماره وجود ندارد.\nبا پشتیبانی تماس بگیرید.',
           'no-customer': '❌ حساب مشتری برای این کاربر پیدا نشد. با پشتیبانی تماس بگیرید.',
           'already-verified': 'ℹ️ شمارهٔ شما قبلاً تأیید شده است. ✅',
           'db-error': '❌ خطای سرور رخ داد. لطفاً دوباره تلاش کنید.',
         };
+
+        // نشانگر «در حال نوشتن» قبل از نتیجه — مطابق طراحی (اسکرین ۳)
+        await sendTelegramChatAction(chat, 'typing');
+
         await sendTelegramMessage(
           chat,
           msgs[result.ok ? 'ok' : result.reason] ?? msgs['db-error'],
@@ -278,7 +321,10 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
                   [PORTAL_BTN],
                 ],
               }
-            : undefined,
+            : // خطاها (مثل شماره یکی نیست) دکمهٔ پورتال دارند؛ مسدود بودن بدون دکمه
+              result.reason === 'account-blocked'
+              ? undefined
+              : { inlineKeyboard: PORTAL_KEYBOARD },
         );
       }
     }

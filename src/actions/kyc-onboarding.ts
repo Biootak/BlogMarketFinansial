@@ -16,8 +16,10 @@
 
 import { createHash } from 'node:crypto';
 import prisma from '@/lib/db';
+import { notifyTelegramUser } from '@/lib/notifications/telegram-user';
 import { requireAdmin, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { getPortalUrl } from '@/lib/telegram';
 import { normalizeDigits } from '@/lib/utils';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
@@ -389,6 +391,17 @@ export async function reviewKycRecord(raw: unknown): Promise<FintechActionResult
   } catch {
     // best-effort: اگر نوتیفیکیشن fail شد، audit log ثبت شده و نباید کل عملیات fail شود
   }
+
+  // اعلان تلگرام به خود کاربر (وعدهٔ طراحی: «اعلان‌های حساب به همین گفتگو»)
+  const kycBtn = {
+    inlineKeyboard: [[{ text: '📂 پنل احراز هویت', url: getPortalUrl('/customer/kyc') }]],
+  };
+  const kycMsg = approved
+    ? '🛡️ <b>احراز هویت شما تأیید شد</b>\n\n✅ اکنون به تمام امکانات دسترسی دارید.'
+    : `❌ <b>احراز هویت رد شد</b>\n\nدلیل: <b>${rejectedReason ?? 'نامشخص'}</b>\n\nلطفاً مدارک را اصلاح و دوباره ارسال کنید.`;
+  void notifyTelegramUser(userId, kycMsg, kycBtn, {
+    dedupeKey: `kyc-review:${userId}:${updatedRecord.id}`,
+  });
 
   return { success: true, data: undefined };
 }

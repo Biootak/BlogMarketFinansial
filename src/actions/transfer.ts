@@ -8,6 +8,7 @@ import {
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { notifyTelegramCustomer } from '@/lib/notifications/telegram-user';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
@@ -511,5 +512,15 @@ export async function confirmTransfer(
       ip,
     },
   });
+
+  // اعلان تلگرام به فرستنده — «تراکنش تکمیل شد» (وعدهٔ طراحی)
+  const amountFa = (Number(txn.amount) / 100).toLocaleString('fa-IR');
+  void notifyTelegramCustomer(
+    txn.customerId,
+    `✅ <b>تراکنش تکمیل شد</b>\n\n💸 مبلغ: <b>${amountFa} ${txn.currency}</b>\n\nموجودی کیف پول شما به‌روزرسانی شد.`,
+    undefined,
+    { dedupeKey: `transfer:${txn.id}` },
+  );
+
   return { success: true, data: { txnId } };
 }

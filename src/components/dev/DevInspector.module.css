@@ -1,0 +1,718 @@
+/* DevInspector — فقط در development رندر می‌شود. z-index ها عمداً بسیار بالا
+   هستند تا روی هر UI دیگری بنشیند. طراحی با توکن‌های DS پروژه (tokens.css):
+   رنگ‌های OKLCH کم‌اشباع، رامپ رادیوس 8/12/16/20/24، easing کوارت،
+   شیشه با backdrop-filter: blur(16px) saturate(140%). */
+
+/* ═══ قاب‌های هاور/انتخاب ═══ */
+.overlay,
+.selectedOverlay,
+.marginOverlay,
+.tagLabel {
+  position: fixed;
+  z-index: 2147483646;
+  pointer-events: none;
+}
+
+.overlay {
+  border: 2px solid #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+  display: none;
+}
+
+.selectedOverlay {
+  border: 2px dashed oklch(72% 0.13 70);
+  background: oklch(72% 0.13 70 / 0.08);
+  box-shadow: 0 0 0 1px oklch(72% 0.13 70 / 0.35);
+  border-radius: 6px;
+  display: none;
+}
+
+.marginOverlay {
+  border: 1px dashed oklch(72% 0.13 70 / 0.9);
+  background: oklch(72% 0.13 70 / 0.07);
+  border-radius: 4px;
+  display: none;
+}
+
+.tagLabel {
+  z-index: 2147483647;
+  background: #0e8341;
+  color: oklch(99% 0.005 240);
+  font: 600 11px var(--font-estedad), system-ui, sans-serif;
+  padding: 3px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  max-width: 70vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  display: none;
+}
+
+/* ═══ داک شیشه‌ای — بالای وسط ═══ */
+.dock {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483645;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 1.25rem; /* 20 = ds-radius-xl */
+  background: oklch(20% 0.012 250 / 0.78);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid oklch(30% 0.012 250 / 0.8);
+  box-shadow: 0 22px 60px -22px oklch(0% 0 0 / 0.7), inset 0 1px 0 oklch(99% 0.005 240 / 0.05);
+  color: oklch(95% 0.005 240);
+  font-family: var(--font-estedad), system-ui, sans-serif;
+  font-size: 12px;
+  max-width: calc(100vw - 20px);
+  flex-wrap: wrap;
+  justify-content: center;
+  user-select: none;
+}
+
+.sep {
+  width: 1px;
+  height: 26px;
+  background: oklch(28% 0.012 250 / 0.6);
+}
+
+/* اکشن‌ها */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid oklch(58% 0.12 165 / 0.35);
+  background: oklch(58% 0.12 165 / 0.1);
+  color: oklch(72% 0.14 145);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 0.75rem; /* 12 */
+  cursor: pointer;
+  transition: all 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.toggle:hover {
+  background: oklch(58% 0.12 165 / 0.16);
+  box-shadow: 0 0 0 3px oklch(58% 0.12 165 / 0.1);
+}
+
+.toggleOn {
+  background: linear-gradient(135deg, oklch(52% 0.14 162), oklch(70% 0.13 200));
+  border-color: transparent;
+  color: oklch(99% 0.005 240);
+  box-shadow: 0 4px 14px -4px oklch(52% 0.14 162 / 0.6), inset 0 1px 0 oklch(99% 0.005 240 / 0.25);
+}
+
+.toggleOn .toggleDot {
+  background: oklch(99% 0.005 240);
+  box-shadow: 0 0 0 0 oklch(99% 0.005 240 / 0.4);
+  animation: dsPulseWhite 2.2s infinite;
+}
+
+@keyframes dsPulseWhite {
+  0% {
+    box-shadow: 0 0 0 0 oklch(99% 0.005 240 / 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px oklch(99% 0.005 240 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(99% 0.005 240 / 0);
+  }
+}
+
+.toggleDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: oklch(58% 0.12 165);
+  /* بدون انیمیشن دائمی — فقط در حالت روشن می‌تپد تا repaint الکی نشود */
+}
+
+.qaBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid oklch(58% 0.13 290 / 0.35);
+  background: oklch(58% 0.13 290 / 0.1);
+  color: oklch(72% 0.13 290);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 0.75rem; /* 12 */
+  cursor: pointer;
+  transition: all 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qaBtn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.qaBtn:hover {
+  background: oklch(58% 0.13 290 / 0.16);
+  box-shadow: 0 0 0 3px oklch(58% 0.13 290 / 0.1);
+}
+
+.qaBtnWarn {
+  border-color: oklch(72% 0.13 70 / 0.5) !important;
+  color: oklch(78% 0.12 70) !important;
+  background: oklch(72% 0.13 70 / 0.12) !important;
+}
+
+.iconBtn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid oklch(28% 0.012 250 / 0.6);
+  background: transparent;
+  color: oklch(55% 0.01 240);
+  border-radius: 0.5rem; /* 8 */
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.iconBtn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.iconBtn:hover {
+  color: oklch(70% 0.01 240);
+  background: oklch(17% 0.012 250 / 0.6);
+}
+
+.iconBtnOn {
+  color: oklch(72% 0.13 290);
+  border-color: oklch(58% 0.13 290 / 0.5);
+  background: oklch(58% 0.13 290 / 0.1);
+}
+
+.gearWrap {
+  position: relative;
+}
+
+/* پنل تنظیمات — زیر داک */
+.settingsPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  background: oklch(22% 0.012 250 / 0.95);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid oklch(30% 0.012 250 / 0.8);
+  border-radius: 1rem; /* 16 = ds-radius-lg */
+  padding: 13px;
+  box-shadow: 0 22px 60px -22px oklch(0% 0 0 / 0.7);
+  z-index: 10;
+  font-family: var(--font-estedad), system-ui, sans-serif;
+  font-size: 11.5px;
+}
+
+.settingsTitle {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: oklch(55% 0.01 240);
+  margin-bottom: 8px;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 0.5rem; /* 8 */
+  padding: 0;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.swatchActive {
+  border-color: oklch(99% 0.005 240) !important;
+  box-shadow: 0 0 0 3px oklch(99% 0.005 240 / 0.2);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  cursor: pointer;
+  color: oklch(70% 0.01 240);
+}
+
+.check input {
+  accent-color: oklch(58% 0.12 165);
+}
+
+.settingsHint {
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px dashed oklch(28% 0.012 250 / 0.8);
+  font-size: 10px;
+  color: oklch(55% 0.01 240);
+  line-height: 1.7;
+}
+
+.kbd {
+  font-size: 9px;
+  color: oklch(55% 0.01 240);
+  background: oklch(17% 0.012 250 / 0.6);
+  border: 1px solid oklch(28% 0.012 250 / 0.6);
+  padding: 2px 6px;
+  border-radius: 5px;
+  direction: ltr;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ═══ دکمهٔ شناور (جمع‌شده) — بالا سمت راست، قابل کشیدن ═══ */
+.fab {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2147483645;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid oklch(99% 0.005 240 / 0.15);
+  background: linear-gradient(135deg, oklch(52% 0.14 162), oklch(70% 0.13 200));
+  color: oklch(99% 0.005 240);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  box-shadow: 0 10px 28px -8px oklch(52% 0.14 162 / 0.6), inset 0 1px 0 oklch(99% 0.005 240 / 0.3);
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 280ms;
+  display: grid;
+  place-items: center;
+}
+
+.fab:active {
+  cursor: grabbing;
+}
+
+/* پس از کشیدن — موقعیت مطلق (چپ/بالا از inline style می‌آید) */
+.fabDragged {
+  transform: none;
+  bottom: auto;
+  right: auto;
+}
+
+.fab svg {
+  width: 18px;
+  height: 18px;
+}
+
+.fab:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 14px 34px -8px oklch(52% 0.14 162 / 0.7), inset 0 1px 0 oklch(99% 0.005 240 / 0.3);
+}
+
+.fabActive {
+  box-shadow: 0 0 0 5px oklch(58% 0.12 165 / 0.3), 0 10px 28px -8px oklch(52% 0.14 162 / 0.6);
+}
+
+/* ═══ کارت QA — کنار راست ═══ */
+.qaCard {
+  position: fixed;
+  top: 50%;
+  right: 16px;
+  transform: translateY(-50%);
+  width: 264px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: oklch(22% 0.012 250 / 0.92);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid oklch(30% 0.012 250 / 0.8);
+  border-radius: 1rem; /* 16 */
+  padding: 14px;
+  box-shadow: 0 22px 60px -22px oklch(0% 0 0 / 0.7);
+  z-index: 2147483644;
+  color: oklch(95% 0.005 240);
+  font-family: var(--font-estedad), system-ui, sans-serif;
+  font-size: 11.5px;
+}
+
+.qaHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.qaTitle {
+  font-size: 11.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: oklch(70% 0.01 240);
+}
+
+.qaTitle svg {
+  width: 14px;
+  height: 14px;
+  color: oklch(58% 0.13 290);
+}
+
+.qaCount {
+  font-size: 9px;
+  font-weight: 600;
+  background: oklch(58% 0.13 290 / 0.15);
+  color: oklch(72% 0.13 290);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.closeBtn {
+  border: 0;
+  background: oklch(17% 0.012 250 / 0.6);
+  color: oklch(55% 0.01 240);
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 11px;
+  display: grid;
+  place-items: center;
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.closeBtn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.closeBtn:hover {
+  color: oklch(70% 0.01 240);
+}
+
+.qaSummary {
+  font-size: 9.5px;
+  color: oklch(55% 0.01 240);
+  margin-bottom: 8px;
+  direction: ltr;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.qaEmpty {
+  text-align: center;
+  color: oklch(72% 0.14 145);
+  font-size: 11.5px;
+  padding: 10px 0;
+}
+
+.qaList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qaItem {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 8px;
+  border-radius: 0.75rem; /* 12 */
+  background: oklch(99% 0.005 240 / 0.03);
+  border: 1px solid transparent;
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.qaItem:hover {
+  background: oklch(99% 0.005 240 / 0.05);
+  border-color: oklch(28% 0.012 250 / 0.6);
+}
+
+.qaBadge {
+  flex: none;
+  font-size: 8.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-top: 1px;
+}
+
+.qaErr {
+  background: oklch(60% 0.13 20 / 0.14);
+  color: oklch(72% 0.12 15);
+}
+
+.qaWarn {
+  background: oklch(72% 0.13 70 / 0.14);
+  color: oklch(78% 0.12 70);
+}
+
+.qaBody {
+  min-width: 0;
+  flex: 1;
+}
+
+.qaMsg {
+  font-size: 10.5px;
+  color: oklch(70% 0.01 240);
+  line-height: 1.6;
+}
+
+.qaMeta {
+  font-size: 9px;
+  color: oklch(55% 0.01 240);
+  margin-top: 2px;
+  direction: ltr;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.qaRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.qaSel {
+  flex: 1;
+  font-size: 9px;
+  direction: ltr;
+  text-align: left;
+  color: oklch(72% 0.13 200);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: oklch(70% 0.13 200 / 0.07);
+  border-radius: 6px;
+  padding: 3px 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qaPin {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid oklch(58% 0.12 165 / 0.4);
+  background: oklch(58% 0.12 165 / 0.12);
+  color: oklch(72% 0.14 145);
+  font-size: 9px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.qaPin svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* ═══ پنل جزئیات المان ═══ */
+.details {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  width: 300px;
+  max-height: 74vh;
+  overflow-y: auto;
+  background: oklch(22% 0.012 250 / 0.94);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid oklch(30% 0.012 250 / 0.8);
+  border-radius: 1rem; /* 16 */
+  box-shadow: 0 22px 60px -22px oklch(0% 0 0 / 0.7);
+  color: oklch(95% 0.005 240);
+  font-family: var(--font-estedad), system-ui, sans-serif;
+  font-size: 11.5px;
+  z-index: 2147483644;
+  padding: 12px;
+}
+
+.detailsHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.detailsHeadActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.copyAllBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid oklch(58% 0.12 165 / 0.4);
+  background: oklch(58% 0.12 165 / 0.12);
+  color: oklch(72% 0.14 145);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.copyAllBtn:hover {
+  background: oklch(58% 0.12 165 / 0.2);
+}
+
+.copyAllBtn svg {
+  width: 11px;
+  height: 11px;
+}
+
+.detailsTitle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  color: oklch(95% 0.005 240);
+  font-size: 12px;
+}
+
+.detailsTitle svg {
+  width: 14px;
+  height: 14px;
+  color: oklch(58% 0.12 165);
+}
+
+.detailsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.ctxRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 5px 0;
+  margin-bottom: 4px;
+  border-bottom: 1px dashed oklch(28% 0.012 250 / 0.8);
+}
+
+.k {
+  color: oklch(55% 0.01 240);
+  font-size: 10.5px;
+  flex: none;
+}
+
+.details code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  color: oklch(72% 0.13 200);
+  word-break: break-all;
+  text-align: left;
+}
+
+.selector {
+  flex: 1;
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: oklch(58% 0.12 165 / 0.15);
+  border: 1px solid oklch(58% 0.12 165 / 0.4);
+  color: oklch(72% 0.14 145);
+  font-size: 10px;
+  font-family: inherit;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  flex: none;
+}
+
+.copyBtn svg {
+  width: 11px;
+  height: 11px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 6px 0;
+}
+
+.chip {
+  background: oklch(70% 0.13 200 / 0.1);
+  border: 1px solid oklch(70% 0.13 200 / 0.25);
+  color: oklch(72% 0.13 200);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.textPreview {
+  background: oklch(99% 0.005 240 / 0.04);
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin: 6px 0;
+  color: oklch(95% 0.005 240);
+  font-size: 11px;
+  max-height: 60px;
+  overflow: hidden;
+}
+
+.pathRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 4px 0;
+}
+
+.path {
+  flex: 1;
+  direction: ltr;
+  text-align: left;
+}
+
+.styles {
+  margin-top: 8px;
+  border-top: 1px dashed oklch(28% 0.012 250 / 0.8);
+  padding-top: 8px;
+}
+
+.styleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+}
