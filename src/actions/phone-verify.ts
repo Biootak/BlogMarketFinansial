@@ -93,33 +93,40 @@ export async function sendPhoneOtp(args: {
       select: { telegramChatId: true },
     });
 
-    // تأیید شماره فقط از طریق تلگرام انجام می‌شود.
-    // اگر کاربر تلگرام وصل نکرده → خطا + راهنمایی برای وصل کردن.
-    if (!user?.telegramChatId) {
+    // ── تحویل OTP از بهترین کانال موجود: تلگرام → ایمیل → پیامک ──
+    // تلگرام بلاک‌کننده نیست: بدون تلگرام هم کد از طریق ایمیل (یا SMS) می‌رسد.
+    const otpBody = `🛡️ Financial Market — کد تأیید شماره موبایل شما: ${otpResult.code}\nاعتبار: ۱۰ دقیقه\nاین کد را با کسی به اشتراک نگذارید.`;
+    const { sendOtp } = await import('@/lib/email-otp');
+    const delivery = await sendOtp(
+      {
+        telegramChatId: user?.telegramChatId,
+        email: session.user.email,
+        phone: _e164,
+      },
+      otpResult.code,
+      'phone-verify',
+      otpBody,
+    );
+
+    if (!delivery.success) {
       return {
         success: false,
-        message: 'برای تأیید شماره، ابتدا تلگرام خود را از طریق دکمه زیر وصل کنید.',
+        message:
+          delivery.errorCode === 'NO_CHANNEL'
+            ? 'کانال ارسال کد در دسترس نیست. لطفاً بعداً تلاش کنید.'
+            : 'ارسال کد تأیید ناموفق بود. لطفاً دوباره تلاش کنید.',
       };
     }
 
-    const otpBody = `کد تأیید شماره موبایل شما: ${otpResult.code}\nاعتبار: ۱۰ دقیقه\nاین کد را با کسی به اشتراک نگذارید.`;
-    const { sendTelegramMessage } = await import('@/lib/telegram');
-    const tgResult = await sendTelegramMessage(user.telegramChatId, otpBody);
-
-    if (!tgResult.success) {
-      // تلگرام block شده یا قطع است
-      const blocked = tgResult.errorCode === 'USER_BLOCKED';
-      return {
-        success: false,
-        message: blocked
-          ? 'ربات تلگرام را بلاک کرده‌اید. لطفاً ابتدا ربات را آنبلاک کنید.'
-          : 'ارسال کد تأیید به تلگرام ناموفق بود. لطفاً دوباره تلاش کنید.',
-      };
-    }
-
+    const channelMsg: Record<string, string> = {
+      telegram: 'کد تأیید به تلگرام شما ارسال شد. ✅',
+      email: 'کد تأیید به ایمیل شما ارسال شد. 📧',
+      sms: 'کد تأیید به شماره شما پیامک شد. 📱',
+    };
     return {
       success: true,
-      message: 'کد تأیید به تلگرام شما ارسال شد. ✅',
+      message: channelMsg[delivery.channel ?? 'sms'] ?? 'کد تأیید ارسال شد.',
+      devCode: delivery.devCode,
     };
   } catch {
     return { success: false, message: 'خطای سرور. لطفاً دوباره تلاش کنید.' };

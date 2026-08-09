@@ -248,7 +248,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
                   const userName = item.user?.name ?? 'کاربر';
                   const initials = userName.charAt(0);
                   const avatar =
-                    (item.user as unknown as { avatar?: string | null }).avatar ?? null;
+                    (item.user as unknown as { avatar?: string | null } | null)?.avatar ?? null;
                   const CatIcon =
                     cat === 'post'
                       ? HiOutlineDocumentText

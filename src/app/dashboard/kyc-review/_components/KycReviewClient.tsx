@@ -115,14 +115,16 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   NATIONAL_ID: 'تذکره / کارت ملی',
   PASSPORT: 'پاسپورت',
   RESIDENCE_PERMIT: 'اجازه اقامت',
+  PHONE: 'تأیید موبایل و تلگرام',
   SELFIE: 'سلفی (تأیید چهره)',
   ADDRESS_PROOF: 'سند اثبات آدرس',
+  BANK_STATEMENT: 'صورت حساب بانکی',
 };
 
 const KYC_LEVEL_LABELS: Record<string, string> = {
-  LEVEL_1: 'سطح ۱ — مدرک هویتی',
-  LEVEL_2: 'سطح ۲ — تأیید چهره',
-  LEVEL_3: 'سطح ۳ — اثبات آدرس',
+  LEVEL_1: 'سطح ۱ — موبایل و تلگرام',
+  LEVEL_2: 'سطح ۲ — مدرک و سلفی',
+  LEVEL_3: 'سطح ۳ — آدرس و صورتحساب',
 };
 
 /** آیا رکورد بیش از ۲ روز است — urgent */

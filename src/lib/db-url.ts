@@ -71,8 +71,16 @@ export function buildDatabaseUrl(): string {
   }
 
   if (!url.searchParams.has('pool_timeout')) {
-    const poolTimeout = process.env.PRISMA_POOL_TIMEOUT ?? '30';
+    const poolTimeout = process.env.PRISMA_POOL_TIMEOUT ?? '8';
     url.searchParams.set('pool_timeout', poolTimeout);
+  }
+
+  // 2026-08-09: fail-fast — اگر DB دور/قطع باشد، درخواست باید سریع خطا بدهد
+  // نه اینکه ۳۰+ ثانیه hang کند (وبهوک تلگرام را بلاک می‌کرد).
+  // قابل override با PRISMA_CONNECT_TIMEOUT.
+  if (!url.searchParams.has('connect_timeout')) {
+    const connectTimeout = process.env.PRISMA_CONNECT_TIMEOUT ?? '8';
+    url.searchParams.set('connect_timeout', connectTimeout);
   }
 
   return url.toString();

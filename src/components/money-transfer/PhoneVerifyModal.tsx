@@ -12,7 +12,7 @@
  */
 
 import { verifyPhoneOtp } from '@/actions/phone-verify';
-import { getTelegramLink, requestPhoneOtpOrTelegramLink } from '@/actions/telegram-otp';
+import { requestPhoneOtpOrTelegramLink } from '@/actions/telegram-otp';
 import { AlertCircle, ArrowRight, Phone, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import { type FC, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -23,13 +23,9 @@ interface Props {
   onClose: () => void;
 }
 
-// 'phone'         → ورود شماره
-// 'tg-waiting'   → تلگرام باز شد، منتظر Start زدن
-// 'otp'          → کد ۶ رقمی
-type ModalStep = 'phone' | 'tg-waiting' | 'otp';
-
-const POLL_INTERVAL_MS = 3000;
-const POLL_MAX = 20;
+// 'phone' → ورود شماره
+// 'otp'   → کد ۶ رقمی
+type ModalStep = 'phone' | 'otp';
 
 const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
   const [modalStep, setModalStep] = useState<ModalStep>('phone');
@@ -40,8 +36,6 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [devCode, _setDevCode] = useState<string | undefined>();
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pollAttemptsRef = useRef(0);
 
   const otpInputRef = useRef<HTMLInputElement>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
@@ -53,14 +47,6 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
     const t = setTimeout(() => setCountdown((p) => p - 1), 1000);
     return () => clearTimeout(t);
   }, [countdown]);
-
-  // cleanup polling on unmount
-  useEffect(
-    () => () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    },
-    [],
-  );
 
   // focus اتوماتیک
   useEffect(() => {
@@ -77,39 +63,6 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
     return () => document.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  // بعد از وصل شدن تلگرام → بلافاصله OTP بفرست
-  const sendOtpAfterLink = useCallback(async () => {
-    setLoading(true);
-    const res = await requestPhoneOtpOrTelegramLink(phone.trim());
-    setLoading(false);
-    if (res.kind === 'sent') {
-      setCountdown(60);
-      setModalStep('otp');
-    } else if (res.kind === 'error') {
-      setPhoneErr(res.message);
-      setModalStep('phone');
-    }
-    // اگر دوباره need-telegram آمد → تلگرام هنوز وصل نشده، همان صفحه blink می‌کنه
-  }, [phone]);
-
-  // polling: هر ۳ ثانیه چک کن تلگرام وصل شد یا نه
-  const startPolling = useCallback(() => {
-    pollAttemptsRef.current = 0;
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = setInterval(async () => {
-      pollAttemptsRef.current += 1;
-      if (pollAttemptsRef.current > POLL_MAX) {
-        if (pollRef.current) clearInterval(pollRef.current);
-        return;
-      }
-      const res = await getTelegramLink();
-      if (res.success && res.data.linked) {
-        if (pollRef.current) clearInterval(pollRef.current);
-        await sendOtpAfterLink();
-      }
-    }, POLL_INTERVAL_MS);
-  }, [sendOtpAfterLink]);
-
   const handleSendOtp = useCallback(async () => {
     setPhoneErr('');
     if (!phone.trim()) {
@@ -122,16 +75,13 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
     if (res.kind === 'sent') {
       setCountdown(60);
       setModalStep('otp');
-    } else if (res.kind === 'need-telegram') {
-      // تلگرام وصل نیست → فوری باز کن + شروع polling
-      window.open(res.telegramUrl, '_blank', 'noopener,noreferrer');
-      setModalStep('tg-waiting');
-      startPolling();
+      // تلگرام وصل نیست؟ لینک اتصال اختیاری — کد از بهترین کانال (ایمیل/پیامک) هم رسیده
+      if (res.telegramUrl) window.open(res.telegramUrl, '_blank', 'noopener,noreferrer');
     } else {
       setPhoneErr(res.message);
       if (res.retryAfterMs) setCountdown(Math.ceil(res.retryAfterMs / 1000));
     }
-  }, [phone, startPolling]);
+  }, [phone]);
 
   const handleVerify = useCallback(async () => {
     setOtpErr('');
@@ -158,14 +108,11 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
     setLoading(false);
     if (res.kind === 'sent') {
       setCountdown(60);
-    } else if (res.kind === 'need-telegram') {
-      window.open(res.telegramUrl, '_blank', 'noopener,noreferrer');
-      setModalStep('tg-waiting');
-      startPolling();
+      if (res.telegramUrl) window.open(res.telegramUrl, '_blank', 'noopener,noreferrer');
     } else {
       setOtpErr(res.message);
     }
-  }, [countdown, loading, phone, startPolling]);
+  }, [countdown, loading, phone]);
 
   if (typeof document === 'undefined') return null;
   return createPortal(
@@ -192,8 +139,7 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
             </h3>
             <p className={s.subtitle}>
               {modalStep === 'phone' && 'شماره موبایل خود را وارد کنید.'}
-              {modalStep === 'tg-waiting' && 'در تلگرام روی Start کلیک کنید…'}
-              {modalStep === 'otp' && 'کد ۶ رقمی ارسال‌شده به تلگرام را وارد کنید.'}
+              {modalStep === 'otp' && 'کد ۶ رقمی ارسال‌شده را وارد کنید.'}
             </p>
           </div>
           <button type="button" onClick={onClose} className={s.closeBtn} aria-label="بستن">
@@ -203,31 +149,6 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
 
         {/* Body */}
         <div className={s.body}>
-          {/* ── step: tg-waiting ── */}
-          {modalStep === 'tg-waiting' && (
-            <div className={s.tgWaiting}>
-              <div className={s.tgWaitingIcon} aria-hidden="true">
-                {/* Telegram paper-plane SVG */}
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                  <circle cx="16" cy="16" r="16" fill="oklch(54% 0.22 220)" />
-                  <path
-                    d="M7 15.5l14-6-4 14-3-5-7-3zm7 2l6-4-6 7v-3z"
-                    fill="white"
-                    fillRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <p className={s.tgWaitingTitle}>تلگرام باز شد</p>
-              <p className={s.tgWaitingDesc}>
-                روی دکمه <strong>Start</strong> در تلگرام کلیک کنید. پس از اتصال، کد به‌صورت خودکار
-                ارسال می‌شود.
-              </p>
-              <p className={s.tgWaitingHint}>
-                {loading ? 'در حال بررسی اتصال…' : 'منتظر اتصال تلگرام…'}
-              </p>
-            </div>
-          )}
-
           {/* ── step: phone ── */}
           {modalStep === 'phone' && (
             <>
@@ -262,8 +183,7 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
                 </p>
               )}
               <p className={s.hint}>
-                کد تأیید از طریق تلگرام ارسال می‌شود. اگر تلگرام وصل نباشد، با دکمه «دریافت کد»
-                تلگرام باز می‌شود.
+                کد تأیید از بهترین کانال در دسترس (تلگرام، ایمیل یا پیامک) ارسال می‌شود.
               </p>
             </>
           )}
@@ -369,23 +289,6 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
                   <Phone size={14} aria-hidden="true" />
                   <span>دریافت کد تأیید</span>
                 </>
-              )}
-            </button>
-          )}
-          {modalStep === 'tg-waiting' && (
-            <button
-              type="button"
-              onClick={handleSendOtp}
-              disabled={loading}
-              className={s.primaryBtn}
-            >
-              {loading ? (
-                <>
-                  <span className={s.spinner} aria-hidden="true" />
-                  <span>در حال بررسی…</span>
-                </>
-              ) : (
-                <span>باز کردن تلگرام مجدد</span>
               )}
             </button>
           )}

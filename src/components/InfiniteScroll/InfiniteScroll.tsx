@@ -52,6 +52,12 @@ export function InfiniteScroll<T extends { id: string | number }>({
     try {
       const result = await fetchMore(pageRef.current + 1);
 
+      // FIX (2026-08-09): محافظت در برابر پاسخ بدون data — قبلاً
+      // result.data.filter با «cannot read filter of undefined» crash می‌کرد.
+      if (!result || !Array.isArray(result.data)) {
+        setError('خطا در دریافت اطلاعات');
+        return;
+      }
       // Filter out duplicates by ID
       const newItems = result.data.filter((item) => !loadedIdsRef.current.has(item.id));
 

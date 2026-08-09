@@ -14,7 +14,7 @@ import {
   submitKycDocuments,
 } from '@/actions/kyc-onboarding';
 import { verifyPhoneOtp } from '@/actions/phone-verify';
-import { getTelegramLink, requestPhoneOtpOrTelegramLink } from '@/actions/telegram-otp';
+import { requestPhoneOtpOrTelegramLink } from '@/actions/telegram-otp';
 import { normalizeDigits } from '@/lib/utils';
 import {
   BadgeCheck,
@@ -93,20 +93,11 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
   // ── Phone OTP verification state (Step 0.5) ─────────────────────
   // اگر کاربر شماره تأیید‌شده نداشته باشد، باید قبل از submit، OTP را verify کند
   const [phoneVerified, setPhoneVerified] = useState(hasPhone);
-  // 'idle' | 'tg-waiting' | 'otp-sent'
-  const [otpStep, setOtpStep] = useState<'idle' | 'tg-waiting' | 'otp-sent'>('idle');
+  // 'idle' | 'otp-sent'
+  const [otpStep, setOtpStep] = useState<'idle' | 'otp-sent'>('idle');
   const [otpValue, setOtpValue] = useState('');
   const [otpCooldown, setOtpCooldown] = useState(0);
   const [phoneForOtp, setPhoneForOtp] = useState('');
-  const kycPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // cleanup polling on unmount
-  useEffect(
-    () => () => {
-      if (kycPollRef.current) clearInterval(kycPollRef.current);
-    },
-    [],
-  );
 
   // cooldown countdown برای ارسال مجدد OTP
   useEffect(() => {
@@ -195,32 +186,10 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
       if (res.kind === 'sent') {
         setOtpStep('otp-sent');
         setOtpCooldown(60);
-      } else if (res.kind === 'need-telegram') {
-        window.open(res.telegramUrl, '_blank', 'noopener,noreferrer');
-        setOtpStep('tg-waiting');
-        // polling: هر ۳ ثانیه چک کن تلگرام وصل شد
-        if (kycPollRef.current) clearInterval(kycPollRef.current);
-        let attempts = 0;
-        kycPollRef.current = setInterval(async () => {
-          attempts += 1;
-          if (attempts > 20) {
-            if (kycPollRef.current) clearInterval(kycPollRef.current);
-            return;
-          }
-          const linked = await getTelegramLink();
-          if (linked.success && linked.data.linked) {
-            if (kycPollRef.current) clearInterval(kycPollRef.current);
-            // تلگرام وصل شد — دوباره OTP بفرست
-            const retry = await requestPhoneOtpOrTelegramLink(phoneForOtp);
-            if (retry.kind === 'sent') {
-              setOtpStep('otp-sent');
-              setOtpCooldown(60);
-            } else if (retry.kind === 'error') {
-              setError(retry.message);
-              setOtpStep('idle');
-            }
-          }
-        }, 3000);
+        // تلگرام وصل نیست؟ لینک اتصال اختیاری — کد از بهترین کانال (ایمیل/پیامک) هم رسیده
+        if (res.telegramUrl) {
+          window.open(res.telegramUrl, '_blank', 'noopener,noreferrer');
+        }
       } else {
         setError(res.message);
         if (res.retryAfterMs) {
@@ -609,25 +578,8 @@ export default function KycWizard({ initialRecord, hasPhone }: Props) {
                       ) : (
                         <Phone size={14} aria-hidden />
                       )}
-                      ارسال کد تأیید از تلگرام
+                      ارسال کد تأیید
                     </button>
-                  )}
-
-                  {/* tg-waiting: منتظر Start در تلگرام */}
-                  {otpStep === 'tg-waiting' && (
-                    <div className={s.tgWaitingInline}>
-                      <p className={s.tgWaitingText}>
-                        {isPending ? 'در حال بررسی اتصال…' : 'منتظر Start زدن در تلگرام…'}
-                      </p>
-                      <button
-                        type="button"
-                        className={s.otpResendBtn}
-                        onClick={handleSendOtp}
-                        disabled={isPending}
-                      >
-                        باز کردن تلگرام مجدد
-                      </button>
-                    </div>
                   )}
 
                   {/* otp-sent: وارد کردن کد */}

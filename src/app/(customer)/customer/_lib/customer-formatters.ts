@@ -138,17 +138,19 @@ export const ACCOUNT_TYPE_LABEL: Record<string, string> = {
 
 export const KYC_LEVEL_LABEL: Record<string, string> = {
   NONE: 'بدون تأیید',
-  LEVEL_1: 'سطح ۱ — مدرک هویتی',
-  LEVEL_2: 'سطح ۲ — تأیید چهره',
-  LEVEL_3: 'سطح ۳ — کامل',
+  LEVEL_1: 'سطح ۱ — موبایل و تلگرام',
+  LEVEL_2: 'سطح ۲ — مدرک و سلفی',
+  LEVEL_3: 'سطح ۳ — آدرس و صورتحساب',
 };
 
 export const DOC_TYPE_LABEL: Record<string, string> = {
   NATIONAL_ID: 'تذکره / کارت ملی',
   PASSPORT: 'پاسپورت',
   RESIDENCE_PERMIT: 'اجازه اقامت',
+  PHONE: 'تأیید موبایل و تلگرام',
   SELFIE: 'سلفی (تأیید چهره)',
   ADDRESS_PROOF: 'سند اثبات آدرس',
+  BANK_STATEMENT: 'صورت حساب بانکی',
 };
 
 // ─── CSS Key Mappers (برای data-* attribute) ────────────────────────────── //

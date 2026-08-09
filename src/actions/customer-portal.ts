@@ -17,8 +17,10 @@ import {
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
+import { consumeOtpToken } from '@/lib/tokens';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
@@ -206,16 +208,8 @@ const KycPhoneSchema = z.object({
   code: z.string().min(4, 'کد تأیید نامعتبر است').max(8),
 });
 
-/** ارتقا به سطح ۳ (آدرس + صورت حساب بانکی) — هنگام در صف بررسی بودن */
-const KycLevel3Schema = z.object({
-  city: z.string().min(1, 'شهر الزامی است').max(120),
-  address: z.string().min(1, 'آدرس الزامی است').max(300),
-  addressDocUrl: z.string().min(1, 'تصویر سند آدرس الزامی است').max(2000, 'آدرس فایل طولانی است'),
-  bankStatementUrl: z
-    .string()
-    .min(1, 'تصویر صورت حساب بانکی الزامی است')
-    .max(2000, 'آدرس فایل طولانی است'),
-});
+// intent اختصاصی تأیید موبایل — هماهنگ با phone-verify.ts
+const PHONE_VERIFY_INTENT = 'service-verify' as const;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -508,39 +502,60 @@ export async function submitKycDocument(raw: unknown): Promise<{
   // بررسی وضعیت مشتری — KYC فقط برای PROSPECT یا ACTIVE مجاز است
   const customer = await prisma.customer.findUnique({
     where: { id: access.customerId },
-    select: { status: true, kycStatus: true, exchangeId: true },
+    select: { status: true, kycStatus: true, exchangeId: true, kycLevel: true },
   });
 
   if (!customer) return { success: false, error: 'مشتری یافت نشد' };
   if (customer.status === 'FROZEN' || customer.status === 'CLOSED') {
     return { success: false, error: 'حساب شما مسدود است — با پشتیبانی تماس بگیرید' };
   }
-  if (customer.kycStatus === 'PENDING') {
-    return { success: false, error: 'مدارک قبلی شما هنوز در حال بررسی است' };
+
+  const selectedLevel = parsed.data.level;
+
+  // ── گیت سکوئنشی: هر سطح فقط بعد از تأیید کامل سطح قبلی باز می‌شود ──
+  if (selectedLevel === 'LEVEL_2' && customer.kycLevel !== 'LEVEL_1') {
+    return {
+      success: false,
+      error:
+        customer.kycLevel === 'NONE'
+          ? 'ابتدا سطح ۱ (تأیید موبایل و تلگرام) را تکمیل کنید'
+          : 'سطح ۲ قبلاً تأیید شده است',
+    };
+  }
+  if (selectedLevel === 'LEVEL_3' && customer.kycLevel !== 'LEVEL_2') {
+    return {
+      success: false,
+      error:
+        customer.kycLevel === 'NONE' || customer.kycLevel === 'LEVEL_1'
+          ? 'ابتدا سطح ۲ (مدرک و سلفی) را تکمیل کنید'
+          : 'سطح ۳ قبلاً تأیید شده است',
+    };
+  }
+
+  // جلوگیری از ارسال مجدد وقتی رکورد همان سطح هنوز در صف بررسی است
+  const existingPending = await prisma.kycVerification.findFirst({
+    where: { customerId: access.customerId, level: selectedLevel, status: 'PENDING' },
+    select: { id: true },
+  });
+  if (existingPending) {
+    return { success: false, error: 'مدارک این سطح هنوز در حال بررسی است' };
   }
 
   const { v4: createId } = await import('uuid');
 
-  let raceBlocked = false;
   await prisma.$transaction(async (tx) => {
-    // atomic check+set: فقط اگر kycStatus هنوز PENDING نباشد update می‌شود
-    const updated = await tx.customer.updateMany({
-      where: { id: access.customerId, kycStatus: { not: 'PENDING' } },
+    // اطمینان از PENDING بودن (برای اولین ارسال؛ اگر از قبل PENDING است بی‌اثر است)
+    await tx.customer.updateMany({
+      where: { id: access.customerId },
       data: { kycStatus: 'PENDING', updatedAt: new Date() },
     });
-
-    if (updated.count === 0) {
-      raceBlocked = true;
-      return;
-    }    const selectedLevel = parsed.data.level;
-
-    // سطح ۱ — مدرک هویتی (همیشه)
+    // سطح ۲ — مدرک هویتی (بخشی از سطح ۲ و ۳)
     await tx.kycVerification.create({
       data: {
         id: createId(),
         exchangeId: customer.exchangeId,
         customerId: access.customerId,
-        level: 'LEVEL_1',
+        level: 'LEVEL_2',
         status: 'PENDING',
         docType: parsed.data.docType,
         docNumber: parsed.data.docNumber,
@@ -549,23 +564,21 @@ export async function submitKycDocument(raw: unknown): Promise<{
       },
     });
 
-    // سطح ۲ — سلفی تأیید چهره (اگر سطح انتخابی ≥ ۲)
-    if ((selectedLevel === 'LEVEL_2' || selectedLevel === 'LEVEL_3') && parsed.data.selfieUrl) {
-      await tx.kycVerification.create({
-        data: {
-          id: createId(),
-          exchangeId: customer.exchangeId,
-          customerId: access.customerId,
-          level: 'LEVEL_2',
-          status: 'PENDING',
-          docType: 'SELFIE',
-          fileUrl: parsed.data.selfieUrl,
-          updatedAt: new Date(),
-        },
-      });
-    }
+    // سطح ۲ — سلفی تأیید چهره (بخشی از سطح ۲ و ۳)
+    await tx.kycVerification.create({
+      data: {
+        id: createId(),
+        exchangeId: customer.exchangeId,
+        customerId: access.customerId,
+        level: 'LEVEL_2',
+        status: 'PENDING',
+        docType: 'SELFIE',
+        fileUrl: parsed.data.selfieUrl,
+        updatedAt: new Date(),
+      },
+    });
 
-    // سطح ۳ — اثبات آدرس (فقط اگر سطح انتخابی = ۳)
+    // سطح ۳ — آدرس + صورت حساب بانکی (فقط اگر سطح انتخابی = ۳)
     if (selectedLevel === 'LEVEL_3') {
       const addressText = parsed.data.address
         ? `${parsed.data.city ? `${parsed.data.city}، ` : ''}${parsed.data.address}`
@@ -583,6 +596,18 @@ export async function submitKycDocument(raw: unknown): Promise<{
           updatedAt: new Date(),
         },
       });
+      await tx.kycVerification.create({
+        data: {
+          id: createId(),
+          exchangeId: customer.exchangeId,
+          customerId: access.customerId,
+          level: 'LEVEL_3',
+          status: 'PENDING',
+          docType: 'BANK_STATEMENT',
+          fileUrl: parsed.data.bankStatementUrl ?? null,
+          updatedAt: new Date(),
+        },
+      });
       await tx.customer.update({
         where: { id: access.customerId },
         data: {
@@ -594,49 +619,69 @@ export async function submitKycDocument(raw: unknown): Promise<{
     }
   });
 
-  if (raceBlocked) {
-    return { success: false, error: 'مدارک قبلی شما هنوز در حال بررسی است' };
-  }
-
-
   revalidateTag('customer-kyc');
   return { success: true };
 }
 
-// ─── WRITE — KYC selfie (تأیید چهره) ───────────────────────────────────────────
+// ─── WRITE — KYC level 1: تأیید موبایل با تلگرام ──────────────────────────────────
 //
-// سلفی را می‌توان «بعد از» ارسال مدرک (در حالی که LEVEL_1 هنوز در صف بررسی است)
-// هم ارسال کرد — بدون اینکه منتظر تأیید سطح قبل بمانیم. به این ترتیب هر دو رکورد
-// در همان دورهٔ بررسی یک‌جا توسط ادمین/صرافی دیده می‌شوند.
+// سطح ۱ = تأیید شماره موبایل از طریق کد OTP تلگرام (مطابق معماری tiered KYC).
+// کد ابتدا با requestPhoneOtpOrTelegramLink ارسال می‌شود و اینجا مصرف می‌شود.
+// رکورد LEVEL_1 (docType=PHONE) ساخته می‌شود تا ادمین/صرافی تأیید کند.
 
-export async function submitKycSelfie(raw: unknown): Promise<{
+export async function submitKycPhone(raw: unknown): Promise<{
   success: boolean;
   error?: string;
 }> {
   const access = await requireCustomerAccess();
   if (!access.ok) return { success: false, error: access.error.message };
 
-  const parsed = KycSelfieSchema.safeParse(raw);
+  const parsed = KycPhoneSchema.safeParse(raw);
   if (!parsed.success) {
     return { success: false, error: parsed.error.errors[0]?.message ?? 'داده نامعتبر' };
   }
 
   const customer = await prisma.customer.findUnique({
     where: { id: access.customerId },
-    select: { status: true, exchangeId: true },
+    select: { status: true, exchangeId: true, kycLevel: true },
   });
   if (!customer) return { success: false, error: 'مشتری یافت نشد' };
   if (customer.status === 'FROZEN' || customer.status === 'CLOSED') {
     return { success: false, error: 'حساب شما مسدود است — با پشتیبانی تماس بگیرید' };
   }
 
-  // اگر رکورد LEVEL_2 در صف بررسی است، ارسال مجدد بلاک شود
-  const existingPending = await prisma.kycVerification.findFirst({
-    where: { customerId: access.customerId, level: 'LEVEL_2', status: 'PENDING' },
-    select: { id: true },
+  // ── گیت سکوئنشی: سطح ۱ فقط وقتی باز است که هنوز تأیید نشده باشد ──
+  if (customer.kycLevel !== 'NONE') {
+    return { success: false, error: 'سطح ۱ قبلاً تأیید شده است' };
+  }
+
+  const phone = parsed.data.phone.trim();
+  if (!isPhoneValid(phone)) {
+    return { success: false, error: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)' };
+  }
+  const e164 = normalizeToE164(phone);
+
+  // مصرف کد OTP — کلید همان ایمیل کاربر است (هماهنگ با phone-verify)
+  const user = await prisma.user.findUnique({
+    where: { id: access.userId },
+    select: { email: true },
   });
-  if (existingPending) {
-    return { success: false, error: 'سلفی قبلی شما هنوز در حال بررسی است' };
+  if (!user?.email) {
+    return { success: false, error: 'کاربر یافت نشد' };
+  }
+  const otpResult = await consumeOtpToken({
+    email: user.email.trim().toLowerCase(),
+    code: parsed.data.code.trim(),
+    intent: PHONE_VERIFY_INTENT,
+  });
+  if (!otpResult.ok) {
+    const messages: Record<string, string> = {
+      'not-found': 'کد معتبر نیست. لطفاً دوباره درخواست کنید.',
+      expired: 'کد منقضی شده. لطفاً کد جدید دریافت کنید.',
+      'too-many-attempts': 'تعداد تلاش بیش از حد. لطفاً کد جدید دریافت کنید.',
+      'wrong-code': 'کد اشتباه است.',
+    };
+    return { success: false, error: messages[otpResult.reason] ?? 'کد نامعتبر است.' };
   }
 
   const { v4: createId } = await import('uuid');
@@ -647,17 +692,20 @@ export async function submitKycSelfie(raw: unknown): Promise<{
         id: createId(),
         exchangeId: customer.exchangeId,
         customerId: access.customerId,
-        level: 'LEVEL_2',
+        level: 'LEVEL_1',
         status: 'PENDING',
-        docType: 'SELFIE',
-        fileUrl: parsed.data.selfieUrl,
+        docType: 'PHONE',
+        docNumber: e164,
         updatedAt: new Date(),
       },
     });
-    // اگر هنوز PENDING نیست (مثلاً NOT_STARTED)، وضعیت را PENDING کن
     await tx.customer.updateMany({
       where: { id: access.customerId, kycStatus: { not: 'PENDING' } },
       data: { kycStatus: 'PENDING', updatedAt: new Date() },
+    });
+    await tx.user.update({
+      where: { id: access.userId },
+      data: { phoneNumber: e164, pendingPhone: null },
     });
   });
 

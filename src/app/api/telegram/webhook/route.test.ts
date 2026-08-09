@@ -16,6 +16,9 @@ const telegramMock = vi.hoisted(() => ({
   isTelegramWebhookSecretValid: vi.fn(),
   consumeTelegramLinkToken: vi.fn(),
   sendTelegramMessage: vi.fn(),
+  answerTelegramCallback: vi.fn(),
+  editTelegramMessage: vi.fn(),
+  getPortalUrl: vi.fn(() => 'https://financialmarket.page'),
 }));
 
 vi.mock('@/lib/telegram', () => telegramMock);
@@ -77,7 +80,11 @@ describe('POST /api/telegram/webhook', () => {
 
     expect(res.status).toBe(200);
     // مهم‌ترین assert: توکن باید link_abc123 باشد، نه '/start'
-    expect(telegramMock.consumeTelegramLinkToken).toHaveBeenCalledWith('link_abc123', '42');
+    expect(telegramMock.consumeTelegramLinkToken).toHaveBeenCalledWith(
+      'link_abc123',
+      '42',
+      undefined,
+    );
   });
 
   it('اگر consumeToken موفق → پیام موفقیت ارسال می‌شود', async () => {

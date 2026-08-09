@@ -23,7 +23,7 @@ const PostList: React.FC<PostListProps> = ({ posts }) => {
           <h2 className="text-2xl font-bold">
             <Link href={`/single/${post.id}`}>{post.title}</Link>
           </h2>
-          <p className="text-gray-600">By {post.author.name}</p>
+          <p className="text-gray-600">By {post.author?.name ?? 'ناشناس'}</p>
           <p className="mt-2">{post.content.substring(0, 150)}...</p>
           <div className="mt-2">
             {post.tags.map((tag) => (

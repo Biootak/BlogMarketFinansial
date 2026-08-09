@@ -69,6 +69,14 @@ export async function generateMetadata(): Promise<Metadata> {
     creator: siteName || 'BlogMarketFinansial',
     robots: { index: true, follow: true },
     sitemap: '/sitemap.xml',
+    icons: {
+      icon: [
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+        { url: '/favicon.png', type: 'image/png' },
+      ],
+      shortcut: '/favicon.png',
+      apple: '/apple-touch-icon.png',
+    },
   } as Metadata;
 }
 

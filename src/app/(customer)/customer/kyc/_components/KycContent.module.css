@@ -467,7 +467,7 @@
   font-weight: 500;
 }
 
-/* ── Level Selector (tiered KYC) ─────────────────────────────────────── */
+/* ── Level Selector (tiered KYC) — premium tier cards ─────────────────── */
 
 .levelPicker {
   display: grid;
@@ -482,27 +482,60 @@
 }
 
 .levelCard {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-1);
+  gap: var(--ds-space-2);
   padding: var(--ds-space-3);
   border: 1px solid var(--ds-border-subtle);
-  border-radius: var(--ds-radius-sm);
+  border-radius: var(--ds-radius-md);
   background: var(--ds-surface);
   cursor: pointer;
   text-align: start;
   font-family: inherit;
-  transition: border-color 140ms var(--ds-ease-out-quart),
-    box-shadow 140ms var(--ds-ease-out-quart);
+  overflow: hidden;
+  transition: transform 180ms var(--ds-ease-out-quart),
+    border-color 180ms var(--ds-ease-out-quart),
+    box-shadow 180ms var(--ds-ease-out-quart),
+    background 180ms var(--ds-ease-out-quart);
+}
+
+/* wash of brand on top — premium depth */
+.levelCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--ds-brand-500) 7%, transparent),
+    transparent 55%
+  );
+  opacity: 0;
+  transition: opacity 180ms var(--ds-ease-out-quart);
+  pointer-events: none;
+  z-index: -1;
 }
 
 .levelCard:hover:not(:disabled) {
-  border-color: var(--ds-brand-500);
+  transform: translateY(-2px);
+  border-color: color-mix(in oklch, var(--ds-brand-500) 55%, var(--ds-border-subtle));
+  box-shadow: 0 8px 20px -10px color-mix(in oklch, var(--ds-brand-500) 45%, transparent);
+}
+
+.levelCard:hover:not(:disabled)::before {
+  opacity: 1;
 }
 
 .levelCard[aria-pressed="true"] {
   border-color: var(--ds-brand-500);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+  background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface));
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent),
+    0 12px 26px -12px color-mix(in oklch, var(--ds-brand-500) 60%, transparent);
+}
+
+.levelCard[aria-pressed="true"]::before {
+  opacity: 1;
 }
 
 .levelCard:disabled {
@@ -510,13 +543,110 @@
   cursor: not-allowed;
 }
 
-.levelCardTitle {
+.levelCardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+/* icon chip — هر سطح با گرادیان مخصوص خودش */
+.levelCardIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-700));
+  color: var(--ds-canvas);
+  box-shadow: inset 0 1px 0 color-mix(in oklch, white 22%, transparent),
+    0 5px 12px -4px color-mix(in oklch, var(--ds-brand-500) 60%, transparent);
+  flex-shrink: 0;
+  transition: transform 180ms var(--ds-ease-out-quart);
+}
+
+.levelCard[data-level="LEVEL_1"] .levelCardIcon {
+  background: linear-gradient(135deg, var(--nova-cyan), color-mix(in oklch, var(--nova-cyan), black 28%));
+  box-shadow: inset 0 1px 0 color-mix(in oklch, white 22%, transparent),
+    0 5px 12px -4px color-mix(in oklch, var(--nova-cyan) 60%, transparent);
+}
+
+.levelCard[data-level="LEVEL_3"] .levelCardIcon {
+  background: linear-gradient(135deg, var(--nova-amber), color-mix(in oklch, var(--nova-amber), black 28%));
+  box-shadow: inset 0 1px 0 color-mix(in oklch, white 25%, transparent),
+    0 5px 12px -4px color-mix(in oklch, var(--nova-amber) 60%, transparent);
+}
+
+.levelCard:hover:not(:disabled) .levelCardIcon {
+  transform: scale(1.06);
+}
+
+/* radio indicator — با چک انیمیشنی */
+.levelCardRadio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--ds-border-strong);
+  background: var(--ds-surface);
+  color: var(--ds-canvas);
+  flex-shrink: 0;
+  transition: border-color 160ms var(--ds-ease-out-quart),
+    background 160ms var(--ds-ease-out-quart),
+    box-shadow 160ms var(--ds-ease-out-quart);
+}
+
+.levelCardRadio svg {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 160ms var(--ds-ease-out-quart),
+    transform 220ms var(--ds-ease-out-back, var(--ds-ease-out-quart));
+}
+
+.levelCard[aria-pressed="true"] .levelCardRadio {
+  border-color: var(--ds-brand-500);
+  background: var(--ds-brand-500);
+  box-shadow: 0 2px 8px -2px color-mix(in oklch, var(--ds-brand-500) 60%, transparent);
+}
+
+.levelCard[aria-pressed="true"] .levelCardRadio svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.levelCardTitleWrap {
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
+  flex-wrap: wrap;
+}
+
+.levelCardTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
   font-size: var(--ds-text-sm);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--ds-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.levelCardFeatured {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding-block: 0.2em;
+  padding-inline: 0.55em;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--nova-amber), color-mix(in oklch, var(--nova-amber), black 18%));
+  color: var(--ds-canvas);
+  box-shadow: 0 2px 6px -2px color-mix(in oklch, var(--nova-amber) 55%, transparent);
 }
 
 .levelCardDesc {
@@ -526,42 +656,337 @@
   line-height: 1.5;
 }
 
+.levelCardLimit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  align-self: flex-start;
+  margin-block-start: auto;
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding-block: 0.25em;
+  padding-inline: 0.6em;
+  border-radius: 999px;
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-muted);
+  border: 1px solid var(--ds-border-subtle);
+  transition: background 160ms var(--ds-ease-out-quart),
+    color 160ms var(--ds-ease-out-quart),
+    border-color 160ms var(--ds-ease-out-quart);
+}
+
+.levelCard[aria-pressed="true"] .levelCardLimit {
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  color: var(--ds-brand-600);
+  border-color: color-mix(in oklch, var(--ds-brand-500) 32%, transparent);
+}
+
+/* وضعیت‌های کارت — done / locked */
+.levelCard[data-state="done"] {
+  border-color: color-mix(in oklch, var(--nova-up) 35%, var(--ds-border-subtle));
+  background: color-mix(in oklch, var(--nova-up) 3%, var(--ds-surface));
+  cursor: default;
+}
+
+.levelCard[data-state="done"] .levelCardIcon {
+  background: linear-gradient(135deg, var(--nova-up), color-mix(in oklch, var(--nova-up), black 24%));
+  box-shadow: inset 0 1px 0 color-mix(in oklch, white 22%, transparent),
+    0 5px 12px -4px color-mix(in oklch, var(--nova-up) 55%, transparent);
+}
+
+.levelCard[data-state="done"] .levelCardRadio {
+  border-color: var(--nova-up);
+  background: var(--nova-up);
+  box-shadow: 0 2px 8px -2px color-mix(in oklch, var(--nova-up) 55%, transparent);
+}
+
+.levelCard[data-state="done"] .levelCardRadio svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.levelCard[data-state="locked"] {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.levelCard[data-state="locked"] .levelCardIcon {
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-muted);
+  box-shadow: none;
+}
+
+.levelCard[data-state="locked"] .levelCardTitle {
+  color: var(--ds-text-muted);
+}
+
+/* pill وضعیت کارت (تکمیل / تکمیل کن / قفل) */
+.levelCardState {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  align-self: flex-start;
+  margin-block-start: auto;
+  font-size: 0.625rem;
+  font-weight: 800;
+  padding-block: 0.25em;
+  padding-inline: 0.6em;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.levelCardState[data-state="done"] {
+  background: color-mix(in oklch, var(--nova-up) 12%, transparent);
+  color: var(--nova-up);
+  border: 1px solid color-mix(in oklch, var(--nova-up) 30%, transparent);
+}
+
+.levelCardState[data-state="current"] {
+  background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-700));
+  color: var(--ds-canvas);
+  box-shadow: 0 3px 8px -3px color-mix(in oklch, var(--ds-brand-500) 60%, transparent);
+}
+
+.levelCardState[data-state="locked"] {
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-muted);
+  border: 1px solid var(--ds-border-subtle);
+}
+
+/* ── Waiting (در صف بررسی) ───────────────────────────────────────────── */
+
+.waitingBox {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-4);
+  padding-inline: var(--ds-space-4);
+  background: color-mix(in oklch, var(--nova-amber) 5%, var(--ds-surface));
+  border: 1px solid color-mix(in oklch, var(--nova-amber) 28%, var(--ds-border-subtle));
+  border-radius: var(--ds-radius-md);
+  animation: cardEnter 320ms var(--ds-ease-out-quart) both;
+}
+
+.waitingIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 0.75rem;
+  background: color-mix(in oklch, var(--nova-amber) 12%, transparent);
+  flex-shrink: 0;
+}
+
+.waitingMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  min-inline-size: 0;
+}
+
+.waitingTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+}
+
+.waitingDesc {
+  font-size: 0.6875rem;
+  color: var(--ds-text-muted);
+  font-weight: 500;
+}
+
+/* ── Dialog ───────────────────────────────────────────────────────────── */
+
+.dialogTitleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-700));
+  color: var(--ds-canvas);
+  flex-shrink: 0;
+}
+
+.dialogBody {
+  padding: var(--ds-space-4);
+}
+
+.dialogLead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+  margin: 0 0 var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-weight: 500;
+}
+
+.dialogLimit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-weight: 800;
+  color: var(--ds-brand-600);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  padding-block: 0.2em;
+  padding-inline: 0.55em;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.telegramLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  align-self: flex-start;
+  margin-block-start: var(--ds-space-1);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--nova-cyan);
+  text-decoration: none;
+  padding-block: 0.3em;
+  padding-inline: 0.6em;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--nova-cyan) 10%, transparent);
+  border: 1px solid color-mix(in oklch, var(--nova-cyan) 30%, transparent);
+  transition: background 140ms var(--ds-ease-out-quart);
+}
+
+.telegramLink:hover {
+  background: color-mix(in oklch, var(--nova-cyan) 18%, transparent);
+}
+
+/* ── Phone + dial code ───────────────────────────────────────────────── */
+
+.phoneRow {
+  display: flex;
+  gap: var(--ds-space-2);
+  align-items: stretch;
+}
+
+.dialSelect {
+  inline-size: 8.5rem;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.phoneInput {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  direction: ltr;
+}
+
+.dialItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── OTP input ────────────────────────────────────────────────────────── */
+
+.otpInput {
+  letter-spacing: 0.4em;
+  font-weight: 800;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  padding-inline: var(--ds-space-2);
+}
+
 .formFoot {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: var(--ds-space-2);
   border-block-start: 1px solid var(--ds-border-subtle);
   padding-block-start: var(--ds-space-3);
 }
 
+/* ── Submit button — premium gradient ─────────────────────────────────── */
+
 .submitBtn {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--ds-space-2);
   font-family: inherit;
   font-size: var(--ds-text-sm);
-  font-weight: 700;
-  padding-block: var(--ds-space-2);
-  padding-inline: var(--ds-space-4);
-  background: var(--ds-brand-500);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  padding-block: 0.65rem;
+  padding-inline: var(--ds-space-5);
   color: var(--ds-canvas);
-  border: 1px solid var(--ds-brand-500);
-  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-700));
+  border: 1px solid color-mix(in oklch, var(--ds-brand-700), transparent 25%);
+  border-radius: var(--ds-radius-md);
   cursor: pointer;
-  transition: background 140ms var(--ds-ease-out-quart);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 color-mix(in oklch, white 18%, transparent),
+    0 10px 22px -10px color-mix(in oklch, var(--ds-brand-500) 70%, transparent);
+  transition: transform 160ms var(--ds-ease-out-quart),
+    box-shadow 160ms var(--ds-ease-out-quart),
+    filter 160ms var(--ds-ease-out-quart);
+}
+
+/* sheen sweep روی hover */
+.submitBtn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    color-mix(in oklch, white 24%, transparent) 50%,
+    transparent 65%
+  );
+  transform: translateX(-160%);
+  transition: transform 520ms var(--ds-ease-out-quart);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.submitBtn:hover:not(:disabled)::after {
+  transform: translateX(160%);
 }
 
 .submitBtn:hover:not(:disabled) {
-  background: var(--ds-brand-600);
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: inset 0 1px 0 color-mix(in oklch, white 18%, transparent),
+    0 14px 28px -12px color-mix(in oklch, var(--ds-brand-500) 85%, transparent);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
 }
 
 .submitBtn:disabled {
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .submitBtn:focus-visible {
   outline: 2px solid var(--ds-brand-500);
   outline-offset: 2px;
+}
+
+.iconSpin {
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .errorBox {

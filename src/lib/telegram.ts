@@ -32,11 +32,32 @@ export interface TelegramSendResult {
 }
 
 /**
+ * reply_markup — دکمهٔ «ارسال شماره تماس» (request_contact) یا کیبورد اینلاین.
+ * تلگرام خودش شمارهٔ کاربر را تأیید کرده است — مبنای auto-verify.
+ */
+export interface TelegramInlineButton {
+  text: string;
+  url?: string;
+  callback_data?: string;
+}
+
+export type TelegramReplyMarkup =
+  | { requestContact: true; text?: string }
+  | { inlineKeyboard: Array<Array<TelegramInlineButton>> };
+
+/** لینک پورتال مشتری برای دکمه‌های اینلاین ربات */
+export function getPortalUrl(path = '/customer/dashboard'): string {
+  const base = process.env.APP_URL?.trim() || 'https://financialmarket.page';
+  return `${base.replace(/\/$/, '')}${path}`;
+}
+
+/**
  * sendTelegramMessage — ارسال پیام به یک chat (بدون throw)
  */
 export async function sendTelegramMessage(
   chatId: string,
   text: string,
+  replyMarkup?: TelegramReplyMarkup,
 ): Promise<TelegramSendResult> {
   const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
   if (!token) {
@@ -44,6 +65,25 @@ export async function sendTelegramMessage(
   }
 
   try {
+    let reply_markup: unknown;
+    if (replyMarkup && 'requestContact' in replyMarkup) {
+      reply_markup = {
+        keyboard: [
+          [
+            {
+              text: replyMarkup.text ?? '📱 ارسال شماره تماس',
+              request_contact: true,
+            },
+          ],
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+        input_field_placeholder: 'تأیید خودکار شماره',
+      };
+    } else if (replyMarkup && 'inlineKeyboard' in replyMarkup) {
+      reply_markup = { inline_keyboard: replyMarkup.inlineKeyboard };
+    }
+
     const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -52,6 +92,7 @@ export async function sendTelegramMessage(
         text,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
+        ...(reply_markup ? { reply_markup } : {}),
       }),
     });
 
@@ -72,6 +113,12 @@ export async function sendTelegramMessage(
  * createTelegramLinkToken — توکن یک‌بارمصرف اتصال برای کاربر
  */
 export async function createTelegramLinkToken(userId: string): Promise<string> {
+  // لینک‌های قبلی استفاده‌نشده همین کاربر را باطل کن — فقط آخرین لینک معتبر است.
+  // (جلوگیری از «لینک اتصال نامعتبر است» وقتی کاربر لینک قدیمی را باز می‌کند)
+  await prisma.telegramLinkToken.updateMany({
+    where: { userId, used: false },
+    data: { used: true },
+  });
   const token = `${LINK_PREFIX}${randomBytes(18).toString('hex')}`;
   await prisma.telegramLinkToken.create({
     data: {
@@ -100,16 +147,23 @@ export function getTelegramLinkUrl(token: string): string {
 }
 
 export type ConsumeLinkResult =
-  | { ok: true }
+  | { ok: true; pendingPhone: string | null; accountName: string | null }
   | { ok: false; reason: 'not-found' | 'used' | 'expired' | 'chat-linked' | 'db-error' };
 
 /**
  * consumeTelegramLinkToken — webhook هنگام `/start link_<token>` صدا می‌زند.
- * توکن را burn می‌کند و telegramChatId کاربر را ست می‌کند.
+ * توکن را burn می‌کند و telegramChatId + telegramUserId کاربر را ست می‌کند.
+ *
+ * سرعت: pendingPhone و accountName را همان‌جا برمی‌گرداند تا وبهوک برای ارسال
+ * دکمهٔ «ارسال شماره تماس» یک کوئری جداگانه نزند (کمتر round-trip → سریع‌تر).
+ *
+ * امنیت: telegramUserId (از from.id همان update) ثبت می‌شود تا تأیید شمارهٔ تماس
+ * فقط از همان حساب تلگرام پذیرفته شود (مقایسه با contact.user_id در وبهوک).
  */
 export async function consumeTelegramLinkToken(
   rawToken: string,
   chatId: string,
+  fromId?: string,
 ): Promise<ConsumeLinkResult> {
   const token = rawToken.trim();
   if (!token.startsWith(LINK_PREFIX)) {
@@ -129,16 +183,88 @@ export async function consumeTelegramLinkToken(
       }),
       prisma.user.update({
         where: { id: record.userId },
-        data: { telegramChatId: chatId },
+        data: {
+          telegramChatId: chatId,
+          ...(fromId ? { telegramUserId: fromId } : {}),
+        },
       }),
     ]);
-    return { ok: true };
+
+    // شماره و نام حسابِ در انتظار را همان‌جا بخوان — وبهوک کوئری دوم نمی‌زند
+    const user = await prisma.user.findUnique({
+      where: { id: record.userId },
+      select: { pendingPhone: true, name: true, email: true },
+    });
+    const accountName = user?.name?.trim() || user?.email || null;
+    return { ok: true, pendingPhone: user?.pendingPhone ?? null, accountName };
   } catch (err) {
     // P2002: chat قبلاً به کاربر دیگری وصل شده — unique(telegramChatId)
     if ((err as { code?: string }).code === 'P2002') {
       return { ok: false, reason: 'chat-linked' };
     }
     return { ok: false, reason: 'db-error' };
+  }
+}
+
+/**
+ * answerTelegramCallback — تأیید فوری لمس دکمهٔ اینلاین (بدون throw).
+ * پاسخ سریع به callback_query باعث می‌شود تلگرام اسپینر دکمه را فوراً بردارد.
+ */
+export async function answerTelegramCallback(
+  callbackQueryId: string,
+  text?: string,
+): Promise<TelegramSendResult> {
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  if (!token) return { success: false, errorCode: 'NOT_CONFIGURED' };
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/answerCallbackQuery`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        callback_query_id: callbackQueryId,
+        ...(text ? { text, show_alert: false } : {}),
+      }),
+    });
+    if (!res.ok) return { success: false, errorCode: 'TG_ERROR' };
+    return { success: true };
+  } catch {
+    return { success: false, errorCode: 'NETWORK_ERROR' };
+  }
+}
+
+/**
+ * editTelegramMessage — ویرایش پیام موجود (برای منوی دکمه‌ای بدون اسپم پیام).
+ * سبک‌تر از send + delete است و تجربهٔ کاربری تمیزتری می‌دهد.
+ */
+export async function editTelegramMessage(
+  chatId: string,
+  messageId: number,
+  text: string,
+  replyMarkup?: TelegramReplyMarkup,
+): Promise<TelegramSendResult> {
+  const token = process.env.TELEGRAM_BOT_TOKEN?.trim();
+  if (!token) return { success: false, errorCode: 'NOT_CONFIGURED' };
+  try {
+    let reply_markup: unknown;
+    if (replyMarkup && 'inlineKeyboard' in replyMarkup) {
+      reply_markup = { inline_keyboard: replyMarkup.inlineKeyboard };
+    }
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/editMessageText`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        message_id: messageId,
+        text,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true,
+        ...(reply_markup ? { reply_markup } : {}),
+      }),
+    });
+    if (!res.ok) return { success: false, errorCode: 'TG_ERROR' };
+    return { success: true };
+  } catch {
+    return { success: false, errorCode: 'NETWORK_ERROR' };
   }
 }
 

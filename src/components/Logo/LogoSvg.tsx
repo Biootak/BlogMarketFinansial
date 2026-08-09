@@ -8,28 +8,22 @@ type LogoSvgProps = {
 };
 
 /**
- * Inline SVG logo — Atelier 2026.
+ * Inline SVG logo — Financial Market.
  *
- * Design:
- *   • Hexagonal base (financial / geometric) with a hairline stroke that
- *     uses `currentColor` — so the same SVG inherits the surrounding
- *     text color in light AND dark mode without any JS or media query.
- *   • A small chart line in the middle: a stylized upward trend, the
- *     single emerald accent that ties the logo to the rest of the
- *     design system (Atelier `--at-accent`).
- *   • All strokes use `vector-effect="non-scaling-stroke"` so the logo
- *     stays crisp at any size.
+ * Design (هماهنگ با لوگوی ربات تلگرام و فاوآیکون):
+ *   • Squircle با گرادیان زمردی (رنگ برند) — در حالت روشن و تاریک خواناست.
+ *   • سپر سفید با تیک سبز داخل — نشان «امنیت و اعتماد».
+ *   • همهٔ المان‌ها بردار هستند — در هر اندازه‌ای crisp می‌مانند.
  *
- * Why SVG (not PNG):
- *   • One file, both themes — `currentColor` does the switching.
- *   • ~1 KB versus 3 KB per PNG (×2 themes = 6 KB of PNG).
- *   • Scales perfectly to retina / 4K / print.
- *   • Inline = no extra HTTP request, no layout shift.
+ * چرا SVG (نه PNG):
+ *   • یک فایل، هر دو تم — گرادیان مستقل از رنگ متن است.
+ *   • مقیاس‌پذیر روی retina / 4K / چاپ.
+ *   • بدون درخواست HTTP اضافه و بدون layout shift.
  *
- * Custom uploads (admin override) still flow through the `logoUrl` prop
- * on `<Logo />`; this component is the default and the fallback.
+ * آپلود سفارشی (توسط مالک از تنظیمات) از طریق prop `logoUrl` روی
+ * `<Logo />` عبور می‌کند؛ این کامپوننت پیش‌فرض و fallback است.
  */
-const LogoSvg = ({ className, title = 'لوگوی financial market' }: LogoSvgProps) => {
+const LogoSvg = ({ className, title = 'لوگوی Financial Market' }: LogoSvgProps) => {
   return (
     <svg
       width="40"
@@ -42,42 +36,32 @@ const LogoSvg = ({ className, title = 'لوگوی financial market' }: LogoSvgPr
       aria-label={title}
     >
       <title>{title}</title>
+      <defs>
+        <linearGradient id="fm-brand-g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#10b981" />
+          <stop offset="0.55" stopColor="#059669" />
+          <stop offset="1" stopColor="#065f46" />
+        </linearGradient>
+      </defs>
 
-      {/* Hexagonal base — hairline stroke inherits text color */}
+      {/* Squircle پس‌زمینه — گرادیان زمردی برند */}
+      <rect x="2.5" y="2.5" width="35" height="35" rx="9" fill="url(#fm-brand-g)" />
+
+      {/* سپر سفید — نماد امنیت */}
       <path
-        d="M20 4.5L33.5 12V28L20 35.5L6.5 28V12L20 4.5Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-        opacity="0.85"
+        d="M20 8.5L26.5 13.5V21Q26.5 26 20 31Q13.5 26 13.5 21V13.5L20 8.5Z"
+        fill="#ffffff"
       />
 
-      {/* Inner ring — softer, for depth */}
+      {/* تیک سبز داخل سپر — تأیید */}
       <path
-        d="M20 9.5L29 14.5V25.5L20 30.5L11 25.5V14.5L20 9.5Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="0.8"
-        strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
-        opacity="0.35"
-      />
-
-      {/* Chart line — emerald accent (single color, theme-independent) */}
-      <path
-        d="M12 25L17 19.5L22 22L28 14.5"
-        fill="none"
-        stroke="var(--at-accent, #059669)"
-        strokeWidth="2"
+        d="M16.2 20.5L19 23.5L24.2 16.5"
+        stroke="#059669"
+        strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
-        vectorEffect="non-scaling-stroke"
+        fill="none"
       />
-
-      {/* Accent dot at the latest data point — signals "live" */}
-      <circle cx="28" cy="14.5" r="1.8" fill="var(--at-accent, #059669)" />
     </svg>
   );
 };

@@ -692,11 +692,29 @@ export default function AtelierChart({ viewStats, statsData }: AtelierChartProps
   // getViewStats آمده) به‌عنوان fallbackData پاس می‌شود تا paint اول
   // بدون فِلِش سفید باشد. کلید cache بر اساس period تا هر بازه
   // جداگانه کش شود.
+  // FIX (2026-08-09): /api/traffic-stats پاسخ را با پوستهٔ
+  // { success, data: { labels, data, ... } } برمی‌گرداند — اینجا unwrap می‌شود
+  // تا swr.data دقیقاً شکل fallbackData باشد. قبلاً live.data خودِ آبجکت بود و
+  // computeMetrics با «data.reduce is not a function» کل داشبورد را crash می‌کرد.
   const fetcher = (url: string) =>
-    fetch(url, { credentials: 'same-origin' }).then((r) => {
-      if (!r.ok) throw new Error(`traffic-stats: ${r.status}`);
-      return r.json();
-    });
+    fetch(url, { credentials: 'same-origin' })
+      .then((r) => {
+        if (!r.ok) throw new Error(`traffic-stats: ${r.status}`);
+        return r.json() as Promise<{
+          success: boolean;
+          data?: {
+            labels: string[];
+            data: number[];
+            totalViews: number;
+            todayViews: number;
+            periodDays?: number;
+          };
+        }>;
+      })
+      .then((json) => {
+        if (!json?.success || !json.data) throw new Error('traffic-stats: bad payload');
+        return json.data;
+      });
   const swr = useSWR<{
     labels: string[];
     data: number[];

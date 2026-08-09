@@ -15,9 +15,11 @@ const prismaMock = vi.hoisted(() => ({
     create: vi.fn(),
     findUnique: vi.fn(),
     update: vi.fn(),
+    updateMany: vi.fn(),
   },
   user: {
     update: vi.fn(),
+    findUnique: vi.fn(),
   },
   $transaction: vi.fn(),
 }));
@@ -170,8 +172,13 @@ describe('consumeTelegramLinkToken', () => {
     });
     prismaMock.telegramLinkToken.update.mockResolvedValue({});
     prismaMock.user.update.mockResolvedValue({});
+    prismaMock.user.findUnique.mockResolvedValue({
+      pendingPhone: null,
+      name: null,
+      email: 'user-1@test.local',
+    });
     const res = await consumeTelegramLinkToken('link_aa', 'chat-99');
-    expect(res).toEqual({ ok: true });
+    expect(res).toEqual({ ok: true, pendingPhone: null, accountName: 'user-1@test.local' });
     expect(prismaMock.telegramLinkToken.update).toHaveBeenCalledWith({
       where: { id: 't1' },
       data: { used: true },
