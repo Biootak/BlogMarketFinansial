@@ -9,19 +9,41 @@
  *   recommended Supabase setting for serverless/Next.js apps.
  *   Override with PRISMA_FORCE_PORT env var, or set the port directly in DATABASE_URL.
  * - Adds `connection_limit` from PRISMA_CONNECTION_LIMIT if not already set.
- *   Defaults: 3 in production, 1 in development (Turbopack workers multiply).
- * - Adds `pool_timeout` from PRISMA_POOL_TIMEOUT if not already set.
- *   Default: 30 seconds.
+ *   Defaults: 3 in production, 1 in development (see CONNECTION BUDGET below).
+ * - Adds `pool_timeout` from PRISMA_POOL_TIMEOUT if not already set. Default: 8s.
+ * - Adds `connect_timeout` from PRISMA_CONNECT_TIMEOUT if not already set. Default: 8s
+ *   (fail-fast — an unreachable DB errors quickly instead of hanging 30+ s).
  * - Preserves any existing query parameters from DATABASE_URL.
+ *
+ * ── CONNECTION BUDGET (چرا dev باید ۱ بماند) ────────────────────────────────
+ * Prisma's connection_limit is PER CLIENT. In Next.js dev, Turbopack spawns one
+ * RSC worker per CPU core and every worker holds its OWN Prisma singleton (the
+ * globalThis guard in db.ts is per-worker), so the connections the app actually
+ * opens are:  workers × connection_limit.
+ *
+ * The dev database (AWS RDS, role `u2ch9n0ouvoq50`) is capped SERVER-SIDE at
+ * rolconnlimit = 20 — at most 20 concurrent connections for the role, no matter
+ * what this file asks for. On a many-core dev machine (10+ workers) even
+ * connection_limit = 2 blows past the cap and PostgreSQL rejects new connections
+ * with `FATAL: too many connections for role` (Prisma surfaces it as P1001
+ * "Can't reach database server").
+ *
+ * That cap lives ON THE DATABASE SERVER, not in this repo: raising it requires
+ * `ALTER ROLE u2ch9n0ouvoq50 CONNECTION LIMIT <n>` run by the RDS master user.
+ * Until then, dev MUST keep connection_limit = 1. .env.local pins
+ * PRISMA_CONNECTION_LIMIT="1" to override the legacy value in .env (dev default
+ * was 10 in commit 312e9c3c — exactly what exhausted the 20-cap).
  *
  * This keeps the migration/directUrl config untouched; it only affects the
  * runtime/query connection URL passed to PrismaClient.
  */
 function getDefaultConnectionLimit(): string {
-  // Supabase transaction-mode pooler (port 6543) has no hard limit, but we still
-  // keep a low connection_limit so Prisma doesn't open too many connections per
-  // worker. In dev, Turbopack spawns multiple RSC workers, each holding its own
-  // Prisma singleton — limit to 1 per worker to stay safe.
+  // Why 1 in dev: connection_limit is per Prisma client, and dev spawns one
+  // client per Turbopack worker → total = workers × limit. With the RDS role
+  // capped at 20 (see header), limit=1 keeps the whole dev server under the cap
+  // even on 16-core machines; limit=2+ is only safe after rolconnlimit is
+  // raised server-side. Production runs as a single dyno against its own
+  // Heroku Postgres pool, so 3 is fine there.
   return process.env.NODE_ENV === 'production' ? '3' : '1';
 }
 
@@ -65,6 +87,9 @@ export function buildDatabaseUrl(): string {
   }
 
   // Only override if the operator has not already set the value in DATABASE_URL.
+  // ⚠️ PRISMA_CONNECTION_LIMIT must respect the server-side role cap (RDS
+  // rolconnlimit=20): values ≥2 in dev exhaust the cap once multiple workers
+  // open pools. .env.local pins it to 1 for dev on purpose.
   if (!url.searchParams.has('connection_limit')) {
     const connectionLimit = process.env.PRISMA_CONNECTION_LIMIT ?? getDefaultConnectionLimit();
     url.searchParams.set('connection_limit', connectionLimit);

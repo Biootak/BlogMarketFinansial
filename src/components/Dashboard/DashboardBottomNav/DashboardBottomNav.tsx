@@ -115,11 +115,11 @@ const DashboardBottomNav: FC<Props> = ({ role, unreadCount = 0, kycVerified = tr
               ...(!kycVerified
                 ? {
                     id: 'kyc',
-                    href: '/dashboard/kyc',
+                    href: '/customer/kyc',
                     label: 'احراز هویت',
                     icon: HiOutlineShieldCheck,
                     primary: true,
-                    matchPrefixes: ['/dashboard/kyc'],
+                    matchPrefixes: ['/customer/kyc'],
                   }
                 : {
                     id: 'wallet',

@@ -153,7 +153,7 @@ export async function UserHome({
                 <span>تأیید ایمیل</span>
               </Link>
             ) : null}
-            <Link href="/dashboard/kyc" className={styles.welcomeStep}>
+            <Link href="/customer/kyc" className={styles.welcomeStep}>
               <span className={styles.welcomeStepIndex}>۲</span>
               <span>احراز هویت</span>
             </Link>
@@ -173,7 +173,7 @@ export async function UserHome({
           <h2 className={styles.kycTitle}>احراز هویت، مسیر خدمات مالی</h2>
           <p className={styles.kycDesc}>برای دسترسی کامل، احراز هویت را تکمیل کنید.</p>
         </div>
-        <Link href="/dashboard/kyc" className={styles.kycCta}>
+        <Link href="/customer/kyc" className={styles.kycCta}>
           <span>شروع احراز هویت</span>
           <ArrowLeft aria-hidden />
         </Link>
@@ -224,7 +224,7 @@ export async function UserHome({
             </span>
             <span className={styles.actionLabel}>کیف پول</span>
           </Link>
-          <Link href="/dashboard/kyc" className={styles.actionCard}>
+          <Link href="/customer/kyc" className={styles.actionCard}>
             <span className={styles.actionIcon}>
               <Shield aria-hidden />
             </span>

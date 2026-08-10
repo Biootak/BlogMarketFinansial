@@ -75,7 +75,7 @@ function pathsFor(role: string) {
   return {
     transfer: '/dashboard/transfer',
     deals: '/dashboard/my-deals',
-    kyc: '/dashboard/kyc',
+    kyc: '/customer/kyc',
   };
 }
 
@@ -892,7 +892,7 @@ export function WalletClient({ walletData, userRole }: Props) {
         <p className={s.noCustomerDesc}>
           برای فعال‌سازی کیف پول، ابتدا اطلاعات هویتی خود را تکمیل کنید.
         </p>
-        <Link href="/dashboard/kyc" className={s.ctaLink}>
+        <Link href="/customer/kyc" className={s.ctaLink}>
           <ShieldAlert size={16} aria-hidden /> احراز هویت (KYC)
         </Link>
       </div>
@@ -931,7 +931,7 @@ export function WalletClient({ walletData, userRole }: Props) {
               />
             </div>
           </div>
-          <Link href="/dashboard/kyc" className={s.kycBannerLink} aria-label="احراز هویت">
+          <Link href="/customer/kyc" className={s.kycBannerLink} aria-label="احراز هویت">
             تکمیل ←
           </Link>
         </div>

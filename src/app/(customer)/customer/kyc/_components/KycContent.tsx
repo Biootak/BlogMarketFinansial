@@ -961,7 +961,7 @@ export default function KycContent({ profile, records }: Props) {
                   </div>
                   <div className={s.historyRight}>
                     <StatusPill variant={statusKey}>
-                      <CircleDot size={8} aria-hidden style={{ marginInlineEnd: '0.3em' }} />
+                      <CircleDot size={8} aria-hidden className={s.dotGap} />
                       {STATUS_LABEL[rec.status] ?? rec.status}
                     </StatusPill>
                     <span className={s.historyDate} title={faDateTime(rec.createdAt)}>

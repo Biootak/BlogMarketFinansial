@@ -270,7 +270,7 @@ export function getMenu(role: UserRole): NavSection[] {
 
   const kyc: MenuItem = {
     id: 'kyc',
-    href: '/dashboard/kyc',
+    href: '/customer/kyc',
     icon: HiOutlineShieldCheck({ className: ICON_CLASS }),
     label: 'احراز هویت',
     title: 'احراز هویت (KYC)',

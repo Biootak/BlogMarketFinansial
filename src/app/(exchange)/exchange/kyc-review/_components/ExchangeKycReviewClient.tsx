@@ -1,36 +1,41 @@
 'use client';
 
 /**
- * ExchangeKycReviewClient — صف KYC مشتریان صرافی (پنل صراف)
+ * ExchangeKycReviewClient — Vault Command Center (Exchange Edition)
  *
- * FIX (2026-08-01): صراف قبلاً راهی برای تأیید/رد KYC مشتریان خودش نداشت —
- * reviewCustomerKycRecord فقط در kyc-review ادمین پلتفرم وصل بود و صراف از
- * /dashboard بلاک است. این component صف KYC صرافی خودش را با tenant isolation
- * نمایش می‌دهد و اجازهٔ تأیید/رد می‌دهد (canWrite → OWNER/MANAGER/STAFF).
- *
- * Design: هماهنگ با nova tokens — KPI strip + table + sheet preview + reject dialog.
- * States: loading / empty / error / success / disabled.
+ * Split-pane KYC review: queue cards (right) + persistent review panel (left).
+ * Uses --at-* tokens (exchange design system) + shared primitives.
+ * RTL-first, mobile-first, data from DB (no mocks).
  */
 
 import { reviewCustomerKycRecord } from '@/actions/customer-portal';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { SearchInput } from '@/components/Dashboard/primitives/SearchInput';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { AlertCircle, CheckCircle2, Eye, FileText, Lock, ShieldCheck, XCircle } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  FileText,
+  FileX2,
+  ImageOff,
+  Lock,
+  Shield,
+  Users,
+  X,
+  XCircle,
+  ZoomIn,
+} from 'lucide-react';
 import Image from 'next/image';
-import type { CSSProperties } from 'react';
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import s from './ExchangeKycReviewClient.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
+
+// ─── Types ────────────────────────────────────────────────────────────────
 
 export type ExchangeKycRow = {
   id: string;
@@ -47,13 +52,22 @@ export type ExchangeKycRow = {
 interface Props {
   records: ExchangeKycRow[];
   canWrite: boolean;
-  exchangeName: string;
 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
 
 const DOC_TYPE_LABEL: Record<string, string> = {
   NATIONAL_ID: 'تذکره / ملی',
   PASSPORT: 'پاسپورت',
   RESIDENCE_PERMIT: 'اجازه اقامت',
+  SELFIE: 'سلفی',
+  PHONE: 'تأیید موبایل',
+};
+
+const LEVEL_LABEL: Record<string, string> = {
+  LEVEL_1: 'سطح ۱',
+  LEVEL_2: 'سطح ۲',
+  LEVEL_3: 'سطح ۳',
 };
 
 function initials(name: string): string {
@@ -78,40 +92,96 @@ function formatDate(iso: string): string {
   });
 }
 
-function DocImage({ src, alt }: { src: string; alt: string }) {
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'همین الان';
+  if (mins < 60) return `${_faNum.format(mins)} دقیقه پیش`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${_faNum.format(hours)} ساعت پیش`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${_faNum.format(days)} روز پیش`;
+  return formatDate(iso);
+}
+
+function isUrgent(iso: string): boolean {
+  return Date.now() - new Date(iso).getTime() > 2 * 24 * 60 * 60 * 1000;
+}
+
+// ─── DocImage ─────────────────────────────────────────────────────────────
+
+function DocImage({ src, label, onZoom }: { src: string; label: string; onZoom?: () => void }) {
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+
   if (error) {
     return (
-      <div className={s.imgFallback} aria-label={alt}>
-        <FileText size={28} aria-hidden />
+      <div className={s.imgFallback}>
+        <FileX2 size={24} aria-hidden />
         <span>بارگذاری ناموفق</span>
       </div>
     );
   }
+
   return (
     <div className={s.docImgWrap}>
+      {!loaded && (
+        <div className={s.docImgSkeleton}>
+          <FileText size={24} aria-hidden />
+        </div>
+      )}
       <Image
         src={src}
-        alt={alt}
+        alt={label}
         fill
-        className={s.docImg}
+        className={cn(s.docImg, loaded && s.docImgLoaded)}
         onError={() => setError(true)}
+        onLoad={() => setLoaded(true)}
         unoptimized
-        sizes="(max-width: 768px) 100vw, 500px"
+        sizes="(max-width: 900px) 100vw, 400px"
       />
+      <div className={s.docImgOverlay}>
+        <span className={s.docImgLabel}>{label}</span>
+        {onZoom && (
+          <button type="button" className={s.docZoomBtn} onClick={onZoom} aria-label="بزرگنمایی">
+            <ZoomIn size={14} aria-hidden />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
-export function ExchangeKycReviewClient({ records: initial, canWrite, exchangeName }: Props) {
+// ─── Avatar ───────────────────────────────────────────────────────────────
+
+function Avatar({ name, size = 'sm' }: { name: string; size?: 'sm' | 'md' | 'lg' }) {
+  const hue = nameHue(name);
+  return (
+    <div
+      className={cn(s.avatar, size === 'sm' && s.avatarSm, size === 'md' && s.avatarMd, size === 'lg' && s.avatarLg)}
+      style={{
+        background: `oklch(90% 0.04 ${hue})`,
+        color: `oklch(35% 0.12 ${hue})`,
+      }}
+    >
+      {initials(name)}
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────
+
+export function ExchangeKycReviewClient({ records: initial, canWrite }: Props) {
   const [rows, setRows] = useState<ExchangeKycRow[]>(initial);
-  const [preview, setPreview] = useState<ExchangeKycRow | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
   const [rejectTarget, setRejectTarget] = useState<ExchangeKycRow | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
+  const [userCleared, setUserCleared] = useState(false);
 
   const cooldownTick = useCallback(() => {
     setCooldown(1);
@@ -120,355 +190,434 @@ export function ExchangeKycReviewClient({ records: initial, canWrite, exchangeNa
 
   const actionLocked = cooldown > 0 || isPending;
 
+  // KPI
   const kpi = useMemo(
     () => ({
       total: rows.length,
-      idCard: rows.filter((r) => r.docType === 'NATIONAL_ID').length,
-      urgent: rows.filter(
-        (r) => Date.now() - new Date(r.createdAt).getTime() > 2 * 24 * 60 * 60 * 1000,
-      ).length,
+      withDoc: rows.filter((r) => r.fileUrl).length,
+      withoutDoc: rows.filter((r) => !r.fileUrl).length,
+      urgent: rows.filter((r) => isUrgent(r.createdAt)).length,
     }),
     [rows],
   );
 
+  // Filtered
+  const filtered = useMemo(() => {
+    if (!search.trim()) return rows;
+    const q = search.trim().toLowerCase();
+    return rows.filter(
+      (r) =>
+        r.customerName.toLowerCase().includes(q) ||
+        r.customerPhone.includes(q) ||
+        (r.docNumber ?? '').includes(q),
+    );
+  }, [rows, search]);
+
+  // Selected row
+  const selected = useMemo(() => rows.find((r) => r.id === selectedId) ?? null, [rows, selectedId]);
+
+  // Auto-select first when none selected (skip if user explicitly cleared)
+  useEffect(() => {
+    if (!userCleared && !selectedId && rows.length > 0) {
+      setSelectedId(rows[0].id);
+    }
+  }, [rows, selectedId, userCleared]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!filtered.length || filtered.length === 1) return;
+      const idx = filtered.findIndex((r) => r.id === selectedId);
+      if (idx === -1) return;
+      if (e.key === 'ArrowDown' && idx < filtered.length - 1) {
+        e.preventDefault();
+        setSelectedId(filtered[idx + 1].id);
+      } else if (e.key === 'ArrowUp' && idx > 0) {
+        e.preventDefault();
+        setSelectedId(filtered[idx - 1].id);
+      } else if (e.key === 'Escape') {
+        setSelectedId(null);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [filtered, selectedId]);
+
+  // Approve
   const approve = useCallback(
     (row: ExchangeKycRow) => {
       if (actionLocked) return;
       cooldownTick();
-      // optimistic
       setRows((prev) => prev.filter((r) => r.id !== row.id));
-      setPreview((prev) => (prev?.id === row.id ? null : prev));
-      setError(null);
-      setLastAction(null);
+      if (selectedId === row.id) setSelectedId(null);
       startTransition(async () => {
-        const res = await reviewCustomerKycRecord({ recordId: row.id, approved: true });
-        if (!res.success) {
+        try {
+          await reviewCustomerKycRecord({ recordId: row.id, approved: true });
+          setLastAction(`KYC «${row.customerName}» تأیید شد`);
+          setError(null);
+        } catch (err: any) {
           setRows((prev) => [row, ...prev]);
-          setError(res.error ?? 'خطا در تأیید');
-          return;
+          setError(err?.message || 'خطا در تأیید');
         }
-        setLastAction(`KYC «${row.customerName}» تأیید شد`);
       });
     },
-    [actionLocked, cooldownTick],
+    [actionLocked, cooldownTick, selectedId],
   );
 
+  // Reject
   const confirmReject = useCallback(() => {
     if (!rejectTarget || actionLocked) return;
+    if (!rejectReason.trim()) return;
     cooldownTick();
     const target = rejectTarget;
-    const reason = rejectReason.trim() || 'مدارک ناقص یا ناخوانا';
+    setRows((prev) => prev.filter((r) => r.id !== target.id));
+    if (selectedId === target.id) setSelectedId(null);
     setRejectTarget(null);
     setRejectReason('');
-    setRows((prev) => prev.filter((r) => r.id !== target.id));
-    setPreview((prev) => (prev?.id === target.id ? null : prev));
-    setError(null);
-    setLastAction(null);
     startTransition(async () => {
-      const res = await reviewCustomerKycRecord({
-        recordId: target.id,
-        approved: false,
-        rejectedReason: reason,
-      });
-      if (!res.success) {
+      try {
+        await reviewCustomerKycRecord({
+          recordId: target.id,
+          approved: false,
+          rejectedReason: rejectReason.trim(),
+        });
+        setLastAction(`KYC «${target.customerName}» رد شد`);
+        setError(null);
+      } catch (err: any) {
         setRows((prev) => [target, ...prev]);
-        setError(res.error ?? 'خطا در رد');
-        return;
+        setError(err?.message || 'خطا در رد');
       }
-      setLastAction(`KYC «${target.customerName}» رد شد`);
     });
-  }, [rejectTarget, rejectReason, actionLocked, cooldownTick]);
+  }, [rejectTarget, rejectReason, actionLocked, cooldownTick, selectedId]);
 
   return (
     <div className={s.root} dir="rtl">
-      {/* ── KPI strip ─────────────────────────────────────────────── */}
-      <div className={s.kpiStrip} aria-label="خلاصه صف KYC">
-        <div className={s.kpiCard} style={{ '--kpi-accent': 'var(--nova-amber)' } as CSSProperties}>
-          <span className={s.kpiLabel}>در انتظار بررسی</span>
-          <span className={s.kpiValue}>{_faNum.format(kpi.total)}</span>
-          <span className={s.kpiSub}>{exchangeName}</span>
+      {/* ── Controls Bar ─────────────────────────────────────────────── */}
+      <div className={s.controlsBar}>
+        <div className={s.controlsRight}>
+          {/* KPI Strip */}
+          <div className={s.kpiStrip} aria-label="خلاصه صف KYC">
+            <div
+              className={s.kpiCard}
+              style={
+                {
+                  '--kpi-accent': 'var(--at-accent)',
+                  '--kpi-delay': '0ms',
+                } as React.CSSProperties
+              }
+            >
+              <div className={s.kpiIcon}>
+                <Users size={14} aria-hidden />
+              </div>
+              <span className={s.kpiValue}>{_faNum.format(kpi.total)}</span>
+              <span className={s.kpiLabel}>در انتظار بررسی</span>
+            </div>
+            <div
+              className={s.kpiCard}
+              style={
+                {
+                  '--kpi-accent': 'var(--at-info)',
+                  '--kpi-delay': '60ms',
+                } as React.CSSProperties
+              }
+            >
+              <div className={s.kpiIcon}>
+                <FileText size={14} aria-hidden />
+              </div>
+              <span className={s.kpiValue}>{_faNum.format(kpi.withDoc)}</span>
+              <span className={s.kpiLabel}>با مدرک</span>
+            </div>
+            <div
+              className={s.kpiCard}
+              style={
+                {
+                  '--kpi-accent': 'var(--at-warning)',
+                  '--kpi-delay': '120ms',
+                } as React.CSSProperties
+              }
+            >
+              <div className={s.kpiIcon}>
+                <Clock size={14} aria-hidden />
+              </div>
+              <span className={s.kpiValue}>{_faNum.format(kpi.urgent)}</span>
+              <span className={s.kpiLabel}>فوری (بیش از ۲ روز)</span>
+            </div>
+          </div>
         </div>
-        <div
-          className={s.kpiCard}
-          style={{ '--kpi-accent': 'var(--nova-violet)' } as CSSProperties}
-        >
-          <span className={s.kpiLabel}>تذکره / کارت ملی</span>
-          <span className={s.kpiValue}>{_faNum.format(kpi.idCard)}</span>
-          <span className={s.kpiSub}>سهم از صف</span>
-        </div>
-        <div className={s.kpiCard} style={{ '--kpi-accent': 'var(--nova-rose)' } as CSSProperties}>
-          <span className={s.kpiLabel}>فوری (بیش از ۲ روز)</span>
-          <span className={s.kpiValue}>{_faNum.format(kpi.urgent)}</span>
-          <span className={s.kpiSub}>اولویت رسیدگی</span>
+        <div className={s.controlsLeft}>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="جستجوی نام، شماره، مدرک..."
+            ariaLabel="جستجوی KYC"
+          />
         </div>
       </div>
 
-      {/* ── Notices ───────────────────────────────────────────────── */}
+      {/* ── Notices ──────────────────────────────────────────────────── */}
       {lastAction && (
-        <output className={cn(s.banner, s.bannerSuccess)} aria-live="polite">
-          <CheckCircle2 size={15} aria-hidden />
+        <output className={s.bannerSuccess} aria-live="polite">
+          <CheckCircle2 size={14} aria-hidden />
           {lastAction}
         </output>
       )}
       {error && (
-        <div className={cn(s.banner, s.bannerError)} role="alert">
-          <AlertCircle size={15} aria-hidden />
+        <div className={s.bannerError} role="alert">
+          <AlertCircle size={14} aria-hidden />
           {error}
         </div>
       )}
       {!canWrite && (
         <output className={s.readOnlyNote}>
-          <Lock size={14} aria-hidden />
-          شما دسترسی خواندنی دارید — تأیید/رد توسط OWNER یا MANAGER صرافی انجام می‌شود.
+          <Lock size={13} aria-hidden />
+          دسترسی خواندنی — تأیید/رد توسط OWNER یا MANAGER صرافی انجام می‌شود.
         </output>
       )}
 
-      {/* ── Empty / Table ─────────────────────────────────────────── */}
+      {/* ── Empty State ──────────────────────────────────────────────── */}
       {rows.length === 0 ? (
-        <div className={s.emptyWrap}>
-          <span className={s.emptyIcon} aria-hidden>
-            <ShieldCheck size={26} />
-          </span>
-          <h2 className={s.emptyTitle}>صف KYC خالی است</h2>
-          <p className={s.emptyDesc}>
-            هیچ درخواست احراز هویتی در انتظار بررسی نیست. به‌محض اینکه مشتری مدارک ارسال کند، اینجا
-            نمایش داده می‌شود.
-          </p>
-        </div>
+        <MillionDollarEmpty
+          title="صف KYC خالی است"
+          description="هیچ درخواست احراز هویتی در انتظار بررسی نیست. به‌محض اینکه مشتری مدارک ارسال کند، اینجا نمایش داده می‌شود."
+          tone="emerald"
+          eyebrow="صف KYC"
+        />
+      ) : filtered.length === 0 && search.trim() ? (
+        <MillionDollarEmpty
+          title="نتیجه‌ای یافت نشد"
+          description="عبارت جستجو را تغییر دهید."
+          tone="amber"
+          eyebrow="نتیجه جستجو"
+        />
       ) : (
-        <div className={s.tableWrap}>
-          <table className={s.table} aria-label="صف بررسی KYC">
-            <thead>
-              <tr>
-                <th className={s.th} scope="col">
-                  مشتری
-                </th>
-                <th className={s.th} scope="col">
-                  نوع مدرک
-                </th>
-                <th className={s.th} scope="col">
-                  شماره
-                </th>
-                <th className={s.th} scope="col">
-                  سطح
-                </th>
-                <th className={s.th} scope="col">
-                  تاریخ ارسال
-                </th>
-                <th className={s.th} scope="col">
-                  <span className="sr-only">عملیات</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, i) => {
-                const hue = nameHue(row.customerName);
-                const urgent =
-                  Date.now() - new Date(row.createdAt).getTime() > 2 * 24 * 60 * 60 * 1000;
+        /* ── Split Pane ─────────────────────────────────────────────── */
+        <div className={s.splitPane}>
+          {/* Queue Pane (right) */}
+          <div className={s.queuePane}>
+            <div className={s.queueHeader}>
+              <span className={s.queueCount}>
+                {_faNum.format(filtered.length)} درخواست
+                {search.trim() && <> از {_faNum.format(rows.length)}</>}
+              </span>
+              {selectedId && (
+                <button
+                  type="button"
+                  className={s.clearSelectBtn}
+                  onClick={() => setSelectedId(null)}
+                >
+                  <X size={12} aria-hidden />
+                  لغو انتخاب
+                </button>
+              )}
+            </div>
+            <div className={s.cardList} role="listbox" aria-label="صف KYC" tabIndex={0}>
+              {filtered.map((row, i) => {
+                const isSelected = row.id === selectedId;
+                const urgent = isUrgent(row.createdAt);
                 return (
-                  <tr key={row.id} className={s.tr} style={{ '--row-i': i } as CSSProperties}>
-                    <td className={s.td}>
-                      <div className={s.applicant}>
-                        <span
-                          className={s.avatar}
-                          aria-hidden
-                          style={{
-                            background: `oklch(91% 0.04 ${hue})`,
-                            color: `oklch(36% 0.12 ${hue})`,
-                          }}
-                        >
-                          {initials(row.customerName)}
-                        </span>
-                        <div className={s.applicantInfo}>
-                          <span className={s.applicantName}>{row.customerName}</span>
-                          <span className={s.applicantPhone}>{row.customerPhone}</span>
+                  <button
+                    key={row.id}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={cn(s.queueCard, isSelected && s.queueCardSelected)}
+                    style={
+                      {
+                        '--card-i': i,
+                      } as React.CSSProperties
+                    }
+                    onClick={() => setSelectedId(row.id)}
+                  >
+                    {/* Accent stripe */}
+                    <div
+                      className={s.cardStripe}
+                      style={{
+                        background: urgent ? 'var(--at-danger)' : 'var(--at-accent)',
+                      }}
+                    />
+                    <div className={s.cardBody}>
+                      <div className={s.cardTop}>
+                        <Avatar name={row.customerName} size="sm" />
+                        <div className={s.cardIdentity}>
+                          <span className={s.cardName}>{row.customerName}</span>
+                          <span className={s.cardMeta}>{row.customerPhone}</span>
                         </div>
-                      </div>
-                    </td>
-                    <td className={s.td}>
-                      <span className={cn(s.chip, s.docTypeChip)}>
-                        {DOC_TYPE_LABEL[row.docType] ?? row.docType}
-                      </span>
-                    </td>
-                    <td className={s.td}>
-                      <span className={s.applicantPhone}>{row.docNumber ?? '—'}</span>
-                    </td>
-                    <td className={s.td}>
-                      <span className={cn(s.chip, s.levelChip)}>{row.level}</span>
-                    </td>
-                    <td className={s.td}>
-                      <span className={s.date}>
-                        {formatDate(row.createdAt)}
                         {urgent && (
-                          <span className={s.chip} style={{ marginInlineStart: '6px' }}>
+                          <span className={s.urgentBadge}>
+                            <span className={s.urgentDot} />
                             فوری
                           </span>
                         )}
-                      </span>
-                    </td>
-                    <td className={s.td}>
-                      <div className={s.actions}>
-                        <button
-                          type="button"
-                          className={s.previewBtn}
-                          onClick={() => setPreview(row)}
-                          aria-label={`مشاهده مدرک ${row.customerName}`}
-                        >
-                          <Eye size={13} aria-hidden />
-                          جزئیات
-                        </button>
-                        {canWrite && (
-                          <>
-                            <button
-                              type="button"
-                              className={s.approveBtn}
-                              onClick={() => approve(row)}
-                              disabled={actionLocked}
-                              aria-label={`تأیید KYC ${row.customerName}`}
-                            >
-                              <CheckCircle2 size={13} aria-hidden />
-                              تأیید
-                            </button>
-                            <button
-                              type="button"
-                              className={s.rejectBtn}
-                              onClick={() => {
-                                setRejectTarget(row);
-                                setRejectReason('');
-                              }}
-                              disabled={actionLocked}
-                              aria-label={`رد KYC ${row.customerName}`}
-                            >
-                              <XCircle size={13} aria-hidden />
-                              رد
-                            </button>
-                          </>
-                        )}
                       </div>
-                    </td>
-                  </tr>
+                      <div className={s.cardBottom}>
+                        <div className={s.cardChips}>
+                          <span className={s.chipDocType}>
+                            {DOC_TYPE_LABEL[row.docType] ?? row.docType}
+                          </span>
+                          <span className={s.chipLevel}>
+                            {LEVEL_LABEL[row.level] ?? row.level}
+                          </span>
+                          <span className={s.chipTime}>{timeAgo(row.createdAt)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Selected indicator */}
+                    {isSelected && (
+                      <div className={s.cardSelectedIndicator}>
+                        <div className={s.cardSelectedDot} />
+                      </div>
+                    )}
+                  </button>
                 );
               })}
-            </tbody>
-          </table>
+            </div>
+          </div>
+
+          {/* Review Pane (left) */}
+          <div className={s.reviewPane}>
+            {selected ? (
+              <div className={s.reviewContent}>
+                <div className={s.reviewInner}>
+                  {/* Header */}
+                  <div className={s.reviewHeader}>
+                    <Avatar name={selected.customerName} size="md" />
+                    <div className={s.reviewTitleGroup}>
+                      <span className={s.reviewName}>{selected.customerName}</span>
+                      <span className={s.reviewMeta}>{selected.customerPhone}</span>
+                    </div>
+                  </div>
+
+                  {/* Meta Grid */}
+                  <div className={s.metaGrid}>
+                    <div className={s.metaItem}>
+                      <span className={s.metaLabel}>نوع مدرک</span>
+                      <span className={s.metaValue}>
+                        {DOC_TYPE_LABEL[selected.docType] ?? selected.docType}
+                      </span>
+                    </div>
+                    <div className={s.metaItem}>
+                      <span className={s.metaLabel}>سطح KYC</span>
+                      <span className={s.metaValue}>
+                        {LEVEL_LABEL[selected.level] ?? selected.level}
+                      </span>
+                    </div>
+                    {selected.docNumber && (
+                      <div className={s.metaItem}>
+                        <span className={s.metaLabel}>شماره مدرک</span>
+                        <span className={s.metaValue}>{selected.docNumber}</span>
+                      </div>
+                    )}
+                    <div className={s.metaItem}>
+                      <span className={s.metaLabel}>تاریخ ارسال</span>
+                      <span className={s.metaValue}>{formatDate(selected.createdAt)}</span>
+                    </div>
+                    {isUrgent(selected.createdAt) && (
+                      <div className={s.metaItem}>
+                        <span className={s.metaLabel}>وضعیت</span>
+                        <span className={s.metaValue} style={{ color: 'var(--at-danger)' }}>
+                          ⚠ فوری — بیش از ۲ روز
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Document Grid */}
+                  {selected.fileUrl ? (
+                    <div className={s.docGrid}>
+                      <DocImage
+                        src={selected.fileUrl ?? ''}
+                        label={`مدرک ${selected.customerName}`}
+                        onZoom={() => window.open(selected.fileUrl ?? undefined, '_blank')}
+                      />
+                    </div>
+                  ) : (
+                    <div className={s.noDocs}>
+                      <ImageOff size={24} aria-hidden />
+                      <span>مدارکی بارگذاری نشده</span>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  {canWrite ? (
+                    <div className={s.reviewActions}>
+                      <Button
+                        className={s.approveBtn}
+                        onClick={() => approve(selected)}
+                        disabled={actionLocked}
+                      >
+                        <CheckCircle2 size={15} aria-hidden />
+                        {isPending ? 'در حال تأیید…' : 'تأیید KYC'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className={s.rejectBtn}
+                        onClick={() => setRejectTarget(selected)}
+                        disabled={actionLocked}
+                      >
+                        <XCircle size={15} aria-hidden />
+                        رد
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className={s.readOnlyActions}>
+                      <Lock size={13} aria-hidden />
+                      دسترسی خواندنی — عملیات توسط OWNER یا MANAGER
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className={s.reviewPlaceholder}>
+                <div className={s.placeholderIcon}>
+                  <Shield size={28} aria-hidden />
+                </div>
+                <span className={s.placeholderTitle}>انتخاب کنید</span>
+                <span className={s.placeholderDesc}>
+                  یک درخواست از لیست انتخاب کنید تا جزئیات و مدارک در اینجا نمایش داده شود.
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* ── Preview Sheet ─────────────────────────────────────────── */}
-      <Sheet open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
-        <SheetContent dir="rtl" side="left" className="w-[420px] max-w-full overflow-y-auto">
-          {preview && (
-            <>
-              <SheetTitle className="sr-only">پیش‌نمایش مدرک</SheetTitle>
-              <div className={s.sheetBody}>
-                <div className={s.sheetHeader}>
-                  <span
-                    className={s.sheetAvatar}
-                    aria-hidden
-                    style={{
-                      background: `oklch(91% 0.04 ${nameHue(preview.customerName)})`,
-                      color: `oklch(36% 0.12 ${nameHue(preview.customerName)})`,
-                    }}
-                  >
-                    {initials(preview.customerName)}
-                  </span>
-                  <div className={s.sheetTitle}>
-                    <span className={s.sheetName}>{preview.customerName}</span>
-                    <span className={s.sheetMeta} dir="ltr">
-                      {preview.customerPhone} · {exchangeName}
-                    </span>
-                  </div>
-                </div>
-
-                <div className={s.metaRows}>
-                  <div className={s.metaRow}>
-                    <span className={s.metaLabel}>نوع مدرک</span>
-                    <span className={s.metaValue}>
-                      {DOC_TYPE_LABEL[preview.docType] ?? preview.docType}
-                    </span>
-                  </div>
-                  <div className={s.metaRow}>
-                    <span className={s.metaLabel}>شماره مدرک</span>
-                    <span className={s.metaValue} dir="ltr">
-                      {preview.docNumber ?? '—'}
-                    </span>
-                  </div>
-                  <div className={s.metaRow}>
-                    <span className={s.metaLabel}>سطح درخواستی</span>
-                    <span className={s.metaValue}>{preview.level}</span>
-                  </div>
-                  <div className={s.metaRow}>
-                    <span className={s.metaLabel}>تاریخ ارسال</span>
-                    <span className={s.metaValue}>{formatDate(preview.createdAt)}</span>
-                  </div>
-                </div>
-
-                {preview.fileUrl ? (
-                  <div className={s.docBlock}>
-                    <p className={s.docBlockLabel}>تصویر مدرک</p>
-                    <DocImage src={preview.fileUrl} alt={`مدرک ${preview.customerName}`} />
-                  </div>
-                ) : (
-                  <div className={s.imgFallback}>
-                    <FileText size={28} aria-hidden />
-                    <span>مدرکی بارگذاری نشده</span>
-                  </div>
-                )}
-
-                {canWrite && (
-                  <div className={s.sheetActions}>
-                    <Button
-                      className="flex-1"
-                      onClick={() => approve(preview)}
-                      disabled={actionLocked}
-                    >
-                      <CheckCircle2 size={15} aria-hidden />
-                      تأیید KYC
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setRejectTarget(preview);
-                        setPreview(null);
-                      }}
-                      disabled={actionLocked}
-                    >
-                      <XCircle size={15} aria-hidden />
-                      رد
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
-
-      {/* ── Reject Dialog ─────────────────────────────────────────── */}
+      {/* ── Reject Dialog ────────────────────────────────────────────── */}
       <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
         <DialogContent dir="rtl">
           <DialogHeader>
-            <DialogTitle>رد KYC — {rejectTarget?.customerName}</DialogTitle>
+            <DialogTitle>
+              رد KYC — {rejectTarget?.customerName}
+            </DialogTitle>
+            <div className={s.rejectProfile}>
+              {rejectTarget && <Avatar name={rejectTarget.customerName} size="sm" />}
+              <span className={s.rejectName}>{rejectTarget?.customerPhone}</span>
+            </div>
           </DialogHeader>
-          <div className={s.dialogBody}>
-            <span className={s.dialogLabel} id="exchange-kyc-reject-reason-label">
-              دلیل رد (الزامی برای رد):
-            </span>
+          <div>
+            <label className={s.dialogLabel} id="exchange-kyc-reject-reason-label">
+              دلیل رد (الزامی):
+            </label>
             <Textarea
+              className={s.dialogTextarea}
               aria-labelledby="exchange-kyc-reject-reason-label"
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
               rows={3}
               dir="rtl"
-              placeholder="مثلاً: تصویر ناخوانا / تاریخ انقضا گذشته / مغایرت هویتی"
+              placeholder="مثلا: تصویر ناخوانا / تاریخ انقضا گذشته / مغایرت هویتی"
               autoFocus
+              disabled={isPending}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectTarget(null)} disabled={isPending}>
               انصراف
             </Button>
-            <Button variant="destructive" onClick={confirmReject} disabled={isPending}>
+            <Button
+              variant="destructive"
+              onClick={confirmReject}
+              disabled={isPending || !rejectReason.trim()}
+            >
               {isPending ? 'در حال ارسال…' : 'رد کردن'}
             </Button>
           </DialogFooter>

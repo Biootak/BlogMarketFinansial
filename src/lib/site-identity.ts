@@ -13,14 +13,16 @@ import { unstable_cache } from 'next/cache';
 
 export const FALLBACK_SITE_NAME = 'Financial Market';
 /**
- * Empty string signals "use the default inline SVG logo" to the
- * `<Logo />` component. The inline SVG is theme-aware via
- * `currentColor` and theme-independent in the emerald accent, so it
- * covers both light and dark mode without any image asset. Keeping this
- * as an empty string (instead of a PNG path) means no PNG file is ever
- * required for the site to render its logo.
+ * Fallback logo used when the DB is unreachable (`getSiteIdentity`
+ * catches the error and returns fallbacks).
+ *
+ * 2026-08-10: changed from '' (default inline SVG) to the uploaded brand
+ * mark so the logo does NOT swap to the generic SVG during DB outages.
+ * The file lives on disk and is served without the DB, so the fallback
+ * looks identical to the configured logo. If the admin uploads a new
+ * logo, keep this in sync with the file path in `public/uploads/`.
  */
-export const FALLBACK_LOGO_URL = '';
+export const FALLBACK_LOGO_URL = '/uploads/general/1786269763122-7f56a4-logo.webp';
 
 export interface SiteIdentity {
   siteName: string;
