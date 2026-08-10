@@ -17,7 +17,7 @@ export default async function ApprovalsPage() {
   const role = session.user.role ?? '';
   // SUPPORT-fix: SUPPORT می‌تواند تأییدیه‌ها را ببیند (نمای پشتیبانی)
   if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'SUPPORT'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   const result = await getApprovalSnapshot();

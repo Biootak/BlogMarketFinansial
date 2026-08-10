@@ -266,3 +266,5 @@ setup-vm.ps1
 *.openrc
 terraform.tfvars
 !deploy/gozunga/example-openrc
+# Codebuff/agent session plans
+.zcode/

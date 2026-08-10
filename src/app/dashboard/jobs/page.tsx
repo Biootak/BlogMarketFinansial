@@ -31,7 +31,7 @@ export default async function JobsPage() {
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   const [snapshotRes, queueHealthRes] = await Promise.all([getJobSnapshot(), getQueueHealth()]);

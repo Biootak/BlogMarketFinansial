@@ -17,7 +17,6 @@
  */
 
 import * as Sentry from '@sentry/nextjs';
-import { AlertTriangle } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface GlobalErrorProps {
@@ -75,36 +74,57 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '1rem',
+            gap: '1.25rem',
           }}
         >
-          {/* Signature mark — دایرهٔ چرخان با غلظت gradient، آیکون lucide در مرکز */}
-          <div
-            style={{
-              position: 'relative',
-              width: '4.5rem',
-              height: '4.5rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '9999px',
-              background: tokens.amberBg,
-              border: `1px solid ${tokens.amberBorder}`,
-            }}
-            aria-hidden
+          {/* Signature mark — premium inline SVG warning illustration */}
+          <svg
+            width="120"
+            height="120"
+            viewBox="0 0 120 120"
+            fill="none"
+            style={{ flexShrink: 0 }}
+            role="img"
+            aria-label="خطای سیستمی"
           >
-            <div
-              data-err-ring=""
-              style={{
-                position: 'absolute',
-                inset: '-6px',
-                borderRadius: '9999px',
-                border: `1px dashed ${tokens.amberRing}`,
-                animation: 'ge-spin 14s linear infinite',
-              }}
+            <defs>
+              <radialGradient id="ge-glow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor={tokens.amberFg} stopOpacity="0.15" />
+                <stop offset="100%" stopColor={tokens.amberFg} stopOpacity="0" />
+              </radialGradient>
+            </defs>
+            {/* Outer rotating ring */}
+            <circle
+              cx="60"
+              cy="60"
+              r="52"
+              stroke={tokens.amberRing}
+              strokeWidth="1"
+              strokeDasharray="2 6"
+            >
+              <animateTransform
+                attributeName="transform"
+                type="rotate"
+                from="0 60 60"
+                to="360 60 60"
+                dur="30s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            {/* Inner glow */}
+            <circle cx="60" cy="60" r="40" fill="url(#ge-glow)" />
+            {/* Warning triangle */}
+            <path
+              d="M60 22 L92 78 L28 78 Z"
+              fill={tokens.amberBg}
+              stroke={tokens.amberBorder}
+              strokeWidth="1.5"
+              strokeLinejoin="round"
             />
-            <AlertTriangle size={26} strokeWidth={1.6} color={tokens.amberFg} />
-          </div>
+            {/* Exclamation */}
+            <line x1="60" y1="40" x2="60" y2="60" stroke={tokens.amberFg} strokeWidth="3" strokeLinecap="round" />
+            <circle cx="60" cy="70" r="3" fill={tokens.amberFg} />
+          </svg>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <h1

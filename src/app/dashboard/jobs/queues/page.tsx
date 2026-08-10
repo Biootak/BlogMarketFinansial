@@ -14,7 +14,7 @@ export default async function QueuesPage() {
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   const [snapshotRes, healthRes, typesRes] = await Promise.all([

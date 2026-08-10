@@ -17,7 +17,7 @@ export default async function NewJobPage() {
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   const typesRes = await getRecentJobTypes();

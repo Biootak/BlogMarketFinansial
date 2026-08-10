@@ -21,7 +21,7 @@ export default async function CampaignDetailPage({
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   const result = await getCampaignById(id);

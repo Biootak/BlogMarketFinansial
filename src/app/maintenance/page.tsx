@@ -1,14 +1,11 @@
-import { StatePage } from '@/components/StatePage';
+import { StateHero } from '@/components/Dashboard/primitives';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
- * /maintenance — Million-dollar maintenance state (2026)
+ * /maintenance — وضعیت تعمیرات (همان زبان طراحی صفحهٔ ۴۰۳).
  *
  * Used by middleware when SystemSettings.maintenanceMode is enabled.
  * Editor-friendly: admins can preview the page at any time.
- *
- * Asymmetric editorial composition. Tokens-only, mobile-first.
  */
-import { ArrowLeft, Construction, RefreshCw } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -43,33 +40,21 @@ export default async function MaintenancePage() {
       : `${siteName} در حال ارتقای زیرساخت و بهبود تجربهٔ کاربری است. خیلی زود برمی‌گردیم. از صبر و همراهی شما سپاسگزاریم.`;
   const now = new Date();
 
+  const telegram = settings.telegram?.trim() ?? null;
+
   return (
-    <StatePage
-      number="MNT"
+    <StateHero
+      code="MNT"
+      mark="maintenance"
+      tone="amber"
       eyebrow="در حال به‌روزرسانی"
       title="سایت موقتاً در دسترس نیست"
-      lead={leadMessage}
-      cardTitle="چه خبر است؟"
-      cardBody="مهندسان ما در حال اعمال تغییرات زیرساختی، بهبود امنیت، و افزایش سرعت سایت هستند. این فرایند معمولاً کمتر از ۳۰ دقیقه طول می‌کشد."
-      icon={Construction}
-      helpList={[
+      description={leadMessage}
+      showPath={false}
+      helpItems={[
         'تمام داده‌ها و حساب‌های شما امن هستند.',
         'تراکنش‌های در جریان پس از پایان به‌روزرسانی ادامه می‌یابند.',
-        ...(settings.telegram ? ['برای اطلاع فوری، کانال تلگرام ما را دنبال کنید.'] : []),
-      ]}
-      actions={[
-        { label: 'تلاش مجدد', href: '/', icon: RefreshCw, variant: 'primary' },
-        ...(settings.telegram
-          ? [
-              {
-                label: 'تلگرام پشتیبانی',
-                href: settings.telegram,
-                icon: ArrowLeft,
-                variant: 'ghost' as const,
-                external: true,
-              },
-            ]
-          : []),
+        ...(telegram ? ['برای اطلاع فوری، کانال تلگرام ما را دنبال کنید.'] : []),
       ]}
       meta={[
         { label: 'تخمین پایان', value: 'کمتر از ۳۰ دقیقه' },
@@ -77,11 +62,22 @@ export default async function MaintenancePage() {
         { label: 'نسخه', value: '۲۰۲۶.۰۷' },
         { label: 'وضعیت', value: 'Maintenance' },
       ]}
+      suggestedLinks={[
+        { href: '/', label: 'صفحهٔ اصلی', sub: 'بررسی دوباره پس از پایان' },
+        ...(telegram
+          ? [{ href: telegram, label: 'کانال تلگرام', sub: 'اطلاع‌رسانی فوری', icon: 'telegram' }]
+          : []),
+      ]}
+      primaryLink={{ href: '/', label: 'تلاش مجدد', icon: 'refresh' }}
+      secondaryLinks={
+        telegram
+          ? [{ href: telegram, label: 'تلگرام پشتیبانی', icon: 'telegram' }]
+          : []
+      }
       foot={{
-        label: 'سوال فوری دارید؟',
+        label: 'سؤال فوری دارید؟',
         href: `mailto:${settings.contactEmail ?? 'support@financialmarket.page'}`,
       }}
-      tone="warn"
     />
   );
 }

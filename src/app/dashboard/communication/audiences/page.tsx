@@ -13,7 +13,7 @@ export default async function AudiencesPage() {
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   const [audiencesResult, snapshotResult] = await Promise.all([

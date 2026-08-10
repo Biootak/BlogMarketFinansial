@@ -16,7 +16,7 @@ export default async function CommunicationPage() {
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   // ۲. واکشی موازی از DB — فقط ۳ query (نه ۴)

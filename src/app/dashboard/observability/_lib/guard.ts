@@ -20,6 +20,6 @@ export async function requireObservabilityAccess(): Promise<void> {
   }
 
   if (!ALLOWED_ROLES.has(session?.user?.role ?? '')) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 }

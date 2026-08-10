@@ -1,7 +1,7 @@
-import { StatePage } from '@/components/StatePage';
+import { StateHero } from '@/components/Dashboard/primitives';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
- * /offline — Million-dollar offline/network state (2026)
+ * /offline — حالت آفلاین (همان زبان طراحی صفحهٔ ۴۰۳).
  *
  * Used by:
  *   - service-worker offline.html
@@ -10,7 +10,6 @@ import { getSystemSettingsData } from '@/data/getSystemSettings';
  * Note: this is a Server Component but it has no DB calls — fully static
  * and cacheable so it can be served from a CDN edge or a SW cache.
  */
-import { CloudOff, RefreshCw, Wifi } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -23,23 +22,19 @@ export default async function OfflinePage() {
   const supportEmail = settings.contactEmail ?? 'support@financialmarket.page';
 
   return (
-    <StatePage
-      number="OFF"
+    <StateHero
+      code="OFF"
+      mark="offline"
+      tone="cyan"
       eyebrow="حالت آفلاین"
       title="ارتباط با اینترنت برقرار نیست"
-      lead="به نظر می‌رسد اتصال اینترنت شما قطع شده یا سیگنال ضعیف است. می‌توانید صفحاتی که قبلاً بازدید کرده‌اید را مرور کنید."
-      cardTitle="چه کار کنم؟"
-      cardBody="Wi-Fi یا دادهٔ موبایل خود را بررسی کنید. در بسیاری از موارد، روشن و خاموش کردن حالت پرواز مشکل را حل می‌کند."
-      icon={CloudOff}
-      helpList={[
+      description="به نظر می‌رسد اتصال اینترنت شما قطع شده یا سیگنال ضعیف است. می‌توانید صفحاتی که قبلاً بازدید کرده‌اید را مرور کنید."
+      showPath={false}
+      helpItems={[
         'Wi-Fi یا دادهٔ سیم‌کارت را خاموش و دوباره روشن کنید.',
         'مودم یا روتر را یک‌بار ری‌استارت کنید.',
         'صفحه را رفرش کنید یا دکمهٔ «تلاش مجدد» را بزنید.',
         'اگر مشکل ادامه داشت، با پشتیبانی شبکه تماس بگیرید.',
-      ]}
-      actions={[
-        { label: 'تلاش مجدد', href: '/', icon: RefreshCw, variant: 'primary' },
-        { label: 'وضعیت سرویس', href: '/api/system-status', icon: Wifi, variant: 'ghost' },
       ]}
       meta={[
         { label: 'وضعیت', value: 'Offline' },
@@ -47,11 +42,18 @@ export default async function OfflinePage() {
         { label: 'پشتیبانی', value: '۲۴/۷' },
         { label: 'نوع خطا', value: 'Network' },
       ]}
+      suggestedLinks={[
+        { href: '/', label: 'صفحهٔ اصلی', sub: 'ادامهٔ مرور سایت' },
+        { href: '/api/system-status', label: 'وضعیت سرویس', sub: 'بررسی سلامت سرویس‌ها', icon: 'shield' },
+      ]}
+      primaryLink={{ href: '/', label: 'تلاش مجدد', icon: 'refresh' }}
+      secondaryLinks={[
+        { href: '/api/system-status', label: 'وضعیت سرویس', icon: 'shield' },
+      ]}
       foot={{
         label: 'سرویس از کار افتاده؟',
         href: `mailto:${supportEmail}`,
       }}
-      tone="danger"
     />
   );
 }

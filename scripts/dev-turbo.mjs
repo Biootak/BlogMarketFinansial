@@ -48,7 +48,10 @@ const nextBin = path.join(projectRoot, 'node_modules', 'next', 'dist', 'bin', 'n
 // Turbopack prints the same marker for every panic type (the "FATAL" word is
 // wrapped in ANSI color codes, so match the clean text after it).
 const PANIC_PATTERN = /An unexpected Turbopack error occurred|panic log has been written to/i;
-const STRIP_ANSI = (s) => s.replace(/\x1b\[[0-9;]*m/g, '');
+// Build the ANSI-strip regex at runtime so no literal control char sits in the source
+// (Biome's noControlCharactersInRegex rejects both \x1b and \u001b literals).
+const ESC = String.fromCharCode(27);
+const STRIP_ANSI = (s) => s.replace(new RegExp(`${ESC}\\[[0-9;]*m`, 'g'), '');
 
 const RESTART_WINDOW_MS = 120_000; // rolling window for the loop guard
 const MAX_RESTARTS = 4; // panics allowed inside the window before giving up

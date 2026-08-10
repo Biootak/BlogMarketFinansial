@@ -1,12 +1,11 @@
-import { StatePage } from '@/components/StatePage';
+import { StateHero } from '@/components/Dashboard/primitives';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
- * /session-expired — Million-dollar session timeout state (2026)
+ * /session-expired — انقضای نشست (همان زبان طراحی صفحهٔ ۴۰۳).
  *
  * Same editorial composition as Forbidden, but with a strong focus on
- * re-authentication. Tokens-only, mobile-first, server component.
+ * re-authentication.
  */
-import { LogIn, RefreshCw, ShieldAlert } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -19,28 +18,19 @@ export default async function SessionExpiredPage() {
   const supportEmail = settings.contactEmail ?? 'support@financialmarket.page';
 
   return (
-    <StatePage
-      number="۴۰۱"
+    <StateHero
+      code="۴۰۱"
+      mark="session"
+      tone="cyan"
       eyebrow="نشست منقضی"
       title="زمان ورود شما به پایان رسیده است"
-      lead="برای حفظ امنیت حساب، پس از مدتی عدم فعالیت، نشست شما به‌طور خودکار بسته شد. داده‌های شما ذخیره شده‌اند — فقط کافی است دوباره وارد شوید."
-      cardTitle="چطور دوباره وارد شوم؟"
-      cardBody="روی «ورود دوباره» بزنید. اگر گزینهٔ «مرا به خاطر بسپار» را فعال کنید، نشست شما تا ۳۰ روز معتبر خواهد بود."
-      icon={ShieldAlert}
-      helpList={[
+      description="برای حفظ امنیت حساب، پس از مدتی عدم فعالیت، نشست شما به‌طور خودکار بسته شد. داده‌های شما ذخیره شده‌اند — فقط کافی است دوباره وارد شوید."
+      showPath={false}
+      helpItems={[
         'دکمهٔ «ورود دوباره» را بزنید.',
         'ایمیل یا شماره تلفن خود را وارد کنید.',
         'کد ۶ رقمی ارسال‌شده را در کادر مربوطه وارد کنید.',
-        'اختیاری: گزینهٔ «مرا به‌خاطر بسپار» را فعال کنید.',
-      ]}
-      actions={[
-        {
-          label: 'ورود دوباره',
-          href: '/auth?step=email&intent=login',
-          icon: LogIn,
-          variant: 'primary',
-        },
-        { label: 'بازگشت به خانه', href: '/', icon: RefreshCw, variant: 'ghost' },
+        'اختیاری: گزینهٔ «مرا به‌خاطر بسپار» را فعال کنید تا نشست تا ۳۰ روز معتبر بماند.',
       ]}
       meta={[
         { label: 'کد', value: '۴۰۱' },
@@ -48,11 +38,18 @@ export default async function SessionExpiredPage() {
         { label: 'مدت نشست', value: '۳۰ روز' },
         { label: 'آخرین فعالیت', value: 'بیش از ۳۰ دقیقه پیش' },
       ]}
+      suggestedLinks={[
+        { href: '/auth?step=email&intent=login', label: 'ورود دوباره', sub: 'شروع مجدد ورود', icon: 'login' },
+        { href: '/', label: 'صفحهٔ اصلی', sub: 'مرور عمومی سایت' },
+      ]}
+      primaryLink={{ href: '/auth?step=email&intent=login', label: 'ورود دوباره', icon: 'login' }}
+      secondaryLinks={[
+        { href: '/', label: 'بازگشت به خانه', icon: 'home' },
+      ]}
       foot={{
         label: 'مشکل در ورود؟',
         href: `mailto:${supportEmail}`,
       }}
-      tone="info"
     />
   );
 }

@@ -20,7 +20,7 @@ export default async function CreateCampaignPage({
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   return <NewCampaignForm initialAudience={audience ?? null} entityLabel="کمپین" campaignMode />;

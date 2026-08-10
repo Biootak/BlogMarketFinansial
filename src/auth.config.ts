@@ -10,6 +10,13 @@ import Google from 'next-auth/providers/google';
 // (Docker) آن env ها موجود نیستند و نباید provider ها در باندل خالی شوند.
 const isProd = process.env.NODE_ENV === 'production';
 
+// 2026-08-10: NextAuth v5 uses AUTH_URL (not NEXTAUTH_URL) as the base URL
+// for callback URIs. Heroku sets NEXTAUTH_URL; mirror it to AUTH_URL so OAuth
+// callbacks point to financialmarket.page instead of the internal 0.0.0.0 port.
+if (process.env.NEXTAUTH_URL && !process.env.AUTH_URL) {
+  process.env.AUTH_URL = process.env.NEXTAUTH_URL;
+}
+
 export default {
   trustHost: true,
   providers: isProd

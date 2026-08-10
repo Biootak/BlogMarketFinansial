@@ -1,9 +1,10 @@
 /**
- * Forbidden — canonical 403 page with VaultLock SVG illustration
- *  - bespoke illustrated vault lock (VaultLockIllustration)
+ * StateHero — canonical state page (403 / maintenance / offline / …)
+ *  - bespoke SVG illustration with status code + center mark
  *  - ambient gradient orbs
  *  - optical-kerned display numerals (fa)
  *  - suggested destination cards (mini-cards)
+ *  - status meta grid, help items, support foot
  *  - tone-driven accent colors
  *  - RTL-safe, tokens only, prefers-reduced-motion
  */
@@ -184,13 +185,14 @@
   50% { transform: rotate(3deg); }
 }
 
-.keyhole {
-  animation: fl-keyhole-pulse 3s var(--ds-ease-in-out-quart, ease) infinite;
+.centerMark {
+  transform-origin: 200px 210px;
+  animation: fl-center-pulse 3s var(--ds-ease-in-out-quart, ease) infinite;
 }
 
-@keyframes fl-keyhole-pulse {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
+@keyframes fl-center-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
 }
 
 .xMark {
@@ -277,6 +279,79 @@
   border-radius: var(--ds-radius-md, 12px);
   word-break: break-all;
   max-inline-size: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Help items (short bullets) ────────────────────────────────────── */
+.helpList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-inline-size: 540px;
+}
+
+.helpItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2, 8px);
+  font-size: var(--ds-text-sm, 13px);
+  line-height: 1.6;
+  color: var(--ds-fg-muted);
+  text-align: start;
+}
+
+.helpItem::before {
+  content: '';
+  inline-size: 6px;
+  block-size: 6px;
+  flex-shrink: 0;
+  margin-block-start: 8px;
+  border-radius: 50%;
+  background: var(--ds-primary);
+  opacity: 0.8;
+}
+
+/* ── Status meta grid ──────────────────────────────────────────────── */
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-2, 8px);
+  inline-size: 100%;
+  max-inline-size: 540px;
+}
+
+@media (max-width: 540px) {
+  .metaGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.metaCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--ds-space-2, 8px) var(--ds-space-3, 12px);
+  background: color-mix(in oklch, var(--ds-bg, white) 85%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 8%, transparent);
+  border-radius: var(--ds-radius-md, 12px);
+  text-align: start;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.metaLabel {
+  font-size: var(--ds-text-xs, 11px);
+  color: var(--ds-fg-muted);
+}
+
+.metaValue {
+  font-size: var(--ds-text-sm, 13px);
+  font-weight: 600;
+  color: var(--ds-fg);
   font-variant-numeric: tabular-nums;
 }
 
@@ -421,13 +496,34 @@
   border-color: color-mix(in oklch, var(--ds-fg) 20%, transparent);
 }
 
+/* ── Support foot ──────────────────────────────────────────────────── */
+.foot {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: var(--ds-text-xs, 12px);
+  color: var(--ds-fg-muted);
+}
+
+.foot a {
+  color: var(--ds-primary);
+  text-decoration: none;
+  font-family: var(--ds-font-mono, ui-monospace);
+}
+
+.foot a:hover {
+  text-decoration: underline;
+}
+
 /* ── Tone variants (accent color overrides) ────────────────────────── */
 .root[data-tone="rose"] {
   --ds-primary: oklch(55% 0.18 25);
 }
 
 .root[data-tone="violet"] {
-  --ds-primary: oklch(58% 0.12 165);
+  --ds-primary: oklch(58% 0.15 290);
 }
 
 .root[data-tone="amber"] {
@@ -462,7 +558,7 @@
   .innerGlow,
   .lockBody,
   .shackle,
-  .keyhole,
+  .centerMark,
   .xMark,
   .stars circle,
   .suggestCard,

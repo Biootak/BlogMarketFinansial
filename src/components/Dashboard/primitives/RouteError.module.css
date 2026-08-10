@@ -1,148 +1,530 @@
-/* RouteError.module.css — canonical error boundary UI
- * فقط design system tokens — هیچ hex/rgb hardcode نیست. */
+/* RouteError — canonical error boundary UI (million-dollar premium)
+ * - bespoke SVG illustrations per error kind
+ * - ambient gradient orbs (no AI-slop particles)
+ * - Spotlight overlay
+ * - Suggested destination cards (2×2 grid)
+ * - tone-driven accent colors
+ * - RTL-safe, tokens only, prefers-reduced-motion
+ */
 
+/* ── Root ──────────────────────────────────────────────────────────── */
 .root {
+  position: relative;
+  isolation: isolate;
+  min-block-size: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--ds-space-10) var(--ds-space-4);
-}
-
-.root[data-variant="page"] {
-  min-height: 50vh;
+  gap: clamp(2rem, 5vw, 3rem);
+  padding: clamp(3rem, 8vw, 5rem) clamp(1rem, 4vw, 2rem);
+  text-align: center;
+  overflow: hidden;
+  background: var(--ds-canvas, var(--ds-bg));
 }
 
 .root[data-variant="inline"] {
-  min-height: 14rem;
-  padding: var(--ds-space-6) var(--ds-space-4);
+  min-block-size: 70vh;
+  padding: var(--ds-space-8) var(--ds-space-4);
+  gap: var(--ds-space-5);
 }
 
-.card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--ds-space-4);
-  max-width: 24rem;
-  width: 100%;
-  text-align: center;
+/* ── Ambient gradient orbs ─────────────────────────────────────────── */
+.ambients {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(80px) saturate(140%);
+  opacity: 0.7;
 }
 
-/* ── آیکن ──────────────────────────────────────────────────────── */
-.iconWrap {
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+
+.orbA {
+  inset-block-start: 8%;
+  inset-inline-start: 12%;
+  inline-size: 320px;
+  block-size: 320px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--re-primary) 22%, transparent) 0%,
+    transparent 70%
+  );
+  animation: re-orb-drift-a 22s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.orbB {
+  inset-block-end: 10%;
+  inset-inline-end: 8%;
+  inline-size: 380px;
+  block-size: 380px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--re-primary) 14%, transparent) 0%,
+    transparent 70%
+  );
+  animation: re-orb-drift-b 28s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.orbC {
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 240px;
+  block-size: 240px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--re-primary) 10%, transparent) 0%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%);
+  animation: re-orb-drift-c 18s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-orb-drift-a {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, 30px); }
+}
+
+@keyframes re-orb-drift-b {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, -40px); }
+}
+
+@keyframes re-orb-drift-c {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.15); }
+}
+
+/* ── Spotlight ─────────────────────────────────────────────────────── */
+.spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── Stage (illustration container) ────────────────────────────────── */
+.stage {
+  position: relative;
+  inline-size: min(360px, 75vw);
+  block-size: min(360px, 75vw);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  border: 1px solid color-mix(in oklch, currentColor 20%, transparent);
-  background: color-mix(in oklch, currentColor 10%, transparent);
 }
 
-/* رنگ‌های نوع خطا — network/unknown از رنگ اصلی سایت (سبز) */
-.iconWrap[data-kind="network"] {
-  color: var(--ds-brand-500, oklch(58% 0.12 165));
-}
-.iconWrap[data-kind="auth"] {
-  color: oklch(55% 0.16 25);
-}
-.iconWrap[data-kind="notfound"] {
-  color: var(--ds-brand-600, oklch(52% 0.14 162));
-}
-.iconWrap[data-kind="server"] {
-  color: oklch(55% 0.14 280);
-}
-.iconWrap[data-kind="unknown"] {
-  color: var(--ds-brand-500, oklch(58% 0.12 165));
+.illustration {
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
 }
 
-/* ── متن ──────────────────────────────────────────────────────── */
+/* ── SVG illustration animations ───────────────────────────────────── */
+
+/* Network — broken signal */
+.signalWaves {
+  transform-origin: 180px 200px;
+  animation: re-signal-fade 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-signal-fade {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+
+.signalBreak {
+  animation: re-break-pulse 2.5s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-break-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Auth — shield pulse */
+.shieldPulse {
+  transform-origin: 200px 200px;
+  animation: re-shield-breathe 5s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-shield-breathe {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.02); }
+}
+
+.lockIcon {
+  transform-origin: 200px 230px;
+  animation: re-lock-idle 4s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-lock-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* NotFound — compass drift */
+.compassDrift {
+  transform-origin: 200px 200px;
+  animation: re-compass-drift 8s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-compass-drift {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  75% { transform: rotate(-15deg); }
+}
+
+/* Server — crash shake */
+.serverShake {
+  transform-origin: 200px 200px;
+  animation: re-server-shake 6s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-server-shake {
+  0%, 85%, 100% { transform: translateX(0); }
+  87% { transform: translateX(-3px); }
+  89% { transform: translateX(3px); }
+  91% { transform: translateX(-2px); }
+  93% { transform: translateX(2px); }
+  95% { transform: translateX(0); }
+}
+
+.smokeParticles circle {
+  animation: re-smoke-rise 4s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.smokeParticles circle:nth-child(2) { animation-delay: 1.3s; }
+.smokeParticles circle:nth-child(3) { animation-delay: 2.6s; }
+
+@keyframes re-smoke-rise {
+  0% { opacity: 0; transform: translateY(0) scale(0.5); }
+  50% { opacity: 0.6; transform: translateY(-20px) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(1.5); }
+}
+
+/* Unknown — warning pulse */
+.warningPulse {
+  transform-origin: 200px 200px;
+  animation: re-warning-pulse 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-warning-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.warningRing {
+  transform-origin: 200px 200px;
+  animation: re-ring-expand 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-ring-expand {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 0.2; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+/* Common SVG elements */
+.outerRing {
+  transform-origin: 200px 200px;
+  animation: re-ring-rotate 60s linear infinite;
+}
+
+@keyframes re-ring-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.outerRing2 {
+  transform-origin: 200px 200px;
+  animation: re-ring-rotate 90s linear infinite reverse;
+}
+
+.innerGlow {
+  animation: re-glow-pulse 4s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.stars circle {
+  animation: re-star-twinkle 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.stars circle:nth-child(2) { animation-delay: 0.6s; }
+.stars circle:nth-child(3) { animation-delay: 1.2s; }
+.stars circle:nth-child(4) { animation-delay: 1.8s; }
+.stars circle:nth-child(5) { animation-delay: 2.4s; }
+
+@keyframes re-star-twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.9; }
+}
+
+.numeral {
+  user-select: none;
+}
+
+/* ── Headline ──────────────────────────────────────────────────────── */
+.headBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+  max-inline-size: 540px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5, 6px);
+  padding: 6px var(--ds-space-3, 12px);
+  font-size: var(--ds-text-xs, 12px);
+  font-weight: 600;
+  color: var(--re-primary);
+  background: color-mix(in oklch, var(--re-primary) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--re-primary) 22%, transparent);
+  border-radius: var(--ds-radius-full, 9999px);
+  letter-spacing: -0.01em;
+}
+
 .title {
   margin: 0;
-  font-size: var(--ds-text-xl, 1.25rem);
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--ds-fg, var(--at-fg));
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--ds-fg);
+  font-feature-settings: "ss01", "ss02";
 }
 
-.description {
+.lead {
   margin: 0;
-  font-size: var(--ds-text-sm, 0.875rem);
+  font-size: var(--ds-text-sm, 14px);
   line-height: 1.7;
-  color: var(--ds-fg-subtle, var(--at-fg-subtle));
-  max-width: 22rem;
+  color: var(--ds-fg-muted);
+  max-inline-size: 460px;
 }
 
 .devInfo {
-  margin: 0;
-  padding: var(--ds-space-2) var(--ds-space-3);
-  font-family: monospace;
-  font-size: 0.7rem;
-  color: var(--ds-fg-subtle, var(--at-fg-subtle));
-  background: var(--ds-surface-2, var(--at-bg-elevated));
-  border-radius: var(--ds-radius-sm, 4px);
-  border: 1px solid var(--ds-border-1, var(--at-line));
-  text-align: start;
+  display: inline-block;
+  margin-block-start: var(--ds-space-1, 4px);
+  padding: 6px var(--ds-space-3, 12px);
+  font-family: var(--ds-font-mono, ui-monospace);
+  font-size: var(--ds-text-xs, 12px);
+  font-weight: 500;
+  color: var(--ds-fg-muted);
+  background: color-mix(in oklch, var(--ds-fg) 5%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 8%, transparent);
+  border-radius: var(--ds-radius-md, 12px);
   word-break: break-all;
-  max-width: 100%;
+  max-inline-size: 100%;
+  font-variant-numeric: tabular-nums;
+  text-align: start;
 }
 
-/* ── دکمه‌ها ─────────────────────────────────────────────────── */
-.actions {
+/* ── Suggested destination cards ───────────────────────────────────── */
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-2, 8px);
+  inline-size: 100%;
+  max-inline-size: 540px;
+}
+
+@media (max-width: 540px) {
+  .suggestions {
+    grid-template-columns: 1fr;
+  }
+}
+
+.suggestCard {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3, 12px);
+  padding: var(--ds-space-3, 12px) var(--ds-space-4, 16px);
+  background: color-mix(in oklch, var(--ds-bg, white) 90%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 8%, transparent);
+  border-radius: var(--ds-radius-lg, 16px);
+  text-decoration: none;
+  color: var(--ds-fg);
+  transition:
+    transform 220ms var(--ds-ease-out-quart, ease),
+    border-color 220ms,
+    background 220ms;
+  text-align: start;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.suggestCard:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklch, var(--re-primary) 35%, transparent);
+  background: color-mix(in oklch, var(--re-primary) 4%, var(--ds-bg, white));
+}
+
+.suggestMain {
   display: flex;
   flex-direction: column;
-  gap: var(--ds-space-2);
-  width: 100%;
+  gap: 2px;
+  min-inline-size: 0;
+  flex: 1;
 }
 
-/* دکمهٔ تلاش مجدد — رنگ اصلی سایت (سبز) */
-.retryBtn {
-  display: inline-flex;
+.suggestLabel {
+  font-size: var(--ds-text-sm, 13px);
+  font-weight: 700;
+  color: var(--ds-fg);
+  letter-spacing: -0.005em;
+}
+
+.suggestSub {
+  font-size: var(--ds-text-xs, 11px);
+  line-height: 1.5;
+  color: var(--ds-fg-muted);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.suggestArrow {
+  flex-shrink: 0;
+  color: var(--ds-fg-muted);
+  transition:
+    transform 220ms var(--ds-ease-out-quart, ease),
+    color 220ms;
+}
+
+[dir="rtl"] .suggestCard:hover .suggestArrow {
+  transform: translateX(-4px);
+  color: var(--re-primary);
+}
+
+.suggestCard:hover .suggestArrow {
+  transform: translateX(-4px);
+  color: var(--re-primary);
+}
+
+[dir="ltr"] .suggestCard:hover .suggestArrow {
+  transform: translateX(4px);
+  color: var(--re-primary);
+}
+
+/* ── Actions ───────────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  flex-direction: row-reverse;
   align-items: center;
+  gap: var(--ds-space-3, 12px);
+  flex-wrap: wrap;
   justify-content: center;
-  gap: var(--ds-space-2);
-  min-height: 2.75rem;
-  padding: 0 var(--ds-space-5);
-  font-family: inherit;
-  font-size: var(--ds-text-sm, 0.875rem);
-  font-weight: 600;
-  color: #fff;
-  background: var(--ds-brand-500, oklch(58% 0.12 165));
-  border: none;
-  border-radius: var(--ds-radius-lg, 0.75rem);
-  cursor: pointer;
-  transition: background var(--ds-duration-fast, 120ms) ease;
 }
 
-.retryBtn:hover {
-  background: var(--ds-brand-600, oklch(52% 0.14 162));
-}
-
-.retryBtn:focus-visible {
-  outline: 2px solid var(--ds-brand-500, oklch(58% 0.12 165));
-  outline-offset: 2px;
-}
-
-/* لینک بازگشت — outline از جنس سبز سایت */
+.retryBtn,
 .backLink {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--ds-space-2);
-  min-height: 2.75rem;
-  padding: 0 var(--ds-space-5);
-  font-size: var(--ds-text-sm, 0.875rem);
-  font-weight: 500;
-  color: var(--ds-brand-600, oklch(52% 0.14 162));
-  background: var(--ds-brand-50, oklch(96% 0.03 165));
-  border: 1px solid color-mix(in oklch, var(--ds-brand-500, oklch(58% 0.12 165)) 35%, transparent);
-  border-radius: var(--ds-radius-lg, 0.75rem);
+  gap: var(--ds-space-2, 8px);
+  padding: var(--ds-space-3, 12px) var(--ds-space-5, 20px);
+  border-radius: var(--ds-radius-md, 12px);
+  font-size: var(--ds-text-sm, 14px);
+  font-weight: 600;
   text-decoration: none;
-  transition: border-color var(--ds-duration-fast, 120ms) ease, background
-    var(--ds-duration-fast, 120ms) ease;
+  font-family: inherit;
+  transition:
+    transform 200ms var(--ds-ease-out-quart, ease),
+    filter 200ms,
+    background 200ms;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+}
+
+.retryBtn {
+  background: var(--re-primary);
+  color: var(--ds-bg, white);
+  border: 1px solid var(--re-primary);
+}
+
+.retryBtn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.retryBtn:focus-visible {
+  outline: 2px solid var(--re-primary);
+  outline-offset: 2px;
+}
+
+.backLink {
+  background: color-mix(in oklch, var(--ds-bg, white) 92%, transparent);
+  color: var(--ds-fg);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 12%, transparent);
+  backdrop-filter: blur(4px);
 }
 
 .backLink:hover {
-  background: var(--ds-brand-100, oklch(92% 0.05 165));
-  border-color: color-mix(in oklch, var(--ds-brand-500, oklch(58% 0.12 165)) 55%, transparent);
+  background: color-mix(in oklch, var(--ds-fg) 4%, transparent);
+  border-color: color-mix(in oklch, var(--ds-fg) 20%, transparent);
+}
+
+/* ── Tone variants (sets --re-primary CSS variable) ─────────────────── */
+.root[data-tone="indigo"] {
+  --re-primary: oklch(52% 0.16 270);
+}
+
+.root[data-tone="rose"] {
+  --re-primary: oklch(55% 0.18 25);
+}
+
+.root[data-tone="violet"] {
+  --re-primary: oklch(58% 0.18 290);
+}
+
+.root[data-tone="amber"] {
+  --re-primary: oklch(78% 0.16 75);
+}
+
+.root[data-tone="emerald"] {
+  --re-primary: oklch(58% 0.14 145);
+}
+
+.root[data-tone="cyan"] {
+  --re-primary: oklch(62% 0.12 220);
+}
+
+/* ── prefers-reduced-motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .orbA,
+  .orbB,
+  .orbC,
+  .outerRing,
+  .outerRing2,
+  .signalWaves,
+  .signalBreak,
+  .shieldPulse,
+  .lockIcon,
+  .compassDrift,
+  .serverShake,
+  .smokeParticles circle,
+  .warningPulse,
+  .warningRing,
+  .innerGlow,
+  .stars circle,
+  .suggestCard,
+  .suggestArrow,
+  .retryBtn,
+  .backLink {
+    animation: none !important;
+    transition: none !important;
+  }
 }

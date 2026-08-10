@@ -32,3 +32,21 @@ Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgr
   سند کامل و مرجع واحد: `deploy/HEROKU.md`. از buildpack استفاده نکن.
 - Cron ها (نرخ بازار، پست‌های زمان‌بندی‌شده، backup) + keep-alive روی **cron-job.org** هستند
   (`.github/workflows/cron.yml` حذف شد). جزئیات در `deploy/HEROKU.md` مرحله ۵.
+
+## Error/status pages — canonical architecture (must-follow)
+
+هر چیزی که «ارور/وضعیت» نشان می‌دهد باید از همین سه primitive استفاده کند — نسخهٔ اختصاصی نساز:
+
+| موقعیت | کامپوننت | توضیح |
+|---|---|---|
+| خطای runtime در route (boundary) | `RouteError` (`@/components/Dashboard/primitives`) | پراپ `section` بده؛ همیشه `Sentry.captureException` دارد؛ در prod متن خطا را نشان نمی‌دهد. `variant="inline"` برای داخل layout ها |
+| 404 | `NotFound` | برای `not-found.tsx`؛ `primaryLink`/`secondaryLinks`/`tone`/`variant` دارد |
+| صفحهٔ وضعیت کامل (maintenance/offline/session-expired/exchange-suspended/forbidden) | `StateHero` | پراپ‌های `code`/`mark`/`meta`/`helpItems`/`foot` |
+| root crash (layout مرده) | `global-error.tsx` | فقط inline — چون providers بالای آن نیستند، به StateHero/RouteError دست نزند |
+
+قوانین سخت:
+1. `error.tsx` جدید → فقط `RouteError` با `section` فارسی. استثناهای عمدی (با کامنت دلیل): `(auth)/error.tsx` (داخل کارت auth) و `dashboard/observability/error.tsx` (متن خام برای ادمین).
+2. بدون emoji، بدون hex/rgb hardcode — فقط توکن‌های design system؛ RTL با logical props؛ `prefers-reduced-motion`؛ aria/role درست.
+3. کامنت/تبلیغ طراحی باید با کد واقعی یکی باشد — اگر کامنت می‌گوید «suggestion cards» باید در JSX پیاده شده باشند (قبلاً این قول نقض شده بود).
+4. اگر primitive کمبود دارد، همان primitive + CSS اش را گسترش بده؛ صفحهٔ جدید با استایل جدید نساز.
+5. تست: بعد از هر تغییر `npx tsc --noEmit` و `npm test`.

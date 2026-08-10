@@ -10,6 +10,7 @@
 
 | مورد | مقدار |
 |------|--------|
+| **🌐 آدرس production** | `https://financialmarket.page/` |
 | **Stack** | `container` (داکر) — **نه** buildpack |
 | **Dyno** | `eco` (رایگان با GitHub Student Pack؛ ۵۱۲MB RAM — بعد از ۳۰ دقیقه بی‌فعالیتی می‌خوابد) |
 | **Database** | `heroku-postgresql:essential-0` |
@@ -93,10 +94,14 @@ APP=your-app-name
 heroku config:set \
   NODE_ENV=production \
   NEXTAUTH_URL=https://$APP.herokuapp.com \
+  AUTH_URL=https://$APP.herokuapp.com \
   NEXT_PUBLIC_APP_URL=https://$APP.herokuapp.com \
   NEXT_PUBLIC_SITE_URL=https://$APP.herokuapp.com \
   APP_URL=https://$APP.herokuapp.com \
   -a $APP
+
+# ⚠️ اگر از دامنه اختصاصی استفاده می‌کنی (مثل financialmarket.page)، این دو را هم ست کن:
+# heroku config:set NEXTAUTH_URL=https://financialmarket.page AUTH_URL=https://financialmarket.page -a $APP
 
 # کلید رمزنگاری (NextAuth v5 به AUTH_SECRET/NEXTAUTH_SECRET گوش می‌دهد)
 heroku config:set AUTH_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))") -a $APP

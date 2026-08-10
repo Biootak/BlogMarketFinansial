@@ -23,7 +23,7 @@ export default async function ReportsPage() {
   }
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN'].includes(role)) {
-    redirect('/dashboard?error=forbidden');
+    redirect('/forbidden');
   }
 
   return <ReportsShell />;

@@ -96,7 +96,15 @@ export type { RouteErrorProps } from './RouteError';
 export { NotFound } from './NotFound';
 export type { NotFoundProps, NotFoundLink, NotFoundTone } from './NotFound';
 
-export { Forbidden } from './Forbidden';
-export type { ForbiddenProps, ForbiddenLink, ForbiddenTone } from './Forbidden';
+export { StateHero, Forbidden } from './StateHero';
+export type {
+  StateHeroProps,
+  StateHeroLink,
+  StateHeroTone,
+  StateHeroMark,
+  StateHeroMetaItem,
+  StateHeroFoot,
+  ForbiddenProps,
+} from './StateHero';
 
 export type { SettingsNavIconName } from './SettingsSubNav';
