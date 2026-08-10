@@ -772,132 +772,124 @@ async function fetchPostBySlugRaw(slug: string): Promise<
     }
   >
 > {
-  try {
-    // 2026-06-14: post + related + moreFromAuthor run in parallel.
-    // The post needs its category ids so the related-posts query can
-    // use them. We fetch categories with a separate, cheap select
-    // before kicking off the parallel batch.
-    const categoryRows = await prisma.post.findUnique({
+  // 2026-06-14: post + related + moreFromAuthor run in parallel.
+  // The post needs its category ids so the related-posts query can
+  // use them. We fetch categories with a separate, cheap select
+  // before kicking off the parallel batch.
+  const categoryRows = await prisma.post.findUnique({
+    where: { slug: slug, status: PostStatus.PUBLISHED },
+    select: {
+      id: true,
+      authorId: true,
+      categories: { select: { id: true } },
+    },
+  });
+
+  if (!categoryRows) {
+    return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
+  }
+
+  const categoryIds = categoryRows.categories.map((c) => c.id);
+
+  const [post, relatedPosts, moreFromAuthor] = await Promise.all([
+    prisma.post.findUnique({
       where: { slug: slug, status: PostStatus.PUBLISHED },
+      // 2026-06-14: trim heavy includes on the main post too. Full
+      // comments + replies tree is not needed for the page header
+      // (rendered separately) and was the single biggest N+1 source.
+      // The page still shows a small preview of comments via
+      // _count + a separate, smaller fetch if needed.
+      include: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            profile: { select: { avatar: true, jobName: true, bio: true } },
+          },
+        },
+        categories: { select: { id: true, name: true, slug: true } },
+        tags: { select: { id: true, name: true, slug: true } },
+        _count: {
+          select: { comments: true, likes: true, savedBy: true },
+        },
+      },
+    }),
+    prisma.post.findMany({
+      where: {
+        id: { not: categoryRows.id },
+        status: PostStatus.PUBLISHED,
+        categories: {
+          some: {
+            id: { in: categoryIds },
+          },
+        },
+      },
+      take: 4,
+      orderBy: { createdAt: 'desc' },
       select: {
         id: true,
-        authorId: true,
-        categories: { select: { id: true } },
+        title: true,
+        slug: true,
+        excerpt: true,
+        featuredImage: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            profile: { select: { avatar: true, jobName: true } },
+          },
+        },
+        categories: { select: { id: true, name: true, slug: true } },
+        tags: { select: { id: true, name: true, slug: true } },
+        _count: { select: { comments: true, likes: true } },
       },
-    });
-
-    if (!categoryRows) {
-      return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
-    }
-
-    const categoryIds = categoryRows.categories.map((c) => c.id);
-
-    const [post, relatedPosts, moreFromAuthor] = await Promise.all([
-      prisma.post.findUnique({
-        where: { slug: slug, status: PostStatus.PUBLISHED },
-        // 2026-06-14: trim heavy includes on the main post too. Full
-        // comments + replies tree is not needed for the page header
-        // (rendered separately) and was the single biggest N+1 source.
-        // The page still shows a small preview of comments via
-        // _count + a separate, smaller fetch if needed.
-        include: {
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: { select: { avatar: true, jobName: true, bio: true } },
-            },
-          },
-          categories: { select: { id: true, name: true, slug: true } },
-          tags: { select: { id: true, name: true, slug: true } },
-          _count: {
-            select: { comments: true, likes: true, savedBy: true },
-          },
-        },
-      }),
-      prisma.post.findMany({
-        where: {
-          id: { not: categoryRows.id },
-          status: PostStatus.PUBLISHED,
-          categories: {
-            some: {
-              id: { in: categoryIds },
-            },
-          },
-        },
-        take: 4,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          excerpt: true,
-          featuredImage: true,
-          createdAt: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: { select: { avatar: true, jobName: true } },
-            },
-          },
-          categories: { select: { id: true, name: true, slug: true } },
-          tags: { select: { id: true, name: true, slug: true } },
-          _count: { select: { comments: true, likes: true } },
-        },
-      }),
-      prisma.post.findMany({
-        where: {
-          authorId: categoryRows.authorId,
-          id: { not: categoryRows.id },
-          status: PostStatus.PUBLISHED,
-        },
-        take: 4,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          excerpt: true,
-          featuredImage: true,
-          createdAt: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: { select: { avatar: true, jobName: true } },
-            },
-          },
-          categories: { select: { id: true, name: true, slug: true } },
-          tags: { select: { id: true, name: true, slug: true } },
-          _count: { select: { comments: true, likes: true } },
-        },
-      }),
-    ]);
-
-    if (!post) {
-      return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
-    }
-
-    return {
-      success: true,
-      message: 'پست و محتوای مرتبط با موفقیت بازیابی شد.',
-      data: {
-        ...(post as unknown as PostWithRelations),
-        relatedPosts: relatedPosts as unknown as RelatedPostWithRelations[],
-        moreFromAuthor: moreFromAuthor as unknown as RelatedPostWithRelations[],
+    }),
+    prisma.post.findMany({
+      where: {
+        authorId: categoryRows.authorId,
+        id: { not: categoryRows.id },
+        status: PostStatus.PUBLISHED,
       },
-    };
-  } catch (error) {
-    // Re-throw so safeCache does NOT store this failure — on DB errors the
-    // fallback is returned without caching, so the next request retries the DB.
-    // Returning { success: false } here would cache "not found" for 300 s even
-    // when the post exists (the build-time pre-render failure scenario).
-    throw error;
+      take: 4,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        featuredImage: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            profile: { select: { avatar: true, jobName: true } },
+          },
+        },
+        categories: { select: { id: true, name: true, slug: true } },
+        tags: { select: { id: true, name: true, slug: true } },
+        _count: { select: { comments: true, likes: true } },
+      },
+    }),
+  ]);
+
+  if (!post) {
+    return { success: false, message: 'پست یافت نشد.', error: 'پست یافت نشد.' };
   }
+
+  return {
+    success: true,
+    message: 'پست و محتوای مرتبط با موفقیت بازیابی شد.',
+    data: {
+      ...(post as unknown as PostWithRelations),
+      relatedPosts: relatedPosts as unknown as RelatedPostWithRelations[],
+      moreFromAuthor: moreFromAuthor as unknown as RelatedPostWithRelations[],
+    },
+  };
 }
 
 const STATS_FALLBACK: ActionResult<{
@@ -1076,141 +1068,135 @@ async function fetchArchivePostsRaw(
   tag: string | undefined,
   searchQuery: string | undefined,
 ): Promise<ActionResult<ArchiveResult>> {
-  try {
-    const skip = (page - 1) * limit;
-    let whereCondition: Prisma.PostWhereInput = { status: PostStatus.PUBLISHED };
-    let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
+  const skip = (page - 1) * limit;
+  let whereCondition: Prisma.PostWhereInput = { status: PostStatus.PUBLISHED };
+  let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
 
-    // اعمال جستجوی متنی
-    if (searchQuery && searchQuery.length >= 2) {
+  // اعمال جستجوی متنی
+  if (searchQuery && searchQuery.length >= 2) {
+    whereCondition = {
+      ...whereCondition,
+      title: { contains: searchQuery, mode: 'insensitive' },
+    };
+  }
+
+  // اعمال فیلتر دسته‌بندی
+  if (category) {
+    if (subcategory) {
       whereCondition = {
         ...whereCondition,
-        title: { contains: searchQuery, mode: 'insensitive' },
-      };
-    }
-
-    // اعمال فیلتر دسته‌بندی
-    if (category) {
-      if (subcategory) {
-        whereCondition = {
-          ...whereCondition,
-          categories: {
-            some: {
-              slug: category,
-              childCategories: {
-                some: {
-                  slug: subcategory,
-                },
-              },
-            },
-          },
-          AND: [
-            {
-              categories: {
-                some: {
-                  slug: subcategory,
-                },
-              },
-            },
-          ],
-        };
-      } else {
-        whereCondition = {
-          ...whereCondition,
-          categories: {
-            some: {
-              slug: category,
-            },
-          },
-        };
-      }
-    }
-
-    // اعمال فیلتر تگ
-    if (tag) {
-      whereCondition = {
-        ...whereCondition,
-        tags: {
+        categories: {
           some: {
-            slug: tag,
+            slug: category,
+            childCategories: {
+              some: {
+                slug: subcategory,
+              },
+            },
+          },
+        },
+        AND: [
+          {
+            categories: {
+              some: {
+                slug: subcategory,
+              },
+            },
+          },
+        ],
+      };
+    } else {
+      whereCondition = {
+        ...whereCondition,
+        categories: {
+          some: {
+            slug: category,
           },
         },
       };
     }
+  }
 
-    // اعمال فیلتر مرتب‌سازی
-    switch (filter) {
-      case 'جدیدترین':
-        orderBy = { createdAt: 'desc' };
-        break;
-      case 'قدیمی‌ترین':
-        orderBy = { createdAt: 'asc' };
-        break;
-      case 'محبوب‌ترین':
-        orderBy = { likes: { _count: 'desc' } };
-        break;
-      default:
-        orderBy = { createdAt: 'desc' };
-    }
-
-    // استفاده از تراکنش برای اجرای همزمان دو کوئری
-    const [posts, total] = await prisma.$transaction([
-      prisma.post.findMany({
-        where: whereCondition,
-        take: limit,
-        skip: skip,
-        orderBy: orderBy,
-        // 2026-06-14: trim heavy includes — likes/savedBy were full records
-        // (not just counts) which made list queries 10–100x heavier than
-        // needed. Counters via _count are enough for the archive cards.
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          excerpt: true,
-          featuredImage: true,
-          postType: true,
-          status: true,
-          createdAt: true,
-          updatedAt: true,
-          viewCount: true,
-          authorId: true,
-          author: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              profile: { select: { avatar: true, jobName: true } },
-            },
-          },
-          categories: {
-            select: { id: true, name: true, slug: true },
-          },
-          tags: {
-            select: { id: true, name: true, slug: true },
-          },
-          _count: {
-            select: { comments: true, likes: true, savedBy: true },
-          },
+  // اعمال فیلتر تگ
+  if (tag) {
+    whereCondition = {
+      ...whereCondition,
+      tags: {
+        some: {
+          slug: tag,
         },
-      }),
-      prisma.post.count({ where: whereCondition }),
-    ]);
-
-    return {
-      success: true,
-      message: 'پست‌ها با موفقیت بازیابی شدند.',
-      data: {
-        posts: posts as unknown as PostWithRelations[],
-        total,
-        pages: Math.ceil(total / limit),
       },
     };
-  } catch (error) {
-    // Re-throw → safeCache returns non-cached fallback. Returning { success: false }
-    // here would poison the cache for 120 s, making the archive show empty on all requests.
-    throw error;
   }
+
+  // اعمال فیلتر مرتب‌سازی
+  switch (filter) {
+    case 'جدیدترین':
+      orderBy = { createdAt: 'desc' };
+      break;
+    case 'قدیمی‌ترین':
+      orderBy = { createdAt: 'asc' };
+      break;
+    case 'محبوب‌ترین':
+      orderBy = { likes: { _count: 'desc' } };
+      break;
+    default:
+      orderBy = { createdAt: 'desc' };
+  }
+
+  // استفاده از تراکنش برای اجرای همزمان دو کوئری
+  const [posts, total] = await prisma.$transaction([
+    prisma.post.findMany({
+      where: whereCondition,
+      take: limit,
+      skip: skip,
+      orderBy: orderBy,
+      // 2026-06-14: trim heavy includes — likes/savedBy were full records
+      // (not just counts) which made list queries 10–100x heavier than
+      // needed. Counters via _count are enough for the archive cards.
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        featuredImage: true,
+        postType: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        viewCount: true,
+        authorId: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+            profile: { select: { avatar: true, jobName: true } },
+          },
+        },
+        categories: {
+          select: { id: true, name: true, slug: true },
+        },
+        tags: {
+          select: { id: true, name: true, slug: true },
+        },
+        _count: {
+          select: { comments: true, likes: true, savedBy: true },
+        },
+      },
+    }),
+    prisma.post.count({ where: whereCondition }),
+  ]);
+
+  return {
+    success: true,
+    message: 'پست‌ها با موفقیت بازیابی شدند.',
+    data: {
+      posts: posts as unknown as PostWithRelations[],
+      total,
+      pages: Math.ceil(total / limit),
+    },
+  };
 }
 
 // 2026-08-01: unstable_cache → safeCache. Fallback: empty result page.

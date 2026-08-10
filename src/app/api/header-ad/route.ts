@@ -9,7 +9,6 @@
  *  ۲۰۲۶-۰۶-۱۴: مطابق الگوی api/revalidate و api/settings
  */
 
-import { checkRateLimit } from '@/lib/rate-limiter';
 import {
   createHeaderAd,
   deleteHeaderAd,
@@ -18,16 +17,26 @@ import {
   updateHeaderAd,
 } from '@/actions/headerAdActions';
 import { auth } from '@/auth';
+import { checkRateLimit } from '@/lib/rate-limiter';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   // Rate limiting for public API
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.headers.get('x-real-ip') ??
+    '127.0.0.1';
   const rateLimit = await checkRateLimit(`header-ad:${ip}`, 'api');
   if (!rateLimit.success) {
     return NextResponse.json(
-      { success: false, error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها بیش از حد مجاز است' } },
-      { status: 429, headers: { 'Retry-After': String(Math.ceil((rateLimit.reset - Date.now()) / 1000)) } },
+      {
+        success: false,
+        error: { code: 'RATE_LIMITED', message: 'تعداد درخواست‌ها بیش از حد مجاز است' },
+      },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(Math.ceil((rateLimit.reset - Date.now()) / 1000)) },
+      },
     );
   }
 

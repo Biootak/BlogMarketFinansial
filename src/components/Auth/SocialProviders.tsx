@@ -1,9 +1,10 @@
 'use client';
 
-import { DEFAULT_REDIRECT } from '@/config/routes';
 import { getEnabledSocialProviders } from '@/actions/auth-actions';
+import { DEFAULT_REDIRECT } from '@/config/routes';
 import { Loader2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 // 2026-06-30: switched from a mix of `FcGoogle` (react-icons/fc, 1em,
@@ -61,15 +62,18 @@ const SocialProviders: React.FC = () => {
       setLoadingProvider(provider);
       setError(null);
 
+      // احترام به callbackUrl از URL (که middleware موقع redirect به /auth
+      // می‌فرستد) — به‌جای DEFAULT_REDIRECT ثابت. اگر نباشد، همان dashboard.
+      const urlCallback = searchParams.get('callbackUrl');
+      const callbackUrl =
+        urlCallback && urlCallback.startsWith('/') ? urlCallback : DEFAULT_REDIRECT;
       const result = await signIn(provider, {
         redirect: false,
-        callbackUrl: DEFAULT_REDIRECT,
+        callbackUrl,
       });
 
       if (result?.error) {
-        setError(
-          `ورود با ${PROVIDER_META[provider].shortName} ناموفق بود. لطفاً دوباره تلاش کنید.`,
-        );
+        setError(`ورود با ${PROVIDER_META[provider].shortName} ناموفق بود. لطفاً دوباره تلاش کنید.`);
         return;
       }
 

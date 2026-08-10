@@ -70,9 +70,7 @@ export default async function MaintenancePage() {
       ]}
       primaryLink={{ href: '/', label: 'تلاش مجدد', icon: 'refresh' }}
       secondaryLinks={
-        telegram
-          ? [{ href: telegram, label: 'تلگرام پشتیبانی', icon: 'telegram' }]
-          : []
+        telegram ? [{ href: telegram, label: 'تلگرام پشتیبانی', icon: 'telegram' }] : []
       }
       foot={{
         label: 'سؤال فوری دارید؟',

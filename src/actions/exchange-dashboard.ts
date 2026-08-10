@@ -319,46 +319,47 @@ export async function getExchangeDashboardData(
   ]);
 
   // Batch 3: pending + stale + rates + customer counts
-  const [pendingRaw, pendingStaleCount, kycIncompleteCount, frozenCount, rateSnapshotRaw] = await Promise.all([
-    // 8) oldest 5 pending transactions
-    prisma.transaction.findMany({
-      where: { exchangeId, status: 'PENDING' },
-      orderBy: { createdAt: 'asc' },
-      take: 5,
-      include: { Customer: { select: { fullName: true } } },
-    }),
-    // 9) count of pending transactions older than 2 hours
-    (async () => {
-      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-      return prisma.transaction.count({
-        where: { exchangeId, status: 'PENDING', createdAt: { lt: twoHoursAgo } },
-      });
-    })(),
-    // 10) customers without approved KYC
-    prisma.customer.count({
-      where: { exchangeId, kycStatus: { not: 'APPROVED' }, status: 'ACTIVE' },
-    }),
-    // 12) frozen customers
-    prisma.customer.count({ where: { exchangeId, status: 'FROZEN' } }),
-    // 13) top 6 active rates snapshot
-    prisma.exchangeRate.findMany({
-      where: { active: true },
-      orderBy: { priority: 'asc' },
-      take: 6,
-      select: {
-        id: true,
-        name: true,
-        currency: true,
-        displayNameFa: true,
-        buyRate: true,
-        sellRate: true,
-        singleRate: true,
-        unit: true,
-        decimals: true,
-        rateType: true,
-      },
-    }),
-  ]);
+  const [pendingRaw, pendingStaleCount, kycIncompleteCount, frozenCount, rateSnapshotRaw] =
+    await Promise.all([
+      // 8) oldest 5 pending transactions
+      prisma.transaction.findMany({
+        where: { exchangeId, status: 'PENDING' },
+        orderBy: { createdAt: 'asc' },
+        take: 5,
+        include: { Customer: { select: { fullName: true } } },
+      }),
+      // 9) count of pending transactions older than 2 hours
+      (async () => {
+        const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+        return prisma.transaction.count({
+          where: { exchangeId, status: 'PENDING', createdAt: { lt: twoHoursAgo } },
+        });
+      })(),
+      // 10) customers without approved KYC
+      prisma.customer.count({
+        where: { exchangeId, kycStatus: { not: 'APPROVED' }, status: 'ACTIVE' },
+      }),
+      // 12) frozen customers
+      prisma.customer.count({ where: { exchangeId, status: 'FROZEN' } }),
+      // 13) top 6 active rates snapshot
+      prisma.exchangeRate.findMany({
+        where: { active: true },
+        orderBy: { priority: 'asc' },
+        take: 6,
+        select: {
+          id: true,
+          name: true,
+          currency: true,
+          displayNameFa: true,
+          buyRate: true,
+          sellRate: true,
+          singleRate: true,
+          unit: true,
+          decimals: true,
+          rateType: true,
+        },
+      }),
+    ]);
 
   // Batch 4: customer segmentation + 30-day total
   const [customerStatusAgg, customerKycAgg, totalLast30d] = await Promise.all([

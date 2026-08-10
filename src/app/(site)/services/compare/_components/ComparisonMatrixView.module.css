@@ -23,19 +23,20 @@
   position: relative;
   padding-block: clamp(32px, 5vw, 56px);
   padding-inline: clamp(16px, 3vw, 24px);
-  background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, oklch(96% 0.03 165 / 0.5) 0%, transparent 70%),
-    var(--ds-canvas);
+  background: radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      oklch(96% 0.03 165 / 0.5) 0%,
+      transparent 70%
+    ), var(--ds-canvas);
   border-block-end: 1px solid var(--ds-border-subtle);
   overflow: hidden;
 }
 
 .hero::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(var(--ds-border-subtle) 1px, transparent 1px),
+  background-image: linear-gradient(var(--ds-border-subtle) 1px, transparent 1px),
     linear-gradient(90deg, var(--ds-border-subtle) 1px, transparent 1px);
   background-size: 48px 48px;
   opacity: 0.3;
@@ -168,7 +169,7 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--ds-canvas) ;
+  background: var(--ds-canvas);
   border-block-end: 1px solid var(--ds-border-subtle);
   backdrop-filter: blur(16px) saturate(1.2);
   -webkit-backdrop-filter: blur(16px) saturate(1.2);
@@ -303,9 +304,7 @@
   border: 1px solid var(--ds-border-subtle);
   overflow: hidden;
   cursor: pointer;
-  transition:
-    border-color var(--ds-duration-fast) ease,
-    box-shadow var(--ds-duration-fast) ease,
+  transition: border-color var(--ds-duration-fast) ease, box-shadow var(--ds-duration-fast) ease,
     transform var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
@@ -323,7 +322,7 @@
 
 /* Top accent line */
 .exchangeCard::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   inset-inline: 0;
@@ -677,9 +676,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   text-decoration: none;
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background-color var(--ds-duration-fast) ease;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), background-color
+    var(--ds-duration-fast) ease;
 }
 
 .emptyBtn:hover {
@@ -799,9 +797,8 @@
   font-weight: var(--ds-weight-semibold);
   text-decoration: none;
   display: inline-block;
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-out-quart),
-    background-color var(--ds-duration-fast) ease;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), background-color
+    var(--ds-duration-fast) ease;
 }
 
 .detailCtaBtn:hover {

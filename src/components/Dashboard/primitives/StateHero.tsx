@@ -42,8 +42,8 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useId, useRef } from 'react';
 
-import { Spotlight } from './Spotlight';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
+import { Spotlight } from './Spotlight';
 import s from './StateHero.module.css';
 
 /* ─── Icon Registry (string → LucideIcon, serializable) ──────────────── */
@@ -74,14 +74,7 @@ function resolveIcon(name: string | undefined): LucideIcon | undefined {
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
-export type StateHeroTone =
-  | 'accent'
-  | 'cyan'
-  | 'emerald'
-  | 'amber'
-  | 'rose'
-  | 'violet'
-  | 'indigo';
+export type StateHeroTone = 'accent' | 'cyan' | 'emerald' | 'amber' | 'rose' | 'violet' | 'indigo';
 
 /** نماد مرکزی illustration — هر وضعیت نماد خودش را دارد. */
 export type StateHeroMark = 'vault' | 'maintenance' | 'offline' | 'session' | 'suspended';
@@ -182,11 +175,18 @@ function CenterMark({ mark }: { mark: StateHeroMark }) {
       return (
         <g fill={primary}>
           <path d="M200 178 L224 232 L176 232 Z" opacity="0.85" />
-          <rect x="197" y="205" width="6" height="16" rx="2" fill="var(--ds-bg, white)" opacity="0.95" />
+          <rect
+            x="197"
+            y="205"
+            width="6"
+            height="16"
+            rx="2"
+            fill="var(--ds-bg, white)"
+            opacity="0.95"
+          />
           <circle cx="200" cy="228" r="2.5" fill="var(--ds-bg, white)" opacity="0.95" />
         </g>
       );
-    case 'vault':
     default:
       // قفل — ۴۰۳ (مثل نسخهٔ قبلی)
       return (
@@ -200,7 +200,11 @@ function CenterMark({ mark }: { mark: StateHeroMark }) {
   }
 }
 
-function StateHeroIllustration({ tone, code, mark }: { tone: StateHeroTone; code: string; mark: StateHeroMark }) {
+function StateHeroIllustration({
+  tone,
+  code,
+  mark,
+}: { tone: StateHeroTone; code: string; mark: StateHeroMark }) {
   return (
     <svg
       className={s.illustration}
@@ -367,14 +371,32 @@ function StateHeroIllustration({ tone, code, mark }: { tone: StateHeroTone; code
       {mark === 'vault' && (
         <g className={s.xMark} opacity="0.6">
           <line
-            x1="260" y1="155" x2="275" y2="170"
-            stroke="var(--ds-primary)" strokeWidth="2.5" strokeLinecap="round"
+            x1="260"
+            y1="155"
+            x2="275"
+            y2="170"
+            stroke="var(--ds-primary)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
           />
           <line
-            x1="275" y1="155" x2="260" y2="170"
-            stroke="var(--ds-primary)" strokeWidth="2.5" strokeLinecap="round"
+            x1="275"
+            y1="155"
+            x2="260"
+            y2="170"
+            stroke="var(--ds-primary)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
           />
-          <circle cx="267.5" cy="162.5" r="12" stroke="var(--ds-primary)" strokeWidth="1.5" fill="none" opacity="0.4" />
+          <circle
+            cx="267.5"
+            cy="162.5"
+            r="12"
+            stroke="var(--ds-primary)"
+            strokeWidth="1.5"
+            fill="none"
+            opacity="0.4"
+          />
         </g>
       )}
 
@@ -567,7 +589,11 @@ const DEFAULT_TITLE = 'دسترسی شما به این بخش مجاز نیست'
 const DEFAULT_DESC =
   'شما اجازهٔ دسترسی به این صفحه را ندارید. ممکن است نقش حساب شما برای این بخش کافی نباشد.';
 const DEFAULT_EYEBROW = 'خطای دسترسی';
-const DEFAULT_PRIMARY: StateHeroLink = { href: '/dashboard', label: 'بازگشت به داشبورد', icon: 'layoutdashboard' };
+const DEFAULT_PRIMARY: StateHeroLink = {
+  href: '/dashboard',
+  label: 'بازگشت به داشبورد',
+  icon: 'layoutdashboard',
+};
 const DEFAULT_SECONDARY: StateHeroLink[] = [
   { href: '/', label: 'صفحهٔ اصلی', icon: 'home' },
   { href: '/contact', label: 'تماس با پشتیبانی', icon: 'sparkles' },

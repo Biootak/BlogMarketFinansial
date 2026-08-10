@@ -17,7 +17,10 @@ function skipToken(s, i) {
   if (c === '"' || c === "'" || c === '`') {
     let j = i + 1;
     while (j < s.length) {
-      if (s[j] === BS) { j += 2; continue; }
+      if (s[j] === BS) {
+        j += 2;
+        continue;
+      }
       if (s[j] === c) return j + 1;
       j++;
     }
@@ -42,10 +45,14 @@ for (const f of files) {
   let m;
   while ((m = re.exec(src))) {
     const start = m.index + m[0].length;
-    let depth = 1, i = start;
+    let depth = 1;
+    let i = start;
     while (i < src.length && depth > 0) {
       const sk = skipToken(src, i);
-      if (sk !== -1) { i = sk; continue; }
+      if (sk !== -1) {
+        i = sk;
+        continue;
+      }
       const c = src[i];
       if (c === '(') depth++;
       else if (c === ')') depth--;
@@ -53,17 +60,22 @@ for (const f of files) {
     }
     const body = src.slice(start, i - 1);
     const line = src.slice(0, m.index).split('\n').length;
-    let d2 = 0, lastComma = -1, j = 0;
+    let d2 = 0;
+    let lastComma = -1;
+    let j = 0;
     while (j < body.length) {
       const sk = skipToken(body, j);
-      if (sk !== -1) { j = sk; continue; }
+      if (sk !== -1) {
+        j = sk;
+        continue;
+      }
       const c = body[j];
       if ('([{'.includes(c)) d2++;
       else if (')]}'.includes(c)) d2--;
       else if (c === ',' && d2 === 0) lastComma = j;
       j++;
     }
-    let deps = lastComma >= 0 ? body.slice(lastComma + 1).trim() : null;
+    const deps = lastComma >= 0 ? body.slice(lastComma + 1).trim() : null;
     const hasDeps = !!deps && deps.startsWith('[');
     const fnBody = hasDeps ? body.slice(0, lastComma) : body;
     const setsState = /\bset[A-Z]\w*\(/.test(fnBody);
@@ -75,14 +87,15 @@ for (const f of files) {
         out.push(`LITERAL_DEP ${f}:${line} :: ${cleaned.replace(/\s+/g, ' ').slice(0, 140)}`);
       }
       // setState of a dep var
-      const depNames = cleaned.split(',').map((x) => x.trim()).filter(Boolean);
+      const depNames = cleaned
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
       for (const dn of depNames) {
         if (!/^[a-zA-Z_$][\w$]*$/.test(dn)) continue;
-        const setter = 'set' + dn[0].toUpperCase() + dn.slice(1);
-        if (fnBody.includes(setter + '(')) out.push(`SELF_SETSTATE_DEP ${f}:${line} :: ${dn}`);
+        const setter = `set${dn[0].toUpperCase()}${dn.slice(1)}`;
+        if (fnBody.includes(`${setter}(`)) out.push(`SELF_SETSTATE_DEP ${f}:${line} :: ${dn}`);
       }
     }
   }
 }
-console.log(out.join('\n'));
-console.log('---- files scanned:', files.length);

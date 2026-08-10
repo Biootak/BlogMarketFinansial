@@ -9,10 +9,16 @@
  */
 
 import { reviewCustomerKycRecord } from '@/actions/customer-portal';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { SearchInput } from '@/components/Dashboard/primitives/SearchInput';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
+import { SearchInput } from '@/components/Dashboard/primitives/SearchInput';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import {
@@ -158,7 +164,12 @@ function Avatar({ name, size = 'sm' }: { name: string; size?: 'sm' | 'md' | 'lg'
   const hue = nameHue(name);
   return (
     <div
-      className={cn(s.avatar, size === 'sm' && s.avatarSm, size === 'md' && s.avatarMd, size === 'lg' && s.avatarLg)}
+      className={cn(
+        s.avatar,
+        size === 'sm' && s.avatarSm,
+        size === 'md' && s.avatarMd,
+        size === 'lg' && s.avatarLg,
+      )}
       style={{
         background: `oklch(90% 0.04 ${hue})`,
         color: `oklch(35% 0.12 ${hue})`,
@@ -181,7 +192,7 @@ export function ExchangeKycReviewClient({ records: initial, canWrite }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
-  const [userCleared, setUserCleared] = useState(false);
+  const [userCleared, _setUserCleared] = useState(false);
 
   const cooldownTick = useCallback(() => {
     setCooldown(1);
@@ -454,9 +465,7 @@ export function ExchangeKycReviewClient({ records: initial, canWrite }: Props) {
                           <span className={s.chipDocType}>
                             {DOC_TYPE_LABEL[row.docType] ?? row.docType}
                           </span>
-                          <span className={s.chipLevel}>
-                            {LEVEL_LABEL[row.level] ?? row.level}
-                          </span>
+                          <span className={s.chipLevel}>{LEVEL_LABEL[row.level] ?? row.level}</span>
                           <span className={s.chipTime}>{timeAgo(row.createdAt)}</span>
                         </div>
                       </div>
@@ -585,9 +594,7 @@ export function ExchangeKycReviewClient({ records: initial, canWrite }: Props) {
       <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
         <DialogContent dir="rtl">
           <DialogHeader>
-            <DialogTitle>
-              رد KYC — {rejectTarget?.customerName}
-            </DialogTitle>
+            <DialogTitle>رد KYC — {rejectTarget?.customerName}</DialogTitle>
             <div className={s.rejectProfile}>
               {rejectTarget && <Avatar name={rejectTarget.customerName} size="sm" />}
               <span className={s.rejectName}>{rejectTarget?.customerPhone}</span>

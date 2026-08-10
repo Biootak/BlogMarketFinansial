@@ -3,8 +3,8 @@
 import prisma from '@/lib/db';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { tieredCache, revalidateTag as redisRevalidateTag } from '@/lib/tiered-cache';
 import { safeRevalidateTag } from '@/lib/safe-cache';
+import { revalidateTag as redisRevalidateTag, tieredCache } from '@/lib/tiered-cache';
 import type { ExchangeRateData, FintechActionResult } from '@/types/types';
 import { z } from 'zod';
 
@@ -29,7 +29,12 @@ const _getExchangeRatesCached = tieredCache(
     });
   },
   [],
-  { key: 'exchange-rates:list', l1Ttl: 60, l2Ttl: 300, tags: ['market-rates:exchange-rates', 'exchange-rates'] },
+  {
+    key: 'exchange-rates:list',
+    l1Ttl: 60,
+    l2Ttl: 300,
+    tags: ['market-rates:exchange-rates', 'exchange-rates'],
+  },
 );
 
 export async function getExchangeRates(): Promise<ExchangeRateData[]> {

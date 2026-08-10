@@ -9,9 +9,7 @@ export default function DashboardNotFound() {
       title="این صفحه پیدا نشد"
       description="شاید منتقل شده، حذف شده، یا اصلا وجود نداشته."
       primaryLink={{ href: '/dashboard', label: 'بازگشت به داشبورد', icon: 'home' }}
-      secondaryLinks={[
-        { href: '/search', label: 'جستجو', icon: 'search' },
-      ]}
+      secondaryLinks={[{ href: '/search', label: 'جستجو', icon: 'search' }]}
       tone="violet"
     />
   );

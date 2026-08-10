@@ -11,18 +11,18 @@ import { randomBytes } from 'node:crypto';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { requireCustomerAccess } from '@/lib/customer-auth';
 import prisma from '@/lib/db';
-import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import {
   isHighValueTransaction,
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
-import { consumeOtpToken } from '@/lib/tokens';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { consumeOtpToken } from '@/lib/tokens';
 import type { FintechActionResult } from '@/types/types';
 import {
   type AccountStatus,
@@ -170,7 +170,10 @@ const KycSubmitSchema = z
     // `/uploads/kyc/...`) یا absolute باشد. فقط لازم است non-empty باشد.
     fileUrl: z.string().min(1, 'تصویر مدرک الزامی است').max(2000, 'آدرس فایل طولانی است'),
     // سطح ۲ و ۳: سلفی تأیید چهره الزامی است
-    selfieUrl: z.string().min(1, 'برای این سطح، سلفی (تأیید چهره) الزامی است').max(2000, 'آدرس فایل طولانی است'),
+    selfieUrl: z
+      .string()
+      .min(1, 'برای این سطح، سلفی (تأیید چهره) الزامی است')
+      .max(2000, 'آدرس فایل طولانی است'),
     // سطح ۳: آدرس + صورت حساب بانکی
     city: z.string().max(120, 'شهر حداکثر ۱۲۰ کاراکتر').optional(),
     address: z.string().max(300, 'آدرس حداکثر ۳۰۰ کاراکتر').optional(),
@@ -822,7 +825,8 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
         select: { level: true },
       });
       const maxNum = approvedLevels.reduce((acc, r) => {
-        const n = r.level === 'LEVEL_1' ? 1 : r.level === 'LEVEL_2' ? 2 : r.level === 'LEVEL_3' ? 3 : 0;
+        const n =
+          r.level === 'LEVEL_1' ? 1 : r.level === 'LEVEL_2' ? 2 : r.level === 'LEVEL_3' ? 3 : 0;
         return Math.max(acc, n);
       }, 0);
       const finalLevel: 'LEVEL_1' | 'LEVEL_2' | 'LEVEL_3' | undefined =

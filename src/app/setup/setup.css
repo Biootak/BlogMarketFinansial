@@ -157,7 +157,7 @@
   /* Film grain — a fixed, whisper-quiet noise layer gives the canvas a
      printed, hand-finished feel. Scoped to the setup surface only. */
   .setup-page::after {
-    content: '';
+    content: "";
     position: fixed;
     inset: 0;
     z-index: 5;
@@ -314,17 +314,18 @@
     border-radius: clamp(1.5rem, 2vw + 0.5rem, 2.25rem);
     background: linear-gradient(180deg, oklch(100% 0 0 / 0.97), oklch(99% 0.003 245 / 0.9));
     border: 1px solid oklch(91% 0.008 250 / 0.85);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.8) inset, 0 0 0 1px oklch(45% 0.02 250 / 0.02), 0
-        32px 64px -40px oklch(28% 0.03 250 / 0.3), 0 8px 20px -16px oklch(30% 0.03 250 / 0.25), 0
-        1px 3px oklch(0% 0 0 / 0.05);
+    box-shadow:
+      0 1px 0 oklch(100% 0 0 / 0.8) inset, 0 0 0 1px oklch(45% 0.02 250 / 0.02), 0
+      32px 64px -40px oklch(28% 0.03 250 / 0.3), 0 8px 20px -16px oklch(30% 0.03 250 / 0.25), 0
+      1px 3px oklch(0% 0 0 / 0.05);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
   }
   .dark .setup-page__shell {
     background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.74), oklch(16% 0.016 255 / 0.62));
     border: 1px solid oklch(34% 0.02 255 / 0.7);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 0 0 1px oklch(0% 0 0 / 0.4), 0
-        40px 80px -44px oklch(0% 0 0 / 0.75);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.04) inset, 0 0 0 1px oklch(0% 0 0 / 0.4), 0 40px 80px
+      -44px oklch(0% 0 0 / 0.75);
   }
   /* Ambient top light: a soft beam hugging the card's top edge instead of a
      conic glow. Restraint is the premium signal here. */
@@ -890,14 +891,20 @@
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
-    background: radial-gradient(130% 130% at 32% 18%, oklch(100% 0 0 / 0.95), oklch(94% 0.03 260 / 0.5)),
-      linear-gradient(160deg, oklch(63% 0.14 255), oklch(50% 0.16 265));
+    background: radial-gradient(
+        130% 130% at 32% 18%,
+        oklch(100% 0 0 / 0.95),
+        oklch(94% 0.03 260 / 0.5)
+      ), linear-gradient(160deg, oklch(63% 0.14 255), oklch(50% 0.16 265));
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 20px 40px -20px oklch(40% 0.16 265 / 0.6), 0
       0 0 1px oklch(50% 0.16 265 / 0.25);
   }
   .dark .setup-intro__seal {
-    background: radial-gradient(130% 130% at 32% 18%, oklch(42% 0.1 260 / 0.6), oklch(30% 0.09 265 / 0.4)),
-      linear-gradient(160deg, oklch(56% 0.15 255), oklch(46% 0.16 265));
+    background: radial-gradient(
+        130% 130% at 32% 18%,
+        oklch(42% 0.1 260 / 0.6),
+        oklch(30% 0.09 265 / 0.4)
+      ), linear-gradient(160deg, oklch(56% 0.15 255), oklch(46% 0.16 265));
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.16) inset, 0 20px 40px -20px oklch(0% 0 0 / 0.7), 0 0 0
       1px oklch(70% 0.14 255 / 0.35);
   }
@@ -1004,7 +1011,7 @@
   /* Light sweep across the primary CTA on hover — a quiet "alive" detail. */
   .setup-intro__btn--primary::after,
   .setup-wizard__nav--primary::after {
-    content: '';
+    content: "";
     position: absolute;
     inset-block: 0;
     inset-inline-start: -80%;
@@ -3218,26 +3225,26 @@
   /* Gradient hairline — a quiet brand edge instead of a flat border. */
   .setup-page__shell {
     border-color: transparent;
-    background:
-      linear-gradient(180deg, oklch(100% 0 0 / 0.97), oklch(99% 0.003 245 / 0.9)) padding-box,
+    background: linear-gradient(180deg, oklch(100% 0 0 / 0.97), oklch(99% 0.003 245 / 0.9))
+      padding-box,
       linear-gradient(
-          165deg,
-          oklch(72% 0.12 245 / 0.4),
-          oklch(91% 0.006 245 / 0.85) 38%,
-          oklch(70% 0.12 280 / 0.3)
-        )
-        border-box;
+        165deg,
+        oklch(72% 0.12 245 / 0.4),
+        oklch(91% 0.006 245 / 0.85) 38%,
+        oklch(70% 0.12 280 / 0.3)
+      )
+      border-box;
   }
   .dark .setup-page__shell {
-    background:
-      linear-gradient(180deg, oklch(20% 0.018 255 / 0.74), oklch(16% 0.016 255 / 0.62)) padding-box,
+    background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.74), oklch(16% 0.016 255 / 0.62))
+      padding-box,
       linear-gradient(
-          165deg,
-          oklch(58% 0.14 265 / 0.4),
-          oklch(34% 0.02 255 / 0.65) 40%,
-          oklch(56% 0.13 280 / 0.28)
-        )
-        border-box;
+        165deg,
+        oklch(58% 0.14 265 / 0.4),
+        oklch(34% 0.02 255 / 0.65) 40%,
+        oklch(56% 0.13 280 / 0.28)
+      )
+      border-box;
   }
 
   /* The headline progress number gets the brand gradient (fallback: solid). */
@@ -3254,31 +3261,31 @@
   .setup-wizard__nav--primary,
   .setup-intro__btn--primary {
     background: linear-gradient(180deg, oklch(58% 0.16 265), oklch(50% 0.16 265));
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.22) inset, 0 1px 2px oklch(40% 0.16 265 / 0.35), 0
-      12px 24px -14px oklch(40% 0.16 265 / 0.55);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.22) inset, 0 1px 2px oklch(40% 0.16 265 / 0.35), 0 12px
+      24px -14px oklch(40% 0.16 265 / 0.55);
   }
   .setup-wizard__nav--primary:not(:disabled):hover,
   .setup-intro__btn--primary:hover {
     background: linear-gradient(180deg, oklch(63% 0.16 265), oklch(55% 0.16 265));
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.28) inset, 0 1px 2px oklch(40% 0.16 265 / 0.4), 0
-      16px 30px -14px oklch(40% 0.16 265 / 0.6);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.28) inset, 0 1px 2px oklch(40% 0.16 265 / 0.4), 0 16px
+      30px -14px oklch(40% 0.16 265 / 0.6);
   }
 
   /* Field focus — gradient ring + ambient glow; valid fields breathe green. */
   .setup-field__shell:focus-within {
     border-color: oklch(55% 0.16 265 / 0.9);
-    box-shadow: 0 0 0 3px oklch(55% 0.16 265 / 0.14), 0 0 0 1px oklch(55% 0.16 265 / 0.4), 0
-      10px 28px -14px oklch(40% 0.16 265 / 0.4);
+    box-shadow: 0 0 0 3px oklch(55% 0.16 265 / 0.14), 0 0 0 1px oklch(55% 0.16 265 / 0.4), 0 10px
+      28px -14px oklch(40% 0.16 265 / 0.4);
   }
   .setup-field--error .setup-field__shell:focus-within {
     border-color: oklch(55% 0.18 22);
-    box-shadow: 0 0 0 3px oklch(55% 0.18 22 / 0.12), 0 0 0 1px oklch(55% 0.18 22 / 0.4), 0
-      10px 28px -14px oklch(45% 0.14 22 / 0.35);
+    box-shadow: 0 0 0 3px oklch(55% 0.18 22 / 0.12), 0 0 0 1px oklch(55% 0.18 22 / 0.4), 0 10px 28px
+      -14px oklch(45% 0.14 22 / 0.35);
   }
   .setup-field--success .setup-field__shell {
     border-color: oklch(62% 0.14 165 / 0.55);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 0 0 1px oklch(62% 0.14 165 / 0.2), 0
-      6px 16px -10px oklch(40% 0.08 165 / 0.22);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 0 0 1px oklch(62% 0.14 165 / 0.2), 0 6px 16px
+      -10px oklch(40% 0.08 165 / 0.22);
   }
   .setup-field--success .setup-field__leading {
     color: oklch(50% 0.13 165);
@@ -3348,7 +3355,7 @@
   }
   .setup-stepper__pct-fill::after,
   .setup-step-header__bar-fill::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;

@@ -133,10 +133,7 @@ export function StepIndicator({ current, furthestReached, onJump }: StepIndicato
                   : undefined
               }
             >
-              <span
-                className="setup-stepper__fill"
-                style={{ inlineSize: `${trackFillPct}%` }}
-              />
+              <span className="setup-stepper__fill" style={{ inlineSize: `${trackFillPct}%` }} />
             </span>
           </li>
           {STEPS.map((step, idx) => {

@@ -51,8 +51,8 @@ import {
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // ── Paths ────────────────────────────────────────────────────────────────────
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -92,8 +92,8 @@ const VERBOSE = args.includes('--verbose');
 const CFG = {
   dbUrl: process.env.DATABASE_URL || '',
   backupDir: path.resolve(PROJECT_ROOT, process.env.BACKUP_DIR || 'backups/pg'),
-  retentionLocal: parseInt(process.env.BACKUP_RETENTION_LOCAL || '14', 10),
-  retentionS3: parseInt(process.env.BACKUP_RETENTION_S3 || '30', 10),
+  retentionLocal: Number.parseInt(process.env.BACKUP_RETENTION_LOCAL || '14', 10),
+  retentionS3: Number.parseInt(process.env.BACKUP_RETENTION_S3 || '30', 10),
   includeUploads: process.env.BACKUP_INCLUDE_UPLOADS === '1',
   logFile: path.resolve(PROJECT_ROOT, process.env.BACKUP_LOG || 'backups/backup-db.log'),
   primary: {
@@ -125,7 +125,7 @@ function log(level, msg, extra = {}) {
   if (VERBOSE || level !== 'info') console.log(line);
   try {
     mkdirSync(path.dirname(CFG.logFile), { recursive: true });
-    appendFileSync(CFG.logFile, line + '\n');
+    appendFileSync(CFG.logFile, `${line}\n`);
   } catch {
     /* لاگ‌نویسی نباید اجرای بکاپ را بشکند */
   }
@@ -171,7 +171,8 @@ async function s3List(dest, prefix) {
     const res = await client.send(
       new ListObjectsV2Command({ Bucket: dest.bucket, Prefix: prefix, ContinuationToken: token }),
     );
-    for (const obj of res.Contents ?? []) keys.push({ key: obj.Key, lastModified: obj.LastModified });
+    for (const obj of res.Contents ?? [])
+      keys.push({ key: obj.Key, lastModified: obj.LastModified });
     token = res.IsTruncated ? res.NextContinuationToken : undefined;
   } while (token);
   return keys;
@@ -285,7 +286,9 @@ function tarUploads(outPath) {
     child.stderr.on('data', (c) => (stderr += c));
     child.on('error', (err) => reject(new Error(`tar اجرا نشد: ${err.message}`)));
     child.on('close', (code) =>
-      code === 0 ? resolve(true) : reject(new Error(`tar با کد ${code} شکست خورد: ${stderr.slice(0, 300)}`)),
+      code === 0
+        ? resolve(true)
+        : reject(new Error(`tar با کد ${code} شکست خورد: ${stderr.slice(0, 300)}`)),
     );
   });
 }
@@ -365,7 +368,10 @@ async function main() {
       const uploadsFile = path.join(CFG.backupDir, `uploads_${nowStamp()}.tar.gz`);
       const made = await tarUploads(uploadsFile);
       if (made) {
-        results.uploads = { file: path.basename(uploadsFile), sizeBytes: statSync(uploadsFile).size };
+        results.uploads = {
+          file: path.basename(uploadsFile),
+          sizeBytes: statSync(uploadsFile).size,
+        };
         for (const dest of destinations) {
           try {
             await s3Upload(dest, `uploads/${path.basename(uploadsFile)}`, uploadsFile);

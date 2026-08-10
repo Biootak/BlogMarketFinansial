@@ -18,39 +18,33 @@ async function fetchActiveAdsInternal(
   orderBy: 'order' | 'createdAt' | 'startDate',
   orderDirection: 'asc' | 'desc',
 ): Promise<ActionResult<Advertisement[]>> {
-  try {
-    // M13 fix: allowlist the sort field to avoid injecting an arbitrary
-    // Prisma orderBy key (defense even though the type already constrains it).
-    const safeOrderBy: 'order' | 'createdAt' | 'startDate' =
-      orderBy === 'createdAt' || orderBy === 'startDate' || orderBy === 'order' ? orderBy : 'order';
-    const safeDirection: 'asc' | 'desc' = orderDirection === 'desc' ? 'desc' : 'asc';
-    const skip = (page - 1) * limit;
-    const ads = await prisma.advertisement.findMany({
-      where: {
-        isActive: true,
-        startDate: { lte: new Date() },
-        endDate: { gte: new Date() },
-        size: size ? { equals: size } : undefined,
-        position: position ? { equals: position } : undefined,
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } },
-        ],
-      },
-      orderBy: { [safeOrderBy]: safeDirection },
-      take: limit,
-      skip: skip,
-    });
-    return {
-      success: true,
-      message: 'تبلیغات فعال با موفقیت بازیابی شدند.',
-      data: ads,
-    };
-  } catch (error) {
-    // Re-throw → safeCache returns non-cached fallback. Returning { success: false }
-    // here would poison the cache for 300 s, making all ad slots empty on every request.
-    throw error;
-  }
+  // M13 fix: allowlist the sort field to avoid injecting an arbitrary
+  // Prisma orderBy key (defense even though the type already constrains it).
+  const safeOrderBy: 'order' | 'createdAt' | 'startDate' =
+    orderBy === 'createdAt' || orderBy === 'startDate' || orderBy === 'order' ? orderBy : 'order';
+  const safeDirection: 'asc' | 'desc' = orderDirection === 'desc' ? 'desc' : 'asc';
+  const skip = (page - 1) * limit;
+  const ads = await prisma.advertisement.findMany({
+    where: {
+      isActive: true,
+      startDate: { lte: new Date() },
+      endDate: { gte: new Date() },
+      size: size ? { equals: size } : undefined,
+      position: position ? { equals: position } : undefined,
+      OR: [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ],
+    },
+    orderBy: { [safeOrderBy]: safeDirection },
+    take: limit,
+    skip: skip,
+  });
+  return {
+    success: true,
+    message: 'تبلیغات فعال با موفقیت بازیابی شدند.',
+    data: ads,
+  };
 }
 
 // 2026-06-21: قبلاً unstable_cache بود که خطای DB را re-throw می‌کرد.

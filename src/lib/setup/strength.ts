@@ -109,9 +109,7 @@ export function generateStrongPassword(length = 18): string {
   };
 
   // Guarantee one char from every class, then fill the rest randomly.
-  const parts: string[] = [GEN_UPPER, GEN_LOWER, GEN_DIGITS, GEN_SYMBOLS].map((set) =>
-    pick(set),
-  );
+  const parts: string[] = [GEN_UPPER, GEN_LOWER, GEN_DIGITS, GEN_SYMBOLS].map((set) => pick(set));
   for (let i = parts.length; i < safeLength; i += 1) {
     parts.push(pick(GEN_ALL));
   }

@@ -49,10 +49,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--at-space-1, var(--ds-space-1));
-  animation: kpiRise var(--at-duration, var(--ds-duration-base)) var(--at-ease, var(--ds-ease-out-quart)) both;
+  animation: kpiRise var(--at-duration, var(--ds-duration-base))
+    var(--at-ease, var(--ds-ease-out-quart)) both;
   animation-delay: var(--kpi-delay, 0ms);
-  transition: border-color var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              box-shadow var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart));
+  transition: border-color var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), box-shadow var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart));
 }
 
 .kpiCard:hover {
@@ -69,7 +71,8 @@
   block-size: 100%;
   background: var(--kpi-accent, var(--at-accent));
   opacity: 0.9;
-  border-radius: 0 var(--at-radius-sm, var(--ds-radius-sm)) var(--at-radius-sm, var(--ds-radius-sm)) 0;
+  border-radius: 0 var(--at-radius-sm, var(--ds-radius-sm)) var(--at-radius-sm, var(--ds-radius-sm))
+    0;
 }
 
 .kpiIcon {
@@ -122,7 +125,8 @@
   border-radius: var(--at-radius, var(--ds-radius-md));
   font-size: var(--ds-text-sm, 0.875rem);
   font-weight: 500;
-  animation: bannerSlideIn var(--at-duration, var(--ds-duration-base)) var(--at-ease, var(--ds-ease-out-quart)) both;
+  animation: bannerSlideIn var(--at-duration, var(--ds-duration-base))
+    var(--at-ease, var(--ds-ease-out-quart)) both;
 }
 
 .bannerSuccess {
@@ -203,8 +207,9 @@
   color: var(--at-fg-muted, var(--ds-text-secondary));
   font-size: var(--ds-text-xs, 0.75rem);
   cursor: pointer;
-  transition: background var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              color var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart));
+  transition: background var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), color var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart));
 }
 
 .clearSelectBtn:hover {
@@ -251,11 +256,13 @@
   cursor: pointer;
   text-align: start;
   padding: 0;
-  transition: border-color var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              box-shadow var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              transform var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              background var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart));
-  animation: cardRise var(--at-duration, var(--ds-duration-base)) var(--at-ease, var(--ds-ease-out-quart)) both;
+  transition: border-color var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), box-shadow var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), transform var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), background var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart));
+  animation: cardRise var(--at-duration, var(--ds-duration-base))
+    var(--at-ease, var(--ds-ease-out-quart)) both;
   animation-delay: calc(var(--card-i, 0) * 40ms);
   min-height: 48px;
 }
@@ -288,7 +295,8 @@
   flex-shrink: 0;
   width: 3px;
   border-radius: 3px 0 0 3px;
-  transition: background var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart));
+  transition: background var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart));
 }
 
 /* Card body */
@@ -399,8 +407,15 @@
 }
 
 @keyframes urgentPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
 }
 
 /* Selected indicator */
@@ -570,7 +585,8 @@
 .docImg {
   object-fit: cover;
   opacity: 0;
-  transition: opacity var(--at-duration, var(--ds-duration-base)) var(--at-ease, var(--ds-ease-out-quart));
+  transition: opacity var(--at-duration, var(--ds-duration-base))
+    var(--at-ease, var(--ds-ease-out-quart));
 }
 
 .docImgLoaded {
@@ -598,7 +614,8 @@
   align-items: center;
   justify-content: space-between;
   opacity: 0;
-  transition: opacity var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart));
+  transition: opacity var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart));
 }
 
 .docImgWrap:hover .docImgOverlay {
@@ -623,7 +640,8 @@
   color: var(--at-fg-inv, oklch(98% 0.005 240));
   cursor: pointer;
   backdrop-filter: blur(8px);
-  transition: background var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart));
+  transition: background var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart));
 }
 
 .docZoomBtn:hover {
@@ -683,9 +701,10 @@
   font-size: var(--ds-text-sm, 0.875rem);
   font-weight: 600;
   cursor: pointer;
-  transition: transform var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              box-shadow var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              opacity var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart));
+  transition: transform var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), box-shadow var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), opacity var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart));
 }
 
 .approveBtn:hover:not(:disabled) {
@@ -712,10 +731,11 @@
   font-size: var(--ds-text-sm, 0.875rem);
   font-weight: 600;
   cursor: pointer;
-  transition: transform var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              box-shadow var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              background var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart)),
-              opacity var(--at-duration, var(--ds-duration-fast)) var(--at-ease, var(--ds-ease-out-quart));
+  transition: transform var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), box-shadow var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), background var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart)), opacity var(--at-duration, var(--ds-duration-fast))
+    var(--at-ease, var(--ds-ease-out-quart));
 }
 
 .rejectBtn:hover:not(:disabled) {

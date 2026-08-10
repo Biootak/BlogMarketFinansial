@@ -34,92 +34,86 @@ async function fetchLatestPosts(
   skip: number,
   category: string | undefined,
 ): Promise<PostWithRelations[]> {
-  try {
-    const whereClause = {
-      status: PostStatus.PUBLISHED,
-      featuredImage: {
-        not: null,
+  const whereClause = {
+    status: PostStatus.PUBLISHED,
+    featuredImage: {
+      not: null,
+    },
+    AND: [
+      {
+        featuredImage: {
+          not: '',
+        },
       },
-      AND: [
-        {
-          featuredImage: {
-            not: '',
-          },
+      {
+        featuredImage: {
+          not: ' ',
         },
-        {
-          featuredImage: {
-            not: ' ',
-          },
-        },
-      ],
-      ...(category && category !== 'همه'
-        ? {
-            categories: {
-              some: {
-                name: category,
-              },
+      },
+    ],
+    ...(category && category !== 'همه'
+      ? {
+          categories: {
+            some: {
+              name: category,
             },
-          }
-        : {}),
-    };
+          },
+        }
+      : {}),
+  };
 
-    const posts = await prisma.post.findMany({
-      where: whereClause,
-      take: count,
-      skip: skip,
-      orderBy: { createdAt: 'desc' },
-      // بدنه‌ی کامل مقاله (content) در کارت‌های لیست استفاده نمی‌شه؛ حذفش
-      // از payload (DB → RSC → hydration) حجم صفحه‌ی اصلی رو کم می‌کنه.
-      omit: { content: true },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            profile: {
-              select: {
-                avatar: true,
-                jobName: true,
-              },
+  const posts = await prisma.post.findMany({
+    where: whereClause,
+    take: count,
+    skip: skip,
+    orderBy: { createdAt: 'desc' },
+    // بدنه‌ی کامل مقاله (content) در کارت‌های لیست استفاده نمی‌شه؛ حذفش
+    // از payload (DB → RSC → hydration) حجم صفحه‌ی اصلی رو کم می‌کنه.
+    omit: { content: true },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          profile: {
+            select: {
+              avatar: true,
+              jobName: true,
             },
           },
         },
-        categories: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        tags: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-          },
+      },
+      categories: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
         },
       },
-    });
+      tags: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      _count: {
+        select: {
+          comments: true,
+          likes: true,
+          savedBy: true,
+        },
+      },
+    },
+  });
 
-    // فیلتر ثانویه: حذف رشته‌های خالی / placeholder های broken
-    const cleaned = posts.filter((p) => {
-      const img = (p as { featuredImage?: string | null }).featuredImage;
-      return typeof img === 'string' && img.trim().length > 0;
-    });
-    return cleaned as PostWithRelations[];
-  } catch (error) {
-    // Re-throw → safeCache returns non-cached fallback [].
-    // Returning [] here would poison the cache for 60 s with an empty post list.
-    throw error;
-  }
+  // فیلتر ثانویه: حذف رشته‌های خالی / placeholder های broken
+  const cleaned = posts.filter((p) => {
+    const img = (p as { featuredImage?: string | null }).featuredImage;
+    return typeof img === 'string' && img.trim().length > 0;
+  });
+  return cleaned as PostWithRelations[];
 }
 
 // 2026-06-21: قبلاً unstable_cache بود. حالا safeCache.
@@ -150,19 +144,13 @@ export async function getLatestPosts({
  * paginates over. 60s revalidate, tag `posts` so every publish invalidates.
  */
 async function fetchPublishedPostCount(): Promise<number> {
-  try {
-    return await prisma.post.count({
-      where: {
-        status: PostStatus.PUBLISHED,
-        featuredImage: { not: null },
-        AND: [{ featuredImage: { not: '' } }, { featuredImage: { not: ' ' } }],
-      },
-    });
-  } catch (error) {
-    // Re-throw → safeCache returns non-cached fallback 0.
-    // Returning 0 here would cache an incorrect count for 60 s.
-    throw error;
-  }
+  return await prisma.post.count({
+    where: {
+      status: PostStatus.PUBLISHED,
+      featuredImage: { not: null },
+      AND: [{ featuredImage: { not: '' } }, { featuredImage: { not: ' ' } }],
+    },
+  });
 }
 
 const getCachedPublishedPostCount = tieredCache(fetchPublishedPostCount, 0, {

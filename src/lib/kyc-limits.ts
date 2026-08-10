@@ -18,7 +18,7 @@
 
 import prisma from '@/lib/db';
 import { getKycTierLimits } from '@/lib/kyc-tier';
-import { Prisma } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 
 /** نرخ تقریبی fallback برای تبدیل ارز به AFN (وقتی نرخ تأییدشده‌ای نباشد) */
 const FALLBACK_AFN_RATE: Record<string, number> = {

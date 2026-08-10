@@ -122,7 +122,15 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               strokeLinejoin="round"
             />
             {/* Exclamation */}
-            <line x1="60" y1="40" x2="60" y2="60" stroke={tokens.amberFg} strokeWidth="3" strokeLinecap="round" />
+            <line
+              x1="60"
+              y1="40"
+              x2="60"
+              y2="60"
+              stroke={tokens.amberFg}
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
             <circle cx="60" cy="70" r="3" fill={tokens.amberFg} />
           </svg>
 

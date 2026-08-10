@@ -1,7 +1,7 @@
 'use client';
 
-import { getCoinMarketCapUrl } from '@/lib/utils';
 import { rialToToman } from '@/lib/market-rates/units';
+import { getCoinMarketCapUrl } from '@/lib/utils';
 import type { CryptoTickerRate } from '@/types/types';
 import { TrendingDown, TrendingUp } from 'lucide-react';
 import Link from 'next/link';

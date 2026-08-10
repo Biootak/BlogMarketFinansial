@@ -16,19 +16,19 @@ export class ExirScraper extends BaseScraper {
 
     try {
       // Fetch main page
-      const html = await this.fetchWithRetry(`${this.baseUrl}/exchange/btc-irt`);
+      const _html = await this.fetchWithRetry(`${this.baseUrl}/exchange/btc-irt`);
 
       // Parse HTML and extract rates
       // Exir uses JSON in script tags or API endpoints
       // For now, we'll use their public API if available
-      const response = await this.fetchJsonWithRetry<{ data: any[] }>(
+      const response = await this.fetchJsonWithRetry<{ data: { open: number; close: number }[] }>(
         `${this.baseUrl}/api/v1/market?symbol=btc-irt`,
       );
 
       if (response.data) {
         // Extract BTC rate
         const btcData = response.data[0];
-        if (btcData && btcData.close) {
+        if (btcData?.close) {
           rates.push({
             symbol: 'CRYPTO_BTC',
             value: btcData.close,
@@ -43,10 +43,10 @@ export class ExirScraper extends BaseScraper {
       const symbols = ['eth-irt', 'usdt-irt', 'bnb-irt'];
       for (const symbol of symbols) {
         try {
-          const coinResponse = await this.fetchJsonWithRetry<{ data: any[] }>(
-            `${this.baseUrl}/api/v1/market?symbol=${symbol}`,
-          );
-          if (coinResponse.data && coinResponse.data[0]) {
+          const coinResponse = await this.fetchJsonWithRetry<{
+            data: { open: number; close: number }[];
+          }>(`${this.baseUrl}/api/v1/market?symbol=${symbol}`);
+          if (coinResponse.data?.[0]) {
             const data = coinResponse.data[0];
             const coinSymbol = symbol.toUpperCase().replace('-IRT', '_IRT');
             rates.push({
@@ -61,9 +61,7 @@ export class ExirScraper extends BaseScraper {
           // Skip if this symbol fails
         }
       }
-    } catch (error) {
-      console.error('[ExirScraper] Error:', error);
-    }
+    } catch (_error) {}
 
     return rates;
   }

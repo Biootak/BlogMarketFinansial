@@ -180,8 +180,30 @@ function afterDate(baseDate, minDays, maxDays) {
   return daysAgo(Math.floor(age - rand(lo, hi)));
 }
 /** آی‌پی‌های واقع‌گرایانه — رنج‌های ایران و افغانستان (به‌جای ۲۵۵.۲۵۵.۲۵۵) */
-const IR_IP_PREFIXES = ['5.112', '46.32', '78.39', '91.99', '94.182', '128.65', '151.238', '185.126', '213.217', '37.63', '93.110', '5.234'];
-const AF_IP_PREFIXES = ['103.91', '113.203', '124.29', '149.20', '182.180', '202.162', '103.21', '197.154'];
+const IR_IP_PREFIXES = [
+  '5.112',
+  '46.32',
+  '78.39',
+  '91.99',
+  '94.182',
+  '128.65',
+  '151.238',
+  '185.126',
+  '213.217',
+  '37.63',
+  '93.110',
+  '5.234',
+];
+const AF_IP_PREFIXES = [
+  '103.91',
+  '113.203',
+  '124.29',
+  '149.20',
+  '182.180',
+  '202.162',
+  '103.21',
+  '197.154',
+];
 function randIP() {
   const prefix = pick([...IR_IP_PREFIXES, ...AF_IP_PREFIXES]);
   return `${prefix}.${rand(1, 254)}`;
@@ -248,7 +270,9 @@ function isConnError(e) {
     (e.code === 'P1001' ||
       e.code === 'P1008' ||
       e.code === 'P1017' ||
-      /Can't reach database|connection.*(?:closed|reset|timed out|terminated)/i.test(e.message || ''))
+      /Can't reach database|connection.*(?:closed|reset|timed out|terminated)/i.test(
+        e.message || '',
+      ))
   );
 }
 async function step(label, fn) {
@@ -383,20 +407,90 @@ async function seedUsers() {
 
   // ── کاربران عادی — افغانستان + ایران، عضویت از ۱ هفته تا ~۱۳ ماه قبل ──
   const normalUsers = [
-    { name: 'احمد رحیمی', email: 'ahmad.rahimi@gmail.com', phoneNumber: '+93701239876', city: 'کابل' },
-    { name: 'مریم نوری', email: 'maryam.nouri@gmail.com', phoneNumber: '+93713334455', city: 'هرات' },
-    { name: 'عبدالرحمن عظیمی', email: 'abdulrahman.azimi@gmail.com', phoneNumber: '+93774455667', city: 'مزار شریف' },
-    { name: 'حسین رضایی', email: 'hossein.rezaei@gmail.com', phoneNumber: '09124567890', city: 'تهران' },
-    { name: 'زهرا کریمی', email: 'zahra.karimi@gmail.com', phoneNumber: '+93715566778', city: 'کابل' },
-    { name: 'فرشته احمدی', email: 'fereshte.ahmadi@gmail.com', phoneNumber: '+93726677889', city: 'هرات' },
-    { name: 'رضا قاسمی', email: 'reza.ghasemi@gmail.com', phoneNumber: '09135566778', city: 'مشهد' },
-    { name: 'وحیدالله صافی', email: 'wahid.safi@gmail.com', phoneNumber: '+93737788990', city: 'قندهار' },
-    { name: 'فاطمه موسوی', email: 'fateme.mousavi@gmail.com', phoneNumber: '09126677889', city: 'اصفهان' },
-    { name: 'سمیع‌الله نوری', email: 'sami.noori@gmail.com', phoneNumber: '+93748899001', city: 'بلخ' },
-    { name: 'نگار صادقی', email: 'negar.sadeghi@gmail.com', phoneNumber: '09147788990', city: 'شیراز' },
-    { name: 'ظاهر حسینی', email: 'zaher.hosseini@gmail.com', phoneNumber: '+93759900112', city: 'جلال‌آباد' },
-    { name: 'علی محمدی', email: 'ali.mohammadi@gmail.com', phoneNumber: '09158899001', city: 'تبریز' },
-    { name: 'حمیرا شریفی', email: 'homeira.sharifi@gmail.com', phoneNumber: '+93760011223', city: 'هرات' },
+    {
+      name: 'احمد رحیمی',
+      email: 'ahmad.rahimi@gmail.com',
+      phoneNumber: '+93701239876',
+      city: 'کابل',
+    },
+    {
+      name: 'مریم نوری',
+      email: 'maryam.nouri@gmail.com',
+      phoneNumber: '+93713334455',
+      city: 'هرات',
+    },
+    {
+      name: 'عبدالرحمن عظیمی',
+      email: 'abdulrahman.azimi@gmail.com',
+      phoneNumber: '+93774455667',
+      city: 'مزار شریف',
+    },
+    {
+      name: 'حسین رضایی',
+      email: 'hossein.rezaei@gmail.com',
+      phoneNumber: '09124567890',
+      city: 'تهران',
+    },
+    {
+      name: 'زهرا کریمی',
+      email: 'zahra.karimi@gmail.com',
+      phoneNumber: '+93715566778',
+      city: 'کابل',
+    },
+    {
+      name: 'فرشته احمدی',
+      email: 'fereshte.ahmadi@gmail.com',
+      phoneNumber: '+93726677889',
+      city: 'هرات',
+    },
+    {
+      name: 'رضا قاسمی',
+      email: 'reza.ghasemi@gmail.com',
+      phoneNumber: '09135566778',
+      city: 'مشهد',
+    },
+    {
+      name: 'وحیدالله صافی',
+      email: 'wahid.safi@gmail.com',
+      phoneNumber: '+93737788990',
+      city: 'قندهار',
+    },
+    {
+      name: 'فاطمه موسوی',
+      email: 'fateme.mousavi@gmail.com',
+      phoneNumber: '09126677889',
+      city: 'اصفهان',
+    },
+    {
+      name: 'سمیع‌الله نوری',
+      email: 'sami.noori@gmail.com',
+      phoneNumber: '+93748899001',
+      city: 'بلخ',
+    },
+    {
+      name: 'نگار صادقی',
+      email: 'negar.sadeghi@gmail.com',
+      phoneNumber: '09147788990',
+      city: 'شیراز',
+    },
+    {
+      name: 'ظاهر حسینی',
+      email: 'zaher.hosseini@gmail.com',
+      phoneNumber: '+93759900112',
+      city: 'جلال‌آباد',
+    },
+    {
+      name: 'علی محمدی',
+      email: 'ali.mohammadi@gmail.com',
+      phoneNumber: '09158899001',
+      city: 'تبریز',
+    },
+    {
+      name: 'حمیرا شریفی',
+      email: 'homeira.sharifi@gmail.com',
+      phoneNumber: '+93760011223',
+      city: 'هرات',
+    },
   ];
   for (const u of normalUsers) {
     const exists = await p.user.findUnique({ where: { email: u.email } });
@@ -635,7 +729,12 @@ const TOPIC_COMMENTS = {
 
 function pickTopicPool(post) {
   const text = `${post.title || ''} ${post.slug || ''}`;
-  if (/(بیت|کریپتو|ارز دیجیتال|بلاکچین|توکن|NFT|ماینینگ|کیف پول|اتریوم|صرافی|وب ۳|دیفای|متامسک|فانتوم|بیت‌کوین)/.test(text)) return TOPIC_COMMENTS.crypto;
+  if (
+    /(بیت|کریپتو|ارز دیجیتال|بلاکچین|توکن|NFT|ماینینگ|کیف پول|اتریوم|صرافی|وب ۳|دیفای|متامسک|فانتوم|بیت‌کوین)/.test(
+      text,
+    )
+  )
+    return TOPIC_COMMENTS.crypto;
   if (/(طلا|سکه|اونس|حباب)/.test(text)) return TOPIC_COMMENTS.gold;
   if (/(بورس|سهام|شاخص|سرمایه‌گذاری|صندوق|IPO)/.test(text)) return TOPIC_COMMENTS.stocks;
   if (/(تحلیل|تکنیکال|نمودار|کندل|DXY)/.test(text)) return TOPIC_COMMENTS.analysis;
@@ -853,7 +952,13 @@ async function seedActivityLogs(users) {
     ['PASSWORD_CHANGE', 'رمز عبور خود را تغییر داد'],
     ['NEWSLETTER_SUBSCRIBE', 'در خبرنامه عضویت کرد'],
   ];
-  const topics = ['تحلیل طلا', 'پیش‌بینی بیت‌کوین', 'بازار بورس', 'راهنمای کیف پول', 'نرخ لحظه‌ای ارز'];
+  const topics = [
+    'تحلیل طلا',
+    'پیش‌بینی بیت‌کوین',
+    'بازار بورس',
+    'راهنمای کیف پول',
+    'نرخ لحظه‌ای ارز',
+  ];
   const rows = [];
   for (const user of users) {
     const count = rand(3, 10);
@@ -907,50 +1012,58 @@ async function seedSocialLinks() {
     {
       name: 'Telegram',
       url: 'https://t.me/blogmarket',
-      icon: 'FaTelegram',
+      icon: null,
       color: '#0088cc',
       type: 'SOCIAL',
       order: 1,
+      // nonaktif: URL placeholder است و آیکون برند ندارد.
+      // از پنل تنظیمات آپلود کنید.
+      isActive: false,
     },
     {
       name: 'Instagram',
       url: 'https://instagram.com/blogmarket',
-      icon: 'FaInstagram',
+      icon: null,
       color: '#E4405F',
       type: 'SOCIAL',
       order: 2,
+      isActive: false,
     },
     {
       name: 'Twitter',
       url: 'https://twitter.com/blogmarket',
-      icon: 'FaTwitter',
+      icon: null,
       color: '#1DA1F2',
       type: 'SOCIAL',
       order: 3,
+      isActive: false,
     },
     {
       name: 'WhatsApp',
       url: 'https://wa.me/989120000000',
-      icon: 'FaWhatsapp',
+      icon: null,
       color: '#25D366',
       type: 'SUPPORT',
       order: 1,
+      isActive: false,
     },
     {
       name: 'YouTube',
       url: 'https://youtube.com/@blogmarket',
-      icon: 'FaYoutube',
+      icon: null,
       color: '#FF0000',
       type: 'SOCIAL',
       order: 4,
+      isActive: false,
     },
     {
       name: 'LinkedIn',
       url: 'https://linkedin.com/company/blogmarket',
-      icon: 'FaLinkedin',
+      icon: null,
       color: '#0A66C2',
       type: 'SOCIAL',
       order: 5,
+      isActive: false,
     },
   ];
   let added = 0;
@@ -1962,21 +2075,83 @@ async function seedServiceRequests() {
 
   // هر خدمت با توضیح و مبلغ واقعیِ همان خدمت
   const SERVICES = [
-    { type: 'INTERNATIONAL_TRANSFER', desc: 'ارسال حواله از کابل به دبی برای هزینه خانواده', amount: () => `${rand(200, 5000)}`, currency: 'USD' },
-    { type: 'TUITION_PAYMENT', desc: 'پرداخت شهریه ترم جدید دانشگاه در ترکیه', amount: () => `${rand(500, 4000)}`, currency: 'USD' },
-    { type: 'FREELANCE_INCOME', desc: 'دریافت درآمد فریلنسری از Upwork به حساب بانکی', amount: () => `${rand(100, 3000)}`, currency: 'USD' },
-    { type: 'ONLINE_PAYMENT', desc: 'خرید نرم‌افزار و سرویس‌های آنلاین از فروشگاه خارجی', amount: () => `${rand(50, 1500)}`, currency: 'USD' },
-    { type: 'CURRENCY_BUY', desc: 'خرید دلار نقدی برای سفر', amount: () => `${rand(15000, 900000)}`, currency: 'AFN' },
-    { type: 'CURRENCY_SELL', desc: 'فروش افغانی و تبدیل به دلار برای حواله', amount: () => `${rand(20000, 800000)}`, currency: 'AFN' },
-    { type: 'CRYPTO_BUY', desc: 'خرید تتر برای پرداخت آنلاین', amount: () => `${rand(100, 4000)}`, currency: 'USDT' },
-    { type: 'SOFTWARE_PURCHASE', desc: 'خرید اشتراک نرم‌افزار طراحی و اداری', amount: () => `${rand(20, 800)}`, currency: 'USD' },
-    { type: 'GIFT_CARD', desc: 'خرید کارت هدیه فروشگاه خارجی', amount: () => `${rand(25, 500)}`, currency: 'USD' },
-    { type: 'PAYPAL_TRANSFER', desc: 'واریز وجه به حساب پی‌پال', amount: () => `${rand(100, 2000)}`, currency: 'USD' },
+    {
+      type: 'INTERNATIONAL_TRANSFER',
+      desc: 'ارسال حواله از کابل به دبی برای هزینه خانواده',
+      amount: () => `${rand(200, 5000)}`,
+      currency: 'USD',
+    },
+    {
+      type: 'TUITION_PAYMENT',
+      desc: 'پرداخت شهریه ترم جدید دانشگاه در ترکیه',
+      amount: () => `${rand(500, 4000)}`,
+      currency: 'USD',
+    },
+    {
+      type: 'FREELANCE_INCOME',
+      desc: 'دریافت درآمد فریلنسری از Upwork به حساب بانکی',
+      amount: () => `${rand(100, 3000)}`,
+      currency: 'USD',
+    },
+    {
+      type: 'ONLINE_PAYMENT',
+      desc: 'خرید نرم‌افزار و سرویس‌های آنلاین از فروشگاه خارجی',
+      amount: () => `${rand(50, 1500)}`,
+      currency: 'USD',
+    },
+    {
+      type: 'CURRENCY_BUY',
+      desc: 'خرید دلار نقدی برای سفر',
+      amount: () => `${rand(15000, 900000)}`,
+      currency: 'AFN',
+    },
+    {
+      type: 'CURRENCY_SELL',
+      desc: 'فروش افغانی و تبدیل به دلار برای حواله',
+      amount: () => `${rand(20000, 800000)}`,
+      currency: 'AFN',
+    },
+    {
+      type: 'CRYPTO_BUY',
+      desc: 'خرید تتر برای پرداخت آنلاین',
+      amount: () => `${rand(100, 4000)}`,
+      currency: 'USDT',
+    },
+    {
+      type: 'SOFTWARE_PURCHASE',
+      desc: 'خرید اشتراک نرم‌افزار طراحی و اداری',
+      amount: () => `${rand(20, 800)}`,
+      currency: 'USD',
+    },
+    {
+      type: 'GIFT_CARD',
+      desc: 'خرید کارت هدیه فروشگاه خارجی',
+      amount: () => `${rand(25, 500)}`,
+      currency: 'USD',
+    },
+    {
+      type: 'PAYPAL_TRANSFER',
+      desc: 'واریز وجه به حساب پی‌پال',
+      amount: () => `${rand(100, 2000)}`,
+      currency: 'USD',
+    },
   ];
-  const STATUS_WEIGHTS = ['COMPLETED', 'COMPLETED', 'COMPLETED', 'IN_PROGRESS', 'IN_PROGRESS', 'PENDING', 'PENDING', 'CANCELLED'];
+  const STATUS_WEIGHTS = [
+    'COMPLETED',
+    'COMPLETED',
+    'COMPLETED',
+    'IN_PROGRESS',
+    'IN_PROGRESS',
+    'PENDING',
+    'PENDING',
+    'CANCELLED',
+  ];
   const METHODS = ['telegram', 'whatsapp', 'phone', 'website'];
   const NOTES = {
-    COMPLETED: ['حواله با موفقیت انجام و رسید ارسال شد.', 'تراکنش تکمیل شد؛ رسید برای مشتری ارسال گردید.'],
+    COMPLETED: [
+      'حواله با موفقیت انجام و رسید ارسال شد.',
+      'تراکنش تکمیل شد؛ رسید برای مشتری ارسال گردید.',
+    ],
     IN_PROGRESS: ['در حال هماهنگی با صرافی مقصد.', 'منتظر تأیید پرداخت از سمت صرافی.'],
     PENDING: ['در صف بررسی؛ مدارک کامل است.', 'نیازمند تکمیل مدارک از سمت مشتری.'],
     CANCELLED: ['مشتری به دلیل تغییر شرایط انصراف داد.', 'عدم تطابق مدارک؛ درخواست لغو شد.'],
@@ -2182,16 +2357,56 @@ async function seedTasks(users) {
     return;
   }
   const TASKS = [
-    { title: 'بازبینی مقاله هفتگی بیت‌کوین', description: 'بررسی نهایی و انتشار تحلیل هفتگی', status: 'COMPLETED' },
-    { title: 'به‌روزرسانی نرخ‌های طلا و سکه', description: 'همگام‌سازی نرخ‌ها با بازار امروز', status: 'COMPLETED' },
-    { title: 'پاسخ به تیکت‌های پشتیبانی', description: 'بررسی تیکت‌های باز امروز', status: 'IN_PROGRESS' },
-    { title: 'آماده‌سازی خبرنامه هفتگی', description: 'تدوین و ارسال خبرنامه به اعضا', status: 'PENDING' },
-    { title: 'بررسی دیدگاه‌های در انتظار تأیید', description: 'تأیید یا رد دیدگاه‌های جدید', status: 'IN_PROGRESS' },
-    { title: 'بهینه‌سازی تصاویر صفحه اول', description: 'فشرده‌سازی و به‌روزرسانی تصاویر', status: 'COMPLETED' },
-    { title: 'نوشتن یادداشت تحلیل بورس هفته', description: 'گزارش هفتگی بازار سهام', status: 'PENDING' },
-    { title: 'همگام‌سازی داده‌های نرخ ارز', description: 'اجرای cron و بررسی صحت نرخ‌ها', status: 'COMPLETED' },
-    { title: 'بررسی وضعیت سرور و پشتیبان‌گیری', description: 'لاگ‌ها و پشتیبان شبانه', status: 'COMPLETED' },
-    { title: 'تدوین محتوای شبکه‌های اجتماعی', description: 'پست هفتگی تلگرام و اینستاگرام', status: 'PENDING' },
+    {
+      title: 'بازبینی مقاله هفتگی بیت‌کوین',
+      description: 'بررسی نهایی و انتشار تحلیل هفتگی',
+      status: 'COMPLETED',
+    },
+    {
+      title: 'به‌روزرسانی نرخ‌های طلا و سکه',
+      description: 'همگام‌سازی نرخ‌ها با بازار امروز',
+      status: 'COMPLETED',
+    },
+    {
+      title: 'پاسخ به تیکت‌های پشتیبانی',
+      description: 'بررسی تیکت‌های باز امروز',
+      status: 'IN_PROGRESS',
+    },
+    {
+      title: 'آماده‌سازی خبرنامه هفتگی',
+      description: 'تدوین و ارسال خبرنامه به اعضا',
+      status: 'PENDING',
+    },
+    {
+      title: 'بررسی دیدگاه‌های در انتظار تأیید',
+      description: 'تأیید یا رد دیدگاه‌های جدید',
+      status: 'IN_PROGRESS',
+    },
+    {
+      title: 'بهینه‌سازی تصاویر صفحه اول',
+      description: 'فشرده‌سازی و به‌روزرسانی تصاویر',
+      status: 'COMPLETED',
+    },
+    {
+      title: 'نوشتن یادداشت تحلیل بورس هفته',
+      description: 'گزارش هفتگی بازار سهام',
+      status: 'PENDING',
+    },
+    {
+      title: 'همگام‌سازی داده‌های نرخ ارز',
+      description: 'اجرای cron و بررسی صحت نرخ‌ها',
+      status: 'COMPLETED',
+    },
+    {
+      title: 'بررسی وضعیت سرور و پشتیبان‌گیری',
+      description: 'لاگ‌ها و پشتیبان شبانه',
+      status: 'COMPLETED',
+    },
+    {
+      title: 'تدوین محتوای شبکه‌های اجتماعی',
+      description: 'پست هفتگی تلگرام و اینستاگرام',
+      status: 'PENDING',
+    },
   ];
   const staffUsers = users.filter((u) => ['AUTHOR', 'ADMIN', 'SUPPORT', 'OWNER'].includes(u.role));
   if (staffUsers.length === 0) {
@@ -2643,16 +2858,79 @@ async function seedCurrencyDeals() {
   }
 
   const DEALS = [
-    { customerName: 'احمد رحیمی', customerPhone: '+93701239876', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 500, appliedRate: 88.5 },
-    { customerName: 'مریم نوری', customerPhone: '+93713334455', fromCurrency: 'EUR', toCurrency: 'AFN', fromAmount: 300, appliedRate: 96.1 },
-    { customerName: 'عبدالرحمن عظیمی', customerPhone: '+93774455667', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 1000, appliedRate: 89.0 },
-    { customerName: 'فرشته احمدی', customerPhone: '+93726677889', fromCurrency: 'AED', toCurrency: 'AFN', fromAmount: 2000, appliedRate: 24.1 },
-    { customerName: 'رضا قاسمی', customerPhone: '09135566778', fromCurrency: 'USD', toCurrency: 'IRR', fromAmount: 200, appliedRate: 8700 },
-    { customerName: 'وحیدالله صافی', customerPhone: '+93737788990', fromCurrency: 'USD', toCurrency: 'AFN', fromAmount: 750, appliedRate: 88.8 },
-    { customerName: 'فاطمه موسوی', customerPhone: '09126677889', fromCurrency: 'EUR', toCurrency: 'AFN', fromAmount: 120, appliedRate: 95.9 },
-    { customerName: 'حمیرا شریفی', customerPhone: '+93760011223', fromCurrency: 'GBP', toCurrency: 'AFN', fromAmount: 250, appliedRate: 113.4 },
+    {
+      customerName: 'احمد رحیمی',
+      customerPhone: '+93701239876',
+      fromCurrency: 'USD',
+      toCurrency: 'AFN',
+      fromAmount: 500,
+      appliedRate: 88.5,
+    },
+    {
+      customerName: 'مریم نوری',
+      customerPhone: '+93713334455',
+      fromCurrency: 'EUR',
+      toCurrency: 'AFN',
+      fromAmount: 300,
+      appliedRate: 96.1,
+    },
+    {
+      customerName: 'عبدالرحمن عظیمی',
+      customerPhone: '+93774455667',
+      fromCurrency: 'USD',
+      toCurrency: 'AFN',
+      fromAmount: 1000,
+      appliedRate: 89.0,
+    },
+    {
+      customerName: 'فرشته احمدی',
+      customerPhone: '+93726677889',
+      fromCurrency: 'AED',
+      toCurrency: 'AFN',
+      fromAmount: 2000,
+      appliedRate: 24.1,
+    },
+    {
+      customerName: 'رضا قاسمی',
+      customerPhone: '09135566778',
+      fromCurrency: 'USD',
+      toCurrency: 'IRR',
+      fromAmount: 200,
+      appliedRate: 8700,
+    },
+    {
+      customerName: 'وحیدالله صافی',
+      customerPhone: '+93737788990',
+      fromCurrency: 'USD',
+      toCurrency: 'AFN',
+      fromAmount: 750,
+      appliedRate: 88.8,
+    },
+    {
+      customerName: 'فاطمه موسوی',
+      customerPhone: '09126677889',
+      fromCurrency: 'EUR',
+      toCurrency: 'AFN',
+      fromAmount: 120,
+      appliedRate: 95.9,
+    },
+    {
+      customerName: 'حمیرا شریفی',
+      customerPhone: '+93760011223',
+      fromCurrency: 'GBP',
+      toCurrency: 'AFN',
+      fromAmount: 250,
+      appliedRate: 113.4,
+    },
   ];
-  const STATUS_WEIGHTS = ['COMPLETED', 'COMPLETED', 'COMPLETED', 'CONFIRMED', 'PENDING', 'CANCELLED'];
+  const STATUS_WEIGHTS = [
+    'COMPLETED',
+    'COMPLETED',
+    'COMPLETED',
+    'CONFIRMED',
+    'PENDING',
+    'CANCELLED',
+  ];
 
   let added = 0;
   for (let i = 0; i < DEALS.length; i++) {
@@ -2680,7 +2958,8 @@ async function seedCurrencyDeals() {
         feeAmount: Math.round(d.fromAmount * 0.005 * 100) / 100,
         channel: Math.random() > 0.3 ? 'ONLINE' : 'INPERSON',
         status,
-        confirmedAt: status === 'COMPLETED' || status === 'CONFIRMED' ? addDays(createdAt, rand(0, 1)) : null,
+        confirmedAt:
+          status === 'COMPLETED' || status === 'CONFIRMED' ? addDays(createdAt, rand(0, 1)) : null,
         completedAt: status === 'COMPLETED' ? addDays(createdAt, rand(1, 2)) : null,
         createdAt,
         updatedAt: addDays(createdAt, rand(0, 3)),
@@ -2772,20 +3051,118 @@ async function seedExchangeFintech() {
 
   // مشتریان واقعی‌نما — نام/شماره افغانستانی و ایرانی
   const CUSTOMERS = [
-    { fullName: 'احمد رحیمی', phone: '+93701239876', city: 'کابل', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
-    { fullName: 'مریم نوری', phone: '+93713334455', city: 'هرات', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
-    { fullName: 'عبدالرحمن عظیمی', phone: '+93774455667', city: 'مزار شریف', status: 'ACTIVE', kycStatus: 'PENDING', kycLevel: 'NONE' },
-    { fullName: 'فرشته احمدی', phone: '+93726677889', city: 'هرات', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
-    { fullName: 'وحیدالله صافی', phone: '+93737788990', city: 'قندهار', status: 'FROZEN', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
-    { fullName: 'سمیع‌الله نوری', phone: '+93748899001', city: 'بلخ', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
-    { fullName: 'ظاهر حسینی', phone: '+93759900112', city: 'جلال‌آباد', status: 'ACTIVE', kycStatus: 'NOT_STARTED', kycLevel: 'NONE' },
-    { fullName: 'حمیرا شریفی', phone: '+93760011223', city: 'هرات', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
-    { fullName: 'محمد رفیع عثمانی', phone: '+93781234567', city: 'کابل', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
-    { fullName: 'نادره حبیبی', phone: '+93794455667', city: 'هرات', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_2' },
-    { fullName: 'علی محمدی', phone: '09158899001', city: 'تهران', status: 'ACTIVE', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
-    { fullName: 'رضا قاسمی', phone: '09135566778', city: 'مشهد', status: 'PROSPECT', kycStatus: 'NOT_STARTED', kycLevel: 'NONE' },
-    { fullName: 'فاطمه موسوی', phone: '09126677889', city: 'اصفهان', status: 'ACTIVE', kycStatus: 'REJECTED', kycLevel: 'NONE' },
-    { fullName: 'نگار صادقی', phone: '09147788990', city: 'شیراز', status: 'CLOSED', kycStatus: 'APPROVED', kycLevel: 'LEVEL_1' },
+    {
+      fullName: 'احمد رحیمی',
+      phone: '+93701239876',
+      city: 'کابل',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'مریم نوری',
+      phone: '+93713334455',
+      city: 'هرات',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
+    {
+      fullName: 'عبدالرحمن عظیمی',
+      phone: '+93774455667',
+      city: 'مزار شریف',
+      status: 'ACTIVE',
+      kycStatus: 'PENDING',
+      kycLevel: 'NONE',
+    },
+    {
+      fullName: 'فرشته احمدی',
+      phone: '+93726677889',
+      city: 'هرات',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'وحیدالله صافی',
+      phone: '+93737788990',
+      city: 'قندهار',
+      status: 'FROZEN',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
+    {
+      fullName: 'سمیع‌الله نوری',
+      phone: '+93748899001',
+      city: 'بلخ',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'ظاهر حسینی',
+      phone: '+93759900112',
+      city: 'جلال‌آباد',
+      status: 'ACTIVE',
+      kycStatus: 'NOT_STARTED',
+      kycLevel: 'NONE',
+    },
+    {
+      fullName: 'حمیرا شریفی',
+      phone: '+93760011223',
+      city: 'هرات',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
+    {
+      fullName: 'محمد رفیع عثمانی',
+      phone: '+93781234567',
+      city: 'کابل',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'نادره حبیبی',
+      phone: '+93794455667',
+      city: 'هرات',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_2',
+    },
+    {
+      fullName: 'علی محمدی',
+      phone: '09158899001',
+      city: 'تهران',
+      status: 'ACTIVE',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
+    {
+      fullName: 'رضا قاسمی',
+      phone: '09135566778',
+      city: 'مشهد',
+      status: 'PROSPECT',
+      kycStatus: 'NOT_STARTED',
+      kycLevel: 'NONE',
+    },
+    {
+      fullName: 'فاطمه موسوی',
+      phone: '09126677889',
+      city: 'اصفهان',
+      status: 'ACTIVE',
+      kycStatus: 'REJECTED',
+      kycLevel: 'NONE',
+    },
+    {
+      fullName: 'نگار صادقی',
+      phone: '09147788990',
+      city: 'شیراز',
+      status: 'CLOSED',
+      kycStatus: 'APPROVED',
+      kycLevel: 'LEVEL_1',
+    },
   ];
 
   const TX_KINDS = ['DEPOSIT', 'WITHDRAWAL', 'EXCHANGE', 'TRANSFER', 'FEE'];
@@ -2837,7 +3214,8 @@ async function seedExchangeFintech() {
           customerId: custId,
           type: 'WALLET',
           currency,
-          status: tmpl.status === 'ACTIVE' ? 'ACTIVE' : tmpl.status === 'FROZEN' ? 'FROZEN' : 'CLOSED',
+          status:
+            tmpl.status === 'ACTIVE' ? 'ACTIVE' : tmpl.status === 'FROZEN' ? 'FROZEN' : 'CLOSED',
           balance: BigInt(0),
           updatedAt: addDays(joinedAt, rand(1, 30)),
         },
@@ -2876,10 +3254,11 @@ async function seedExchangeFintech() {
 
       let runningBalance = BigInt(0);
       for (let t = 0; t < txCount; t++) {
-        let kind = t === 0 ? 'DEPOSIT' : pick(TX_KINDS);
+        const kind = t === 0 ? 'DEPOSIT' : pick(TX_KINDS);
         const status = t === txCount - 1 && Math.random() < 0.15 ? 'PENDING' : 'COMPLETED';
         const amount = BigInt(rand(20_000, 2_500_000));
-        const fee = kind === 'DEPOSIT' || kind === 'EXCHANGE' ? BigInt(rand(500, 20_000)) : BigInt(0);
+        const fee =
+          kind === 'DEPOSIT' || kind === 'EXCHANGE' ? BigInt(rand(500, 20_000)) : BigInt(0);
         const txId = uuid();
         const txDate = txDates[t];
 
@@ -2910,7 +3289,9 @@ async function seedExchangeFintech() {
 
         if (status === 'COMPLETED') {
           const isCredit = kind === 'DEPOSIT';
-          runningBalance = isCredit ? runningBalance + finalAmount : runningBalance - finalAmount - fee;
+          runningBalance = isCredit
+            ? runningBalance + finalAmount
+            : runningBalance - finalAmount - fee;
           await p.ledgerEntry.create({
             data: {
               id: uuid(),

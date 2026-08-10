@@ -64,10 +64,7 @@ class AtelierTileBoundary extends Component<
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    // در dev لاگ می‌شود تا باگ واقعی دیده شود؛ کاربر fallback می‌بیند.
-    console.error(`[Atelier] tile "${this.props.name}" crashed:`, error, info.componentStack);
-  }
+  componentDidCatch(_error: Error, _info: ErrorInfo) {}
 
   private retry = () => this.setState({ hasError: false });
 

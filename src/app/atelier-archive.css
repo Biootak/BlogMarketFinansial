@@ -1155,8 +1155,7 @@
           140% 130% at 85% 0%,
           color-mix(in oklch, var(--ds-brand-500), transparent 78%),
           transparent 60%
-        ),
-        linear-gradient(170deg, var(--ds-surface-elevated), var(--ds-canvas-subtle));
+        ), linear-gradient(170deg, var(--ds-surface-elevated), var(--ds-canvas-subtle));
     }
     .atl-hero__intro {
       /* min-width:0 حیاتی است — در grid فرزند default min-width:auto دارد

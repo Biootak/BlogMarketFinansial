@@ -95,32 +95,30 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
   likeCount = 0,
   className,
 }) => {
-  const name      = author.name?.trim() || 'نویسنده';
-  const job       = author.profile?.jobName;
-  const company   = author.profile?.company;
-  const bio       = author.profile?.bio;
-  const photo     = pickPhoto(author.profile);
+  const name = author.name?.trim() || 'نویسنده';
+  const job = author.profile?.jobName;
+  const company = author.profile?.company;
+  const bio = author.profile?.bio;
+  const photo = pickPhoto(author.profile);
   const postCount = author._count?.posts ?? 0;
   // Real status — derived from actual published posts, not hardcoded.
-  const isActive  = postCount > 0;
+  const isActive = postCount > 0;
 
   const stats = [
-    { key: 'posts',     icon: FileText,      label: 'مقاله',     value: postCount },
-    { key: 'categories', icon: FolderOpen,   label: 'دسته‌بندی', value: categoryCount },
-    { key: 'comments',  icon: MessageSquare, label: 'کامنت',     value: commentCount },
-    { key: 'likes',     icon: ThumbsUp,      label: 'لایک',      value: likeCount },
+    { key: 'posts', icon: FileText, label: 'مقاله', value: postCount },
+    { key: 'categories', icon: FolderOpen, label: 'دسته‌بندی', value: categoryCount },
+    { key: 'comments', icon: MessageSquare, label: 'کامنت', value: commentCount },
+    { key: 'likes', icon: ThumbsUp, label: 'لایک', value: likeCount },
   ] as const;
 
   return (
     <section dir="rtl" className={cn(styles.hero, className)} aria-label={`پروفایل ${name}`}>
-
       {/* ══ ATMOSPHERE — ledger grid + brand aurora ═════════════════ */}
       <div className={styles.ledgerGrid} aria-hidden />
       <div className={styles.aura} aria-hidden />
 
       {/* ══ BODY ════════════════════════════════════════════════════ */}
       <div className={styles.heroBody}>
-
         {/* ══ PORTRAIT — compact 4/5 card ══════════════════════════ */}
         <div className={styles.avatarRing}>
           <div className={styles.avatarCard}>
@@ -143,7 +141,6 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
 
         {/* ══ CONTENT ══════════════════════════════════════════════ */}
         <div className={styles.contentCol}>
-
           {/* Topline — kicker · hairline · status badge */}
           <div className={styles.topline}>
             {job && <span className={styles.kicker}>{job}</span>}
@@ -228,10 +225,8 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
               </a>
             </div>
           )}
-
         </div>
       </div>
-
     </section>
   );
 };

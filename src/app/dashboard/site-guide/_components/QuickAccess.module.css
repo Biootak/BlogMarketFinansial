@@ -1,0 +1,138 @@
+/* QuickAccess.module.css */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.headerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ds-radius-md);
+  background: oklch(from var(--ds-accent-amber) l c h / 0.12);
+  color: oklch(from var(--ds-accent-amber) calc(l - 0.08) c h);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.sub {
+  margin: 0;
+  margin-inline-start: auto;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--ds-space-2);
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+}
+
+.card:hover {
+  border-color: var(--ds-border-default);
+  box-shadow: var(--ds-shadow-sm);
+  transform: translateY(-1px);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--ds-radius-md);
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  padding: 2px 6px;
+  border-radius: var(--ds-radius-full);
+  background: oklch(from var(--ds-accent-amber) l c h / 0.12);
+  color: oklch(from var(--ds-accent-amber) calc(l - 0.08) c h);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Tones */
+.tonePrimary {
+  background: oklch(from var(--ds-brand-500) l c h / 0.12);
+  color: var(--ds-brand-500);
+}
+.toneEmerald {
+  background: oklch(from var(--ds-accent-emerald) l c h / 0.12);
+  color: oklch(from var(--ds-accent-emerald) calc(l - 0.08) c h);
+}
+.toneAmber {
+  background: oklch(from var(--ds-accent-amber) l c h / 0.12);
+  color: oklch(from var(--ds-accent-amber) calc(l - 0.08) c h);
+}
+.toneRose {
+  background: oklch(from var(--ds-accent-rose) l c h / 0.12);
+  color: oklch(from var(--ds-accent-rose) calc(l - 0.08) c h);
+}
+.toneViolet {
+  background: oklch(from var(--ds-accent-violet) l c h / 0.12);
+  color: oklch(from var(--ds-accent-violet) calc(l - 0.08) c h);
+}
+.toneCyan {
+  background: oklch(from var(--nova-cyan) l c h / 0.12);
+  color: oklch(from var(--nova-cyan) calc(l - 0.08) c h);
+}
+.toneSlate {
+  background: oklch(from var(--ds-accent-slate) l c h / 0.12);
+  color: oklch(from var(--ds-accent-slate) calc(l - 0.08) c h);
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}

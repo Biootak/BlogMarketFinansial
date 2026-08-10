@@ -35,14 +35,13 @@
  * ----------------------------------------------------------------------------
  */
 
-import { safeCache, safeRevalidateTag as l1RevalidateTag, safeSet } from '@/lib/safe-cache';
 import {
-  redisGet as l2Get,
-  redisSet as l2Set,
-  redisRevalidateTag as l2RevalidateTag,
-  redisGetSwr,
   isRedisAvailable,
+  redisRevalidateTag as l2RevalidateTag,
+  redisSet as l2Set,
+  redisGetSwr,
 } from '@/lib/redis-cache';
+import { safeRevalidateTag as l1RevalidateTag, safeCache, safeSet } from '@/lib/safe-cache';
 
 // --------------- Options ---------------
 
@@ -112,18 +111,12 @@ export function tieredCache<TArgs extends unknown[], T>(
           return l2Value;
         }
       }
-
-      // L2 miss → fallback به تابع اصلی (DB/API)
-      try {
-        const value = await fn(...args);
-        // populate L2 (fire-and-forget)
-        if (isRedisAvailable()) {
-          l2Set(fullKey, value, l2Ttl, tags).catch(() => {});
-        }
-        return value;
-      } catch (err) {
-        throw err; // safeCache خودش fallback را مدیریت می‌کند
+      const value = await fn(...args);
+      // populate L2 (fire-and-forget)
+      if (isRedisAvailable()) {
+        l2Set(fullKey, value, l2Ttl, tags).catch(() => {});
       }
+      return value;
     },
     fallback,
     {
@@ -172,7 +165,7 @@ function scheduleL2Refresh<T, TArgs extends unknown[]>(
   if (inflightSet.has(fullKey)) return; // از قبل در حال refresh است
   inflightSet.add(fullKey);
 
-  const startedAt = Date.now();
+  const _startedAt = Date.now();
   fn(...args)
     .then((value) => {
       // populate L2

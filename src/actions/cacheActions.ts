@@ -6,8 +6,8 @@ import { revalidateTag as redisRevalidateTag } from '@/lib/tiered-cache';
 
 async function invalidateAllTiers(...tags: string[]) {
   for (const tag of tags) {
-    revalidateTag(tag);            // Next.js Data Cache
-    safeRevalidateTag(tag);        // L1 in-memory safeCache
+    revalidateTag(tag); // Next.js Data Cache
+    safeRevalidateTag(tag); // L1 in-memory safeCache
     await redisRevalidateTag(tag); // L2 Redis
   }
 }

@@ -43,7 +43,8 @@ export interface ScraperConfig {
 }
 
 export const DEFAULT_SCRAPER_CONFIG: ScraperConfig = {
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  userAgent:
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   timeout: 10000,
   retryCount: 3,
   retryDelay: 1000,

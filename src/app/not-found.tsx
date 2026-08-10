@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { NotFound } from '@/components/Dashboard/primitives';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'صفحه یافت نشد | ۴۰۴',
@@ -20,9 +20,7 @@ export default function RootNotFound() {
         { href: '/authors', label: 'نویسندگان', sub: 'تیم تولید محتوا' },
       ]}
       primaryLink={{ href: '/', label: 'صفحهٔ اصلی', icon: 'home' }}
-      secondaryLinks={[
-        { href: '/archive', label: 'جستجو در آرشیو', icon: 'search' },
-      ]}
+      secondaryLinks={[{ href: '/archive', label: 'جستجو در آرشیو', icon: 'search' }]}
       tone="violet"
     />
   );

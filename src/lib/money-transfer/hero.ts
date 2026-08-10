@@ -20,8 +20,8 @@
  * ----------------------------------------------------------------------------
  */
 
-import { rialToToman, RIAL_PER_TOMAN } from '@/lib/market-rates/units';
 import type { MarketRateItem } from '@/lib/market-rates/types';
+import { RIAL_PER_TOMAN, rialToToman } from '@/lib/market-rates/units';
 import type { CryptoTickerRate, ExchangeRateData } from '@/types/types';
 
 /** M12: نسبت تومان به ریال — ۱ تومان = ۱۰ ریال (الزاماً با units.ts هم‌ارز). */

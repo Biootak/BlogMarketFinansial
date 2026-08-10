@@ -12,11 +12,11 @@
  */
 
 import type { ComparisonMatrix } from '@/actions/exchange-services';
-import { SERVICE_GROUPS, type ExchangeServiceKey, getServiceMeta } from '@/lib/exchange-services';
+import { type ExchangeServiceKey, SERVICE_GROUPS, getServiceMeta } from '@/lib/exchange-services';
 import { ArrowDown, ArrowUp, ChevronDown, Filter, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import s from './ComparisonMatrixView.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
@@ -78,14 +78,13 @@ function ExchangeCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
-  const coveragePct = services.length > 0 ? Math.round((ex.serviceCount / services.length) * 100) : 0;
+  const coveragePct =
+    services.length > 0 ? Math.round((ex.serviceCount / services.length) * 100) : 0;
 
   return (
     <article
       className={`${s.exchangeCard} ${isExpanded ? s.expanded : ''}`}
       onClick={onToggle}
-      role="button"
-      tabIndex={0}
       aria-expanded={isExpanded}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
@@ -131,9 +130,7 @@ function ExchangeCard({
             );
           })}
           {services.length > 5 && (
-            <span className={s.moreServices}>
-              +{_faNum.format(services.length - 5)} سرویس دیگر
-            </span>
+            <span className={s.moreServices}>+{_faNum.format(services.length - 5)} سرویس دیگر</span>
           )}
         </div>
       </div>
@@ -286,12 +283,11 @@ export default function ComparisonMatrixView({ matrix, initialExchange, initialG
             <span>مقایسه خدمات</span>
           </span>
           <h1 className={s.title}>
-            کدام صرافی چه خدماتی{' '}
-            <span className={s.titleAccent}>آنلاین</span> ارائه می‌دهد؟
+            کدام صرافی چه خدماتی <span className={s.titleAccent}>آنلاین</span> ارائه می‌دهد؟
           </h1>
           <p className={s.sub}>
-            یک نگاه، تمام تفاوت‌ها — برای انتخاب سریع‌تر. روی هر کارت کلیک کنید تا جزئیات کامل
-            را ببینید.
+            یک نگاه، تمام تفاوت‌ها — برای انتخاب سریع‌تر. روی هر کارت کلیک کنید تا جزئیات کامل را
+            ببینید.
           </p>
 
           <div className={s.liveBar} role="list">
@@ -309,9 +305,7 @@ export default function ComparisonMatrixView({ matrix, initialExchange, initialG
               <div className={s.coverageBarTrack}>
                 <div className={s.coverageBarFill} style={{ width: `${fillRate}%` }} />
               </div>
-              <span className={s.coverageBarText}>
-                {_faNum.format(fillRate)}٪ پوشش
-              </span>
+              <span className={s.coverageBarText}>{_faNum.format(fillRate)}٪ پوشش</span>
             </div>
           </div>
         </div>
@@ -368,7 +362,9 @@ export default function ComparisonMatrixView({ matrix, initialExchange, initialG
               ex={ex}
               services={visibleServices}
               isExpanded={expandedId === ex.exchangeId}
-              onToggle={() => setExpandedId((prev) => (prev === ex.exchangeId ? null : ex.exchangeId))}
+              onToggle={() =>
+                setExpandedId((prev) => (prev === ex.exchangeId ? null : ex.exchangeId))
+              }
             />
           ))}
         </div>
@@ -389,8 +385,8 @@ export default function ComparisonMatrixView({ matrix, initialExchange, initialG
       {/* ── Legend ─────────────────────────────────────────── */}
       <div className={s.legend} role="note">
         <span>
-          روی هر کارت کلیک کنید تا جزئیات کامل خدمات آن صرافی را ببینید. رنگ سبز یعنی صرافی آن
-          خدمت را ارائه می‌دهد.
+          روی هر کارت کلیک کنید تا جزئیات کامل خدمات آن صرافی را ببینید. رنگ سبز یعنی صرافی آن خدمت
+          را ارائه می‌دهد.
         </span>
       </div>
     </main>

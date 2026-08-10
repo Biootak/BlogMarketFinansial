@@ -3,8 +3,8 @@
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { MarketRateItem } from './types';
 import { assembleMarketRates } from './assembler';
+import type { MarketRateItem } from './types';
 
 export interface SnapshotResult {
   /** تعداد نرخ‌های ذخیره‌شده. */

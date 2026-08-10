@@ -39,13 +39,16 @@ export default async function SessionExpiredPage() {
         { label: 'آخرین فعالیت', value: 'بیش از ۳۰ دقیقه پیش' },
       ]}
       suggestedLinks={[
-        { href: '/auth?step=email&intent=login', label: 'ورود دوباره', sub: 'شروع مجدد ورود', icon: 'login' },
+        {
+          href: '/auth?step=email&intent=login',
+          label: 'ورود دوباره',
+          sub: 'شروع مجدد ورود',
+          icon: 'login',
+        },
         { href: '/', label: 'صفحهٔ اصلی', sub: 'مرور عمومی سایت' },
       ]}
       primaryLink={{ href: '/auth?step=email&intent=login', label: 'ورود دوباره', icon: 'login' }}
-      secondaryLinks={[
-        { href: '/', label: 'بازگشت به خانه', icon: 'home' },
-      ]}
+      secondaryLinks={[{ href: '/', label: 'بازگشت به خانه', icon: 'home' }]}
       foot={{
         label: 'مشکل در ورود؟',
         href: `mailto:${supportEmail}`,

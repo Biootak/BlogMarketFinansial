@@ -5,7 +5,6 @@
 
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
-import { SYMBOL_REGISTRY } from '@/lib/market-rates/registry';
 import { useRouter } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import { getDashboardUnitLabel } from '../_lib/unit-labels';

@@ -24,7 +24,7 @@ export abstract class BaseScraper {
         const response = await fetch(url, {
           headers: {
             'User-Agent': this.config.userAgent,
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'fa-IR,fa;q=0.9,en;q=0.8',
             ...headers,
           },
@@ -58,7 +58,7 @@ export abstract class BaseScraper {
         const response = await fetch(url, {
           headers: {
             'User-Agent': this.config.userAgent,
-            'Accept': 'application/json',
+            Accept: 'application/json',
             ...headers,
           },
           signal: AbortSignal.timeout(this.config.timeout),
@@ -68,7 +68,7 @@ export abstract class BaseScraper {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
-        return await response.json() as T;
+        return (await response.json()) as T;
       } catch (error) {
         lastError = error as Error;
         if (attempt < this.config.retryCount) {

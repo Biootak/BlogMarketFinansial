@@ -9,6 +9,7 @@ import {
   fetchBonbastBuySell,
   fetchBonbastRatesFromBuySell,
 } from './bonbast';
+import { getLastChangePercent } from './change-cache';
 import { getGlobalFxRates } from './fx';
 import { SYMBOL_REGISTRY_MAP } from './registry';
 import { fetchSarafiRates } from './sarafi';
@@ -16,7 +17,6 @@ import { fetchAllTgjuPages } from './tgju';
 import { CANONICAL_KEY_TO_SOURCES, type SymbolSource } from './tgjuKeys';
 import type { MarketRateGroup, MarketRateItem, MarketRateProvider, MarketRateUnit } from './types';
 import { getUsdtRate } from './usdt';
-import { getLastChangePercent, updateChangePercent } from './change-cache';
 
 function getUsdtPremiumPercent(): number {
   const raw = process.env.USDT_PREMIUM_PERCENT;

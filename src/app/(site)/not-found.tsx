@@ -13,9 +13,7 @@ export default function SiteNotFound() {
         { href: '/archive', label: 'آرشیو مقالات', sub: 'مطالب آموزشی و تحلیلی' },
       ]}
       primaryLink={{ href: '/', label: 'بازگشت به خانه', icon: 'home' }}
-      secondaryLinks={[
-        { href: '/search', label: 'جستجو در سایت', icon: 'search' },
-      ]}
+      secondaryLinks={[{ href: '/search', label: 'جستجو در سایت', icon: 'search' }]}
       tone="violet"
     />
   );

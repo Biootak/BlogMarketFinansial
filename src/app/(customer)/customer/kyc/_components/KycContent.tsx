@@ -80,8 +80,6 @@ const DOC_TYPE_OPTIONS: Array<{ value: string; label: string }> = [
   { value: 'RESIDENCE_PERMIT', label: 'اجازه اقامت' },
 ];
 
-
-
 type KycLevel = 'LEVEL_1' | 'LEVEL_2' | 'LEVEL_3';
 
 const faNumLimit = new Intl.NumberFormat('fa-IR');
@@ -434,7 +432,11 @@ export default function KycContent({ profile, records }: Props) {
 
       {/* ── Level Funnel ────────────────────────────────────────────── */}
       <section className={s.section}>
-        <SectionHeader icon={ScanFace} title="مسیر احراز هویت" sub="۳ سطح — هر سطح بعد از تأیید قبلی باز می‌شود" />
+        <SectionHeader
+          icon={ScanFace}
+          title="مسیر احراز هویت"
+          sub="۳ سطح — هر سطح بعد از تأیید قبلی باز می‌شود"
+        />
         <ol className={s.funnel}>
           {(['LEVEL_1', 'LEVEL_2', 'LEVEL_3'] as const).map((lvl, idx) => {
             const levelNum = idx + 1;
@@ -486,7 +488,9 @@ export default function KycContent({ profile, records }: Props) {
               </span>
               <div className={s.waitingMain}>
                 <span className={s.waitingTitle}>
-                  {targetOption ? `${targetOption.title} در حال بررسی است` : 'مدارک در حال بررسی است'}
+                  {targetOption
+                    ? `${targetOption.title} در حال بررسی است`
+                    : 'مدارک در حال بررسی است'}
                 </span>
                 <span className={s.waitingDesc}>
                   بعد از تأیید این سطح، سطح بعدی به‌صورت خودکار فعال می‌شود.
@@ -495,407 +499,428 @@ export default function KycContent({ profile, records }: Props) {
             </div>
           ) : (
             <>
-          <SectionHeader
-            icon={Upload}
-            title="تکمیل احراز هویت"
-            sub="سطح فعلی را تکمیل کنید تا سطح بعدی باز شود"
-          />
+              <SectionHeader
+                icon={Upload}
+                title="تکمیل احراز هویت"
+                sub="سطح فعلی را تکمیل کنید تا سطح بعدی باز شود"
+              />
 
-          {/* نقشهٔ راه سطوح — وضعیت هر سطح */}
-          <div className={s.levelPicker} role="group" aria-label="مراحل احراز هویت">
-            {LEVEL_OPTIONS.map((opt, idx) => {
-              const levelNum = idx + 1;
-              const isDone = currentNum >= levelNum;
-              const isCurrent = targetLevel === opt.value;
-              const isLocked = !isDone && !isCurrent;
-              const Icon = opt.value === 'LEVEL_3' ? Landmark : opt.value === 'LEVEL_2' ? ScanFace : MessageCircle;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  className={s.levelCard}
-                  data-level={opt.value}
-                  data-state={isDone ? 'done' : isCurrent ? 'current' : 'locked'}
-                  aria-pressed={isCurrent}
-                  disabled={!isCurrent || isPending}
-                  onClick={() => {
-                    setError(null);
-                    setDialogOpen(true);
-                  }}
+              {/* نقشهٔ راه سطوح — وضعیت هر سطح */}
+              <div className={s.levelPicker} role="group" aria-label="مراحل احراز هویت">
+                {LEVEL_OPTIONS.map((opt, idx) => {
+                  const levelNum = idx + 1;
+                  const isDone = currentNum >= levelNum;
+                  const isCurrent = targetLevel === opt.value;
+                  const _isLocked = !isDone && !isCurrent;
+                  const Icon =
+                    opt.value === 'LEVEL_3'
+                      ? Landmark
+                      : opt.value === 'LEVEL_2'
+                        ? ScanFace
+                        : MessageCircle;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      className={s.levelCard}
+                      data-level={opt.value}
+                      data-state={isDone ? 'done' : isCurrent ? 'current' : 'locked'}
+                      aria-pressed={isCurrent}
+                      disabled={!isCurrent || isPending}
+                      onClick={() => {
+                        setError(null);
+                        setDialogOpen(true);
+                      }}
+                    >
+                      <span className={s.levelCardHead}>
+                        <span className={s.levelCardIcon} aria-hidden>
+                          {isDone ? <CheckCircle2 size={15} /> : <Icon size={15} />}
+                        </span>
+                        <span className={s.levelCardRadio} aria-hidden>
+                          <CheckCircle2 size={13} strokeWidth={3} />
+                        </span>
+                      </span>
+                      <span className={s.levelCardTitleWrap}>
+                        <span className={s.levelCardTitle}>{opt.title}</span>
+                        {opt.value === 'LEVEL_3' && (
+                          <span className={s.levelCardFeatured}>بالاترین سقف</span>
+                        )}
+                      </span>
+                      <span className={s.levelCardDesc}>{opt.desc}</span>
+                      <span className={s.levelCardLimit}>
+                        <Sparkles size={9} aria-hidden />
+                        سقف روزانه {dailyLimitAf(opt.value)}
+                      </span>
+                      <span
+                        className={s.levelCardState}
+                        data-state={isDone ? 'done' : isCurrent ? 'current' : 'locked'}
+                      >
+                        {isDone ? (
+                          <>
+                            <CheckCircle2 size={9} aria-hidden /> تکمیل
+                          </>
+                        ) : isCurrent ? (
+                          <>
+                            <Upload size={9} aria-hidden /> تکمیل کن
+                          </>
+                        ) : (
+                          <>
+                            <Lock size={9} aria-hidden /> قفل
+                          </>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {targetOption && (
+                <Dialog
+                  open={dialogOpen}
+                  onOpenChange={(o) => (o ? setDialogOpen(true) : closeDialog())}
                 >
-                  <span className={s.levelCardHead}>
-                    <span className={s.levelCardIcon} aria-hidden>
-                      {isDone ? <CheckCircle2 size={15} /> : <Icon size={15} />}
-                    </span>
-                    <span className={s.levelCardRadio} aria-hidden>
-                      <CheckCircle2 size={13} strokeWidth={3} />
-                    </span>
-                  </span>
-                  <span className={s.levelCardTitleWrap}>
-                    <span className={s.levelCardTitle}>{opt.title}</span>
-                    {opt.value === 'LEVEL_3' && (
-                      <span className={s.levelCardFeatured}>بالاترین سقف</span>
-                    )}
-                  </span>
-                  <span className={s.levelCardDesc}>{opt.desc}</span>
-                  <span className={s.levelCardLimit}>
-                    <Sparkles size={9} aria-hidden />
-                    سقف روزانه {dailyLimitAf(opt.value)}
-                  </span>
-                  <span className={s.levelCardState} data-state={isDone ? 'done' : isCurrent ? 'current' : 'locked'}>
-                    {isDone ? (
-                      <>
-                        <CheckCircle2 size={9} aria-hidden /> تکمیل
-                      </>
-                    ) : isCurrent ? (
-                      <>
-                        <Upload size={9} aria-hidden /> تکمیل کن
-                      </>
-                    ) : (
-                      <>
-                        <Lock size={9} aria-hidden /> قفل
-                      </>
-                    )}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {targetOption && (
-            <Dialog open={dialogOpen} onOpenChange={(o) => (o ? setDialogOpen(true) : closeDialog())}>
-              <DialogContent className="at-dialog-content max-h-[92vh] w-full max-w-2xl overflow-y-auto p-0 rtl">
-                <DialogHeader className="at-dialog-header">
-                  <DialogTitle className="at-dialog-title">
-                    <span className={s.dialogTitleIcon} aria-hidden>
-                      {targetLevel === 'LEVEL_1' ? (
-                        <MessageCircle size={14} />
-                      ) : targetLevel === 'LEVEL_2' ? (
-                        <ScanFace size={14} />
-                      ) : (
-                        <Landmark size={14} />
-                      )}
-                    </span>
-                    {targetOption.title}
-                  </DialogTitle>
-                  <DialogDescription className="sr-only">
-                    {targetOption.desc} — سقف روزانه {dailyLimitAf(targetLevel)}
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className={s.dialogBody}>
-                  <p className={s.dialogLead}>
-                    {targetOption.desc} —{' '}
-                    <span className={s.dialogLimit}>
-                      <Sparkles size={10} aria-hidden />
-                      سقف روزانه {dailyLimitAf(targetLevel)}
-                    </span>
-                  </p>
-
-                  <form
-                    onSubmit={targetLevel === 'LEVEL_1' ? handleSendOtp : handleSubmit}
-                    className={s.form}
-                    noValidate
-                  >
-                    {targetLevel === 'LEVEL_1' ? (
-                      <div className={s.formGrid}>
-                        <div className={s.formField} data-span="full">
-                          <label htmlFor="phone" className={s.formLabel}>
-                            شماره موبایل
-                          </label>
-                          <div className={s.phoneRow}>
-                            {/* کد کشور سمت چپِ شماره — چون اعداد از چپ خوانده می‌شوند */}
-                            <input
-                              id="phone"
-                              type="tel"
-                              className={`${s.formControl} ${s.phoneInput}`}
-                              value={phone}
-                              onChange={(e) =>
-                                setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))
-                              }
-                              placeholder="۰۷۰ ۱۲۳ ۴۵۶۷"
-                              disabled={isPending || otpPending}
-                              autoComplete="tel-national"
-                              dir="ltr"
-                            />
-                            <Select
-                              value={dialCode}
-                              onValueChange={setDialCode}
-                              disabled={isPending || otpPending}
-                            >
-                              <SelectTrigger
-                                className={`${s.formControl} ${s.formSelectTrigger} ${s.dialSelect}`}
-                                aria-label="کد کشور"
-                              >
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {PHONE_COUNTRIES.map((o) => (
-                                  <SelectItem key={o.dial} value={o.dial}>
-                                    <span className={s.dialItem}>
-                                      <span aria-hidden>{o.flag}</span>
-                                      {o.label} {o.dial}
-                                    </span>
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <span className={s.formHint}>
-                            کد تأیید به تلگرام شما ارسال می‌شود — {dialCode} پیش‌فرض است.
-                          </span>
-                        </div>
-
-                        {otpSent ? (
-                          <div className={s.formField} data-span="full">
-                            <label htmlFor="otp" className={s.formLabel}>
-                              کد تأیید
-                            </label>
-                            <input
-                              id="otp"
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={6}
-                              className={`${s.formControl} ${s.otpInput}`}
-                              value={otpCode}
-                              onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
-                              placeholder="••••••"
-                              dir="ltr"
-                              autoComplete="one-time-code"
-                            />
-                            {otpInfo && <span className={s.formHint}>{otpInfo}</span>}
-                            {devCode && (
-                              <span className={s.devCodeHint}>
-                                کد تست (فقط توسعه): <b dir="ltr">{devCode}</b>
-                              </span>
-                            )}
-                            {telegramUrl && (
-                              <a
-                                href={telegramUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={s.telegramLink}
-                              >
-                                <MessageCircle size={11} aria-hidden />
-                                اتصال تلگرام (اختیاری) — کدها مستقیم در تلگرام
-                              </a>
-                            )}
-                          </div>
-                        ) : (
-                          otpInfo && (
-                            <div className={s.formField} data-span="full">
-                              <span className={s.formHint}>{otpInfo}</span>
-                              {telegramUrl && (
-                                <a
-                                  href={telegramUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={s.telegramLink}
-                                >
-                                  <MessageCircle size={11} aria-hidden />
-                                  اتصال تلگرام (اختیاری)
-                                </a>
-                              )}
-                            </div>
-                          )
-                        )}
-                      </div>
-                    ) : (
-                      <>
-                        <div className={s.formGrid}>
-                          <div className={s.formField}>
-                            <label htmlFor="docType" className={s.formLabel}>
-                              نوع مدرک
-                            </label>
-                            <Select value={docType} onValueChange={setDocType} disabled={isPending}>
-                              <SelectTrigger
-                                id="docType"
-                                className={`${s.formControl} ${s.formSelectTrigger}`}
-                              >
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {DOC_TYPE_OPTIONS.map((o) => (
-                                  <SelectItem key={o.value} value={o.value}>
-                                    {o.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className={s.formField}>
-                            <label htmlFor="docNumber" className={s.formLabel}>
-                              شماره مدرک
-                            </label>
-                            <input
-                              id="docNumber"
-                              type="text"
-                              className={s.formControl}
-                              value={docNumber}
-                              onChange={(e) => setDocNumber(e.target.value)}
-                              placeholder="مثال: ۰۰۱۲۳۴۵۶۷۸"
-                              disabled={isPending}
-                              autoComplete="off"
-                              maxLength={30}
-                              required
-                              dir="ltr"
-                            />
-                          </div>
-
-                          <div className={s.formField} data-span="full">
-                            <ImageUploader
-                              initialPreviews={fileUrl ? [fileUrl] : []}
-                              onImageUpload={handleImageUpload}
-                              onImageRemove={handleImageRemove}
-                              maxFiles={1}
-                              multiple={false}
-                              folder="kyc"
-                              thumbSize="xl"
-                              label="تصویر مدرک"
-                              hint="تصویر واضح از مدرک انتخاب‌شده — JPG، PNG، WebP، GIF، SVG"
-                              disabled={isPending}
-                            />
-                            <span className={s.formHint}>
-                              فایل به‌صورت امن در سرور ما ذخیره می‌شود و فقط برای بررسی توسط تیم
-                              استفاده می‌شود.
-                            </span>
-                          </div>
-
-                          <div className={s.formField} data-span="full">
-                            <ImageUploader
-                              initialPreviews={selfieUrl ? [selfieUrl] : []}
-                              onImageUpload={handleSelfieUpload}
-                              onImageRemove={handleSelfieRemove}
-                              maxFiles={1}
-                              multiple={false}
-                              folder="kyc"
-                              thumbSize="xl"
-                              label="سلفی در کنار مدرک (تأیید چهره)"
-                              hint="عکس واضح از چهره در کنار مدرک شناسایی — JPG، PNG، WebP"
-                              disabled={isPending}
-                            />
-                          </div>
-                        </div>
-
-                        {targetLevel === 'LEVEL_3' && (
-                          <div className={s.formGrid}>
-                            <div className={s.formField}>
-                              <label htmlFor="city" className={s.formLabel}>
-                                شهر
-                              </label>
-                              <input
-                                id="city"
-                                type="text"
-                                className={s.formControl}
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                placeholder="مثال: کابل"
-                                disabled={isPending}
-                                autoComplete="address-level2"
-                                maxLength={120}
-                                required
-                              />
-                            </div>
-                            <div className={s.formField}>
-                              <label htmlFor="address" className={s.formLabel}>
-                                آدرس کامل
-                              </label>
-                              <input
-                                id="address"
-                                type="text"
-                                className={s.formControl}
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                                placeholder="مثال: ناحیه ۳، خیابان …"
-                                disabled={isPending}
-                                autoComplete="street-address"
-                                maxLength={300}
-                                required
-                              />
-                            </div>
-                            <div className={s.formField} data-span="full">
-                              <ImageUploader
-                                initialPreviews={addressDocUrl ? [addressDocUrl] : []}
-                                onImageUpload={handleAddressDocUpload}
-                                onImageRemove={handleAddressDocRemove}
-                                maxFiles={1}
-                                multiple={false}
-                                folder="kyc"
-                                thumbSize="xl"
-                                label="سند اثبات آدرس (قبض برق، گاز، اینترنت و…)"
-                                hint="قبض یا سندی که نام و آدرس شما روی آن باشد — JPG، PNG، WebP"
-                                disabled={isPending}
-                              />
-                            </div>
-                            <div className={s.formField} data-span="full">
-                              <ImageUploader
-                                initialPreviews={bankStatementUrl ? [bankStatementUrl] : []}
-                                onImageUpload={handleBankStatementUpload}
-                                onImageRemove={handleBankStatementRemove}
-                                maxFiles={1}
-                                multiple={false}
-                                folder="kyc"
-                                thumbSize="xl"
-                                label="صورت حساب بانکی"
-                                hint="صورت حساب بانکی اخیر (حداکثر ۳ ماه) — JPG، PNG، PDF"
-                                disabled={isPending}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )}
-
-                    {error && (
-                      <div className={s.errorBox} role="alert">
-                        <AlertTriangle size={12} aria-hidden />
-                        {error}
-                      </div>
-                    )}
-
-                    <div className={s.formFoot}>
-                      {targetLevel === 'LEVEL_1' ? (
-                        !otpSent ? (
-                          <button type="submit" className={s.submitBtn} disabled={isPending || otpPending}>
-                            {otpPending ? (
-                              <Loader2 size={13} className={s.iconSpin} aria-hidden />
-                            ) : (
-                              <MessageCircle size={13} aria-hidden />
-                            )}
-                            {otpPending ? 'در حال ارسال...' : 'ارسال کد تأیید'}
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className={s.submitBtn}
-                            disabled={isPending || otpCode.length < 4}
-                            onClick={handlePhoneSubmit}
-                          >
-                            {isPending ? (
-                              <Loader2 size={13} className={s.iconSpin} aria-hidden />
-                            ) : (
-                              <CheckCircle2 size={13} aria-hidden />
-                            )}
-                            {isPending ? 'در حال ثبت...' : 'تأیید و ثبت سطح ۱'}
-                          </button>
-                        )
-                      ) : (
-                        <button type="submit" className={s.submitBtn} disabled={isPending}>
-                          {isPending ? (
-                            <Loader2 size={13} className={s.iconSpin} aria-hidden />
+                  <DialogContent className="at-dialog-content max-h-[92vh] w-full max-w-2xl overflow-y-auto p-0 rtl">
+                    <DialogHeader className="at-dialog-header">
+                      <DialogTitle className="at-dialog-title">
+                        <span className={s.dialogTitleIcon} aria-hidden>
+                          {targetLevel === 'LEVEL_1' ? (
+                            <MessageCircle size={14} />
+                          ) : targetLevel === 'LEVEL_2' ? (
+                            <ScanFace size={14} />
                           ) : (
-                            <ArrowLeft size={13} aria-hidden />
+                            <Landmark size={14} />
                           )}
-                          {isPending ? 'در حال ارسال...' : 'ارسال برای بررسی'}
-                        </button>
-                      )}
+                        </span>
+                        {targetOption.title}
+                      </DialogTitle>
+                      <DialogDescription className="sr-only">
+                        {targetOption.desc} — سقف روزانه {dailyLimitAf(targetLevel)}
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <div className={s.dialogBody}>
+                      <p className={s.dialogLead}>
+                        {targetOption.desc} —{' '}
+                        <span className={s.dialogLimit}>
+                          <Sparkles size={10} aria-hidden />
+                          سقف روزانه {dailyLimitAf(targetLevel)}
+                        </span>
+                      </p>
+
+                      <form
+                        onSubmit={targetLevel === 'LEVEL_1' ? handleSendOtp : handleSubmit}
+                        className={s.form}
+                        noValidate
+                      >
+                        {targetLevel === 'LEVEL_1' ? (
+                          <div className={s.formGrid}>
+                            <div className={s.formField} data-span="full">
+                              <label htmlFor="phone" className={s.formLabel}>
+                                شماره موبایل
+                              </label>
+                              <div className={s.phoneRow}>
+                                {/* کد کشور سمت چپِ شماره — چون اعداد از چپ خوانده می‌شوند */}
+                                <input
+                                  id="phone"
+                                  type="tel"
+                                  className={`${s.formControl} ${s.phoneInput}`}
+                                  value={phone}
+                                  onChange={(e) =>
+                                    setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))
+                                  }
+                                  placeholder="۰۷۰ ۱۲۳ ۴۵۶۷"
+                                  disabled={isPending || otpPending}
+                                  autoComplete="tel-national"
+                                  dir="ltr"
+                                />
+                                <Select
+                                  value={dialCode}
+                                  onValueChange={setDialCode}
+                                  disabled={isPending || otpPending}
+                                >
+                                  <SelectTrigger
+                                    className={`${s.formControl} ${s.formSelectTrigger} ${s.dialSelect}`}
+                                    aria-label="کد کشور"
+                                  >
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {PHONE_COUNTRIES.map((o) => (
+                                      <SelectItem key={o.dial} value={o.dial}>
+                                        <span className={s.dialItem}>
+                                          <span aria-hidden>{o.flag}</span>
+                                          {o.label} {o.dial}
+                                        </span>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <span className={s.formHint}>
+                                کد تأیید به تلگرام شما ارسال می‌شود — {dialCode} پیش‌فرض است.
+                              </span>
+                            </div>
+
+                            {otpSent ? (
+                              <div className={s.formField} data-span="full">
+                                <label htmlFor="otp" className={s.formLabel}>
+                                  کد تأیید
+                                </label>
+                                <input
+                                  id="otp"
+                                  type="text"
+                                  inputMode="numeric"
+                                  maxLength={6}
+                                  className={`${s.formControl} ${s.otpInput}`}
+                                  value={otpCode}
+                                  onChange={(e) =>
+                                    setOtpCode(e.target.value.replace(/[^0-9]/g, ''))
+                                  }
+                                  placeholder="••••••"
+                                  dir="ltr"
+                                  autoComplete="one-time-code"
+                                />
+                                {otpInfo && <span className={s.formHint}>{otpInfo}</span>}
+                                {devCode && (
+                                  <span className={s.devCodeHint}>
+                                    کد تست (فقط توسعه): <b dir="ltr">{devCode}</b>
+                                  </span>
+                                )}
+                                {telegramUrl && (
+                                  <a
+                                    href={telegramUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={s.telegramLink}
+                                  >
+                                    <MessageCircle size={11} aria-hidden />
+                                    اتصال تلگرام (اختیاری) — کدها مستقیم در تلگرام
+                                  </a>
+                                )}
+                              </div>
+                            ) : (
+                              otpInfo && (
+                                <div className={s.formField} data-span="full">
+                                  <span className={s.formHint}>{otpInfo}</span>
+                                  {telegramUrl && (
+                                    <a
+                                      href={telegramUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={s.telegramLink}
+                                    >
+                                      <MessageCircle size={11} aria-hidden />
+                                      اتصال تلگرام (اختیاری)
+                                    </a>
+                                  )}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <>
+                            <div className={s.formGrid}>
+                              <div className={s.formField}>
+                                <label htmlFor="docType" className={s.formLabel}>
+                                  نوع مدرک
+                                </label>
+                                <Select
+                                  value={docType}
+                                  onValueChange={setDocType}
+                                  disabled={isPending}
+                                >
+                                  <SelectTrigger
+                                    id="docType"
+                                    className={`${s.formControl} ${s.formSelectTrigger}`}
+                                  >
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {DOC_TYPE_OPTIONS.map((o) => (
+                                      <SelectItem key={o.value} value={o.value}>
+                                        {o.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className={s.formField}>
+                                <label htmlFor="docNumber" className={s.formLabel}>
+                                  شماره مدرک
+                                </label>
+                                <input
+                                  id="docNumber"
+                                  type="text"
+                                  className={s.formControl}
+                                  value={docNumber}
+                                  onChange={(e) => setDocNumber(e.target.value)}
+                                  placeholder="مثال: ۰۰۱۲۳۴۵۶۷۸"
+                                  disabled={isPending}
+                                  autoComplete="off"
+                                  maxLength={30}
+                                  required
+                                  dir="ltr"
+                                />
+                              </div>
+
+                              <div className={s.formField} data-span="full">
+                                <ImageUploader
+                                  initialPreviews={fileUrl ? [fileUrl] : []}
+                                  onImageUpload={handleImageUpload}
+                                  onImageRemove={handleImageRemove}
+                                  maxFiles={1}
+                                  multiple={false}
+                                  folder="kyc"
+                                  thumbSize="xl"
+                                  label="تصویر مدرک"
+                                  hint="تصویر واضح از مدرک انتخاب‌شده — JPG، PNG، WebP، GIF، SVG"
+                                  disabled={isPending}
+                                />
+                                <span className={s.formHint}>
+                                  فایل به‌صورت امن در سرور ما ذخیره می‌شود و فقط برای بررسی توسط تیم
+                                  استفاده می‌شود.
+                                </span>
+                              </div>
+
+                              <div className={s.formField} data-span="full">
+                                <ImageUploader
+                                  initialPreviews={selfieUrl ? [selfieUrl] : []}
+                                  onImageUpload={handleSelfieUpload}
+                                  onImageRemove={handleSelfieRemove}
+                                  maxFiles={1}
+                                  multiple={false}
+                                  folder="kyc"
+                                  thumbSize="xl"
+                                  label="سلفی در کنار مدرک (تأیید چهره)"
+                                  hint="عکس واضح از چهره در کنار مدرک شناسایی — JPG، PNG، WebP"
+                                  disabled={isPending}
+                                />
+                              </div>
+                            </div>
+
+                            {targetLevel === 'LEVEL_3' && (
+                              <div className={s.formGrid}>
+                                <div className={s.formField}>
+                                  <label htmlFor="city" className={s.formLabel}>
+                                    شهر
+                                  </label>
+                                  <input
+                                    id="city"
+                                    type="text"
+                                    className={s.formControl}
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    placeholder="مثال: کابل"
+                                    disabled={isPending}
+                                    autoComplete="address-level2"
+                                    maxLength={120}
+                                    required
+                                  />
+                                </div>
+                                <div className={s.formField}>
+                                  <label htmlFor="address" className={s.formLabel}>
+                                    آدرس کامل
+                                  </label>
+                                  <input
+                                    id="address"
+                                    type="text"
+                                    className={s.formControl}
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    placeholder="مثال: ناحیه ۳، خیابان …"
+                                    disabled={isPending}
+                                    autoComplete="street-address"
+                                    maxLength={300}
+                                    required
+                                  />
+                                </div>
+                                <div className={s.formField} data-span="full">
+                                  <ImageUploader
+                                    initialPreviews={addressDocUrl ? [addressDocUrl] : []}
+                                    onImageUpload={handleAddressDocUpload}
+                                    onImageRemove={handleAddressDocRemove}
+                                    maxFiles={1}
+                                    multiple={false}
+                                    folder="kyc"
+                                    thumbSize="xl"
+                                    label="سند اثبات آدرس (قبض برق، گاز، اینترنت و…)"
+                                    hint="قبض یا سندی که نام و آدرس شما روی آن باشد — JPG، PNG، WebP"
+                                    disabled={isPending}
+                                  />
+                                </div>
+                                <div className={s.formField} data-span="full">
+                                  <ImageUploader
+                                    initialPreviews={bankStatementUrl ? [bankStatementUrl] : []}
+                                    onImageUpload={handleBankStatementUpload}
+                                    onImageRemove={handleBankStatementRemove}
+                                    maxFiles={1}
+                                    multiple={false}
+                                    folder="kyc"
+                                    thumbSize="xl"
+                                    label="صورت حساب بانکی"
+                                    hint="صورت حساب بانکی اخیر (حداکثر ۳ ماه) — JPG، PNG، PDF"
+                                    disabled={isPending}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {error && (
+                          <div className={s.errorBox} role="alert">
+                            <AlertTriangle size={12} aria-hidden />
+                            {error}
+                          </div>
+                        )}
+
+                        <div className={s.formFoot}>
+                          {targetLevel === 'LEVEL_1' ? (
+                            !otpSent ? (
+                              <button
+                                type="submit"
+                                className={s.submitBtn}
+                                disabled={isPending || otpPending}
+                              >
+                                {otpPending ? (
+                                  <Loader2 size={13} className={s.iconSpin} aria-hidden />
+                                ) : (
+                                  <MessageCircle size={13} aria-hidden />
+                                )}
+                                {otpPending ? 'در حال ارسال...' : 'ارسال کد تأیید'}
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                className={s.submitBtn}
+                                disabled={isPending || otpCode.length < 4}
+                                onClick={handlePhoneSubmit}
+                              >
+                                {isPending ? (
+                                  <Loader2 size={13} className={s.iconSpin} aria-hidden />
+                                ) : (
+                                  <CheckCircle2 size={13} aria-hidden />
+                                )}
+                                {isPending ? 'در حال ثبت...' : 'تأیید و ثبت سطح ۱'}
+                              </button>
+                            )
+                          ) : (
+                            <button type="submit" className={s.submitBtn} disabled={isPending}>
+                              {isPending ? (
+                                <Loader2 size={13} className={s.iconSpin} aria-hidden />
+                              ) : (
+                                <ArrowLeft size={13} aria-hidden />
+                              )}
+                              {isPending ? 'در حال ارسال...' : 'ارسال برای بررسی'}
+                            </button>
+                          )}
+                        </div>
+                      </form>
                     </div>
-                  </form>
-                </div>
-              </DialogContent>
-            </Dialog>
-            )}
+                  </DialogContent>
+                </Dialog>
+              )}
             </>
           )}
         </section>

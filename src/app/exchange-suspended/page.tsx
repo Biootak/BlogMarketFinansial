@@ -56,13 +56,23 @@ export default async function ExchangeSuspendedPage() {
       meta={[
         { label: 'تاریخ تعلیق', value: formatJalali(now) },
         { label: 'ساعت', value: formatTime(now) },
-        { label: 'شناسه پیگیری', value: `SUS-${now.getTime().toString(36).toUpperCase().slice(-8)}` },
+        {
+          label: 'شناسه پیگیری',
+          value: `SUS-${now.getTime().toString(36).toUpperCase().slice(-8)}`,
+        },
         { label: 'اولویت بررسی', value: 'بالا' },
       ]}
       suggestedLinks={[
         { href: '/', label: 'صفحهٔ اصلی', sub: 'مرور عمومی سایت', icon: 'home' },
         ...(supportPhone
-          ? [{ href: `tel:${supportPhone}`, label: 'تماس با پشتیبانی', sub: 'پاسخگویی سریع', icon: 'phone' }]
+          ? [
+              {
+                href: `tel:${supportPhone}`,
+                label: 'تماس با پشتیبانی',
+                sub: 'پاسخگویی سریع',
+                icon: 'phone',
+              },
+            ]
           : []),
       ]}
       // 2026-07-31: لینک اصلی باید به / (صفحه اصلی) برود، نه /dashboard.

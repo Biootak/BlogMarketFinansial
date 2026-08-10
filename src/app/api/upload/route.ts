@@ -357,7 +357,13 @@ export async function POST(request: NextRequest) {
     const slotId = (formData.get('slot') as string) || undefined;
 
     // Security: validate folder parameter to prevent path traversal
-    if (!folder || typeof folder !== 'string' || folder.includes('..') || folder.includes('/') || folder.includes('\\')) {
+    if (
+      !folder ||
+      typeof folder !== 'string' ||
+      folder.includes('..') ||
+      folder.includes('/') ||
+      folder.includes('\\')
+    ) {
       return NextResponse.json(
         { success: false, error: { code: 'INVALID_FOLDER', message: 'فولدر نامعتبر است' } },
         { status: 400 },

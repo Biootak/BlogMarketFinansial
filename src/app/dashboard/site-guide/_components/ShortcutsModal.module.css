@@ -1,0 +1,143 @@
+/* ShortcutsModal.module.css */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  padding: var(--ds-space-4);
+  animation: fadeIn 120ms var(--ds-ease-out-quart);
+}
+
+.dialog {
+  width: 100%;
+  max-width: 480px;
+  background: var(--ds-bg, var(--ds-surface));
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-xl);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  animation: slideUp 200ms var(--ds-ease-out-quart);
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border-bottom: 1px solid var(--ds-border-subtle);
+}
+
+.dialogIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ds-radius-md);
+  background: oklch(from var(--ds-brand-500) l c h / 0.12);
+  color: var(--ds-brand-500);
+}
+
+.dialogTitle {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  margin: 0;
+  flex: 1;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  color: var(--ds-text-muted);
+  border-radius: var(--ds-radius-md);
+  cursor: pointer;
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), background
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.closeBtn:hover {
+  color: var(--ds-text-primary);
+  background: var(--ds-surface-elevated);
+}
+
+.list {
+  overflow-y: auto;
+  padding: var(--ds-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+}
+
+.row:hover {
+  background: var(--ds-surface-elevated);
+}
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  padding: 4px 8px;
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  font-family: ui-monospace, "Courier New", monospace;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-primary);
+  direction: ltr;
+  flex-shrink: 0;
+}
+
+.action {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+}
+
+.footer {
+  padding: var(--ds-space-3) var(--ds-space-5);
+  border-top: 1px solid var(--ds-border-subtle);
+  text-align: center;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

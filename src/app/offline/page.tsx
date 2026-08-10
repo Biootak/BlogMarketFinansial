@@ -44,12 +44,15 @@ export default async function OfflinePage() {
       ]}
       suggestedLinks={[
         { href: '/', label: 'صفحهٔ اصلی', sub: 'ادامهٔ مرور سایت' },
-        { href: '/api/system-status', label: 'وضعیت سرویس', sub: 'بررسی سلامت سرویس‌ها', icon: 'shield' },
+        {
+          href: '/api/system-status',
+          label: 'وضعیت سرویس',
+          sub: 'بررسی سلامت سرویس‌ها',
+          icon: 'shield',
+        },
       ]}
       primaryLink={{ href: '/', label: 'تلاش مجدد', icon: 'refresh' }}
-      secondaryLinks={[
-        { href: '/api/system-status', label: 'وضعیت سرویس', icon: 'shield' },
-      ]}
+      secondaryLinks={[{ href: '/api/system-status', label: 'وضعیت سرویس', icon: 'shield' }]}
       foot={{
         label: 'سرویس از کار افتاده؟',
         href: `mailto:${supportEmail}`,

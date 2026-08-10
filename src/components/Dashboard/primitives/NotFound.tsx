@@ -38,9 +38,9 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useId, useRef } from 'react';
 
-import { Spotlight } from './Spotlight';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import s from './NotFound.module.css';
+import { Spotlight } from './Spotlight';
 
 /* ─── Icon Registry (string → LucideIcon, serializable) ──────────────── */
 
@@ -69,14 +69,7 @@ function resolveIcon(name: string | undefined): LucideIcon | undefined {
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
-export type NotFoundTone =
-  | 'accent'
-  | 'cyan'
-  | 'emerald'
-  | 'amber'
-  | 'rose'
-  | 'violet'
-  | 'indigo';
+export type NotFoundTone = 'accent' | 'cyan' | 'emerald' | 'amber' | 'rose' | 'violet' | 'indigo';
 
 export interface NotFoundLink {
   href: string;
@@ -182,11 +175,26 @@ function LostCompassIllustration({ tone }: { tone: NotFoundTone }) {
       </g>
 
       {/* Compass direction labels */}
-      <g className={s.compassLabels} fill="var(--ds-fg-muted)" fontSize="10" fontWeight="600" textAnchor="middle" opacity="0.5">
-        <text x="200" y="28">ش</text>
-        <text x="200" y="382">ج</text>
-        <text x="378" y="204">ب</text>
-        <text x="22" y="204">خ</text>
+      <g
+        className={s.compassLabels}
+        fill="var(--ds-fg-muted)"
+        fontSize="10"
+        fontWeight="600"
+        textAnchor="middle"
+        opacity="0.5"
+      >
+        <text x="200" y="28">
+          ش
+        </text>
+        <text x="200" y="382">
+          ج
+        </text>
+        <text x="378" y="204">
+          ب
+        </text>
+        <text x="22" y="204">
+          خ
+        </text>
       </g>
 
       {/* Inner compass body */}
@@ -200,13 +208,7 @@ function LostCompassIllustration({ tone }: { tone: NotFoundTone }) {
         filter="url(#nc-shadow)"
       />
       {/* Inner glow */}
-      <circle
-        cx="200"
-        cy="200"
-        r="120"
-        fill="url(#nc-glow)"
-        className={s.innerGlow}
-      />
+      <circle cx="200" cy="200" r="120" fill="url(#nc-glow)" className={s.innerGlow} />
       <circle
         cx="200"
         cy="200"
@@ -227,7 +229,12 @@ function LostCompassIllustration({ tone }: { tone: NotFoundTone }) {
       {/* Compass needle — drifts */}
       <g className={s.needle}>
         {/* Shadow */}
-        <path d="M200 112 L208 200 L200 290 L192 200 Z" fill="var(--ds-primary)" opacity="0.15" transform="translate(2, 2)" />
+        <path
+          d="M200 112 L208 200 L200 290 L192 200 Z"
+          fill="var(--ds-primary)"
+          opacity="0.15"
+          transform="translate(2, 2)"
+        />
         {/* Main needle */}
         <path d="M200 110 L208 200 L200 290 L192 200 Z" fill="var(--ds-primary)" opacity="0.85" />
         {/* Highlight */}
@@ -241,12 +248,7 @@ function LostCompassIllustration({ tone }: { tone: NotFoundTone }) {
           stroke="var(--ds-fg)"
           strokeWidth="1.5"
         />
-        <circle
-          cx="200"
-          cy="200"
-          r="2"
-          fill="var(--ds-primary)"
-        />
+        <circle cx="200" cy="200" r="2" fill="var(--ds-primary)" />
       </g>
 
       {/* Dashed escape path */}

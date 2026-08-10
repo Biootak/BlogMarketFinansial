@@ -516,54 +516,48 @@ export const getAllParentCategories = cache(async (): Promise<ActionResult<Taxon
 async function fetchPopularCategoriesForHomeRaw(
   limit = 16,
 ): Promise<ActionResult<{ categories: TaxonomyType[] }>> {
-  try {
-    const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
-    const rows = await prisma.category.findMany({
-      where: { parentCategories: { none: {} } },
-      take: safeLimit,
-      orderBy: { posts: { _count: 'desc' } },
-      include: {
-        _count: { select: { posts: true } },
-        childCategories: {
-          include: { _count: { select: { posts: true } } },
-        },
+  const safeLimit = Math.max(1, Math.min(50, Math.floor(limit)));
+  const rows = await prisma.category.findMany({
+    where: { parentCategories: { none: {} } },
+    take: safeLimit,
+    orderBy: { posts: { _count: 'desc' } },
+    include: {
+      _count: { select: { posts: true } },
+      childCategories: {
+        include: { _count: { select: { posts: true } } },
       },
-    });
+    },
+  });
 
-    const categories: TaxonomyType[] = rows.map((category) => ({
-      id: category.id,
-      name: category.name,
-      slug: category.slug,
-      thumbnail: category.thumbnail,
-      taxonomy: 'category',
-      color: generateColor(category.id),
-      count: category._count.posts,
-      childCategories: category.childCategories.map((child) => ({
-        id: child.id,
-        name: child.name,
-        slug: child.slug,
-        thumbnail: child.thumbnail,
-        taxonomy: 'subcategory',
-        color: generateColor(child.id),
-        count: child._count.posts,
-        createdAt: child.createdAt,
-        updatedAt: child.updatedAt,
-      })),
-      parentCategories: [],
-      createdAt: category.createdAt,
-      updatedAt: category.updatedAt,
-    }));
+  const categories: TaxonomyType[] = rows.map((category) => ({
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    thumbnail: category.thumbnail,
+    taxonomy: 'category',
+    color: generateColor(category.id),
+    count: category._count.posts,
+    childCategories: category.childCategories.map((child) => ({
+      id: child.id,
+      name: child.name,
+      slug: child.slug,
+      thumbnail: child.thumbnail,
+      taxonomy: 'subcategory',
+      color: generateColor(child.id),
+      count: child._count.posts,
+      createdAt: child.createdAt,
+      updatedAt: child.updatedAt,
+    })),
+    parentCategories: [],
+    createdAt: category.createdAt,
+    updatedAt: category.updatedAt,
+  }));
 
-    return {
-      success: true,
-      message: 'دسته‌بندی‌های محبوب با موفقیت بازیابی شدند.',
-      data: { categories },
-    };
-  } catch (error) {
-    // Re-throw → safeCache returns non-cached fallback. Returning { success: false }
-    // here would poison the cache for 60 s.
-    throw error;
-  }
+  return {
+    success: true,
+    message: 'دسته‌بندی‌های محبوب با موفقیت بازیابی شدند.',
+    data: { categories },
+  };
 }
 
 // 2026-06-21: قبلاً unstable_cache بود. حالا safeCache که اگر DB

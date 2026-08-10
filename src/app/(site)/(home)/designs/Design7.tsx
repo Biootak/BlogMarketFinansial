@@ -117,9 +117,10 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
     const current = initialPosts[activeIndex];
     const others = initialPosts.filter((_, i) => i !== activeIndex);
     return {
-      mainTheme: current.categories && current.categories.length > 0 && current.categories[0]
-        ? getCategoryTheme(current.categories[0].slug, current.categories[0].name)
-        : getCategoryTheme(),
+      mainTheme:
+        current.categories && current.categories.length > 0 && current.categories[0]
+          ? getCategoryTheme(current.categories[0].slug, current.categories[0].name)
+          : getCategoryTheme(),
       otherPosts: others,
       sideThemes: others.map((p) =>
         p.categories && p.categories.length > 0 && p.categories[0]
@@ -137,8 +138,7 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
     const cat = (
       (mainPost?.categories && mainPost.categories.length > 0 && mainPost.categories[0]
         ? mainPost.categories[0].slug || mainPost.categories[0].name
-        : '') ||
-      ''
+        : '') || ''
     ).toLowerCase();
 
     let relevantLists = rateLists;
@@ -376,18 +376,20 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                     {/* Content */}
                     <div className="absolute bottom-0 start-0 end-0 p-3 sm:p-5 lg:p-6 z-10">
                       {/* Category */}
-                      {mainPost.categories && mainPost.categories.length > 0 && mainPost.categories[0] && (
-                        <motion.span
-                          key={`cat-${mainPost.id}`}
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 mb-3 ${mainTheme.badge} text-white text-[11px] sm:text-xs font-bold rounded-lg shadow-lg ${mainTheme.glow}`}
-                          initial={{ x: -20, opacity: 0 }}
-                          animate={{ x: 0, opacity: 1 }}
-                          transition={{ delay: 0.3 }}
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                          {mainPost.categories[0].name}
-                        </motion.span>
-                      )}
+                      {mainPost.categories &&
+                        mainPost.categories.length > 0 &&
+                        mainPost.categories[0] && (
+                          <motion.span
+                            key={`cat-${mainPost.id}`}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 mb-3 ${mainTheme.badge} text-white text-[11px] sm:text-xs font-bold rounded-lg shadow-lg ${mainTheme.glow}`}
+                            initial={{ x: -20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                            {mainPost.categories[0].name}
+                          </motion.span>
+                        )}
 
                       {/* Title */}
                       <motion.h2

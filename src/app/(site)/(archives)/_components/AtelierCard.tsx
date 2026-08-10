@@ -53,83 +53,92 @@ function typeLabel(postType?: string | null) {
   }
 }
 
-const AtelierCard: React.FC<AtelierCardProps> = React.memo(function AtelierCard({ post, priority = false }) {
-  if (!post || !post.slug) return null;
+const AtelierCard: React.FC<AtelierCardProps> = React.memo(
+  function AtelierCard({ post, priority = false }) {
+    if (!post || !post.slug) return null;
 
-  const {
-    title,
-    categories,
-    createdAt,
-    slug,
-    postType,
-    excerpt,
-    featuredImage,
-    author,
-    viewCount,
-    _count,
-  } = post;
-  const postLink = getPostLink(postType, slug);
-  const primaryCategory = categories?.[0];
-  const commentCount = _count?.comments ?? 0;
-  const views = viewCount ?? 0;
-  const tLabel = typeLabel(postType);
+    const {
+      title,
+      categories,
+      createdAt,
+      slug,
+      postType,
+      excerpt,
+      featuredImage,
+      author,
+      viewCount,
+      _count,
+    } = post;
+    const postLink = getPostLink(postType, slug);
+    const primaryCategory = categories?.[0];
+    const commentCount = _count?.comments ?? 0;
+    const views = viewCount ?? 0;
+    const tLabel = typeLabel(postType);
 
-  return (
-    <article className="atl-card">
-      <Link href={postLink} className="atl-card__media block focus:outline-none" aria-label={title}>
-        <SafeImage
-          src={featuredImage}
-          alt={title || ''}
-          ratio="16/10"
-          containerClassName="absolute inset-0"
-          sizes="(min-width: 1280px) 320px, (min-width: 768px) 33vw, 100vw"
-          priority={priority}
-          className="object-cover"
-        />
-        {tLabel ? <span className="atl-card__badge">{tLabel}</span> : null}
-      </Link>
-      <div className="atl-card__body">
-        {primaryCategory ? <span className="atl-card__kicker">{primaryCategory.name}</span> : null}
+    return (
+      <article className="atl-card">
         <Link
           href={postLink}
-          className="focus:outline-none focus-visible:underline underline-offset-4"
+          className="atl-card__media block focus:outline-none"
+          aria-label={title}
         >
-          <h3 className="atl-card__title" title={title}>
-            {title}
-          </h3>
+          <SafeImage
+            src={featuredImage}
+            alt={title || ''}
+            ratio="16/10"
+            containerClassName="absolute inset-0"
+            sizes="(min-width: 1280px) 320px, (min-width: 768px) 33vw, 100vw"
+            priority={priority}
+            className="object-cover"
+          />
+          {tLabel ? <span className="atl-card__badge">{tLabel}</span> : null}
         </Link>
-        {excerpt ? <p className="atl-card__excerpt">{excerpt}</p> : null}
-        <div className="atl-card__foot">
-          <span className="atl-card__author">
-            {author ? (
-              <>
-                <span className="atl-dot2" aria-hidden />
-                <span className="truncate">{author.name}</span>
-              </>
-            ) : (
-              <span>{formatJalaliDate(createdAt)}</span>
-            )}
-          </span>
-          <span className="atl-card__stats">
-            {commentCount > 0 ? (
-              <span aria-label={`${commentCount} دیدگاه`}>
-                <MessagesSquare className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden />
-                {commentCount.toLocaleString('fa-IR')}
-              </span>
-            ) : null}
-            <span aria-label={`${views} بازدید`}>
-              <Eye className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden />
-              {formatCompactFa(views)}
+        <div className="atl-card__body">
+          {primaryCategory ? (
+            <span className="atl-card__kicker">{primaryCategory.name}</span>
+          ) : null}
+          <Link
+            href={postLink}
+            className="focus:outline-none focus-visible:underline underline-offset-4"
+          >
+            <h3 className="atl-card__title" title={title}>
+              {title}
+            </h3>
+          </Link>
+          {excerpt ? <p className="atl-card__excerpt">{excerpt}</p> : null}
+          <div className="atl-card__foot">
+            <span className="atl-card__author">
+              {author ? (
+                <>
+                  <span className="atl-dot2" aria-hidden />
+                  <span className="truncate">{author.name}</span>
+                </>
+              ) : (
+                <span>{formatJalaliDate(createdAt)}</span>
+              )}
             </span>
-          </span>
+            <span className="atl-card__stats">
+              {commentCount > 0 ? (
+                <span aria-label={`${commentCount} دیدگاه`}>
+                  <MessagesSquare className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden />
+                  {commentCount.toLocaleString('fa-IR')}
+                </span>
+              ) : null}
+              <span aria-label={`${views} بازدید`}>
+                <Eye className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden />
+                {formatCompactFa(views)}
+              </span>
+            </span>
+          </div>
         </div>
-      </div>
-    </article>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison: فقط اگر post ID یا priority تغییر کرد re-render کن
-  return prevProps.post.id === nextProps.post.id && prevProps.priority === nextProps.priority;
-});
+      </article>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison: فقط اگر post ID یا priority تغییر کرد re-render کن
+    return prevProps.post.id === nextProps.post.id && prevProps.priority === nextProps.priority;
+  },
+);
 
 AtelierCard.displayName = 'AtelierCard';
 

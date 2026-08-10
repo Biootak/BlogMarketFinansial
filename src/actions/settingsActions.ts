@@ -3,6 +3,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { type BackupConfig, type BackupFileInfo, DEFAULT_BACKUP_CONFIG } from '@/lib/backup';
 import prisma from '@/lib/db';
+import { setMaintenanceMode } from '@/lib/edge-maintenance';
 import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
@@ -175,6 +176,9 @@ export async function updateMaintenanceMode(data: unknown) {
             maintenanceMessage: p.maintenanceMessage?.trim() || null,
           },
         });
+    // Also write the flag to Upstash Redis so middleware (edge) can gate every
+    // route without touching the database on each request.
+    await setMaintenanceMode(p.maintenanceMode).catch(() => {});
     revalidatePath('/maintenance');
     return ok(stripSecret(saved as unknown as Record<string, unknown>));
   } catch {

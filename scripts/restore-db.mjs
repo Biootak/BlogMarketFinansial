@@ -18,8 +18,8 @@
 
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.resolve(__dirname, '..');
@@ -127,7 +127,9 @@ async function downloadFromS3(dest, key, outPath) {
 
 async function showList() {
   const local = existsSync(BACKUP_DIR)
-    ? readdirSync(BACKUP_DIR).filter((f) => f.startsWith('pg_') && f.endsWith('.dump')).sort()
+    ? readdirSync(BACKUP_DIR)
+        .filter((f) => f.startsWith('pg_') && f.endsWith('.dump'))
+        .sort()
     : [];
   console.log('=== لوکال (backups/pg) ===');
   for (const f of local) console.log(' ', f);
@@ -179,9 +181,7 @@ function runPgRestore(filePath, dbUrl) {
     let stderr = '';
     child.stderr.on('data', (c) => (stderr += c));
     child.on('error', (err) =>
-      reject(
-        new Error(`pg_restore اجرا نشد: ${err.message}. نصب: apt install postgresql-client`),
-      ),
+      reject(new Error(`pg_restore اجرا نشد: ${err.message}. نصب: apt install postgresql-client`)),
     );
     child.on('close', (code) =>
       code === 0
@@ -197,7 +197,9 @@ async function main() {
     return;
   }
   if (!FILE) {
-    console.error('استفاده: node scripts/restore-db.mjs --file <name> [--db-url ...] [--drop-first]');
+    console.error(
+      'استفاده: node scripts/restore-db.mjs --file <name> [--db-url ...] [--drop-first]',
+    );
     console.error('         node scripts/restore-db.mjs --list');
     process.exit(2);
   }

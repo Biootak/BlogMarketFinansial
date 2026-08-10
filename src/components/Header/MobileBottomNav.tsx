@@ -129,7 +129,7 @@ const MobileBottomNavSortableLazy = dynamic<MobileBottomNavSortableProps>(
 );
 
 const MobileBottomNav: FC = () => {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   // SSR always renders logged-out template (status === 'loading' on server).
   // Client updates to logged-in items only after session resolves (post-hydration).
   // This prevents hydration mismatch when useSession resolves synchronously

@@ -58,13 +58,7 @@ const InternalCredentialsKindSchema = z.enum(['password', 'after_otp']);
 // single-use loginToken to signIn with intent='2fa' after a valid TOTP
 // code; without it the intent enum rejected the value, authorize()
 // returned null, and every 2FA login died with CredentialsSignin.
-const InternalCredentialsIntentSchema = z.enum([
-  'register',
-  'login',
-  'reverify',
-  'recover',
-  '2fa',
-]);
+const InternalCredentialsIntentSchema = z.enum(['register', 'login', 'reverify', 'recover', '2fa']);
 
 const InternalCredentialsSchema = z.object({
   email: z.string().email(),

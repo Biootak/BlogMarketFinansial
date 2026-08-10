@@ -19,12 +19,12 @@
 
 import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
-import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import {
   isHighValueTransaction,
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';

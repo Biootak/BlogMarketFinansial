@@ -32,20 +32,20 @@ import {
   Home,
   LayoutDashboard,
   LogIn,
+  type LucideIcon,
   RefreshCw,
   Search,
   ServerCrash,
   ShieldAlert,
   Store,
-  type LucideIcon,
   WifiOff,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useId, useRef } from 'react';
 
-import { Spotlight, type SpotlightTone } from './Spotlight';
 import { useStaggerEntrance } from '@/hooks/useStaggerEntrance';
 import s from './RouteError.module.css';
+import { Spotlight, type SpotlightTone } from './Spotlight';
 
 /* ─── Types ──────────────────────────────────────────────────────────── */
 
@@ -98,10 +98,7 @@ const KIND_TONE: Record<ErrorKind, SpotlightTone> = {
   unknown: 'emerald',
 };
 
-const KIND_META: Record<
-  ErrorKind,
-  { eyebrow: string; title: string; description: string }
-> = {
+const KIND_META: Record<ErrorKind, { eyebrow: string; title: string; description: string }> = {
   network: {
     eyebrow: 'خطای اتصال',
     title: 'ارتباط با سرور برقرار نشد',
@@ -144,34 +141,128 @@ function NetworkIllustration() {
 
       {/* Outer rings */}
       <g className={s.outerRing}>
-        <circle cx="200" cy="200" r="160" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 6" opacity="0.3" />
+        <circle
+          cx="200"
+          cy="200"
+          r="160"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 6"
+          opacity="0.3"
+        />
       </g>
       <g className={s.outerRing2}>
-        <circle cx="200" cy="200" r="140" stroke="var(--ds-fg-muted)" strokeWidth="0.5" strokeDasharray="1 8" opacity="0.2" />
+        <circle
+          cx="200"
+          cy="200"
+          r="140"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="0.5"
+          strokeDasharray="1 8"
+          opacity="0.2"
+        />
       </g>
 
       {/* Signal tower */}
       <g className={s.signalWaves}>
         {/* Tower base */}
-        <line x1="200" y1="120" x2="200" y2="280" stroke="var(--ds-fg)" strokeWidth="3" strokeLinecap="round" />
-        <line x1="180" y1="280" x2="220" y2="280" stroke="var(--ds-fg)" strokeWidth="3" strokeLinecap="round" />
+        <line
+          x1="200"
+          y1="120"
+          x2="200"
+          y2="280"
+          stroke="var(--ds-fg)"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        <line
+          x1="180"
+          y1="280"
+          x2="220"
+          y2="280"
+          stroke="var(--ds-fg)"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
         {/* Antenna tip */}
         <circle cx="200" cy="115" r="5" fill="var(--re-primary)" opacity="0.8" />
         {/* Signal waves — left */}
-        <path d="M170 140 C155 155 155 170 170 185" stroke="url(#re-sig)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-        <path d="M155 125 C135 145 135 175 155 195" stroke="url(#re-sig)" strokeWidth="2" strokeLinecap="round" fill="none" />
-        <path d="M140 110 C115 135 115 185 140 210" stroke="url(#re-sig)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.5" />
+        <path
+          d="M170 140 C155 155 155 170 170 185"
+          stroke="url(#re-sig)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M155 125 C135 145 135 175 155 195"
+          stroke="url(#re-sig)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M140 110 C115 135 115 185 140 210"
+          stroke="url(#re-sig)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.5"
+        />
         {/* Signal waves — right */}
-        <path d="M230 140 C245 155 245 170 230 185" stroke="url(#re-sig)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-        <path d="M245 125 C265 145 265 175 245 195" stroke="url(#re-sig)" strokeWidth="2" strokeLinecap="round" fill="none" />
-        <path d="M260 110 C285 135 285 185 260 210" stroke="url(#re-sig)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.5" />
+        <path
+          d="M230 140 C245 155 245 170 230 185"
+          stroke="url(#re-sig)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M245 125 C265 145 265 175 245 195"
+          stroke="url(#re-sig)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path
+          d="M260 110 C285 135 285 185 260 210"
+          stroke="url(#re-sig)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          fill="none"
+          opacity="0.5"
+        />
       </g>
 
       {/* X mark — connection broken */}
       <g className={s.signalBreak} opacity="0.8">
-        <line x1="175" y1="220" x2="225" y2="250" stroke="var(--re-primary)" strokeWidth="3" strokeLinecap="round" />
-        <line x1="225" y1="220" x2="175" y2="250" stroke="var(--re-primary)" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="200" cy="235" r="22" stroke="var(--re-primary)" strokeWidth="1.5" fill="none" opacity="0.4" />
+        <line
+          x1="175"
+          y1="220"
+          x2="225"
+          y2="250"
+          stroke="var(--re-primary)"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        <line
+          x1="225"
+          y1="220"
+          x2="175"
+          y2="250"
+          stroke="var(--re-primary)"
+          strokeWidth="3"
+          strokeLinecap="round"
+        />
+        <circle
+          cx="200"
+          cy="235"
+          r="22"
+          stroke="var(--re-primary)"
+          strokeWidth="1.5"
+          fill="none"
+          opacity="0.4"
+        />
       </g>
 
       {/* Stars */}
@@ -199,7 +290,15 @@ function AuthIllustration() {
 
       {/* Outer rings */}
       <g className={s.outerRing}>
-        <circle cx="200" cy="200" r="160" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 6" opacity="0.3" />
+        <circle
+          cx="200"
+          cy="200"
+          r="160"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 6"
+          opacity="0.3"
+        />
       </g>
 
       {/* Shield */}
@@ -215,9 +314,25 @@ function AuthIllustration() {
 
       {/* Lock body */}
       <g className={s.lockIcon}>
-        <rect x="155" y="190" width="90" height="70" rx="12" fill="var(--ds-bg, white)" stroke="var(--ds-line, var(--ds-border))" strokeWidth="1" opacity="0.9" />
+        <rect
+          x="155"
+          y="190"
+          width="90"
+          height="70"
+          rx="12"
+          fill="var(--ds-bg, white)"
+          stroke="var(--ds-line, var(--ds-border))"
+          strokeWidth="1"
+          opacity="0.9"
+        />
         {/* Shackle */}
-        <path d="M170 190 L170 165 C170 145 182 135 200 135 C218 135 230 145 230 165 L230 190" stroke="var(--re-primary)" strokeWidth="8" strokeLinecap="round" fill="none" />
+        <path
+          d="M170 190 L170 165 C170 145 182 135 200 135 C218 135 230 145 230 165 L230 190"
+          stroke="var(--re-primary)"
+          strokeWidth="8"
+          strokeLinecap="round"
+          fill="none"
+        />
         {/* Keyhole */}
         <circle cx="200" cy="215" r="8" fill="var(--re-primary)" opacity="0.6" />
         <path d="M196 218 L194 235 L206 235 L204 218 Z" fill="var(--re-primary)" opacity="0.6" />
@@ -242,16 +357,48 @@ function NotFoundIllustration() {
     <svg className={s.illustration} viewBox="0 0 400 400" role="img" aria-label="یافت نشد">
       {/* Outer rings */}
       <g className={s.outerRing}>
-        <circle cx="200" cy="200" r="160" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 6" opacity="0.3" />
+        <circle
+          cx="200"
+          cy="200"
+          r="160"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 6"
+          opacity="0.3"
+        />
       </g>
       <g className={s.outerRing2}>
-        <circle cx="200" cy="200" r="140" stroke="var(--ds-fg-muted)" strokeWidth="0.5" strokeDasharray="1 8" opacity="0.2" />
+        <circle
+          cx="200"
+          cy="200"
+          r="140"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="0.5"
+          strokeDasharray="1 8"
+          opacity="0.2"
+        />
       </g>
 
       {/* Compass body */}
       <g className={s.compassDrift}>
-        <circle cx="200" cy="200" r="80" fill="var(--ds-bg, white)" stroke="var(--ds-line, var(--ds-border))" strokeWidth="1.5" opacity="0.9" />
-        <circle cx="200" cy="200" r="60" fill="none" stroke="var(--ds-fg-muted)" strokeWidth="0.5" opacity="0.3" />
+        <circle
+          cx="200"
+          cy="200"
+          r="80"
+          fill="var(--ds-bg, white)"
+          stroke="var(--ds-line, var(--ds-border))"
+          strokeWidth="1.5"
+          opacity="0.9"
+        />
+        <circle
+          cx="200"
+          cy="200"
+          r="60"
+          fill="none"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="0.5"
+          opacity="0.3"
+        />
         {/* Compass needle — spinning */}
         <path d="M200 140 L210 195 L200 200 L190 195 Z" fill="var(--re-primary)" opacity="0.7" />
         <path d="M200 260 L190 205 L200 200 L210 205 Z" fill="var(--ds-fg-muted)" opacity="0.3" />
@@ -259,15 +406,65 @@ function NotFoundIllustration() {
         <circle cx="200" cy="200" r="6" fill="var(--re-primary)" opacity="0.8" />
         <circle cx="200" cy="200" r="3" fill="var(--ds-bg, white)" opacity="0.9" />
         {/* Cardinal directions */}
-        <text x="200" y="125" textAnchor="middle" fontSize="12" fontWeight="700" fill="var(--ds-fg-muted)" opacity="0.5">N</text>
-        <text x="200" y="295" textAnchor="middle" fontSize="12" fontWeight="700" fill="var(--ds-fg-muted)" opacity="0.5">S</text>
-        <text x="125" y="205" textAnchor="middle" fontSize="12" fontWeight="700" fill="var(--ds-fg-muted)" opacity="0.5">W</text>
-        <text x="275" y="205" textAnchor="middle" fontSize="12" fontWeight="700" fill="var(--ds-fg-muted)" opacity="0.5">E</text>
+        <text
+          x="200"
+          y="125"
+          textAnchor="middle"
+          fontSize="12"
+          fontWeight="700"
+          fill="var(--ds-fg-muted)"
+          opacity="0.5"
+        >
+          N
+        </text>
+        <text
+          x="200"
+          y="295"
+          textAnchor="middle"
+          fontSize="12"
+          fontWeight="700"
+          fill="var(--ds-fg-muted)"
+          opacity="0.5"
+        >
+          S
+        </text>
+        <text
+          x="125"
+          y="205"
+          textAnchor="middle"
+          fontSize="12"
+          fontWeight="700"
+          fill="var(--ds-fg-muted)"
+          opacity="0.5"
+        >
+          W
+        </text>
+        <text
+          x="275"
+          y="205"
+          textAnchor="middle"
+          fontSize="12"
+          fontWeight="700"
+          fill="var(--ds-fg-muted)"
+          opacity="0.5"
+        >
+          E
+        </text>
       </g>
 
       {/* Question mark — lost */}
       <g opacity="0.6">
-        <text x="290" y="150" fontSize="36" fontWeight="800" fill="var(--re-primary)" fontFamily="var(--ds-font-mono, ui-monospace)" opacity="0.5">?</text>
+        <text
+          x="290"
+          y="150"
+          fontSize="36"
+          fontWeight="800"
+          fill="var(--re-primary)"
+          fontFamily="var(--ds-font-mono, ui-monospace)"
+          opacity="0.5"
+        >
+          ?
+        </text>
       </g>
 
       {/* Stars */}
@@ -288,33 +485,119 @@ function ServerIllustration() {
     <svg className={s.illustration} viewBox="0 0 400 400" role="img" aria-label="خطای سرور">
       {/* Outer rings */}
       <g className={s.outerRing}>
-        <circle cx="200" cy="200" r="160" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 6" opacity="0.3" />
+        <circle
+          cx="200"
+          cy="200"
+          r="160"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 6"
+          opacity="0.3"
+        />
       </g>
 
       {/* Server rack */}
       <g className={s.serverShake}>
         {/* Rack body */}
-        <rect x="130" y="120" width="140" height="160" rx="12" fill="var(--ds-bg, white)" stroke="var(--ds-line, var(--ds-border))" strokeWidth="1.5" opacity="0.9" />
+        <rect
+          x="130"
+          y="120"
+          width="140"
+          height="160"
+          rx="12"
+          fill="var(--ds-bg, white)"
+          stroke="var(--ds-line, var(--ds-border))"
+          strokeWidth="1.5"
+          opacity="0.9"
+        />
         {/* Server blades */}
-        <rect x="145" y="140" width="110" height="25" rx="4" fill="var(--ds-surface, var(--ds-bg-subtle))" stroke="var(--ds-line, var(--ds-border))" strokeWidth="0.5" />
+        <rect
+          x="145"
+          y="140"
+          width="110"
+          height="25"
+          rx="4"
+          fill="var(--ds-surface, var(--ds-bg-subtle))"
+          stroke="var(--ds-line, var(--ds-border))"
+          strokeWidth="0.5"
+        />
         <circle cx="160" cy="152.5" r="4" fill="var(--re-primary)" opacity="0.6" />
         <circle cx="175" cy="152.5" r="3" fill="var(--ds-fg-muted)" opacity="0.3" />
-        <rect x="190" y="148" width="50" height="9" rx="2" fill="var(--ds-fg-muted)" opacity="0.15" />
+        <rect
+          x="190"
+          y="148"
+          width="50"
+          height="9"
+          rx="2"
+          fill="var(--ds-fg-muted)"
+          opacity="0.15"
+        />
 
-        <rect x="145" y="175" width="110" height="25" rx="4" fill="var(--ds-surface, var(--ds-bg-subtle))" stroke="var(--ds-line, var(--ds-border))" strokeWidth="0.5" />
+        <rect
+          x="145"
+          y="175"
+          width="110"
+          height="25"
+          rx="4"
+          fill="var(--ds-surface, var(--ds-bg-subtle))"
+          stroke="var(--ds-line, var(--ds-border))"
+          strokeWidth="0.5"
+        />
         <circle cx="160" cy="187.5" r="4" fill="var(--re-primary)" opacity="0.6" />
         <circle cx="175" cy="187.5" r="3" fill="var(--ds-fg-muted)" opacity="0.3" />
-        <rect x="190" y="183" width="50" height="9" rx="2" fill="var(--ds-fg-muted)" opacity="0.15" />
+        <rect
+          x="190"
+          y="183"
+          width="50"
+          height="9"
+          rx="2"
+          fill="var(--ds-fg-muted)"
+          opacity="0.15"
+        />
 
-        <rect x="145" y="210" width="110" height="25" rx="4" fill="var(--ds-surface, var(--ds-bg-subtle))" stroke="var(--ds-line, var(--ds-border))" strokeWidth="0.5" />
+        <rect
+          x="145"
+          y="210"
+          width="110"
+          height="25"
+          rx="4"
+          fill="var(--ds-surface, var(--ds-bg-subtle))"
+          stroke="var(--ds-line, var(--ds-border))"
+          strokeWidth="0.5"
+        />
         <circle cx="160" cy="222.5" r="4" fill="var(--re-primary)" opacity="0.6" />
         <circle cx="175" cy="222.5" r="3" fill="var(--ds-fg-muted)" opacity="0.3" />
-        <rect x="190" y="218" width="50" height="9" rx="2" fill="var(--ds-fg-muted)" opacity="0.15" />
+        <rect
+          x="190"
+          y="218"
+          width="50"
+          height="9"
+          rx="2"
+          fill="var(--ds-fg-muted)"
+          opacity="0.15"
+        />
 
-        <rect x="145" y="245" width="110" height="25" rx="4" fill="var(--ds-surface, var(--ds-bg-subtle))" stroke="var(--ds-line, var(--ds-border))" strokeWidth="0.5" />
+        <rect
+          x="145"
+          y="245"
+          width="110"
+          height="25"
+          rx="4"
+          fill="var(--ds-surface, var(--ds-bg-subtle))"
+          stroke="var(--ds-line, var(--ds-border))"
+          strokeWidth="0.5"
+        />
         <circle cx="160" cy="257.5" r="4" fill="var(--re-primary)" opacity="0.4" />
         <circle cx="175" cy="257.5" r="3" fill="var(--ds-fg-muted)" opacity="0.3" />
-        <rect x="190" y="253" width="50" height="9" rx="2" fill="var(--ds-fg-muted)" opacity="0.15" />
+        <rect
+          x="190"
+          y="253"
+          width="50"
+          height="9"
+          rx="2"
+          fill="var(--ds-fg-muted)"
+          opacity="0.15"
+        />
       </g>
 
       {/* Smoke particles */}
@@ -342,15 +625,39 @@ function UnknownIllustration() {
     <svg className={s.illustration} viewBox="0 0 400 400" role="img" aria-label="خطای غیرمنتظره">
       {/* Outer rings */}
       <g className={s.outerRing}>
-        <circle cx="200" cy="200" r="160" stroke="var(--ds-fg-muted)" strokeWidth="1" strokeDasharray="2 6" opacity="0.3" />
+        <circle
+          cx="200"
+          cy="200"
+          r="160"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="1"
+          strokeDasharray="2 6"
+          opacity="0.3"
+        />
       </g>
       <g className={s.outerRing2}>
-        <circle cx="200" cy="200" r="140" stroke="var(--ds-fg-muted)" strokeWidth="0.5" strokeDasharray="1 8" opacity="0.2" />
+        <circle
+          cx="200"
+          cy="200"
+          r="140"
+          stroke="var(--ds-fg-muted)"
+          strokeWidth="0.5"
+          strokeDasharray="1 8"
+          opacity="0.2"
+        />
       </g>
 
       {/* Expanding ring */}
       <g className={s.warningRing}>
-        <circle cx="200" cy="200" r="100" stroke="var(--re-primary)" strokeWidth="1" fill="none" opacity="0.3" />
+        <circle
+          cx="200"
+          cy="200"
+          r="100"
+          stroke="var(--re-primary)"
+          strokeWidth="1"
+          fill="none"
+          opacity="0.3"
+        />
       </g>
 
       {/* Warning triangle */}
@@ -363,12 +670,27 @@ function UnknownIllustration() {
           opacity="0.8"
         />
         {/* Exclamation mark */}
-        <line x1="200" y1="150" x2="200" y2="200" stroke="var(--re-primary)" strokeWidth="4" strokeLinecap="round" />
+        <line
+          x1="200"
+          y1="150"
+          x2="200"
+          y2="200"
+          stroke="var(--re-primary)"
+          strokeWidth="4"
+          strokeLinecap="round"
+        />
         <circle cx="200" cy="220" r="4" fill="var(--re-primary)" />
       </g>
 
       {/* Inner glow */}
-      <circle cx="200" cy="200" r="60" fill="var(--re-primary)" opacity="0.05" className={s.innerGlow} />
+      <circle
+        cx="200"
+        cy="200"
+        r="60"
+        fill="var(--re-primary)"
+        opacity="0.05"
+        className={s.innerGlow}
+      />
 
       {/* Stars */}
       <g className={s.stars} fill="var(--re-primary)" opacity="0.5">
@@ -384,11 +706,7 @@ function UnknownIllustration() {
 
 /* ─── Suggested destinations ─────────────────────────────────────── */
 
-function defaultSuggestions(
-  kind: ErrorKind,
-  backHref: string,
-  backLabel: string,
-): SuggestItem[] {
+function defaultSuggestions(kind: ErrorKind, backHref: string, backLabel: string): SuggestItem[] {
   const items: SuggestItem[] = [];
   if (backHref && backHref !== '/') {
     items.push({ href: backHref, label: backLabel, sub: 'بازگشت به بخش قبلی', icon: ArrowLeft });

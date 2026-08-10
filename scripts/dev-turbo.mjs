@@ -92,12 +92,16 @@ function scheduleRestart(reason) {
 
   if (restartCount > MAX_RESTARTS) {
     log('Too many Turbopack panics/crashes in a short window — giving up.');
-    log('Run "npm run dev:raw" to see the raw error, or "npm run dev:webpack" for the webpack fallback.');
+    log(
+      'Run "npm run dev:raw" to see the raw error, or "npm run dev:webpack" for the webpack fallback.',
+    );
     killTree(child, 'SIGKILL');
     process.exit(1);
   }
 
-  log(`Restarting dev server (attempt ${restartCount}/${MAX_RESTARTS}) in ${RESTART_DELAY_MS / 1000}s…`);
+  log(
+    `Restarting dev server (attempt ${restartCount}/${MAX_RESTARTS}) in ${RESTART_DELAY_MS / 1000}s…`,
+  );
   log(`Reason: ${reason}`);
   killTree(child, 'SIGTERM');
 

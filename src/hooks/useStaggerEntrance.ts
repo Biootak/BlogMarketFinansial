@@ -7,7 +7,7 @@
  * Pure opacity + transform (GPU-friendly), respects prefers-reduced-motion.
  */
 
-import { useEffect, useRef, type RefObject } from 'react';
+import { type RefObject, useEffect, useRef } from 'react';
 
 interface UseStaggerEntranceOptions {
   /** Delay between each element in ms. Default 60. */

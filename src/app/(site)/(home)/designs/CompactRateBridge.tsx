@@ -105,8 +105,10 @@ export default function CompactRateBridge({
   const sellSuffix = current?.sellSuffix ?? '';
 
   // واحد پول: اگر units[] داده شده از index فعال می‌خونیم، وگرنه unit ثابت یا پیش‌فرض تومان
-  const valueSuffix = (buySuffix || sellSuffix || '').trim();
-  const displayUnit = (units ? (units[activeIndex] ?? units[0] ?? 'تومان') : (unit || 'تومان')).trim();
+  const _valueSuffix = (buySuffix || sellSuffix || '').trim();
+  const displayUnit = (
+    units ? (units[activeIndex] ?? units[0] ?? 'تومان') : unit || 'تومان'
+  ).trim();
   const showUnitBadge = true;
 
   const orderHref = `${orderLinkBase}?currency=${encodeURIComponent(current?.title || '')}&type=INTERNATIONAL_TRANSFER#contact`;
@@ -133,7 +135,11 @@ export default function CompactRateBridge({
   };
 
   return (
-    <div className="group/bridge relative inline-flex w-fit max-w-full sm:pb-0 pb-3" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <div
+      className="group/bridge relative inline-flex w-fit max-w-full sm:pb-0 pb-3"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* بج واحد پول — corner badge، خارج از overflow-hidden */}
       {showUnitBadge && (
         <span className="absolute bottom-0 translate-y-1/2 end-3 z-10 inline-flex items-center px-1.5 py-[2px] rounded-full bg-amber-400/90 border border-amber-300/60 text-[8px] sm:text-[9px] font-bold text-amber-950 leading-none shadow-sm shadow-amber-500/30 pointer-events-none select-none">
@@ -142,151 +148,152 @@ export default function CompactRateBridge({
       )}
       {/* inner: overflow-hidden برای clip کردن animation های داخل */}
       <div className="inline-flex items-stretch w-fit backdrop-blur-xl bg-black/45 border border-white/20 rounded-2xl shadow-2xl overflow-hidden">
-      {/* Title block */}
-      <div className="flex flex-col items-start justify-center gap-0.5 px-2.5 sm:px-3 py-1.5 sm:py-2 border-l border-white/10 min-w-0 sm:min-w-[100px]">
-        <div className="flex items-center gap-1">
-          <span className="relative flex h-1.5 w-1.5 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
-          </span>
-          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-white/60 font-bold">
-            {title}
-          </span>
-        </div>
-        <span className="text-[10px] sm:text-[11px] font-bold text-white/90 flex items-center gap-1">
-          <ArrowLeftRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-          <span className="tabular-nums">
-            {String(activeIndex + 1).padStart(2, '۰')}/{String(rates.length).padStart(2, '۰')}
-          </span>
-        </span>
-      </div>
-
-      {/* Prev/Next Navigation Buttons (فقط sm+) */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          goPrev();
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        // target-size: w-8 (32px → ~24px actual با rem scale) — حداقل لمسی 24px
-        className="flex w-7 sm:w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
-        aria-label="نرخ قبلی"
-      >
-        <ChevronRight className="w-3 h-3" />
-      </button>
-
-      {/* Rotating Buy/Sell — با Link برای ثبت سفارش */}
-      <Link
-        href={orderHref}
-        onClick={(e) => e.stopPropagation()}
-        className="relative flex-1 min-w-0 sm:min-w-[260px] sm:max-w-[320px] overflow-hidden cursor-pointer hover:bg-white/5 transition-colors"
-        // WCAG 2.5.3 label-in-name: the accessible name is derived from the
-        // visible content (title + خرید + فروش + ثبت) — no aria-label override,
-        // so the name always matches what sighted users see.
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={`${activeIndex}-${current?.title}`}
-            initial={{ y: 12, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -12, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-            className="flex flex-col items-stretch gap-0.5 px-2.5 sm:px-3 py-1.5 sm:py-2"
-          >
-            {/* Currency Title */}
-            <span className="text-[10px] sm:text-[11px] font-bold text-white line-clamp-1 max-w-full mb-0.5">
-              {current?.title}
+        {/* Title block */}
+        <div className="flex flex-col items-start justify-center gap-0.5 px-2.5 sm:px-3 py-1.5 sm:py-2 border-l border-white/10 min-w-0 sm:min-w-[100px]">
+          <div className="flex items-center gap-1">
+            <span className="relative flex h-1.5 w-1.5 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400" />
             </span>
-
-            {/* Buy + Sell row */}
-            <div className="flex items-center gap-2 sm:gap-3 flex-nowrap">
-              {/* خرید (سبز) */}
-              {current?.buy && (
-                <div className="flex items-baseline gap-1 shrink-0">
-                  {/* برچسب «خرید» فقط در sm+ — در موبایل رنگ سبز کافی است و عدد کامل دیده شود */}
-                  <span className="hidden sm:flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-300 shrink-0">
-                    <TrendingUp className="w-2.5 h-2.5" />
-                    خرید
-                  </span>
-                  <span className="text-[12px] sm:text-[13px] font-bold text-emerald-200 tabular-nums whitespace-nowrap">
-                    {buyDisplay > 0 ? buyDisplay.toLocaleString('fa-IR') : current?.buy}
-                  </span>
-                  {buySuffix && (
-                    <span className="text-[9px] sm:text-[10px] text-emerald-200/70 shrink-0">
-                      {buySuffix}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* فروش (قرمز) — فقط اگه جدا باشه */}
-              {current?.sell ? (
-                <div className="flex items-baseline gap-1 shrink-0 border-r border-white/10 pr-2 sm:pr-3">
-                  {/* برچسب «فروش» فقط در sm+ — در موبایل رنگ قرمز کافی است و عدد کامل دیده شود */}
-                  <span className="hidden sm:flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-rose-300 shrink-0">
-                    <TrendingDown className="w-2.5 h-2.5" />
-                    فروش
-                  </span>
-                  <span className="text-[12px] sm:text-[13px] font-bold text-rose-200 tabular-nums whitespace-nowrap">
-                    {sellDisplay > 0 ? sellDisplay.toLocaleString('fa-IR') : current?.sell}
-                  </span>
-                  {sellSuffix && (
-                    <span className="text-[9px] sm:text-[10px] text-rose-200/70 shrink-0">
-                      {sellSuffix}
-                    </span>
-                  )}
-                </div>
-              ) : null}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Click hint overlay (در hover) */}
-        <div className="absolute inset-0 flex items-center justify-end px-2 opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-l from-emerald-500/15 to-transparent pointer-events-none">
-          <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-white bg-emerald-500/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md shadow-lg">
-            <ShoppingCart className="w-2.5 h-2.5" />
-            ثبت
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-white/60 font-bold">
+              {title}
+            </span>
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-bold text-white/90 flex items-center gap-1">
+            <ArrowLeftRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+            <span className="tabular-nums">
+              {String(activeIndex + 1).padStart(2, '۰')}/{String(rates.length).padStart(2, '۰')}
+            </span>
           </span>
         </div>
-      </Link>
 
-      {/* Next Button (فقط sm+) */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          goNextBridge();
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        // target-size: w-8 (32px → ~24px actual با rem scale) — حداقل لمسی 24px
-        className="flex w-7 sm:w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
-        aria-label="نرخ بعدی"
-      >
-        <ChevronLeft className="w-3 h-3" />
-      </button>
+        {/* Prev/Next Navigation Buttons (فقط sm+) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            goPrev();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          // target-size: w-8 (32px → ~24px actual با rem scale) — حداقل لمسی 24px
+          className="flex w-7 sm:w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
+          aria-label="نرخ قبلی"
+        >
+          <ChevronRight className="w-3 h-3" />
+        </button>
 
-      {/* Pause/Play toggle (فقط sm+) */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsPaused((p) => !p);
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
-        className="hidden sm:flex w-7 items-center justify-center border-l border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
-        aria-label={isPaused ? 'ادامه چرخش' : 'توقف چرخش'}
-      >
-        {isPaused ? (
-          <Play className="w-3 h-3 [transform:scaleX(-1)]" fill="currentColor" />
-        ) : (
-          <Pause className="w-3 h-3" fill="currentColor" />
-        )}
-      </button>
-      </div>{/* /inner overflow-hidden */}
+        {/* Rotating Buy/Sell — با Link برای ثبت سفارش */}
+        <Link
+          href={orderHref}
+          onClick={(e) => e.stopPropagation()}
+          className="relative flex-1 min-w-0 sm:min-w-[260px] sm:max-w-[320px] overflow-hidden cursor-pointer hover:bg-white/5 transition-colors"
+          // WCAG 2.5.3 label-in-name: the accessible name is derived from the
+          // visible content (title + خرید + فروش + ثبت) — no aria-label override,
+          // so the name always matches what sighted users see.
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`${activeIndex}-${current?.title}`}
+              initial={{ y: 12, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -12, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              className="flex flex-col items-stretch gap-0.5 px-2.5 sm:px-3 py-1.5 sm:py-2"
+            >
+              {/* Currency Title */}
+              <span className="text-[10px] sm:text-[11px] font-bold text-white line-clamp-1 max-w-full mb-0.5">
+                {current?.title}
+              </span>
+
+              {/* Buy + Sell row */}
+              <div className="flex items-center gap-2 sm:gap-3 flex-nowrap">
+                {/* خرید (سبز) */}
+                {current?.buy && (
+                  <div className="flex items-baseline gap-1 shrink-0">
+                    {/* برچسب «خرید» فقط در sm+ — در موبایل رنگ سبز کافی است و عدد کامل دیده شود */}
+                    <span className="hidden sm:flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-300 shrink-0">
+                      <TrendingUp className="w-2.5 h-2.5" />
+                      خرید
+                    </span>
+                    <span className="text-[12px] sm:text-[13px] font-bold text-emerald-200 tabular-nums whitespace-nowrap">
+                      {buyDisplay > 0 ? buyDisplay.toLocaleString('fa-IR') : current?.buy}
+                    </span>
+                    {buySuffix && (
+                      <span className="text-[9px] sm:text-[10px] text-emerald-200/70 shrink-0">
+                        {buySuffix}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* فروش (قرمز) — فقط اگه جدا باشه */}
+                {current?.sell ? (
+                  <div className="flex items-baseline gap-1 shrink-0 border-r border-white/10 pr-2 sm:pr-3">
+                    {/* برچسب «فروش» فقط در sm+ — در موبایل رنگ قرمز کافی است و عدد کامل دیده شود */}
+                    <span className="hidden sm:flex items-center gap-0.5 text-[9px] sm:text-[10px] font-bold text-rose-300 shrink-0">
+                      <TrendingDown className="w-2.5 h-2.5" />
+                      فروش
+                    </span>
+                    <span className="text-[12px] sm:text-[13px] font-bold text-rose-200 tabular-nums whitespace-nowrap">
+                      {sellDisplay > 0 ? sellDisplay.toLocaleString('fa-IR') : current?.sell}
+                    </span>
+                    {sellSuffix && (
+                      <span className="text-[9px] sm:text-[10px] text-rose-200/70 shrink-0">
+                        {sellSuffix}
+                      </span>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Click hint overlay (در hover) */}
+          <div className="absolute inset-0 flex items-center justify-end px-2 opacity-0 hover:opacity-100 transition-opacity bg-gradient-to-l from-emerald-500/15 to-transparent pointer-events-none">
+            <span className="flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-white bg-emerald-500/90 backdrop-blur-sm px-1.5 py-0.5 rounded-md shadow-lg">
+              <ShoppingCart className="w-2.5 h-2.5" />
+              ثبت
+            </span>
+          </div>
+        </Link>
+
+        {/* Next Button (فقط sm+) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            goNextBridge();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          // target-size: w-8 (32px → ~24px actual با rem scale) — حداقل لمسی 24px
+          className="flex w-7 sm:w-8 items-center justify-center text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer border-l border-white/10"
+          aria-label="نرخ بعدی"
+        >
+          <ChevronLeft className="w-3 h-3" />
+        </button>
+
+        {/* Pause/Play toggle (فقط sm+) */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsPaused((p) => !p);
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="hidden sm:flex w-7 items-center justify-center border-l border-white/10 text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+          aria-label={isPaused ? 'ادامه چرخش' : 'توقف چرخش'}
+        >
+          {isPaused ? (
+            <Play className="w-3 h-3 [transform:scaleX(-1)]" fill="currentColor" />
+          ) : (
+            <Pause className="w-3 h-3" fill="currentColor" />
+          )}
+        </button>
+      </div>
+      {/* /inner overflow-hidden */}
     </div>
   );
 }

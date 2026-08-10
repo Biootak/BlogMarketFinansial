@@ -10,8 +10,8 @@ import { listPendingCustomerKyc } from '@/actions/customer-portal';
 import { getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
-import type { Metadata } from 'next/types';
 import { redirect } from 'next/navigation';
+import type { Metadata } from 'next/types';
 import { ExchangeKycReviewClient } from './_components/ExchangeKycReviewClient';
 
 export const metadata: Metadata = { title: 'مرکز بررسی احراز هویت | پنل صرافی' };
@@ -36,10 +36,7 @@ export default async function ExchangeKycReviewPage() {
         variant="compact"
         title="مرکز بررسی احراز هویت"
         description={`پنل ${membership.exchange.name ?? 'صرافی'} — تأیید یا رد مدارک مشتریان`}
-        breadcrumb={[
-          { label: 'پنل صرافی', href: '/exchange/dashboard' },
-          { label: 'بررسی KYC' },
-        ]}
+        breadcrumb={[{ label: 'پنل صرافی', href: '/exchange/dashboard' }, { label: 'بررسی KYC' }]}
         eyebrow="احراز هویت"
         icon="shield-check"
         accent="emerald"

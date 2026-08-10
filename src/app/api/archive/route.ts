@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
 import { getArchivePosts } from '@/actions/postActions';
+import { type NextRequest, NextResponse } from 'next/server';
 
 // safeCache در postActions پاسخ را ۱۲۰ ثانیه cache می‌کند (در حافظه سرور).
 // Cache-Control به مرورگر می‌گوید پاسخ را ۶۰ ثانیه نگه دارد.
@@ -7,13 +7,13 @@ import { getArchivePosts } from '@/actions/postActions';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const page = parseInt(searchParams.get('page') || '1', 10);
+  const page = Number.parseInt(searchParams.get('page') || '1', 10);
   const limit = 15;
   const filter = searchParams.get('filter') || 'همه مقالات';
   const type = searchParams.get('type') || undefined;
   const category = searchParams.get('category') || undefined;
   const subcategory = searchParams.get('subcategory') || undefined;
-  const tag = searchParams.get('tag') || undefined;
+  const _tag = searchParams.get('tag') || undefined;
   const searchQuery = searchParams.get('q') || '';
 
   const result = await getArchivePosts(
@@ -27,10 +27,7 @@ export async function GET(request: NextRequest) {
   );
 
   if (!result.success) {
-    return NextResponse.json(
-      { error: result.error },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
   const { posts, total, pages } = result.data || { posts: [], total: 0, pages: 0 };

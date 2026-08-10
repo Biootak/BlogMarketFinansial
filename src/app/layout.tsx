@@ -24,9 +24,9 @@ import './globals.css';
 // CSS to pages that never render a single NC class. The `(site)` layout
 // wraps all public routes, so those pages still get the styles.
 
+import { DevScriptInjector } from '@/components/DevScriptInjector';
 import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';
-import { DevScriptInjector } from '@/components/DevScriptInjector';
 import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
 // فونت‌ها از `src/app/fonts/index.ts` مدیریت می‌شوند — تنها منبع حقیقت.
 // برای تعویض فونت فقط همان فایل را تغییر بده — CSS و کامپوننت‌ها بدون تغییر

@@ -134,6 +134,16 @@ heroku config:set \
   TGJU_SCRAPER_ENABLED=true \
   USDT_PREMIUM_PERCENT=1.5 \
   -a $APP
+
+# ⚠️ ایمیل دریافت بازخورد/تماس — اگر نزاری، پیام‌های کاربران به
+# noreply@example.com می‌روند و گم می‌شوند.
+heroku config:set CONTACT_TO_EMAIL=your-actual-email@example.com -a $APP
+
+# ─── Upstash Redis (rate-limiter + maintenance gate) ────────────────────────
+# از Heroku Dashboard → Resources → Find more add-ons → Upstash Redis
+# یا مستقیماً: https://elements.heroku.com/addons/upstash-redis
+heroku addons:create upstash-redis:micro -a $APP
+# (بعد از addon، متغیرهای UPSTASH_REDIS_REST_URL و _TOKEN خودکار ست می‌شوند)
 ```
 
 **اختیاری (S3/R2 برای آپلودها — وگرنه بعد از هر restart آپلودها پاک می‌شوند):**

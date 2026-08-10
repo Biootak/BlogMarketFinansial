@@ -171,7 +171,7 @@ export function CurrencySelect({
       if (panelRef.current) {
         const rect = panelRef.current.getBoundingClientRect();
         const pad = 8;
-        let style: CSSProperties = {};
+        const style: CSSProperties = {};
         if (rect.left < pad) {
           // پنل از لبه‌ی چپ (inline-end در RTL) بیرون می‌زند — لبه‌ی چپ پنل را به wrap بچسبان
           style.insetInlineStart = 'auto';

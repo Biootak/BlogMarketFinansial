@@ -4,7 +4,7 @@
  * پورتال مشتری بهترین تجربه KYC را دارد — tiered levels + dialog + history.
  * این صفحه فقط redirect می‌کند تا backward compatibility حفظ شود.
  */
-import { Metadata } from 'next';
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {

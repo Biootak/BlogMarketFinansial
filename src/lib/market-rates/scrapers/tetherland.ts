@@ -58,9 +58,7 @@ export class TetherlandScraper extends BaseScraper {
           // Skip if this coin fails
         }
       }
-    } catch (error) {
-      console.error('[TetherlandScraper] Error:', error);
-    }
+    } catch (_error) {}
 
     return rates;
   }

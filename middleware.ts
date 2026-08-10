@@ -12,6 +12,8 @@ import { getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+import { isMaintenanceActive } from '@/lib/edge-maintenance';
+
 const SECURE_COOKIE_NAME = '__Secure-authjs.session-token';
 const DEV_COOKIE_NAME = 'authjs.session-token';
 const DEBUG_MODE = process.env.DEBUG_MODE === 'true';
@@ -150,6 +152,20 @@ export async function middleware(req: NextRequest) {
   const pathname = nextUrl.pathname;
   const search = nextUrl.search;
   if (isStaticPath(pathname)) return NextResponse.next();
+
+  // ── Maintenance gate (site-wide): if active, ALL routes except cron and
+  //    the maintenance page itself redirect there. The flag is shared via
+  //    Upstash Redis (edge-safe) written by the settings toggle action.
+  //    Graceful degradation: if Redis is down, the site stays up.
+  //    Note: this check runs on EVERY matched route (':path*' matcher below)
+  //    but is a single lightweight Redis GET when maintenance is inactive.
+  if (await isMaintenanceActive()) {
+    if (pathname === '/maintenance' || underPrefix(pathname, ['/api/cron'] as const)) {
+      // Allow the maintenance page and cron webhooks without auth
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(new URL('/maintenance', nextUrl));
+  }
   const isProduction = process.env.NODE_ENV === 'production';
   const isApi = pathname.startsWith('/api/');
   // 2026-08-09 fix: Auth.js decides the secure (`__Secure-`) cookie prefix from
@@ -251,35 +267,10 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/exchange/:path*',
-    '/customer/:path*',
-    // APIهای مدیریتی — عمداً فهرست صریح، نه `/api/:path*`.
-    // هزینهٔ میان‌افزار فقط روی همین مسیرها پرداخت می‌شود و مسیرهای عمومی
-    // (نرخ ارز، تبلیغ هدر، حواله، pageview) اصلاً از اینجا رد نمی‌شوند.
-    '/api/observability/:path*',
-    '/api/system-health',
-    '/api/system-logs',
-    '/api/system-status',
-    '/api/system-reports',
-    '/api/activity-log/:path*',
-    '/api/traffic-stats',
-    '/api/reports/:path*',
-    '/api/jobs/:path*',
-    '/api/approvals/:path*',
-    '/api/communication/:path*',
-    '/api/backup/:path*',
-    '/api/settings/:path*',
-    '/api/debug-rates',
-    '/api/debug-session',
-    '/api/dev/:path*',
-    '/auth',
-    '/signin',
-    '/signup',
-    '/verify-request',
-    '/verify-email',
-    '/forgot-password',
-    '/reset-password',
-    '/error',
+    // `/:path*` برای site-wide maintenance gate (فقط یک Redis GET در حالت
+    // عادی). ۲۰۲۶-۰۸-۰۹: قبلاً فقط مسیرهای خاص برای کارایی middleware
+    // محدود شده بود، ولی maintenance mode نیاز دارد همهٔ مسیرها را ببندد.
+    // هزینه: یک بررسی ۵-۱۰ میلی‌ثانیه‌ای روی هر درخواست.
+    '/((?!_next/static|_next/image|favicon|robots|manifest|site.webmanifest).*)',
   ],
 };

@@ -4,8 +4,8 @@ import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { cn } from '@/lib/utils';
 import * as ToastPrimitives from '@radix-ui/react-toast';
 import { type VariantProps, cva } from 'class-variance-authority';
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from 'lucide-react';
 import * as React from 'react';
-import { CheckCircle, X, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 
 const ToastProvider = ToastPrimitives.Provider;
 

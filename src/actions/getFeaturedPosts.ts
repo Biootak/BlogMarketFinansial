@@ -7,63 +7,57 @@ import { PostStatus } from '@prisma/client';
 
 // Internal fetch function
 async function fetchFeaturedPosts(limit: number): Promise<ActionResult<PostWithRelations[]>> {
-  try {
-    const posts = await prisma.post.findMany({
-      where: {
-        status: PostStatus.PUBLISHED,
-        isFeatured: true,
-      },
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-      omit: { content: true },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
-            profile: {
-              select: {
-                avatar: true,
-                jobName: true,
-              },
+  const posts = await prisma.post.findMany({
+    where: {
+      status: PostStatus.PUBLISHED,
+      isFeatured: true,
+    },
+    take: limit,
+    orderBy: { createdAt: 'desc' },
+    omit: { content: true },
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          profile: {
+            select: {
+              avatar: true,
+              jobName: true,
             },
           },
         },
-        categories: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        tags: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        _count: {
-          select: {
-            comments: true,
-            likes: true,
-            savedBy: true,
-          },
+      },
+      categories: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
         },
       },
-    });
+      tags: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+      _count: {
+        select: {
+          comments: true,
+          likes: true,
+          savedBy: true,
+        },
+      },
+    },
+  });
 
-    return {
-      success: true,
-      message: 'پست‌های ویژه با موفقیت بازیابی شدند.',
-      data: posts as PostWithRelations[],
-    };
-  } catch (error) {
-    // Re-throw → safeCache returns non-cached fallback. Returning { success: false }
-    // here would poison the cache for 60 s, making featured posts 404 on all requests.
-    throw error;
-  }
+  return {
+    success: true,
+    message: 'پست‌های ویژه با موفقیت بازیابی شدند.',
+    data: posts as PostWithRelations[],
+  };
 }
 
 const EMPTY_FEATURED: ActionResult<PostWithRelations[]> = {

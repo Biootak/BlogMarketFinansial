@@ -5,7 +5,7 @@
  * کاربران مهمان → landing page زیبا با CTA لاگین/ثبت‌نام
  */
 import { auth } from '@/auth';
-import { ShieldCheck, Sparkles, Lock, Clock } from 'lucide-react';
+import { Clock, Lock, ShieldCheck, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import s from './kyc-landing.module.css';
@@ -69,9 +69,7 @@ export default async function KycLandingPage() {
             <Clock size={20} aria-hidden />
           </div>
           <h3 className={s.featureTitle}>بررسی سریع</h3>
-          <p className={s.featureDesc}>
-            معمولاً کمتر از ۲۴ ساعت — سطح ۱ (موبایل) تقریباً آنی.
-          </p>
+          <p className={s.featureDesc}>معمولاً کمتر از ۲۴ ساعت — سطح ۱ (موبایل) تقریباً آنی.</p>
         </div>
 
         <div className={s.featureCard}>
@@ -89,9 +87,7 @@ export default async function KycLandingPage() {
             <ShieldCheck size={20} aria-hidden />
           </div>
           <h3 className={s.featureTitle}>۳ سطح پیشرو</h3>
-          <p className={s.featureDesc}>
-            هر سطح سقف تراکنش بالاتر — از موبایل تا صورتحساب بانکی.
-          </p>
+          <p className={s.featureDesc}>هر سطح سقف تراکنش بالاتر — از موبایل تا صورتحساب بانکی.</p>
         </div>
       </section>
 

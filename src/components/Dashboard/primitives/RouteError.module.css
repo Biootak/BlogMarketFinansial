@@ -86,18 +86,33 @@
 }
 
 @keyframes re-orb-drift-a {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(40px, 30px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(40px, 30px);
+  }
 }
 
 @keyframes re-orb-drift-b {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-30px, -40px); }
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-30px, -40px);
+  }
 }
 
 @keyframes re-orb-drift-c {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.15); }
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+  }
 }
 
 /* ── Spotlight ─────────────────────────────────────────────────────── */
@@ -133,8 +148,13 @@
 }
 
 @keyframes re-signal-fade {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.9; }
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 
 .signalBreak {
@@ -142,8 +162,15 @@
 }
 
 @keyframes re-break-pulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.1); }
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
 }
 
 /* Auth — shield pulse */
@@ -153,8 +180,15 @@
 }
 
 @keyframes re-shield-breathe {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.02); }
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.02);
+  }
 }
 
 .lockIcon {
@@ -163,8 +197,13 @@
 }
 
 @keyframes re-lock-idle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 
 /* NotFound — compass drift */
@@ -174,9 +213,16 @@
 }
 
 @keyframes re-compass-drift {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(15deg); }
-  75% { transform: rotate(-15deg); }
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(15deg);
+  }
+  75% {
+    transform: rotate(-15deg);
+  }
 }
 
 /* Server — crash shake */
@@ -186,25 +232,52 @@
 }
 
 @keyframes re-server-shake {
-  0%, 85%, 100% { transform: translateX(0); }
-  87% { transform: translateX(-3px); }
-  89% { transform: translateX(3px); }
-  91% { transform: translateX(-2px); }
-  93% { transform: translateX(2px); }
-  95% { transform: translateX(0); }
+  0%,
+  85%,
+  100% {
+    transform: translateX(0);
+  }
+  87% {
+    transform: translateX(-3px);
+  }
+  89% {
+    transform: translateX(3px);
+  }
+  91% {
+    transform: translateX(-2px);
+  }
+  93% {
+    transform: translateX(2px);
+  }
+  95% {
+    transform: translateX(0);
+  }
 }
 
 .smokeParticles circle {
   animation: re-smoke-rise 4s var(--ds-ease-in-out-quart, ease) infinite;
 }
 
-.smokeParticles circle:nth-child(2) { animation-delay: 1.3s; }
-.smokeParticles circle:nth-child(3) { animation-delay: 2.6s; }
+.smokeParticles circle:nth-child(2) {
+  animation-delay: 1.3s;
+}
+.smokeParticles circle:nth-child(3) {
+  animation-delay: 2.6s;
+}
 
 @keyframes re-smoke-rise {
-  0% { opacity: 0; transform: translateY(0) scale(0.5); }
-  50% { opacity: 0.6; transform: translateY(-20px) scale(1); }
-  100% { opacity: 0; transform: translateY(-40px) scale(1.5); }
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateY(-20px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-40px) scale(1.5);
+  }
 }
 
 /* Unknown — warning pulse */
@@ -214,8 +287,15 @@
 }
 
 @keyframes re-warning-pulse {
-  0%, 100% { opacity: 0.5; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
 
 .warningRing {
@@ -224,9 +304,18 @@
 }
 
 @keyframes re-ring-expand {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  50% { transform: scale(1.1); opacity: 0.2; }
-  100% { transform: scale(0.9); opacity: 0.6; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
 }
 
 /* Common SVG elements */
@@ -236,7 +325,9 @@
 }
 
 @keyframes re-ring-rotate {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .outerRing2 {
@@ -249,22 +340,40 @@
 }
 
 @keyframes re-glow-pulse {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .stars circle {
   animation: re-star-twinkle 3s var(--ds-ease-in-out-quart, ease) infinite;
 }
 
-.stars circle:nth-child(2) { animation-delay: 0.6s; }
-.stars circle:nth-child(3) { animation-delay: 1.2s; }
-.stars circle:nth-child(4) { animation-delay: 1.8s; }
-.stars circle:nth-child(5) { animation-delay: 2.4s; }
+.stars circle:nth-child(2) {
+  animation-delay: 0.6s;
+}
+.stars circle:nth-child(3) {
+  animation-delay: 1.2s;
+}
+.stars circle:nth-child(4) {
+  animation-delay: 1.8s;
+}
+.stars circle:nth-child(5) {
+  animation-delay: 2.4s;
+}
 
 @keyframes re-star-twinkle {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.9; }
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 
 .numeral {
@@ -354,10 +463,7 @@
   border-radius: var(--ds-radius-lg, 16px);
   text-decoration: none;
   color: var(--ds-fg);
-  transition:
-    transform 220ms var(--ds-ease-out-quart, ease),
-    border-color 220ms,
-    background 220ms;
+  transition: transform 220ms var(--ds-ease-out-quart, ease), border-color 220ms, background 220ms;
   text-align: start;
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
@@ -399,9 +505,7 @@
 .suggestArrow {
   flex-shrink: 0;
   color: var(--ds-fg-muted);
-  transition:
-    transform 220ms var(--ds-ease-out-quart, ease),
-    color 220ms;
+  transition: transform 220ms var(--ds-ease-out-quart, ease), color 220ms;
 }
 
 [dir="rtl"] .suggestCard:hover .suggestArrow {
@@ -440,10 +544,7 @@
   font-weight: 600;
   text-decoration: none;
   font-family: inherit;
-  transition:
-    transform 200ms var(--ds-ease-out-quart, ease),
-    filter 200ms,
-    background 200ms;
+  transition: transform 200ms var(--ds-ease-out-quart, ease), filter 200ms, background 200ms;
   white-space: nowrap;
   cursor: pointer;
   border: none;

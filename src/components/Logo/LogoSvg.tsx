@@ -48,10 +48,7 @@ const LogoSvg = ({ className, title = 'لوگوی Financial Market' }: LogoSvgPr
       <rect x="2.5" y="2.5" width="35" height="35" rx="9" fill="url(#fm-brand-g)" />
 
       {/* سپر سفید — نماد امنیت */}
-      <path
-        d="M20 8.5L26.5 13.5V21Q26.5 26 20 31Q13.5 26 13.5 21V13.5L20 8.5Z"
-        fill="#ffffff"
-      />
+      <path d="M20 8.5L26.5 13.5V21Q26.5 26 20 31Q13.5 26 13.5 21V13.5L20 8.5Z" fill="#ffffff" />
 
       {/* تیک سبز داخل سپر — تأیید */}
       <path

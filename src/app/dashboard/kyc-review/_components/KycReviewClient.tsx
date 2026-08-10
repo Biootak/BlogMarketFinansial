@@ -48,8 +48,6 @@ import {
   FileText,
   Fingerprint,
   ImageOff,
-  KeyRound,
-  Layers,
   Shield,
   ShieldCheck,
   User,
@@ -260,10 +258,12 @@ function KpiTile({
   return (
     <div
       className={s.kpiTile}
-      style={{
-        '--kpi-accent': accent,
-        '--kpi-delay': `${delay}ms`,
-      } as React.CSSProperties}
+      style={
+        {
+          '--kpi-accent': accent,
+          '--kpi-delay': `${delay}ms`,
+        } as React.CSSProperties
+      }
     >
       <div className={s.kpiTile__glow} />
       <div className={s.kpiTile__icon}>{icon}</div>
@@ -310,7 +310,10 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
   // Auto-clear banners
   useEffect(() => {
     if (!lastAction && !error) return;
-    const t = setTimeout(() => { setLastAction(null); setError(null); }, 5000);
+    const t = setTimeout(() => {
+      setLastAction(null);
+      setError(null);
+    }, 5000);
     return () => clearTimeout(t);
   }, [lastAction, error]);
 
@@ -481,9 +484,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
 
   // ── Keyboard navigation ──────────────────────────────────────────────
   const activeList = scope === 'user' ? filteredRows : filteredCustomerRows;
-  const activeIdx = selected
-    ? activeList.findIndex((r) => r.id === selected.id)
-    : -1;
+  const activeIdx = selected ? activeList.findIndex((r) => r.id === selected.id) : -1;
 
   useEffect(() => {
     if (!selected) return;
@@ -492,13 +493,17 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
         e.preventDefault();
         const next = activeList[activeIdx + 1];
         if (next) {
-          scope === 'user' ? setSelectedUser(next as KycRow) : setSelectedCustomer(next as CustomerKycRow);
+          scope === 'user'
+            ? setSelectedUser(next as KycRow)
+            : setSelectedCustomer(next as CustomerKycRow);
         }
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         const prev = activeList[activeIdx - 1];
         if (prev) {
-          scope === 'user' ? setSelectedUser(prev as KycRow) : setSelectedCustomer(prev as CustomerKycRow);
+          scope === 'user'
+            ? setSelectedUser(prev as KycRow)
+            : setSelectedCustomer(prev as CustomerKycRow);
         }
       } else if (e.key === 'Escape') {
         scope === 'user' ? setSelectedUser(null) : setSelectedCustomer(null);
@@ -520,47 +525,48 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
   }, [selected]);
 
   // ── KPI config ───────────────────────────────────────────────────────
-  const kpiItems = scope === 'user'
-    ? [
-        {
-          label: 'در انتظار',
-          value: rows.length,
-          icon: <Users size={14} aria-hidden />,
-          accent: 'var(--nova-amber, oklch(68% 0.14 70))',
-        },
-        {
-          label: 'با مدرک',
-          value: withDocs,
-          icon: <Shield size={14} aria-hidden />,
-          accent: 'var(--ds-brand-500)',
-        },
-        {
-          label: 'بدون مدرک',
-          value: withoutDocs,
-          icon: <FileText size={14} aria-hidden />,
-          accent: 'var(--at-fg-muted, var(--ds-text-muted))',
-        },
-        {
-          label: 'فوری',
-          value: urgentCount,
-          icon: <Clock size={14} aria-hidden />,
-          accent: 'var(--nova-rose, oklch(60% 0.15 25))',
-        },
-      ]
-    : [
-        {
-          label: 'در انتظار',
-          value: customerRows.length,
-          icon: <Building2 size={14} aria-hidden />,
-          accent: 'var(--nova-amber, oklch(68% 0.14 70))',
-        },
-        {
-          label: 'فوری',
-          value: customerUrgentCount,
-          icon: <Clock size={14} aria-hidden />,
-          accent: 'var(--nova-rose, oklch(60% 0.15 25))',
-        },
-      ];
+  const kpiItems =
+    scope === 'user'
+      ? [
+          {
+            label: 'در انتظار',
+            value: rows.length,
+            icon: <Users size={14} aria-hidden />,
+            accent: 'var(--nova-amber, oklch(68% 0.14 70))',
+          },
+          {
+            label: 'با مدرک',
+            value: withDocs,
+            icon: <Shield size={14} aria-hidden />,
+            accent: 'var(--ds-brand-500)',
+          },
+          {
+            label: 'بدون مدرک',
+            value: withoutDocs,
+            icon: <FileText size={14} aria-hidden />,
+            accent: 'var(--at-fg-muted, var(--ds-text-muted))',
+          },
+          {
+            label: 'فوری',
+            value: urgentCount,
+            icon: <Clock size={14} aria-hidden />,
+            accent: 'var(--nova-rose, oklch(60% 0.15 25))',
+          },
+        ]
+      : [
+          {
+            label: 'در انتظار',
+            value: customerRows.length,
+            icon: <Building2 size={14} aria-hidden />,
+            accent: 'var(--nova-amber, oklch(68% 0.14 70))',
+          },
+          {
+            label: 'فوری',
+            value: customerUrgentCount,
+            icon: <Clock size={14} aria-hidden />,
+            accent: 'var(--nova-rose, oklch(60% 0.15 25))',
+          },
+        ];
 
   const totalQueue = rows.length + customerRows.length;
 
@@ -637,7 +643,12 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
 
       {/* ═══ Status banners ═══ */}
       {lastAction && (
-        <div className={cn(s.banner, s.bannerSuccess)} role="status" aria-live="polite" data-od-id="success-banner">
+        <div
+          className={cn(s.banner, s.bannerSuccess)}
+          role="status"
+          aria-live="polite"
+          data-od-id="success-banner"
+        >
           <CheckCircle2 size={14} aria-hidden />
           {lastAction}
         </div>
@@ -661,9 +672,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                 eyebrow={search.trim() ? 'نتیجه جستجو' : 'صف KYC'}
                 title={search.trim() ? 'نتیجه‌ای یافت نشد' : 'همه KYC‌ها بررسی شدند'}
                 description={
-                  search.trim()
-                    ? 'عبارت جستجو را تغییر دهید.'
-                    : 'درخواست جدیدی در صف نیست.'
+                  search.trim() ? 'عبارت جستجو را تغییر دهید.' : 'درخواست جدیدی در صف نیست.'
                 }
               />
             </div>
@@ -687,7 +696,9 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
               <div className={s.queueColumn__header}>
                 <div className={s.queueColumn__left}>
                   <span className={s.queueColumn__count}>
-                    {formatFaNumber(scope === 'user' ? filteredRows.length : filteredCustomerRows.length)}{' '}
+                    {formatFaNumber(
+                      scope === 'user' ? filteredRows.length : filteredCustomerRows.length,
+                    )}{' '}
                     مورد
                   </span>
                   <span className={s.queueColumn__scope}>
@@ -698,7 +709,10 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                   <button
                     type="button"
                     className={s.queueColumn__clear}
-                    onClick={() => { setSelectedUser(null); setSelectedCustomer(null); }}
+                    onClick={() => {
+                      setSelectedUser(null);
+                      setSelectedCustomer(null);
+                    }}
                   >
                     <X size={12} />
                     بستن پنل
@@ -707,7 +721,12 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
               </div>
 
               {/* Cards */}
-              <div className={s.queueCards} role="listbox" aria-label="لیست درخواست‌ها" data-od-id="queue-list">
+              <div
+                className={s.queueCards}
+                role="listbox"
+                aria-label="لیست درخواست‌ها"
+                data-od-id="queue-list"
+              >
                 {scope === 'user'
                   ? filteredRows.map((row, i) => {
                       const urgent = isUrgent(row.submittedAt);
@@ -741,9 +760,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                               <Avatar name={displayName} size="sm" />
                               <div className={s.queueCard__identity}>
                                 <span className={s.queueCard__name}>{displayName}</span>
-                                <span className={s.queueCard__meta}>
-                                  {row.user?.email ?? '—'}
-                                </span>
+                                <span className={s.queueCard__meta}>{row.user?.email ?? '—'}</span>
                               </div>
                             </div>
 
@@ -874,8 +891,12 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                 {showShortcuts && totalQueue > 0 && (
                   <div className={s.shortcutsHint}>
                     <div className={s.shortcutItem}>
-                      <kbd className={s.kbd}><ArrowUp size={10} /></kbd>
-                      <kbd className={s.kbd}><ArrowDown size={10} /></kbd>
+                      <kbd className={s.kbd}>
+                        <ArrowUp size={10} />
+                      </kbd>
+                      <kbd className={s.kbd}>
+                        <ArrowDown size={10} />
+                      </kbd>
                       <span>پیمایش</span>
                     </div>
                     <div className={s.shortcutItem}>
@@ -918,12 +939,19 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => { setRejectTarget(null); setRejectReason(''); }}
+              onClick={() => {
+                setRejectTarget(null);
+                setRejectReason('');
+              }}
               disabled={isPending}
             >
               انصراف
             </Button>
-            <Button variant="destructive" onClick={() => rejectTarget?.handler()} disabled={isPending}>
+            <Button
+              variant="destructive"
+              onClick={() => rejectTarget?.handler()}
+              disabled={isPending}
+            >
               {isPending ? 'در حال ارسال…' : 'رد کردن'}
             </Button>
           </DialogFooter>
@@ -1032,12 +1060,7 @@ function UserReviewPanel({
           <CheckCircle2 size={15} aria-hidden />
           تأیید هویت
         </Button>
-        <Button
-          variant="outline"
-          className={s.btnReject}
-          onClick={onReject}
-          disabled={isPending}
-        >
+        <Button variant="outline" className={s.btnReject} onClick={onReject} disabled={isPending}>
           <XCircle size={15} aria-hidden />
           رد کردن
         </Button>
@@ -1093,9 +1116,7 @@ function CustomerReviewPanel({
       <div className={s.metaGrid}>
         <div className={s.metaCell}>
           <span className={s.metaCell__label}>نوع مدرک</span>
-          <span className={s.metaCell__value}>
-            {DOC_TYPE_LABELS[row.docType] ?? row.docType}
-          </span>
+          <span className={s.metaCell__value}>{DOC_TYPE_LABELS[row.docType] ?? row.docType}</span>
         </div>
         <div className={s.metaCell}>
           <span className={s.metaCell__label}>شماره مدرک</span>
@@ -1105,9 +1126,7 @@ function CustomerReviewPanel({
         </div>
         <div className={s.metaCell}>
           <span className={s.metaCell__label}>سطح درخواستی</span>
-          <span className={s.metaCell__value}>
-            {KYC_LEVEL_LABELS[row.level] ?? row.level}
-          </span>
+          <span className={s.metaCell__value}>{KYC_LEVEL_LABELS[row.level] ?? row.level}</span>
         </div>
         <div className={s.metaCell}>
           <span className={s.metaCell__label}>تاریخ ارسال</span>
@@ -1134,20 +1153,11 @@ function CustomerReviewPanel({
 
       {/* Actions */}
       <div className={s.reviewActions}>
-        <Button
-          className={s.btnApprove}
-          onClick={onApprove}
-          disabled={isPending}
-        >
+        <Button className={s.btnApprove} onClick={onApprove} disabled={isPending}>
           <CheckCircle2 size={15} aria-hidden />
           تأیید KYC
         </Button>
-        <Button
-          variant="outline"
-          className={s.btnReject}
-          onClick={onReject}
-          disabled={isPending}
-        >
+        <Button variant="outline" className={s.btnReject} onClick={onReject} disabled={isPending}>
           <XCircle size={15} aria-hidden />
           رد کردن
         </Button>

@@ -43,7 +43,7 @@ function BarcodeBars({ code }: { code: string }) {
   return (
     <span className={s.barcodeBars} aria-hidden>
       {code.split('').map((ch, i) => (
-        <i
+        <i // biome-ignore lint/suspicious/noArrayIndexKey: decorative barcode, stable order
           key={`${ch}-${i}`}
           style={{
             width: `${1 + ((ch.charCodeAt(0) + i) % 3)}px`,

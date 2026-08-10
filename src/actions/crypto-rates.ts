@@ -1,7 +1,7 @@
 'use server';
 
-import { tieredCache } from '@/lib/tiered-cache';
 import { serverLog } from '@/lib/server-logger';
+import { tieredCache } from '@/lib/tiered-cache';
 import { getExirCryptoRates } from '../lib/exir-crypto-rates';
 
 export type CryptoRate = {

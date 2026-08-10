@@ -1,7 +1,7 @@
 'use client';
 
-import { SessionProvider } from 'next-auth/react';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { SessionProvider } from 'next-auth/react';
 
 /**
  * Providers — wraps the app in SessionProvider + ThemeProvider.

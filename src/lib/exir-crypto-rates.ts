@@ -1,5 +1,5 @@
-import type { CryptoTickerRate, CryptoTickerResult } from '@/types/types';
 import { tomanToRial } from '@/lib/market-rates/units';
+import type { CryptoTickerRate, CryptoTickerResult } from '@/types/types';
 import { cache } from 'react';
 
 // Exir API Base URL

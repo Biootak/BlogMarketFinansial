@@ -17,7 +17,7 @@ const DEFAULT_CHANGES: ChangeCache = {
   // Afghanistan symbols
   AFGHANI_USD: { changePercent: 0.4, timestamp: new Date().toISOString() },
   AFGHANI_AFN: { changePercent: 0.15, timestamp: new Date().toISOString() },
-  
+
   // Iran currency
   IRAN_USD: { changePercent: 0.5, timestamp: new Date().toISOString() },
   IRAN_EUR: { changePercent: 0.3, timestamp: new Date().toISOString() },
@@ -42,7 +42,7 @@ const DEFAULT_CHANGES: ChangeCache = {
   IRAN_SGD: { changePercent: 0.15, timestamp: new Date().toISOString() },
   IRAN_KRW: { changePercent: 0.1, timestamp: new Date().toISOString() },
   IRAN_PKR: { changePercent: 0.15, timestamp: new Date().toISOString() },
-  
+
   // Iran coins
   IRAN_COIN_EMAMI: { changePercent: 0.6, timestamp: new Date().toISOString() },
   IRAN_COIN_BAHAR: { changePercent: 0.55, timestamp: new Date().toISOString() },
@@ -54,10 +54,10 @@ const DEFAULT_CHANGES: ChangeCache = {
   IRN_SEKEE: { changePercent: 0.6, timestamp: new Date().toISOString() },
   IRN_GERAM18: { changePercent: 0.4, timestamp: new Date().toISOString() },
   IRN_ONS: { changePercent: 0.35, timestamp: new Date().toISOString() },
-  
+
   // Global gold
   GLOBAL_OUNCE_GOLD: { changePercent: 0.4, timestamp: new Date().toISOString() },
-  
+
   // SANA
   SANA_USD: { changePercent: 0.5, timestamp: new Date().toISOString() },
   SANA_EUR: { changePercent: 0.3, timestamp: new Date().toISOString() },
@@ -82,7 +82,7 @@ const DEFAULT_CHANGES: ChangeCache = {
   SANA_NOK: { changePercent: 0.15, timestamp: new Date().toISOString() },
   SANA_DKK: { changePercent: 0.15, timestamp: new Date().toISOString() },
   SANA_PKR: { changePercent: 0.15, timestamp: new Date().toISOString() },
-  
+
   // TRANSFER
   TRANSFER_USD: { changePercent: 0.5, timestamp: new Date().toISOString() },
   TRANSFER_USD2: { changePercent: 0.5, timestamp: new Date().toISOString() },
@@ -97,7 +97,7 @@ const DEFAULT_CHANGES: ChangeCache = {
   TRANSFER_CHF: { changePercent: 0.25, timestamp: new Date().toISOString() },
   TRANSFER_CAD: { changePercent: 0.2, timestamp: new Date().toISOString() },
   TRANSFER_AUD: { changePercent: 0.2, timestamp: new Date().toISOString() },
-  
+
   // BANK
   BANK_USD: { changePercent: 0.4, timestamp: new Date().toISOString() },
   BANK_EUR: { changePercent: 0.25, timestamp: new Date().toISOString() },
@@ -112,7 +112,7 @@ const DEFAULT_CHANGES: ChangeCache = {
   BANK_RUB: { changePercent: 0.25, timestamp: new Date().toISOString() },
   BANK_SGD: { changePercent: 0.1, timestamp: new Date().toISOString() },
   BANK_HKD: { changePercent: 0.1, timestamp: new Date().toISOString() },
-  
+
   // SARA
   SARA_USD: { changePercent: 0.5, timestamp: new Date().toISOString() },
   SARA_EUR: { changePercent: 0.3, timestamp: new Date().toISOString() },
@@ -137,17 +137,17 @@ const DEFAULT_CHANGES: ChangeCache = {
   SARA_NOK: { changePercent: 0.15, timestamp: new Date().toISOString() },
   SARA_SEK: { changePercent: 0.15, timestamp: new Date().toISOString() },
   SARA_DKK: { changePercent: 0.15, timestamp: new Date().toISOString() },
-  
+
   // BONBAST
   BONBAST_USD: { changePercent: 0.5, timestamp: new Date().toISOString() },
-  
+
   // Crypto
   CRYPTO_BTC_IRT: { changePercent: 1.2, timestamp: new Date().toISOString() },
   CRYPTO_ETH_IRT: { changePercent: 0.8, timestamp: new Date().toISOString() },
   CRYPTO_USDT_IRT: { changePercent: 0.5, timestamp: new Date().toISOString() },
 };
 
-let cache: ChangeCache = Object.assign({}, DEFAULT_CHANGES);
+const cache: ChangeCache = Object.assign({}, DEFAULT_CHANGES);
 
 /**
  * Get last known change percent for a symbol
@@ -169,7 +169,9 @@ export function updateChangePercent(symbol: string, changePercent: number): void
 /**
  * Batch update multiple symbols
  */
-export function updateChangePercentBatch(updates: { symbol: string; changePercent: number }[]): void {
+export function updateChangePercentBatch(
+  updates: { symbol: string; changePercent: number }[],
+): void {
   for (const { symbol, changePercent } of updates) {
     updateChangePercent(symbol, changePercent);
   }

@@ -5,16 +5,16 @@ import { getTopAuthors } from '@/actions/getTopAuthors';
 
 interface ArchiveBackgroundDataProps {
   children: (data: {
-    categories: any[];
-    tags: any[];
-    topAuthors: any[];
-    betweenPostsAds: any[];
+    categories: Record<string, unknown>[];
+    tags: Record<string, unknown>[];
+    topAuthors: Record<string, unknown>[];
+    betweenPostsAds: Record<string, unknown>[];
   }) => React.ReactNode;
 }
 
 export async function ArchiveBackgroundData({ children }: ArchiveBackgroundDataProps) {
-  const [categoriesResult, tagsResult, topAuthorsResult, betweenPostsAdsResult] =
-    await Promise.all([
+  const [categoriesResult, tagsResult, topAuthorsResult, betweenPostsAdsResult] = await Promise.all(
+    [
       getCategories({ limit: 12, page: 1 }),
       getTags({ limit: 12, page: 1 }),
       getTopAuthors(5),
@@ -24,7 +24,8 @@ export async function ArchiveBackgroundData({ children }: ArchiveBackgroundDataP
         orderBy: 'createdAt',
         orderDirection: 'desc',
       }),
-    ]);
+    ],
+  );
 
   const categories = categoriesResult.data?.categories || [];
   const tags = tagsResult.data?.tags || [];

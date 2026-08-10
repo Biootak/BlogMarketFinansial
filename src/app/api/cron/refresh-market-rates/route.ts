@@ -9,7 +9,7 @@
 import { primeMarketRatesCache } from '@/actions/market-rates';
 import { verifyCronSecret } from '@/lib/cron-auth';
 import prisma from '@/lib/db';
-import { assembleMarketRates, type MarketRateItem } from '@/lib/market-rates';
+import { type MarketRateItem, assembleMarketRates } from '@/lib/market-rates';
 import { updateChangePercentBatch } from '@/lib/market-rates/change-cache';
 import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
 import { revalidateTag } from '@/lib/revalidate';

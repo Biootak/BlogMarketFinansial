@@ -24,13 +24,13 @@ import { Redis } from '@upstash/redis';
 // --------------- Redis Client (lazy singleton) ---------------
 
 let redisClient: Redis | null = null;
-let redisEnabled = false;
+let _redisEnabled = false;
 
 function getRedis(): Redis | null {
   if (redisClient !== null) return redisClient;
   if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
     redisClient = null; // no retry — env won't appear mid-process
-    redisEnabled = false;
+    _redisEnabled = false;
     return null;
   }
   redisClient = new Redis({
@@ -39,7 +39,7 @@ function getRedis(): Redis | null {
     // Upstash Redis HTTP-based است — نیاز به keep-alive یا pooling خاصی ندارد
     automaticDeserialization: false, // خودمان JSON.stringify/parse می‌کنیم
   });
-  redisEnabled = true;
+  _redisEnabled = true;
   return redisClient;
 }
 
@@ -133,7 +133,7 @@ export async function redisGet<T>(key: string): Promise<T | null> {
     //  تا SWR function بعد refresh کند. caller خودش stale را برمی‌گرداند)
     counter.swrServes++;
     return entry.value; // caller می‌داند ممکن است stale باشد
-  } catch (err) {
+  } catch (_err) {
     counter.errors++;
     // خطای Redis → fallback به DB (caller تصمیم می‌گیرد)
     return null;
@@ -181,7 +181,7 @@ export async function redisSet<T>(
     }
 
     await pipeline.exec();
-  } catch (err) {
+  } catch (_err) {
     counter.errors++;
     // fail silenty — DB fallback وجود دارد
   }
@@ -364,7 +364,7 @@ export function redisCache<TArgs extends unknown[], T>(
       // 1b) SWR: stale موجود است → همان لحظه برگردان، refresh در background
       if (!inflightRefresh.has(fullKey)) {
         inflightRefresh.add(fullKey);
-        const startedAt = Date.now();
+        const _startedAt = Date.now();
         fn(...args)
           .then((value) => {
             // اگر در همین فاصله مقدار تازه‌تری در Redis ذخیره شده (توسط instance دیگر)،
@@ -391,7 +391,7 @@ export function redisCache<TArgs extends unknown[], T>(
       // پس از موفقیت، در Redis ذخیره کن (fire-and-forget)
       redisSet(fullKey, value, ttl, tags).catch(() => {});
       return value;
-    } catch (err) {
+    } catch (_err) {
       // 3) خطا:
       //    - اگر stale داریم → آن را برگردان (حتی بدون SWR هم این کار را می‌کنیم)
       //    - در غیر این صورت → fallback

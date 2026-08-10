@@ -89,13 +89,13 @@ export async function GET(request: Request) {
         currencyPair: q.currencyPair,
         buyRate: q.buyRate.toString(),
         sellRate: q.sellRate.toString(),
-      unit: q.unit,
-      minAmount: q.minAmount?.toString() ?? null,
-      maxAmount: q.maxAmount?.toString() ?? null,
-      validMinutes: q.validMinutes,
-      expiresAt: q.expiresAt?.toISOString() ?? null,
-      status: q.status,
-    }));
+        unit: q.unit,
+        minAmount: q.minAmount?.toString() ?? null,
+        maxAmount: q.maxAmount?.toString() ?? null,
+        validMinutes: q.validMinutes,
+        expiresAt: q.expiresAt?.toISOString() ?? null,
+        status: q.status,
+      }));
 
     return NextResponse.json(
       {

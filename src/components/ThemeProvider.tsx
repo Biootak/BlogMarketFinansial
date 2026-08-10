@@ -15,7 +15,7 @@
  *   - Supports document.startViewTransition for smooth transitions
  */
 
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
+import { type ReactNode, createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -57,24 +57,21 @@ export function ThemeProvider({
     }
   }, [storageKey]);
 
-  const applyTheme = useCallback(
-    (t: Theme) => {
-      const root = document.documentElement;
-      if (t === 'dark') {
-        root.classList.add('dark');
-      } else {
-        root.classList.remove('dark');
-      }
+  const applyTheme = useCallback((t: Theme) => {
+    const root = document.documentElement;
+    if (t === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
 
-      // Use View Transitions API if available
-      if (typeof document.startViewTransition === 'function') {
-        document.startViewTransition(() => {
-          // class already applied above
-        });
-      }
-    },
-    [],
-  );
+    // Use View Transitions API if available
+    if (typeof document.startViewTransition === 'function') {
+      document.startViewTransition(() => {
+        // class already applied above
+      });
+    }
+  }, []);
 
   const setTheme = useCallback(
     (t: Theme) => {

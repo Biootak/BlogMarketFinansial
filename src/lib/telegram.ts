@@ -43,7 +43,7 @@ export interface TelegramInlineButton {
 
 export type TelegramReplyMarkup =
   | { requestContact: true; text?: string }
-  | { inlineKeyboard: Array<Array<TelegramInlineButton>> };
+  | { inlineKeyboard: TelegramInlineButton[][] };
 
 /** لینک پورتال مشتری برای دکمه‌های اینلاین ربات */
 export function getPortalUrl(path = '/customer/dashboard'): string {

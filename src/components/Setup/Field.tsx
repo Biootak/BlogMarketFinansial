@@ -111,7 +111,6 @@ export const Field = React.forwardRef<HTMLInputElement | null, FieldProps>(funct
           onChange={(e) => onChange(e.target.value)}
           onBlur={onBlur}
           onKeyDown={onKeyDown}
-          autoFocus={_autoFocus}
           className={cn('setup-field__input', inputClassName)}
         />
         <label htmlFor={id} className="setup-field__label">

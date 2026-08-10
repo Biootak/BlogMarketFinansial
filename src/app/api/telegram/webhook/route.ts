@@ -78,27 +78,11 @@ const STATUS_KEYBOARD = [
 const PORTAL_KEYBOARD = [[PORTAL_BTN]];
 
 function welcomeMessage(): string {
-  return (
-    `✨ <b>${BOT_NAME}</b>\n${BOT_TAGLINE}\n\n` +
-    `سلام 👋 خوش آمدید.\n\n` +
-    `این دستیار برای <b>تأیید امن هویت</b>، دریافت کدهای امنیتی و اطلاع‌رسانی حساب شما طراحی شده است — در هر کجای جهان.\n\n` +
-    `🔍 <b>دستورات:</b>\n` +
-    `/start — شروع مجدد اتصال\n` +
-    `/status — وضعیت حساب\n` +
-    `/help — راهنما\n\n` +
-    `🔐 امنیت: شمارهٔ شما با شمارهٔ حساب مقایسه و فقط در صورت تطابق تأیید می‌شود.`
-  );
+  return `✨ <b>${BOT_NAME}</b>\n${BOT_TAGLINE}\n\nسلام 👋 خوش آمدید.\n\nاین دستیار برای <b>تأیید امن هویت</b>، دریافت کدهای امنیتی و اطلاع‌رسانی حساب شما طراحی شده است — در هر کجای جهان.\n\n🔍 <b>دستورات:</b>\n/start — شروع مجدد اتصال\n/status — وضعیت حساب\n/help — راهنما\n\n🔐 امنیت: شمارهٔ شما با شمارهٔ حساب مقایسه و فقط در صورت تطابق تأیید می‌شود.`;
 }
 
 function helpMessage(): string {
-  return (
-    `📖 <b>راهنمای ${BOT_NAME}</b>\n\n` +
-    `1️⃣ از <b>پورتال حساب</b> روی «اتصال تلگرام» بزنید\n` +
-    `2️⃣ لینک را باز کرده و دکمهٔ <b>Start</b> را بزنید\n` +
-    `3️⃣ برای تأیید خودکار شماره، دکمهٔ <b>«ارسال شماره تماس»</b> را لمس کنید\n\n` +
-    `💡 نکته: شمارهٔ تلگرام شما باید با شماره‌ای که در حساب وارد کرده‌اید یکی باشد.\n\n` +
-    `دستورات: /start · /status · /help`
-  );
+  return `📖 <b>راهنمای ${BOT_NAME}</b>\n\n1️⃣ از <b>پورتال حساب</b> روی «اتصال تلگرام» بزنید\n2️⃣ لینک را باز کرده و دکمهٔ <b>Start</b> را بزنید\n3️⃣ برای تأیید خودکار شماره، دکمهٔ <b>«ارسال شماره تماس»</b> را لمس کنید\n\n💡 نکته: شمارهٔ تلگرام شما باید با شماره‌ای که در حساب وارد کرده‌اید یکی باشد.\n\nدستورات: /start · /status · /help`;
 }
 
 /** وضعیت حساب + احراز هویت از DB — مطابق طراحی (اسکرین ۴): سطح، پیشرفت و مرحلهٔ بعد */
@@ -113,7 +97,7 @@ async function statusMessage(chatId: string): Promise<string> {
       },
     });
     if (!user) {
-      return `⚠️ حساب شما هنوز به تلگرام متصل نشده است.\n\nاز <b>پورتال حساب</b> روی «اتصال تلگرام» بزنید و سپس /start را اجرا کنید.`;
+      return '⚠️ حساب شما هنوز به تلگرام متصل نشده است.\n\nاز <b>پورتال حساب</b> روی «اتصال تلگرام» بزنید و سپس /start را اجرا کنید.';
     }
 
     const level = user.Customer?.kycLevel ?? 'NONE';
@@ -144,26 +128,18 @@ async function statusMessage(chatId: string): Promise<string> {
       LEVEL_3: '🎉 احراز هویت کامل — همهٔ سطح‌ها تأیید شده',
     };
 
-    return (
-      `📊 <b>وضعیت حساب</b>\n\n` +
-      `👤 حساب: <code>${user.email}</code>\n` +
-      `🏅 سطح امنیت: <b>${levelFa[level] ?? '—'}</b>\n` +
-      `📋 وضعیت: ${statusFa[user.Customer?.kycStatus ?? 'NOT_STARTED'] ?? '—'}\n\n` +
-      `${stepsBar}  ${formatFaNumber(pct)}٪ — سطح ${formatFaNumber(steps)} از ۳\n` +
-      `${nextStep[level] ?? ''}\n` +
-      (user.pendingPhone
+    return `📊 <b>وضعیت حساب</b>\n\n👤 حساب: <code>${user.email}</code>\n🏅 سطح امنیت: <b>${levelFa[level] ?? '—'}</b>\n📋 وضعیت: ${statusFa[user.Customer?.kycStatus ?? 'NOT_STARTED'] ?? '—'}\n\n${stepsBar}  ${formatFaNumber(pct)}٪ — سطح ${formatFaNumber(steps)} از ۳\n${nextStep[level] ?? ''}\n${
+      user.pendingPhone
         ? `\n⏳ شماره در انتظار تأیید: <code>${formatTelegramPhone(user.pendingPhone)}</code>`
-        : '')
-    );
+        : ''
+    }`;
   } catch {
     return '⚠️ خطا در دریافت وضعیت. لطفاً دوباره تلاش کنید.';
   }
 }
 
 /** دکمه‌های اینلاین → ویرایش پیام همان‌جا (بدون اسپم پیام جدید) */
-async function handleCallback(
-  cb: NonNullable<TelegramUpdate['callback_query']>,
-): Promise<void> {
+async function handleCallback(cb: NonNullable<TelegramUpdate['callback_query']>): Promise<void> {
   const chat = cb.message?.chat?.id;
   const messageId = cb.message?.message_id;
   if (chat === undefined || messageId === undefined) return;
@@ -228,9 +204,7 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
 
       await sendTelegramMessage(
         chat,
-        `✅ <b>اتصال موفق</b>\n\n` +
-          `حساب تلگرام شما با موفقیت به <b>${BOT_NAME}</b> متصل شد.\n` +
-          `از این پس کدهای امنیتی و اعلان‌های حساب به همین گفتگو ارسال می‌شوند.`,
+        `✅ <b>اتصال موفق</b>\n\nحساب تلگرام شما با موفقیت به <b>${BOT_NAME}</b> متصل شد.\nاز این پس کدهای امنیتی و اعلان‌های حساب به همین گفتگو ارسال می‌شوند.`,
         { inlineKeyboard: MENU_KEYBOARD },
       );
 
@@ -240,10 +214,7 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
         const account = result.accountName || 'حساب کاربری شما';
         await sendTelegramMessage(
           chat,
-          `🛡️ <b>${BOT_NAME}</b> — تأیید امن هویت\n\n` +
-            `👤 حساب: <code>${account}</code>\n` +
-            `📱 شماره: <code>${formatTelegramPhone(result.pendingPhone)}</code>\n\n` +
-            `اگر این حساب و شماره متعلق به <b>شما</b> است، دکمهٔ زیر را بزنید تا شماره به‌صورت خودکار و بدون کد تأیید شود. 🔐`,
+          `🛡️ <b>${BOT_NAME}</b> — تأیید امن هویت\n\n👤 حساب: <code>${account}</code>\n📱 شماره: <code>${formatTelegramPhone(result.pendingPhone)}</code>\n\nاگر این حساب و شماره متعلق به <b>شما</b> است، دکمهٔ زیر را بزنید تا شماره به‌صورت خودکار و بدون کد تأیید شود. 🔐`,
           { requestContact: true },
         );
       }

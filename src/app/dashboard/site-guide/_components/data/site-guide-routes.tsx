@@ -1,0 +1,931 @@
+import {
+  Activity,
+  BadgeCheck,
+  BarChart2,
+  Bell,
+  BookOpen,
+  Building2,
+  CircleDollarSign,
+  ClipboardCheck,
+  ClipboardList,
+  CreditCard,
+  FileText,
+  FolderOpen,
+  Globe,
+  HelpCircle,
+  Info,
+  Layers,
+  LayoutDashboard,
+  Lock,
+  Mail,
+  Map as MapIcon,
+  Megaphone,
+  Radio,
+  RefreshCw,
+  Search,
+  Settings,
+  ShieldCheck,
+  ShieldX,
+  Smartphone,
+  Sparkles,
+  Tag,
+  Users,
+  Wallet,
+  Zap,
+} from 'lucide-react';
+import type { ReactNode } from 'react';
+
+/* ─── Types ─────────────────────────────────────────────────────────── */
+
+export type Tone = 'primary' | 'emerald' | 'amber' | 'rose' | 'violet' | 'cyan' | 'slate';
+
+export interface RouteItem {
+  label: string;
+  path: string;
+  description: string;
+  icon: ReactNode;
+  badge?: string;
+  badgeTone?: Tone;
+  tone: Tone;
+  ownerOnly?: boolean;
+  /** Show in quick-access section */
+  quick?: boolean;
+}
+
+export interface SectionDef {
+  id: string;
+  title: string;
+  icon: ReactNode;
+  tone: Tone;
+  routes: RouteItem[];
+}
+
+export interface HowToStep {
+  label: string;
+  description: string;
+}
+
+export interface HowToGuide {
+  id: string;
+  title: string;
+  icon: ReactNode;
+  tone: Tone;
+  steps: HowToStep[];
+  firstLink: { label: string; href: string };
+}
+
+/* ─── Constants ─────────────────────────────────────────────────────── */
+
+const S = 16; // icon size for route cards
+
+/* ─── Sections ──────────────────────────────────────────────────────── */
+
+export const SECTIONS: SectionDef[] = [
+  /** ۱. صفحات عمومی سایت */
+  {
+    id: 'site',
+    title: 'صفحات عمومی سایت',
+    icon: <Globe size={20} />,
+    tone: 'emerald',
+    routes: [
+      {
+        label: 'صفحه اصلی',
+        path: '/',
+        description: 'لندینگ اصلی — Hero، نرخ لحظه‌ای، صرافی‌ها، مقالات',
+        icon: <LayoutDashboard size={S} />,
+        badge: 'عمومی',
+        badgeTone: 'emerald',
+        tone: 'emerald',
+        quick: true,
+      },
+      {
+        label: 'نرخ ارز',
+        path: '/exchange-rates',
+        description: 'جدول کامل نرخ‌های لحظه‌ای افغانی، دلار، یورو',
+        icon: <CircleDollarSign size={S} />,
+        badge: 'زنده',
+        badgeTone: 'amber',
+        tone: 'amber',
+        quick: true,
+      },
+      {
+        label: 'صرافی‌ها',
+        path: '/exchanges',
+        description: 'فهرست صرافی‌های ثبت‌شده با نرخ و اطلاعات تماس',
+        icon: <Building2 size={S} />,
+        tone: 'emerald',
+      },
+      {
+        label: 'جستجو',
+        path: '/search',
+        description: 'جستجوی سایت‌وید در پست‌ها، صرافی‌ها و اخبار',
+        icon: <Search size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'وبلاگ',
+        path: '/blog',
+        description: 'آرشیو کامل مقالات و اخبار مالی',
+        icon: <BookOpen size={S} />,
+        tone: 'emerald',
+      },
+      {
+        label: 'اخبار مالی',
+        path: '/financial-news',
+        description: 'آخرین اخبار بازارهای مالی و ارزی',
+        icon: <FileText size={S} />,
+        tone: 'emerald',
+      },
+      {
+        label: 'تحلیل بازار',
+        path: '/market-analysis',
+        description: 'تحلیل‌های تکنیکال و بنیادی بازارهای ارزی',
+        icon: <BarChart2 size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'نرخ اعتباری',
+        path: '/credit-rates',
+        description: 'نرخ سود، تسهیلات و خطوط اعتباری',
+        icon: <CreditCard size={S} />,
+        tone: 'amber',
+      },
+      {
+        label: 'انتقال پول',
+        path: '/money-transfer',
+        description: 'جدول مقایسه و راهنمای انتقال بین‌المللی',
+        icon: <RefreshCw size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'پرداخت آنلاین',
+        path: '/online-payment',
+        description: 'درگاه‌های پرداخت آنلاین پشتیبانی‌شده',
+        icon: <CreditCard size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'خدمات',
+        path: '/services',
+        description: 'معرفی کامل خدمات پلتفرم',
+        icon: <Sparkles size={S} />,
+        tone: 'emerald',
+      },
+      {
+        label: 'درخواست ثبت صرافی',
+        path: '/apply-exchange',
+        description: 'فرم درخواست ثبت صرافی جدید',
+        icon: <ClipboardList size={S} />,
+        tone: 'amber',
+      },
+      {
+        label: 'مرکز کمک',
+        path: '/help-center',
+        description: 'مستندات کمکی و سؤالات متداول',
+        icon: <HelpCircle size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'سؤالات متداول',
+        path: '/faq',
+        description: 'پاسخ به پرسش‌های رایج کاربران',
+        icon: <HelpCircle size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'پشتیبانی',
+        path: '/support',
+        description: 'تماس با پشتیبانی و ارسال تیکت',
+        icon: <Mail size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'بازخورد',
+        path: '/feedback',
+        description: 'فرم بازخورد و پیشنهادات',
+        icon: <Mail size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'درباره ما',
+        path: '/about',
+        description: 'معرفی تیم و پلتفرم',
+        icon: <Info size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'حریم خصوصی',
+        path: '/privacy-policy',
+        description: 'سیاست حریم خصوصی و حفاظت از داده',
+        icon: <Lock size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'شرایط استفاده',
+        path: '/terms',
+        description: 'قوانین و شرایط استفاده از سرویس',
+        icon: <FileText size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'ردیابی تراکنش',
+        path: '/track',
+        description: 'پیگیری وضعیت تراکنش‌ها با کد پیگیری',
+        icon: <MapIcon size={S} />,
+        tone: 'amber',
+      },
+      {
+        label: 'اشتراک',
+        path: '/subscription',
+        description: 'خرید اشتراک و پلن‌های ویژه',
+        icon: <Sparkles size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'کیف پول (عمومی)',
+        path: '/wallet',
+        description: 'صفحه عمومی کیف پول',
+        icon: <Wallet size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'احراز هویت',
+        path: '/kyc',
+        description: 'فرآیند احراز هویت کاربران و صرافی‌ها',
+        icon: <BadgeCheck size={S} />,
+        tone: 'emerald',
+      },
+    ],
+  },
+  /** ۲. داشبورد — محتوا */
+  {
+    id: 'dashboard-content',
+    title: 'داشبورد — محتوا',
+    icon: <FileText size={20} />,
+    tone: 'primary',
+    routes: [
+      {
+        label: 'داشبورد اصلی',
+        path: '/dashboard',
+        description: 'صفحه اصلی مدیریت — KPIها، آمار لحظه‌ای',
+        icon: <LayoutDashboard size={S} />,
+        tone: 'primary',
+        quick: true,
+      },
+      {
+        label: 'پست‌ها',
+        path: '/dashboard/posts',
+        description: 'مدیریت کامل مقالات — لیست، ایجاد، ویرایش',
+        icon: <FileText size={S} />,
+        tone: 'primary',
+        quick: true,
+      },
+      {
+        label: 'ایجاد پست',
+        path: '/dashboard/posts/create',
+        description: 'ویرایشگر پست جدید با آپلود تصویر و SEO',
+        icon: <FileText size={S} />,
+        badge: 'ایجاد',
+        badgeTone: 'emerald',
+        tone: 'emerald',
+      },
+      {
+        label: 'تقویم پست‌ها',
+        path: '/dashboard/posts/calendar',
+        description: 'تقویم بصری زمان‌بندی انتشار',
+        icon: <ClipboardList size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'دسته‌بندی',
+        path: '/dashboard/categories',
+        description: 'مدیریت دسته‌بندی مقالات و اخبار',
+        icon: <FolderOpen size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'گزارش‌ها',
+        path: '/dashboard/reports',
+        description: 'گزارش ترافیک، بازدید، نرخ تبدیل',
+        icon: <BarChart2 size={S} />,
+        tone: 'violet',
+      },
+    ],
+  },
+  /** ۳. داشبورد — عملیات صرافی */
+  {
+    id: 'dashboard-exchange',
+    title: 'داشبورد — عملیات صرافی',
+    icon: <Building2 size={20} />,
+    tone: 'amber',
+    routes: [
+      {
+        label: 'صرافی‌ها',
+        path: '/dashboard/exchanges',
+        description: 'مدیریت کامل صرافی‌های ثبت‌شده',
+        icon: <Building2 size={S} />,
+        tone: 'amber',
+        quick: true,
+      },
+      {
+        label: 'کارکنان صرافی',
+        path: '/dashboard/exchange-staff',
+        description: 'مدیریت پرسنل و نقش‌های داخلی',
+        icon: <Users size={S} />,
+        tone: 'amber',
+      },
+      {
+        label: 'نرخ ارز',
+        path: '/dashboard/exchange-rates',
+        description: 'مدیریت نرخ‌های ارز و لیست‌ها',
+        icon: <CircleDollarSign size={S} />,
+        badge: 'زنده',
+        badgeTone: 'amber',
+        tone: 'amber',
+        quick: true,
+      },
+      {
+        label: 'تأیید قیمت‌ها',
+        path: '/dashboard/exchange-quotes',
+        description: 'بررسی و تأیید قیمت‌گذاری صرافی‌ها',
+        icon: <Tag size={S} />,
+        tone: 'amber',
+      },
+      {
+        label: 'جدول مقایسه',
+        path: '/dashboard/transfer-providers',
+        description: 'صرافی‌های جدول مقایسه نرخ انتقال',
+        icon: <Layers size={S} />,
+        tone: 'amber',
+      },
+      {
+        label: 'نرخ‌های اعتباری',
+        path: '/dashboard/credit-rates',
+        description: 'تنظیم نرخ سود و تسهیلات',
+        icon: <CreditCard size={S} />,
+        tone: 'amber',
+      },
+      {
+        label: 'تسویه‌حساب',
+        path: '/dashboard/settlements',
+        description: 'مدیریت تسویه‌حساب مالی صرافی‌ها',
+        icon: <CreditCard size={S} />,
+        ownerOnly: true,
+        badge: 'مالک',
+        badgeTone: 'rose',
+        tone: 'rose',
+      },
+    ],
+  },
+  /** ۴. داشبورد — فین‌تک */
+  {
+    id: 'dashboard-fintech',
+    title: 'داشبورد — فین‌تک',
+    icon: <ShieldCheck size={20} />,
+    tone: 'rose',
+    routes: [
+      {
+        label: 'مشتریان',
+        path: '/dashboard/customers',
+        description: 'مدیریت مشتریان پلتفرم',
+        icon: <Users size={S} />,
+        tone: 'rose',
+        quick: true,
+      },
+      {
+        label: 'بررسی KYC',
+        path: '/dashboard/kyc-review',
+        description: 'تأیید یا رد درخواست‌های احراز هویت',
+        icon: <BadgeCheck size={S} />,
+        tone: 'rose',
+        quick: true,
+      },
+      {
+        label: 'بررسی تقلب',
+        path: '/dashboard/fraud-review',
+        description: 'بررسی تراکنش‌های مشکوک و هشدارها',
+        icon: <ShieldX size={S} />,
+        badge: 'امنیتی',
+        badgeTone: 'rose',
+        tone: 'rose',
+      },
+      {
+        label: 'گزارش ممیزی',
+        path: '/dashboard/audit-log',
+        description: 'لاگ کامل تغییرات سیستم',
+        icon: <ClipboardCheck size={S} />,
+        ownerOnly: true,
+        badge: 'مالک',
+        badgeTone: 'rose',
+        tone: 'rose',
+      },
+    ],
+  },
+  /** ۵. داشبورد — پلتفرم */
+  {
+    id: 'dashboard-platform',
+    title: 'داشبورد — پلتفرم',
+    icon: <Radio size={20} />,
+    tone: 'violet',
+    routes: [
+      {
+        label: 'پایش سیستم',
+        path: '/dashboard/observability',
+        description: 'داشبورد مانیتورینگ و سلامت سیستم',
+        icon: <Activity size={S} />,
+        tone: 'violet',
+        quick: true,
+      },
+      {
+        label: 'ارتباطات',
+        path: '/dashboard/communication',
+        description: 'مدیریت پیام‌ها و کانال‌های ارتباطی',
+        icon: <Radio size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'وظایف',
+        path: '/dashboard/jobs',
+        description: 'مدیریت وظایف و cron-jobهای سیستم',
+        icon: <Zap size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'تیکت‌ها',
+        path: '/dashboard/helpdesk',
+        description: 'سیستم تیکتینگ و پشتیبانی داخلی',
+        icon: <ClipboardList size={S} />,
+        tone: 'violet',
+        quick: true,
+      },
+      {
+        label: 'تأییدیه‌ها',
+        path: '/dashboard/approvals',
+        description: 'صف تأیید درخواست‌های مختلف',
+        icon: <BadgeCheck size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'تبلیغات',
+        path: '/dashboard/advertisements',
+        description: 'مدیریت بنرها و آگهی‌ها',
+        icon: <Megaphone size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'هدر آد',
+        path: '/dashboard/header-ad',
+        description: 'مدیریت تبلیغات هدر سایت',
+        icon: <Megaphone size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'درخواست‌های سرویس',
+        path: '/dashboard/service-requests',
+        description: 'مدیریت درخواست‌های سرویس کاربران',
+        icon: <ClipboardList size={S} />,
+        tone: 'violet',
+      },
+      {
+        label: 'اعلان‌ها',
+        path: '/dashboard/notifications',
+        description: 'مدیریت و ارسال اعلان‌های سیستمی',
+        icon: <Bell size={S} />,
+        tone: 'violet',
+      },
+    ],
+  },
+  /** ۶. داشبورد — ادمین */
+  {
+    id: 'dashboard-admin',
+    title: 'داشبورد — ادمین',
+    icon: <Lock size={20} />,
+    tone: 'rose',
+    routes: [
+      {
+        label: 'کاربران',
+        path: '/dashboard/users',
+        description: 'مدیریت کاربران و نقش‌ها',
+        icon: <Users size={S} />,
+        tone: 'rose',
+        quick: true,
+      },
+      {
+        label: 'نقش‌ها',
+        path: '/dashboard/roles',
+        description: 'تعریف و مدیریت نقش‌های سیستم',
+        icon: <ShieldCheck size={S} />,
+        ownerOnly: true,
+        badge: 'مالک',
+        badgeTone: 'rose',
+        tone: 'rose',
+      },
+      {
+        label: 'دسترسی‌ها',
+        path: '/dashboard/permissions',
+        description: 'مدیریت مجوزها و سطوح دسترسی',
+        icon: <Lock size={S} />,
+        ownerOnly: true,
+        badge: 'مالک',
+        badgeTone: 'rose',
+        tone: 'rose',
+      },
+      {
+        label: 'تنظیمات',
+        path: '/dashboard/settings',
+        description: 'تنظیمات عمومی پلتفرم',
+        icon: <Settings size={S} />,
+        tone: 'rose',
+      },
+      {
+        label: 'اشتراک',
+        path: '/dashboard/subscription',
+        description: 'مدیریت پلن‌ها و اشتراک‌ها',
+        icon: <Sparkles size={S} />,
+        ownerOnly: true,
+        badge: 'مالک',
+        badgeTone: 'rose',
+        tone: 'rose',
+      },
+      {
+        label: 'آدرس صورتحساب',
+        path: '/dashboard/billing-address',
+        description: 'اطلاعات صورتحساب و پرداخت',
+        icon: <ClipboardList size={S} />,
+        ownerOnly: true,
+        badge: 'مالک',
+        badgeTone: 'rose',
+        tone: 'rose',
+      },
+    ],
+  },
+  /** ۷. پنل صرافی */
+  {
+    id: 'exchange-panel',
+    title: 'پنل صرافی',
+    icon: <Building2 size={20} />,
+    tone: 'cyan',
+    routes: [
+      {
+        label: 'داشبورد صرافی',
+        path: '/exchange/dashboard',
+        description: 'پنل اختصاصی — آمار و عملیات روزانه',
+        icon: <LayoutDashboard size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'قیمت‌گذاری',
+        path: '/exchange/quotes',
+        description: 'ثبت و مدیریت قیمت‌ها',
+        icon: <Tag size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'مشتریان صرافی',
+        path: '/exchange/customers',
+        description: 'مدیریت مشتریان ثبت‌شده',
+        icon: <Users size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'تراکنش‌ها',
+        path: '/exchange/transactions',
+        description: 'تاریخچه تراکنش‌های صرافی',
+        icon: <RefreshCw size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'نرخ‌های صرافی',
+        path: '/exchange/rates',
+        description: 'نرخ‌های ارزی اختصاصی',
+        icon: <CircleDollarSign size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'بررسی KYC',
+        path: '/exchange/kyc-review',
+        description: 'تأیید مدارک احراز هویت مشتریان',
+        icon: <BadgeCheck size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'کارکنان صرافی',
+        path: '/exchange/staff',
+        description: 'مدیریت پرسنل داخلی',
+        icon: <Users size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'گزارش‌های صرافی',
+        path: '/exchange/reports',
+        description: 'گزارش مالی و عملیاتی',
+        icon: <BarChart2 size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'تسویه صرافی',
+        path: '/exchange/settlement',
+        description: 'مدیریت تسویه‌حساب مالی',
+        icon: <CreditCard size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'خدمات آنلاین',
+        path: '/exchange/services',
+        description: 'تنظیم خدمات آنلاین صرافی',
+        icon: <Sparkles size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'پروفایل صرافی',
+        path: '/exchange/profile',
+        description: 'اطلاعات عمومی و هویت',
+        icon: <Building2 size={S} />,
+        tone: 'cyan',
+      },
+      {
+        label: 'تنظیمات صرافی',
+        path: '/exchange/settings',
+        description: 'پیکربندی داخلی صرافی',
+        icon: <Settings size={S} />,
+        tone: 'cyan',
+      },
+    ],
+  },
+  /** ۸. پورتال مشتری */
+  {
+    id: 'customer-portal',
+    title: 'پورتال مشتری',
+    icon: <Users size={20} />,
+    tone: 'primary',
+    routes: [
+      {
+        label: 'داشبورد مشتری',
+        path: '/customer/dashboard',
+        description: 'خلاصه وضعیت مالی و اعلان‌ها',
+        icon: <LayoutDashboard size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'کیف پول',
+        path: '/customer/wallet',
+        description: 'موجودی، حساب‌ها و تاریخچه',
+        icon: <Wallet size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'حساب‌ها',
+        path: '/customer/accounts',
+        description: 'مدیریت حساب‌های بانکی و ارزی',
+        icon: <CreditCard size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'ارزهای دیجیتال',
+        path: '/customer/crypto',
+        description: 'کیف پول ارز دیجیتال و نرخ لحظه‌ای',
+        icon: <CircleDollarSign size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'انتقال وجه',
+        path: '/customer/transfer',
+        description: 'واریز، برداشت، انتقال داخلی',
+        icon: <RefreshCw size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'مخاطبان',
+        path: '/customer/beneficiaries',
+        description: 'مدیریت حساب‌های مقصد پرتکرار',
+        icon: <Users size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'تراکنش‌ها',
+        path: '/customer/transactions',
+        description: 'تاریخچه کامل تراکنش‌ها',
+        icon: <Activity size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'درخواست‌های من',
+        path: '/customer/requests',
+        description: 'درخواست‌های ارسال‌شده به صرافی',
+        icon: <ClipboardList size={S} />,
+        tone: 'primary',
+      },
+      {
+        label: 'احراز هویت',
+        path: '/customer/kyc',
+        description: 'بارگذاری مدارک و وضعیت احراز',
+        icon: <BadgeCheck size={S} />,
+        tone: 'emerald',
+      },
+      {
+        label: 'مدارک',
+        path: '/customer/documents',
+        description: 'مدارک بارگذاری‌شده و وضعیت تأیید',
+        icon: <FileText size={S} />,
+        tone: 'emerald',
+      },
+      {
+        label: 'مرکز امنیت',
+        path: '/customer/security',
+        description: 'تغییر رمز، 2FA و دسترسی‌ها',
+        icon: <ShieldCheck size={S} />,
+        tone: 'rose',
+      },
+      {
+        label: 'احراز دو مرحله‌ای',
+        path: '/customer/2fa',
+        description: 'پیکربندی TOTP',
+        icon: <ShieldCheck size={S} />,
+        tone: 'rose',
+      },
+      {
+        label: 'دستگاه‌های متصل',
+        path: '/customer/devices',
+        description: 'مشاهده و مدیریت دستگاه‌ها',
+        icon: <Smartphone size={S} />,
+        tone: 'rose',
+      },
+      {
+        label: 'اعلان‌ها',
+        path: '/customer/notifications',
+        description: 'پیام‌ها و اعلان‌های مهم',
+        icon: <Bell size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'توسعه‌دهندگان',
+        path: '/customer/developer',
+        description: 'پنل API و کلیدهای دسترسی',
+        icon: <Activity size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'پروفایل',
+        path: '/customer/profile',
+        description: 'ویرایش اطلاعات شخصی',
+        icon: <Users size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'تنظیمات',
+        path: '/customer/settings',
+        description: 'تنظیمات اکانت و ترجیحات',
+        icon: <Settings size={S} />,
+        tone: 'slate',
+      },
+    ],
+  },
+  /** ۹. احراز هویت */
+  {
+    id: 'auth',
+    title: 'احراز هویت و ورود',
+    icon: <Lock size={20} />,
+    tone: 'slate',
+    routes: [
+      {
+        label: 'ورود',
+        path: '/signin',
+        description: 'ورود با ایمیل/رمز یا OAuth',
+        icon: <Lock size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'ثبت‌نام',
+        path: '/signup',
+        description: 'ایجاد حساب کاربری جدید',
+        icon: <Users size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'فراموشی رمز',
+        path: '/forgot-password',
+        description: 'دریافت لینک بازیابی رمز عبور',
+        icon: <Lock size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'بازنشانی رمز',
+        path: '/reset-password',
+        description: 'تغییر رمز با توکن دریافت‌شده',
+        icon: <Lock size={S} />,
+        tone: 'slate',
+      },
+      {
+        label: 'تأیید ایمیل',
+        path: '/verify-email',
+        description: 'تأیید آدرس ایمیل',
+        icon: <Mail size={S} />,
+        tone: 'slate',
+      },
+    ],
+  },
+];
+
+/* ─── How-To Guides ─────────────────────────────────────────────────── */
+
+export const HOW_TO_GUIDES: HowToGuide[] = [
+  {
+    id: 'publish-post',
+    title: 'انتشار یک مقاله جدید',
+    icon: <FileText size={18} />,
+    tone: 'emerald',
+    steps: [
+      { label: '۱. ورود به بخش پست‌ها', description: 'از منوی داشبورد به «پست‌ها» بروید' },
+      {
+        label: '۲. ایجاد پست جدید',
+        description: 'دکمه «ایجاد پست» را بزنید و عنوان و محتوا بنویسید',
+      },
+      { label: '۳. آپلود تصویر', description: 'تصویر شاخص مقاله را آپلود کنید' },
+      { label: '۴. انتخاب دسته‌بندی', description: 'دسته مناسب را از لیست انتخاب کنید' },
+      { label: '۵. انتشار', description: 'پست را منتشر یا زمان‌بندی کنید' },
+    ],
+    firstLink: { label: 'بخش پست‌ها', href: '/dashboard/posts' },
+  },
+  {
+    id: 'update-rates',
+    title: 'به‌روزرسانی نرخ ارز',
+    icon: <CircleDollarSign size={18} />,
+    tone: 'amber',
+    steps: [
+      { label: '۱. ورود به نرخ ارز', description: 'از منوی «عملیات صرافی» به «نرخ ارز» بروید' },
+      { label: '۲. ویرایش نرخ', description: 'نرخ خرید/فروش هر ارز را وارد کنید' },
+      { label: '۳. ذخیره', description: 'تغییرات را ذخیره کنید — بلافاصله اعمال می‌شود' },
+    ],
+    firstLink: { label: 'نرخ ارز', href: '/dashboard/exchange-rates' },
+  },
+  {
+    id: 'review-kyc',
+    title: 'بررسی درخواست احراز هویت',
+    icon: <BadgeCheck size={18} />,
+    tone: 'rose',
+    steps: [
+      { label: '۱. ورود به KYC Review', description: 'از منوی «فین‌تک» به «بررسی KYC» بروید' },
+      { label: '۲. انتخاب درخواست', description: 'کارت مشتری مورد نظر را کلیک کنید' },
+      { label: '۳. بررسی مدارک', description: 'تصاویر تذکره و سلفی را بررسی کنید' },
+      { label: '۴. تأیید یا رد', description: 'دکمه تأیید یا رد را بزنید و دلیل را بنویسید' },
+    ],
+    firstLink: { label: 'بررسی KYC', href: '/dashboard/kyc-review' },
+  },
+  {
+    id: 'manage-users',
+    title: 'مدیریت کاربران و نقش‌ها',
+    icon: <Users size={18} />,
+    tone: 'primary',
+    steps: [
+      { label: '۱. ورود به بخش کاربران', description: 'از منوی «ادمین» به «کاربران» بروید' },
+      { label: '۲. جستجوی کاربر', description: 'با نام یا ایمیل کاربر را پیدا کنید' },
+      { label: '۳. تغییر نقش', description: 'نقش جدید را از dropdown انتخاب و ذخیره کنید' },
+    ],
+    firstLink: { label: 'بخش کاربران', href: '/dashboard/users' },
+  },
+  {
+    id: 'create-ticket',
+    title: 'ایجاد تیکت پشتیبانی',
+    icon: <ClipboardList size={18} />,
+    tone: 'violet',
+    steps: [
+      { label: '۱. ورود به Helpdesk', description: 'از منوی «پلتفرم» به «تیکت‌ها» بروید' },
+      { label: '۲. تیکت جدید', description: 'دکمه «تیکت جدید» را بزنید' },
+      { label: '۳. پر کردن فرم', description: 'موضوع، اولویت و توضیحات را وارد کنید' },
+      { label: '۴. ارسال', description: 'تیکت ایجاد و به صف پشتیبانی اضافه می‌شود' },
+    ],
+    firstLink: { label: 'تیکت‌ها', href: '/dashboard/helpdesk' },
+  },
+  {
+    id: 'manage-exchanges',
+    title: 'مدیریت صرافی‌ها',
+    icon: <Building2 size={18} />,
+    tone: 'amber',
+    steps: [
+      { label: '۱. ورود به صرافی‌ها', description: 'از منوی «عملیات صرافی» به «صرافی‌ها» بروید' },
+      {
+        label: '۲. افزودن صرافی',
+        description: 'دکمه «افزودن» را بزنید و اطلاعات صرافی را وارد کنید',
+      },
+      { label: '۳. فعال‌سازی', description: 'پس از بررسی، صرافی را فعال کنید' },
+    ],
+    firstLink: { label: 'صرافی‌ها', href: '/dashboard/exchanges' },
+  },
+];
+
+/* ─── Helpers ───────────────────────────────────────────────────────── */
+
+/** Collect all routes flat for search */
+export function allRoutes(): RouteItem[] {
+  return SECTIONS.flatMap((s) => s.routes);
+}
+
+/** Get total page count */
+export function totalPages(): number {
+  return SECTIONS.reduce((acc, s) => acc + s.routes.length, 0);
+}
+
+/** Get quick-access routes */
+export function quickAccessRoutes(): RouteItem[] {
+  return allRoutes().filter((r) => r.quick);
+}

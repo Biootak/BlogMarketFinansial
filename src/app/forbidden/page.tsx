@@ -1,5 +1,5 @@
-import type { Metadata } from 'next';
 import { Forbidden } from '@/components/Dashboard/primitives';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'دسترسی غیرمجاز | ۴۰۳',
@@ -20,9 +20,7 @@ export default function ForbiddenPage() {
         { href: '/contact', label: 'پشتیبانی', sub: 'تماس با تیم ما' },
       ]}
       primaryLink={{ href: '/dashboard', label: 'بازگشت به داشبورد', icon: 'layoutdashboard' }}
-      secondaryLinks={[
-        { href: '/', label: 'صفحهٔ اصلی', icon: 'home' },
-      ]}
+      secondaryLinks={[{ href: '/', label: 'صفحهٔ اصلی', icon: 'home' }]}
       tone="rose"
     />
   );

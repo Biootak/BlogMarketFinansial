@@ -1,6 +1,7 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, lazy, useEffect, useId, useState } from 'react';
@@ -48,6 +49,7 @@ function StepFallback() {
 export default function AuthFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
 
   const initialStep = readInitialStep(searchParams.get('step'), searchParams.get('intent'));
   const initialEmail = searchParams.get('email') ?? '';
@@ -64,6 +66,16 @@ export default function AuthFlow() {
   const initialNotice: AuthNotice | null = expiredReason
     ? { tone: 'info', message: reasonMessages[expiredReason] ?? reasonMessages['1'] }
     : null;
+
+  // 2026-08-10: اگر کاربر قبلاً login کرده است (مثلاً بعد از OAuth callback)،
+  // مستقیماً به مقصد نهایی بروید — بدون نمایش دوبارهٔ مرحلهٔ ایمیل.
+  const alreadyAuthed =
+    status === 'authenticated' && session?.user && !expiredReason;
+  useEffect(() => {
+    if (!alreadyAuthed) return;
+    const dest = callbackUrl && callbackUrl.startsWith('/') ? callbackUrl : '/dashboard';
+    router.replace(dest);
+  }, [alreadyAuthed, callbackUrl, router]);
 
   const [step, setStep] = useState<InternalStep>(initialStep);
   const [email, setEmail] = useState(initialEmail);

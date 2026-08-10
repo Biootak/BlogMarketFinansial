@@ -1,0 +1,192 @@
+/* HowToGuides.module.css */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.title {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.sub {
+  margin: 0;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.card[data-expanded="true"] {
+  border-color: var(--ds-border-default);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  width: 100%;
+  padding: var(--ds-space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  text-align: inherit;
+  font: inherit;
+}
+
+.cardHeader:hover {
+  background: var(--ds-surface-elevated);
+}
+
+.cardHeader:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: -2px;
+}
+
+.cardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--ds-radius-md);
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  flex: 1;
+}
+
+.stepCount {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-full);
+  padding: 2px 8px;
+  flex-shrink: 0;
+}
+
+.chevron {
+  color: var(--ds-text-muted);
+  flex-shrink: 0;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.chevron[data-expanded="true"] {
+  transform: rotate(-90deg);
+}
+
+/* Expanded steps */
+.steps {
+  padding: 0 var(--ds-space-4) var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.step {
+  display: flex;
+  gap: var(--ds-space-3);
+  align-items: flex-start;
+}
+
+.stepNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ds-surface-elevated);
+  border: 1px solid var(--ds-border-subtle);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.stepLabel {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.stepDesc {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  margin: 0;
+  line-height: var(--ds-leading-snug);
+}
+
+.goLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: oklch(from var(--ds-brand-500) l c h / 0.08);
+  color: var(--ds-brand-500);
+  border-radius: var(--ds-radius-md);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  text-decoration: none;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  width: fit-content;
+}
+
+.goLink:hover {
+  background: oklch(from var(--ds-brand-500) l c h / 0.14);
+}
+
+/* Tones */
+.tonePrimary {
+  background: oklch(from var(--ds-brand-500) l c h / 0.12);
+  color: var(--ds-brand-500);
+}
+.toneEmerald {
+  background: oklch(from var(--ds-accent-emerald) l c h / 0.12);
+  color: oklch(from var(--ds-accent-emerald) calc(l - 0.08) c h);
+}
+.toneAmber {
+  background: oklch(from var(--ds-accent-amber) l c h / 0.12);
+  color: oklch(from var(--ds-accent-amber) calc(l - 0.08) c h);
+}
+.toneRose {
+  background: oklch(from var(--ds-accent-rose) l c h / 0.12);
+  color: oklch(from var(--ds-accent-rose) calc(l - 0.08) c h);
+}
+.toneViolet {
+  background: oklch(from var(--ds-accent-violet) l c h / 0.12);
+  color: oklch(from var(--ds-accent-violet) calc(l - 0.08) c h);
+}
+.toneCyan {
+  background: oklch(from var(--nova-cyan) l c h / 0.12);
+  color: oklch(from var(--nova-cyan) calc(l - 0.08) c h);
+}
+.toneSlate {
+  background: oklch(from var(--ds-accent-slate) l c h / 0.12);
+  color: oklch(from var(--ds-accent-slate) calc(l - 0.08) c h);
+}
