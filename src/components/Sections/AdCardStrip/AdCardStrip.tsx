@@ -213,7 +213,7 @@ function HeroAdCard({
                   <span>مشاهده پیشنهاد</span>
                   <ArrowUpLeft className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
                 </span>
-                <span className="text-[10.5px] sm:text-[11px] text-white/70 font-vazirmatn">
+                <span className="text-[10.5px] sm:text-[11px] text-white/70 font-sans">
                   یا کلیک روی هر نقطه از کارت
                 </span>
               </div>
@@ -333,7 +333,7 @@ function RichAdCard({
             </p>
           )}
 
-          <div className="mt-auto pt-1 flex items-center justify-between text-[10.5px] font-vazirmatn tabular-nums text-neutral-600 dark:text-neutral-300">
+          <div className="mt-auto pt-1 flex items-center justify-between text-[10.5px] font-sans tabular-nums text-neutral-600 dark:text-neutral-300">
             <span>پیشنهاد ویژه</span>
             <ArrowLeft
               className={cn(

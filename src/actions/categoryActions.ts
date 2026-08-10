@@ -559,11 +559,10 @@ async function fetchPopularCategoriesForHomeRaw(
       message: 'دسته‌بندی‌های محبوب با موفقیت بازیابی شدند.',
       data: { categories },
     };
-  } catch {
-    return {
-      success: false,
-      message: 'خطا در دریافت دسته‌بندی‌های محبوب. لطفاً دوباره تلاش کنید.',
-    };
+  } catch (error) {
+    // Re-throw → safeCache returns non-cached fallback. Returning { success: false }
+    // here would poison the cache for 60 s.
+    throw error;
   }
 }
 

@@ -44,7 +44,7 @@ const Calendar: React.FC<CalendarProps> = ({
         className={cn(
           'p-3 rounded-lg border bg-white',
           'border-border shadow-sm',
-          'font-vazirmatn',
+          'font-sans',
           className,
         )}
       >

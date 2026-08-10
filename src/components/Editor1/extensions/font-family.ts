@@ -1,5 +1,6 @@
 import { Extension } from '@tiptap/core';
 import '@tiptap/extension-text-style';
+import { FONT_FAMILIES } from '@/app/fonts';
 
 export interface FontFamilyOptions {
   types: string[];
@@ -61,9 +62,13 @@ export const FontFamily = Extension.create<FontFamilyOptions>({
   },
 });
 
-// فونت‌های فارسی (Vazirmatn از 2026-06-28 self-hosted است)
+// فونت‌های فارسی
+// وزیرمتن از طریق next/font در کل سایت self-host شده (تعریفش در
+// src/app/fonts/index.ts است) — بنابراین نه url لازم دارد و نه stylesheet
+// جداگانه؛ همین‌که family نامش از `FONT_FAMILIES` بیاید کافی است. اگر فونت
+// پیش‌فرض سایت عوض شود، این گزینه هم خودکار همان فونت جدید را اعمال می‌کند.
 export const persianFonts = [
-  { label: 'وزیرمتن', value: 'Vazirmatn', url: '/fonts/vazirmatn/vazirmatn.css' },
+  { label: 'وزیرمتن', value: FONT_FAMILIES.fa },
   {
     label: 'یکان بخ',
     value: 'Yekan Bakh',

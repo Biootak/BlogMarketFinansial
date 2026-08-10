@@ -113,7 +113,7 @@ export function PersianDateRangePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-2" align="start" sideOffset={6}>
-          <div dir="rtl" className="font-vazirmatn">
+          <div dir="rtl" className="font-sans">
             <Calendar
               value={calendarValue}
               onChange={handleCalendarChange}

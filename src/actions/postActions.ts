@@ -891,12 +891,12 @@ async function fetchPostBySlugRaw(slug: string): Promise<
         moreFromAuthor: moreFromAuthor as unknown as RelatedPostWithRelations[],
       },
     };
-  } catch (_error) {
-    return {
-      success: false,
-      message: 'خطا در بازیابی پست. لطفاً دوباره تلاش کنید.',
-      error: 'INTERNAL_ERROR',
-    };
+  } catch (error) {
+    // Re-throw so safeCache does NOT store this failure — on DB errors the
+    // fallback is returned without caching, so the next request retries the DB.
+    // Returning { success: false } here would cache "not found" for 300 s even
+    // when the post exists (the build-time pre-render failure scenario).
+    throw error;
   }
 }
 
@@ -1206,12 +1206,10 @@ async function fetchArchivePostsRaw(
         pages: Math.ceil(total / limit),
       },
     };
-  } catch (_error) {
-    return {
-      success: false,
-      message: 'خطا در بازیابی پست‌ها. لطفاً دوباره تلاش کنید.',
-      error: 'INTERNAL_ERROR',
-    };
+  } catch (error) {
+    // Re-throw → safeCache returns non-cached fallback. Returning { success: false }
+    // here would poison the cache for 120 s, making the archive show empty on all requests.
+    throw error;
   }
 }
 

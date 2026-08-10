@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import * as React from 'react';
+import { CheckGlyph } from './WizardIcons';
 
 /**
  * Field — the only input primitive used by the setup wizard.
@@ -121,7 +122,13 @@ export const Field = React.forwardRef<HTMLInputElement | null, FieldProps>(funct
             </span>
           ) : null}
         </label>
-        {trailing ? <span className="setup-field__trailing">{trailing}</span> : null}
+        {trailing ? (
+          <span className="setup-field__trailing">{trailing}</span>
+        ) : tone === 'success' ? (
+          <span className="setup-field__valid" aria-hidden="true">
+            <CheckGlyph />
+          </span>
+        ) : null}
       </div>
 
       <div className="setup-field__meta">
@@ -227,6 +234,11 @@ export function TextAreaField({
             </span>
           ) : null}
         </label>
+        {tone === 'success' ? (
+          <span className="setup-field__valid" aria-hidden="true">
+            <CheckGlyph />
+          </span>
+        ) : null}
       </div>
 
       <div className="setup-field__meta">

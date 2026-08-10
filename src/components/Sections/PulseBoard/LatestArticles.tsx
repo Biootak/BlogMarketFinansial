@@ -377,7 +377,7 @@ function LatestArticles({
                     aria-hidden
                   />
                 </div>
-                <p className="mt-0.5 text-[11.5px] sm:text-[12.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn">
+                <p className="mt-0.5 text-[11.5px] sm:text-[12.5px] text-neutral-500 dark:text-neutral-400 font-sans">
                   تازه‌ترین روایت‌ها، تحلیل‌ها و گزارش‌ها از قلب بازار
                 </p>
               </div>
@@ -389,7 +389,7 @@ function LatestArticles({
                   'h-9 px-1 rounded-full',
                   'border border-[color:var(--hairline)]',
                   'bg-white/70 dark:bg-neutral-800/60 backdrop-blur-md',
-                  'font-vazirmatn',
+                  'font-sans',
                 )}
                 aria-label="ساعت بازارهای منطقه"
               >
@@ -506,7 +506,7 @@ function LatestArticles({
               </div>
 
               {/* Counter */}
-              <div className="inline-flex items-center gap-1.5 text-[10.5px] sm:text-[11.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+              <div className="inline-flex items-center gap-1.5 text-[10.5px] sm:text-[11.5px] text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
                 <Radio className="h-3 w-3" strokeWidth={2.25} aria-hidden />
                 <span>پخش زنده‌ی</span>
                 <span
@@ -799,7 +799,7 @@ function HeroCard({
               </p>
             )}
 
-            <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[9.5px] sm:text-[10.5px] text-white/80 font-vazirmatn tabular-nums">
+            <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[9.5px] sm:text-[10.5px] text-white/80 font-sans tabular-nums">
               <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-3 w-3" strokeWidth={2.25} aria-hidden />
                 {toPersianNumber(fmtJalali(post.createdAt))}
@@ -914,7 +914,7 @@ function StackCard({
         </div>
 
         <div className="flex-1 min-w-0 p-3 sm:p-4 flex flex-col">
-          <div className="flex items-center justify-between text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+          <div className="flex items-center justify-between text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
             <span>{toPersianNumber(fmtJalaliShort(post.createdAt))}</span>
             <button
               type="button"
@@ -949,7 +949,7 @@ function StackCard({
             {post.title}
           </h3>
 
-          <div className="mt-auto pt-2.5 flex items-center justify-between text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+          <div className="mt-auto pt-2.5 flex items-center justify-between text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
             <div className="flex items-center gap-2.5">
               <span className="inline-flex items-center gap-1">
                 <Clock className="h-3 w-3" strokeWidth={2.25} aria-hidden />
@@ -1094,7 +1094,7 @@ function ListItem({
 
         {/* Content */}
         <div className="min-w-0 flex-1 space-y-1.5">
-          <div className="flex items-center justify-between gap-2 text-[10.5px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+          <div className="flex items-center justify-between gap-2 text-[10.5px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
             {cat && (
               /* color-contrast fix: رنگ accent برای دکور (dot) OK است
                  ولی برای متن باید accessible باشد */
@@ -1124,7 +1124,7 @@ function ListItem({
             {post.title}
           </h4>
 
-          <div className="flex items-center justify-between gap-2 text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+          <div className="flex items-center justify-between gap-2 text-[10px] sm:text-[11px] text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
             <div className="flex items-center gap-2.5">
               <span className="inline-flex items-center gap-1">
                 <Clock className="h-3 w-3" strokeWidth={2.25} aria-hidden />
@@ -1466,7 +1466,7 @@ function QuoteHighlight({
             «{text}
             {text.length >= 220 ? '…' : ''}»
           </blockquote>
-          <figcaption className="mt-2 text-[11px] sm:text-[12px] text-neutral-500 dark:text-neutral-400 font-vazirmatn">
+          <figcaption className="mt-2 text-[11px] sm:text-[12px] text-neutral-500 dark:text-neutral-400 font-sans">
             از مقاله‌ی «{authorName}»
           </figcaption>
         </div>

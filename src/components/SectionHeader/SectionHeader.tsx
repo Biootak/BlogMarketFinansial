@@ -54,7 +54,7 @@ export function SectionHeader({
             {title}
           </h2>
           {subtitle && (
-            <p className="mt-0.5 text-[11.5px] sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-vazirmatn line-clamp-1">
+            <p className="mt-0.5 text-[11.5px] sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-sans line-clamp-1">
               {subtitle}
             </p>
           )}

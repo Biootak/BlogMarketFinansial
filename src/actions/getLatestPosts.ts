@@ -115,8 +115,10 @@ async function fetchLatestPosts(
       return typeof img === 'string' && img.trim().length > 0;
     });
     return cleaned as PostWithRelations[];
-  } catch {
-    return [];
+  } catch (error) {
+    // Re-throw → safeCache returns non-cached fallback [].
+    // Returning [] here would poison the cache for 60 s with an empty post list.
+    throw error;
   }
 }
 
@@ -154,8 +156,10 @@ async function fetchPublishedPostCount(): Promise<number> {
         AND: [{ featuredImage: { not: '' } }, { featuredImage: { not: ' ' } }],
       },
     });
-  } catch {
-    return 0;
+  } catch (error) {
+    // Re-throw → safeCache returns non-cached fallback 0.
+    // Returning 0 here would cache an incorrect count for 60 s.
+    throw error;
   }
 }
 

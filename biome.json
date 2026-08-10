@@ -125,7 +125,7 @@
       }
     },
     {
-      "include": ["src/components/ui/CurrencySelect.tsx"],
+      "include": ["src/components/ui/CurrencySelect.tsx", "src/components/ui/CountryCodeSelect.tsx"],
       "linter": {
         "rules": {
           "a11y": {

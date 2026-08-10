@@ -14,7 +14,6 @@
  */
 import { Toaster } from '@/components/ui/toaster';
 import type { Metadata, Viewport } from 'next';
-import localFont from 'next/font/local';
 import Script from 'next/script';
 
 import './globals.css';
@@ -29,6 +28,10 @@ import './globals.css';
 import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';
 import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
+// فونت‌ها از `src/app/fonts/index.ts` مدیریت می‌شوند — تنها منبع حقیقت.
+// برای تعویض فونت فقط همان فایل را تغییر بده — CSS و کامپوننت‌ها بدون تغییر
+// کار می‌کنند چون همه از CSS variableها استفاده می‌کنند.
+import { fontVariables } from './fonts';
 
 // ابزار بررسی ظاهری — فقط در development؛ روی همهٔ صفحات سرور dev ظاهر می‌شود
 // (بررسی المان + QA خودکار + تنظیمات؛ به‌صورت پیش‌فرض جمع‌شده). در build
@@ -95,49 +98,9 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-/**
- * Estedad — Persian/Arabic variable font v5.3.0 (fontsource, MIT).
- * Two separate woff2 subsets — browser loads ONLY the needed file per glyph:
- *   arabic: 55.7 KB  → فارسی/عربی (unicode-range baked into woff2)
- *   latin:  26.5 KB  → A-Z, 0-9, punctuation (latin subset)
- *
- * Variable font axis: wght 100–900 — single file covers all weights.
- * next/font/local injects <link rel="preload"> for the arabic subset (preload:true).
- * latin subset loads on-demand (preload:false) — most pages are Persian-only.
- */
-const estedad = localFont({
-  src: [
-    {
-      // فارسی/عربی — colocated inside src/app/ so next/font/local resolves correctly
-      path: './fonts/estedad/estedad-arabic-wght-normal.woff2',
-      weight: '100 900',
-      style: 'normal',
-    },
-    {
-      // لاتین — loaded on-demand by browser via unicode-range
-      path: './fonts/estedad/estedad-latin-wght-normal.woff2',
-      weight: '100 900',
-      style: 'normal',
-    },
-  ],
-  display: 'swap',
-  variable: '--font-estedad',
-  preload: true,
-  adjustFontFallback: 'Arial',
-});
-
-/**
- * Geist — Latin/English variable font (55.5 KB, Vercel, MIT).
- */
-const geist = localFont({
-  src: './fonts/geist/Geist-Variable.woff2',
-  weight: '100 900',
-  display: 'swap',
-  variable: '--font-geist',
-  preload: false,
-  adjustFontFallback: 'Arial',
-});
-
+// فونت‌ها از `src/app/fonts/index.ts` مدیریت می‌شوند — تنها منبع حقیقت.
+// برای تعویض فونت فقط همان فایل را تغییر بده — CSS و کامپوننت‌ها بدون تغییر
+// کار می‌کنند چون همه از CSS variableها استفاده می‌کنند.
 export default function RootLayout({
   children,
 }: {
@@ -148,7 +111,7 @@ export default function RootLayout({
       lang="fa-IR"
       dir="rtl"
       data-scroll-behavior="smooth"
-      className={`${estedad.variable} ${geist.variable} rtl`}
+      className={`${fontVariables} rtl`}
       suppressHydrationWarning
     >
       <head>

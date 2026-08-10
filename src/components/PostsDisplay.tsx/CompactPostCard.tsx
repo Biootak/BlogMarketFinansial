@@ -235,7 +235,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                   'flex items-center justify-between gap-2',
                   'px-3.5 sm:px-5 py-2.5 sm:py-3',
                   'text-[10.5px] sm:text-xs text-neutral-500 dark:text-neutral-400',
-                  'font-vazirmatn tabular-nums',
+                  'font-sans tabular-nums',
                   'transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
                   'group-hover:opacity-0 group-hover:-translate-y-1',
                 )}
@@ -259,7 +259,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                   'dark:from-primary-900/20 dark:to-transparent',
                   'text-[11px] sm:text-xs',
                   'text-neutral-700 dark:text-neutral-200',
-                  'font-vazirmatn tabular-nums',
+                  'font-sans tabular-nums',
                   'opacity-0 translate-y-2',
                   'group-hover:opacity-100 group-hover:translate-y-0',
                   'transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',

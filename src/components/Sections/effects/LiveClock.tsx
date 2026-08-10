@@ -79,7 +79,7 @@ function LiveClock({
         'inline-flex items-center gap-1.5',
         'text-[11px] sm:text-xs',
         'text-neutral-600 dark:text-neutral-400',
-        'font-vazirmatn',
+        'font-sans',
         'tabular-nums',
         className,
       )}

@@ -4,7 +4,7 @@
   min-height: 100dvh;
   background: var(--ds-surface, #0b0e14);
   color: var(--ds-text, #e8eaed);
-  font-family: var(--ds-font-fa, "Vazirmatn", Tahoma, Arial, sans-serif);
+  font-family: var(--font-fa), var(--ds-font-fa, system-ui, Tahoma, Arial, sans-serif);
 }
 
 /* ── Hero ──────────────────────────────────────────── */

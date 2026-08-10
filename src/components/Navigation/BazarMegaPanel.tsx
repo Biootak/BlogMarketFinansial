@@ -256,7 +256,7 @@ export default function BazarMegaPanel({
           'bg-neutral-50/40 dark:bg-neutral-950/30',
         )}
       >
-        <span className="text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+        <span className="text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
           {toPersianNumber(formatNumber(totalItems))} نرخ فعال از{' '}
           {toPersianNumber(formatNumber(grouped.byList.length))} لیست
         </span>

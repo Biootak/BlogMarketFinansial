@@ -247,7 +247,7 @@ export function PersianDateTimePicker({
               )}
             </div>
           )}
-          <div dir="rtl" className="font-vazirmatn" style={{ direction: 'rtl' }}>
+          <div dir="rtl" className="font-sans" style={{ direction: 'rtl' }}>
             <DatePicker
               value={dpValue}
               onChange={handleChange}

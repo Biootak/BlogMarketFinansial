@@ -1,14 +1,15 @@
 'use client';
 
+import { CountryCodeSelect } from '@/components/ui/CountryCodeSelect';
 import { toAsciiDigits } from '@/lib/setup/format';
 import type { SetupFormValues } from '@/lib/setup/schema';
 import { generateStrongPassword } from '@/lib/setup/strength';
-import { parsePhoneNumber, type CountryCode } from 'libphonenumber-js';
+import { type CountryCode, parsePhoneNumber } from 'libphonenumber-js';
 import * as React from 'react';
 import { Field } from './Field';
 import { PasswordStrength } from './PasswordStrength';
 import { RequirementList } from './RequirementList';
-import { ChevronDownGlyph, EyeGlyph, EyeOffGlyph, LockGlyph, WandGlyph } from './WizardIcons';
+import { CheckGlyph, CopyGlyph, EyeGlyph, EyeOffGlyph, LockGlyph, WandGlyph } from './WizardIcons';
 
 /**
  * StepCredentials — access step: strong password + mobile number.
@@ -45,13 +46,34 @@ const COUNTRY_OPTIONS: ReadonlyArray<{ code: CountryCode; name: string; dial: st
   { code: 'AU', name: 'استرالیا', dial: '+61' },
 ];
 
-const DIAL_BY_COUNTRY = Object.fromEntries(
-  COUNTRY_OPTIONS.map((c) => [c.code, c.dial]),
-) as Record<CountryCode, string>;
+const DIAL_BY_COUNTRY = Object.fromEntries(COUNTRY_OPTIONS.map((c) => [c.code, c.dial])) as Record<
+  CountryCode,
+  string
+>;
 
 export function StepCredentials({ values, errors, onChange, onBlur }: StepCredentialsProps) {
   const [reveal, setReveal] = React.useState(false);
   const [country, setCountry] = React.useState<CountryCode>('AF');
+  const [copied, setCopied] = React.useState(false);
+  const copyTimer = React.useRef<number | null>(null);
+
+  const handleCopy = React.useCallback(() => {
+    if (!values.password) return;
+    const password = values.password;
+    // Best-effort: modern browsers allow clipboard writes from a user gesture.
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(password).catch(() => {});
+    }
+    setCopied(true);
+    if (copyTimer.current) window.clearTimeout(copyTimer.current);
+    copyTimer.current = window.setTimeout(() => setCopied(false), 1600);
+  }, [values.password]);
+
+  React.useEffect(() => {
+    return () => {
+      if (copyTimer.current) window.clearTimeout(copyTimer.current);
+    };
+  }, []);
 
   const handleGenerate = React.useCallback(() => {
     const generated = generateStrongPassword();
@@ -153,6 +175,16 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
               </button>
               <button
                 type="button"
+                onClick={handleCopy}
+                disabled={!values.password}
+                className="setup-field__action setup-field__action--copy"
+                aria-label={copied ? 'رمز عبور کپی شد' : 'کپی رمز عبور'}
+                title={copied ? 'رمز عبور کپی شد' : 'کپی رمز عبور'}
+              >
+                {copied ? <CheckGlyph /> : <CopyGlyph />}
+              </button>
+              <button
+                type="button"
                 onClick={() => setReveal((r) => !r)}
                 className="setup-field__action"
                 aria-label={reveal ? 'پنهان‌کردن رمز عبور' : 'نمایش رمز عبور'}
@@ -187,20 +219,12 @@ export function StepCredentials({ values, errors, onChange, onBlur }: StepCreden
         help="پیش‌شماره کشور را انتخاب و شماره را وارد کنید — شماره مجازی پذیرفته نمی‌شود"
         leading={
           <span className="setup-field__leading setup-field__leading--country">
-            <select
-              className="setup-field__country"
+            <CountryCodeSelect
               value={country}
-              onChange={(e) => handleCountryChange(e.target.value as CountryCode)}
-              aria-label="پیش‌شماره کشور"
-              title={COUNTRY_OPTIONS.find((c) => c.code === country)?.name}
-            >
-              {COUNTRY_OPTIONS.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.dial}
-                </option>
-              ))}
-            </select>
-            <ChevronDownGlyph className="setup-field__country-caret" />
+              onChange={(code) => handleCountryChange(code as CountryCode)}
+              options={COUNTRY_OPTIONS}
+              ariaLabel="پیش‌شماره کشور"
+            />
           </span>
         }
       />

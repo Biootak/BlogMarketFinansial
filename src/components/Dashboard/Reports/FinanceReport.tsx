@@ -408,7 +408,7 @@ export default function FinanceReport() {
                     tick={{
                       fontSize: 11,
                       fill: 'var(--ds-text-secondary)',
-                      fontFamily: 'var(--font-vazirmatn, inherit)',
+                      fontFamily: 'var(--font-fa, inherit)',
                     }}
                   />
                   <Tooltip content={<ChartTip />} cursor={{ fill: 'var(--ds-canvas-subtle)' }} />

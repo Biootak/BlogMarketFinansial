@@ -191,18 +191,6 @@ export default async function TrackPage({ params }: Props) {
 
   const StatusIcon = statusCfg?.icon ?? AlertCircle;
 
-  const statusLogs =
-    (
-      deal as {
-        statusLogs?: Array<{
-          toStatus: string;
-          fromStatus: string | null;
-          note: string | null;
-          createdAt: Date;
-        }>;
-      }
-    ).statusLogs ?? [];
-
   if (!deal) {
     return (
       <main className={s.page}>
@@ -255,6 +243,18 @@ export default async function TrackPage({ params }: Props) {
       </main>
     );
   }
+
+  const statusLogs =
+    (
+      deal as {
+        statusLogs?: Array<{
+          toStatus: string;
+          fromStatus: string | null;
+          note: string | null;
+          createdAt: Date;
+        }>;
+      }
+    ).statusLogs ?? [];
 
   const fromAmountNum = Number.parseFloat(deal.fromAmount);
   const toAmountNum = Number.parseFloat(deal.toAmount);

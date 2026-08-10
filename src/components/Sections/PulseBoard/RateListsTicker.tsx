@@ -228,7 +228,7 @@ function RateListsTicker({
             >
               نرخ لحظه‌ای بازار
             </span>
-            <span className="text-[9.5px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums leading-tight mt-0.5">
+            <span className="text-[9.5px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 font-sans tabular-nums leading-tight mt-0.5">
               <LiveClock showIcon={false} timeZone="Asia/Tehran" />
               <span className="mx-1 text-neutral-300 dark:text-neutral-600">·</span>
               <span>{jalaliDate || '—'}</span>
@@ -286,7 +286,7 @@ function RateListsTicker({
                   </span>
                 </div>
                 {(current.buySuffix || current.sellSuffix) && (
-                  <span className="block text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-vazirmatn">
+                  <span className="block text-[10px] sm:text-[10.5px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-sans">
                     {current.buySuffix || current.sellSuffix}
                   </span>
                 )}
@@ -360,7 +360,7 @@ function RateListsTicker({
 
         {/* ── Controls + counter ───────────────────────────────────────── */}
         <div className="shrink-0 flex items-center gap-0.5 sm:gap-1 px-2 sm:px-3 py-2.5 sm:py-3">
-          <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums px-1.5">
+          <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] font-semibold text-neutral-500 dark:text-neutral-400 font-sans tabular-nums px-1.5">
             <span style={{ color: accent.color }}>
               {toPersianNumber(String(activeIndex + 1).padStart(2, '۰'))}
             </span>
@@ -499,7 +499,7 @@ function RatePill({
         'inline-flex items-baseline gap-1 sm:gap-1.5',
         'h-7 sm:h-8 px-2 sm:px-2.5 rounded-lg',
         'border',
-        'font-vazirmatn tabular-nums',
+        'font-sans tabular-nums',
       )}
       style={{
         backgroundColor: `${color}10`,

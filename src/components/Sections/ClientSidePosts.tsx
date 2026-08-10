@@ -352,7 +352,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
               </div>
 
               {/* Subtitle row */}
-              <p className="text-[11.5px] sm:text-sm text-neutral-500 dark:text-neutral-400 font-vazirmatn flex flex-wrap items-center gap-x-2 gap-y-0.5 sm:flex-1 sm:min-w-0 sm:-mt-1">
+              <p className="text-[11.5px] sm:text-sm text-neutral-500 dark:text-neutral-400 font-sans flex flex-wrap items-center gap-x-2 gap-y-0.5 sm:flex-1 sm:min-w-0 sm:-mt-1">
                 <span>تازه‌ترین تحلیل‌ها و گزارش‌های بازارهای مالی</span>
                 {totalCount > 0 && (
                   <>
@@ -590,7 +590,7 @@ const ClientSidePosts: React.FC<ClientSidePostsProps> = ({
               </TabsList>
 
               {/* Active category hint */}
-              <div className="flex items-center gap-2 text-xs sm:text-[11px] @md/csp:text-xs text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+              <div className="flex items-center gap-2 text-xs sm:text-[11px] @md/csp:text-xs text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
                 <span>نمایش</span>
                 <span
                   className="inline-flex items-center justify-center min-w-[1.5rem] h-5 sm:h-6 px-1.5 sm:px-2 rounded-md font-semibold"

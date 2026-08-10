@@ -63,6 +63,16 @@ export function CheckGlyph({ className, title }: GlyphProps) {
   );
 }
 
+export function CopyGlyph({ className, title }: GlyphProps) {
+  return (
+    <svg {...baseProps} className={className} role={title ? 'img' : undefined}>
+      {title ? <title>{title}</title> : null}
+      <rect x="9" y="9" width="11" height="11" rx="2.5" />
+      <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+    </svg>
+  );
+}
+
 export function ArrowLeftGlyph({ className, title }: GlyphProps) {
   return (
     <svg {...baseProps} className={className} role={title ? 'img' : undefined}>

@@ -50,15 +50,14 @@
 @theme {
   /* ---- Typography -------------------------------------------------------
      next/font/local Ø±ÙˆÛŒ <html> Ø¯Ùˆ CSS variable inject Ù…ÛŒâ€ŒÚ©Ù†Ø¯:
-       --font-estedad  â†’  "estedad", "estedad Fallback"
-       --font-geist    â†’  "geist", "geist Fallback"
+       --font-fa  â†’  "vazirmatn", "vazirmatn Fallback"
 
      âš ï¸  Ø§ÛŒÙ† variableÙ‡Ø§ Ø±Ø§ Ø¨Ø§ var() override Ù†Ú©Ù†ÛŒØ¯ â€” circular reference
          Ù…ÛŒâ€ŒØ´ÙˆØ¯ Ùˆ Ù…Ø±ÙˆØ±Ú¯Ø± Ø¢Ù†Ù‡Ø§ Ø±Ø§ ignore Ù…ÛŒâ€ŒÚ©Ù†Ø¯.
      ---------------------------------------------------------------------- */
   /* ÙÙ‚Ø· ÛŒÚ© font-family utility Ø¨Ø±Ø§ÛŒ Tailwind â€” Ù…Ø³ØªÙ‚ÛŒÙ… Ø§Ø² variable Ø§Ø³ØªÙØ§Ø¯Ù‡ Ù…ÛŒâ€ŒÚ©Ù†Ø¯ */
-  --font-sans: var(--font-estedad), system-ui, sans-serif;
-  --font-display: var(--font-geist), var(--font-estedad), system-ui, sans-serif;
+  --font-sans: var(--font-fa), var(--font-fa-latin), system-ui, sans-serif;
+  --font-display: var(--font-fa), var(--font-fa-latin), system-ui, sans-serif;
 
   /* ---- shadcn semantic colors (Tailwind utilities) ------------------------- */
   /* ØªÙˆØ¶ÛŒØ­: bg-background / text-muted-foreground / border-input / ring-ring Ùˆ
@@ -329,18 +328,20 @@ html {
 }
 
 body {
-  /* next/font/local Ù…Ù‚Ø§Ø¯ÛŒØ± Ø±Ø§ Ø¯Ø± --font-estedad Ùˆ --font-geist inject Ù…ÛŒâ€ŒÚ©Ù†Ø¯.
-     Ù…Ø³ØªÙ‚ÛŒÙ… Ø§Ø² variable Ø§Ø³ØªÙØ§Ø¯Ù‡ Ù…ÛŒâ€ŒÚ©Ù†ÛŒÙ… â€” Ù‡ÛŒÚ† override Ø§Ø¶Ø§ÙÙ‡â€ŒØ§ÛŒ Ù†ÛŒØ³Øª. */
-  font-family: var(--font-estedad), system-ui, sans-serif;
-  font-size: var(--fs-base);
+  /* next/font/local injects --font-fa on <html> */
+  font-family: var(--font-fa), var(--font-fa-latin), system-ui, sans-serif;
+  /* NOTE: 1rem, NOT var(--fs-base) — --fs-base is rem-based, so reusing it on
+     body compounded the scale (~0.65x of root). 1rem inherits the root scale
+     exactly once, so everything shrinks/grows uniformly with --fs-base. */
+  font-size: 1rem;
   line-height: 1.45;
   font-weight: 400;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* ss01=alternate digits, cv01=stylistic numbers Ø¯Ø± Geist
-     cv11=Persian digits Ø¯Ø± Vazirmatn, kern=kerning */
-  font-feature-settings: "ss01", "cv01", "cv11", "kern";
+  /* Font-agnostic: keep kern + contextual alternates; ss01 is a no-op
+     for fonts without that feature (e.g. Vazirmatn). */
+  font-feature-settings: "ss01", "calt", "kern";
   font-synthesis: none;
   overflow-x: clip;
 }

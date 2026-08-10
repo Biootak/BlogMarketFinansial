@@ -66,7 +66,7 @@
   }
 
   .sheet {
-    font-family: "Vazirmatn", "Segoe UI", Tahoma, sans-serif;
+    font-family: var(--font-fa), "Segoe UI", Tahoma, sans-serif;
     color: #17181c;
     background: #fff;
     padding: 24px 22px 18px;

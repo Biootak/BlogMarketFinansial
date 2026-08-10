@@ -5,7 +5,7 @@
   background: var(--ds-canvas);
   direction: rtl;
   color: var(--ds-text-primary);
-  font-family: var(--font-estedad), system-ui, sans-serif;
+  font-family: var(--font-fa), system-ui, sans-serif;
 }
 
 /* ═══ HERO — Trading Floor ═══════════════════════════════════════════ */

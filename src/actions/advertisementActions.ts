@@ -46,12 +46,10 @@ async function fetchActiveAdsInternal(
       message: 'تبلیغات فعال با موفقیت بازیابی شدند.',
       data: ads,
     };
-  } catch (_error) {
-    return {
-      success: false,
-      message: 'خطا در بازیابی تبلیغات. لطفاً دوباره تلاش کنید.',
-      error: 'INTERNAL_ERROR',
-    };
+  } catch (error) {
+    // Re-throw → safeCache returns non-cached fallback. Returning { success: false }
+    // here would poison the cache for 300 s, making all ad slots empty on every request.
+    throw error;
   }
 }
 

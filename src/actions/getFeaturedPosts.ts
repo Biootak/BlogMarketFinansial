@@ -59,11 +59,10 @@ async function fetchFeaturedPosts(limit: number): Promise<ActionResult<PostWithR
       message: 'پست‌های ویژه با موفقیت بازیابی شدند.',
       data: posts as PostWithRelations[],
     };
-  } catch {
-    return {
-      success: false,
-      message: 'خطا در بازیابی پست‌های ویژه.',
-    };
+  } catch (error) {
+    // Re-throw → safeCache returns non-cached fallback. Returning { success: false }
+    // here would poison the cache for 60 s, making featured posts 404 on all requests.
+    throw error;
   }
 }
 

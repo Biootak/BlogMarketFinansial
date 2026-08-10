@@ -146,7 +146,7 @@ function MarketTicker({
                   'text-[11px] sm:text-[13px]',
                   'text-neutral-700 dark:text-neutral-300',
                   'tabular-nums',
-                  'font-vazirmatn',
+                  'font-sans',
                 )}
               >
                 <span className="font-bold text-neutral-900 dark:text-white">{item.symbol}</span>
@@ -186,7 +186,7 @@ function MarketTicker({
             'bg-white/70 dark:bg-neutral-800/70 backdrop-blur-md',
             'border border-neutral-200/60 dark:border-neutral-700/60',
             'text-[10px] text-neutral-600 dark:text-neutral-300',
-            'font-vazirmatn tabular-nums',
+            'font-sans tabular-nums',
           )}
         >
           {lastUpdate && (

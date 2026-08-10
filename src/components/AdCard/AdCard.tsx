@@ -255,7 +255,7 @@ function InlineAd({
                   'flex items-center justify-between gap-2',
                   'px-3.5 sm:px-5 py-2.5 sm:py-3',
                   'text-[10.5px] sm:text-xs text-neutral-500 dark:text-neutral-400',
-                  'font-vazirmatn tabular-nums',
+                  'font-sans tabular-nums',
                 )}
               >
                 <span className="inline-flex items-center gap-1.5">
@@ -554,7 +554,7 @@ function ShowcaseAd({
               )}
 
               {/* Meta row */}
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
                 <span>{dateStr}</span>
                 {views !== null && (
                   <span className="inline-flex items-center gap-1">

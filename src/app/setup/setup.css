@@ -319,7 +319,6 @@
         1px 3px oklch(0% 0 0 / 0.05);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    overflow: clip;
   }
   .dark .setup-page__shell {
     background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.74), oklch(16% 0.016 255 / 0.62));
@@ -332,10 +331,12 @@
   .setup-page__shell-glow {
     position: absolute;
     inset: 0;
+    border-radius: inherit;
     background: radial-gradient(55% 3px at 50% 0%, oklch(72% 0.12 245 / 0.5), transparent 80%),
       radial-gradient(120% 35% at 50% -18%, oklch(70% 0.12 245 / 0.12), transparent 65%);
     pointer-events: none;
     z-index: 2;
+    overflow: hidden;
   }
   .dark .setup-page__shell-glow {
     background: radial-gradient(55% 3px at 50% 0%, oklch(78% 0.12 245 / 0.45), transparent 80%),
@@ -2170,39 +2171,14 @@
     margin-block-start: var(--space-1);
   }
 
-  /* Country-code prefix inside the phone field */
+  /* Country-code prefix inside the phone field — the shared premium
+     CountryCodeSelect dropdown, wrapped so it pins to the physical left
+     edge and centers vertically in the shell. */
   .setup-field__leading--country {
     inline-size: auto;
-    gap: 0.15rem;
-    padding-inline-start: var(--space-1);
-    color: oklch(45% 0.02 250);
-    /* RTL page: keep direction, reverse the flex so the dial code
-       renders left of the caret: [+93][⌄]. */
-    flex-direction: row-reverse;
-  }
-  .dark .setup-field__leading--country {
-    color: oklch(72% 0.01 245);
-  }
-  .setup-field__country {
-    appearance: none;
-    border: none;
-    background: transparent;
-    font: inherit;
-    font-size: 0.9375rem;
-    font-weight: 700;
-    color: inherit;
-    padding-inline: 0 0.3rem;
-    cursor: pointer;
-    outline: none;
-    font-variant-numeric: tabular-nums;
-    direction: ltr;
-  }
-  .setup-field__country-caret {
-    inline-size: 0.7rem;
-    block-size: 0.7rem;
-    opacity: 0.55;
-    flex-shrink: 0;
-    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   /* The phone field reads left-to-right as one unit: [+93][070 123 4567].
      In an RTL page, flipping the shell to `direction: ltr` makes Edge's
@@ -2218,10 +2194,15 @@
     position: absolute;
     inset-block-start: 0;
     inset-block-end: 0;
+    /* block-size: auto lets the absolute wrapper stretch to the shell
+       height (top+bottom 0) so the dropdown sits vertically centered. */
+    block-size: auto;
     left: var(--space-4);
     inline-size: auto;
     justify-content: flex-start;
-    z-index: 1;
+    /* z-index intentionally omitted — adding it creates an isolated stacking
+       context that traps the CountryCodeSelect panel (z-index:70) inside,
+       preventing it from overlaying sibling elements like the footer buttons. */
   }
   .setup-field--country .setup-field__input {
     padding-inline-start: 72px;
@@ -3231,6 +3212,198 @@
   }
 
   /* --------------------------------------------------------------------------
+     Premium refinements — depth, focus glow, and micro-motion
+     -------------------------------------------------------------------------- */
+
+  /* Gradient hairline — a quiet brand edge instead of a flat border. */
+  .setup-page__shell {
+    border-color: transparent;
+    background:
+      linear-gradient(180deg, oklch(100% 0 0 / 0.97), oklch(99% 0.003 245 / 0.9)) padding-box,
+      linear-gradient(
+          165deg,
+          oklch(72% 0.12 245 / 0.4),
+          oklch(91% 0.006 245 / 0.85) 38%,
+          oklch(70% 0.12 280 / 0.3)
+        )
+        border-box;
+  }
+  .dark .setup-page__shell {
+    background:
+      linear-gradient(180deg, oklch(20% 0.018 255 / 0.74), oklch(16% 0.016 255 / 0.62)) padding-box,
+      linear-gradient(
+          165deg,
+          oklch(58% 0.14 265 / 0.4),
+          oklch(34% 0.02 255 / 0.65) 40%,
+          oklch(56% 0.13 280 / 0.28)
+        )
+        border-box;
+  }
+
+  /* The headline progress number gets the brand gradient (fallback: solid). */
+  @supports ((background-clip: text) or (-webkit-background-clip: text)) {
+    .setup-stepper__pct-num {
+      background: linear-gradient(135deg, oklch(50% 0.16 265), oklch(56% 0.15 285));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+  }
+
+  /* Primary CTA — vertical sheen + layered glow instead of a flat fill. */
+  .setup-wizard__nav--primary,
+  .setup-intro__btn--primary {
+    background: linear-gradient(180deg, oklch(58% 0.16 265), oklch(50% 0.16 265));
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.22) inset, 0 1px 2px oklch(40% 0.16 265 / 0.35), 0
+      12px 24px -14px oklch(40% 0.16 265 / 0.55);
+  }
+  .setup-wizard__nav--primary:not(:disabled):hover,
+  .setup-intro__btn--primary:hover {
+    background: linear-gradient(180deg, oklch(63% 0.16 265), oklch(55% 0.16 265));
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.28) inset, 0 1px 2px oklch(40% 0.16 265 / 0.4), 0
+      16px 30px -14px oklch(40% 0.16 265 / 0.6);
+  }
+
+  /* Field focus — gradient ring + ambient glow; valid fields breathe green. */
+  .setup-field__shell:focus-within {
+    border-color: oklch(55% 0.16 265 / 0.9);
+    box-shadow: 0 0 0 3px oklch(55% 0.16 265 / 0.14), 0 0 0 1px oklch(55% 0.16 265 / 0.4), 0
+      10px 28px -14px oklch(40% 0.16 265 / 0.4);
+  }
+  .setup-field--error .setup-field__shell:focus-within {
+    border-color: oklch(55% 0.18 22);
+    box-shadow: 0 0 0 3px oklch(55% 0.18 22 / 0.12), 0 0 0 1px oklch(55% 0.18 22 / 0.4), 0
+      10px 28px -14px oklch(45% 0.14 22 / 0.35);
+  }
+  .setup-field--success .setup-field__shell {
+    border-color: oklch(62% 0.14 165 / 0.55);
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.6) inset, 0 0 0 1px oklch(62% 0.14 165 / 0.2), 0
+      6px 16px -10px oklch(40% 0.08 165 / 0.22);
+  }
+  .setup-field--success .setup-field__leading {
+    color: oklch(50% 0.13 165);
+  }
+  .dark .setup-field--success .setup-field__leading {
+    color: oklch(78% 0.1 165);
+  }
+  .setup-field--success .setup-field__shell:focus-within .setup-field__label,
+  .setup-field--success .setup-field__input:not(:placeholder-shown) + .setup-field__label {
+    color: oklch(45% 0.12 165);
+  }
+  .dark .setup-field--success .setup-field__shell:focus-within .setup-field__label,
+  .dark .setup-field--success .setup-field__input:not(:placeholder-shown) + .setup-field__label {
+    color: oklch(76% 0.1 165);
+  }
+  /* Valid check — pops in as soon as the field is non-empty and clean. */
+  .setup-field__valid {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    border-radius: 9999px;
+    background: oklch(62% 0.14 165 / 0.14);
+    color: oklch(48% 0.13 165);
+    animation: setup-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+  .dark .setup-field__valid {
+    background: oklch(62% 0.14 165 / 0.2);
+    color: oklch(76% 0.1 165);
+  }
+  .setup-field__valid svg {
+    inline-size: 0.72rem;
+    block-size: 0.72rem;
+  }
+  @keyframes setup-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .setup-field__action--copy:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .setup-field__action--copy:hover:not(:disabled) {
+    background: oklch(62% 0.14 165 / 0.12);
+    color: oklch(48% 0.13 165);
+  }
+  .dark .setup-field__action--copy:hover:not(:disabled) {
+    background: oklch(62% 0.14 165 / 0.18);
+    color: oklch(76% 0.1 165);
+  }
+
+  /* Progress fills — soft indigo→blue sweep with a passing sheen. */
+  .setup-stepper__pct-fill,
+  .setup-step-header__bar-fill {
+    background: linear-gradient(90deg, oklch(48% 0.15 285), oklch(60% 0.16 245));
+  }
+  .setup-step-header__bar-fill {
+    position: relative;
+  }
+  .setup-stepper__pct-fill::after,
+  .setup-step-header__bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, transparent, oklch(100% 0 0 / 0.45), transparent);
+    background-size: 200% 100%;
+    animation: setup-fill-sheen 2.6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes setup-fill-sheen {
+    0%,
+    55% {
+      background-position: 170% 0;
+    }
+    100% {
+      background-position: -70% 0;
+    }
+  }
+
+  /* Active stepper disc — quiet glow so the current step reads at a glance. */
+  .setup-stepper__item--active .setup-stepper__disc {
+    border-color: oklch(55% 0.16 265 / 0.6);
+    box-shadow: 0 0 0 3px oklch(55% 0.16 265 / 0.12), 0 8px 20px -8px oklch(40% 0.16 265 / 0.45);
+  }
+
+  /* Staggered rise — each block of the step settles in sequence. */
+  .setup-wizard__region {
+    animation: none;
+  }
+  .setup-wizard__region > * {
+    animation: setup-rise 0.45s var(--ds-ease-out-quart) both;
+  }
+  .setup-wizard__region > *:nth-child(2) {
+    animation-delay: 0.05s;
+  }
+  .setup-wizard__region > *:nth-child(3) {
+    animation-delay: 0.1s;
+  }
+  .setup-wizard__region > *:nth-child(4) {
+    animation-delay: 0.15s;
+  }
+  .setup-wizard__region > *:nth-child(5) {
+    animation-delay: 0.2s;
+  }
+  @keyframes setup-rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* --------------------------------------------------------------------------
      Responsive refinements — mobile-first density & touch targets
      -------------------------------------------------------------------------- */
 
@@ -3273,8 +3446,18 @@
       padding-block-end: 2rem;
       gap: 1rem;
     }
+    /* Smaller card + tighter gutters — the shell should read as a phone
+       sheet, not a desktop card scaled down. */
+    .setup-page__shell {
+      border-radius: 1.25rem;
+    }
     .setup-page__shell-inner {
-      padding: 1.25rem;
+      padding: 1rem;
+    }
+    .setup-preview-banner {
+      margin-block-end: 0.75rem;
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.625rem;
     }
     .setup-wizard {
       gap: var(--space-4);
@@ -3286,9 +3469,93 @@
       gap: var(--space-5);
     }
   }
+
+  /* Mobile performance profile — phones skip the heavy aurora stage, film
+     grain, blend modes, and backdrop blurs the desktop can afford. The
+     static wash keeps the brand feel at a fraction of the GPU cost. */
+  @media (max-width: 639.98px) {
+    .setup-stage__mesh,
+    .setup-stage__scan,
+    .setup-stage__grid,
+    .setup-stage__noise,
+    .setup-stage__blob--c,
+    .setup-stage__blob--d {
+      display: none;
+    }
+    .setup-stage__blob--a,
+    .setup-stage__blob--b {
+      filter: blur(28px);
+      opacity: 0.3;
+      animation: none;
+    }
+    .setup-page::after {
+      display: none;
+    }
+    .setup-page__topbar,
+    .setup-page__topnav-link,
+    .setup-page__shell,
+    .setup-wizard__nav--ghost,
+    .setup-wizard__autosave,
+    .setup-intro__perk,
+    .setup-intro__roadmap {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    .setup-stepper__pct-fill::after,
+    .setup-step-header__bar-fill::after,
+    .setup-preview-banner__dot {
+      animation: none;
+    }
+    /* One progress indicator is enough — the statusbar + stepper track
+       already carry the state; the header bar just adds noise. */
+    .setup-step-header__bar {
+      display: none;
+    }
+    .setup-wizard__region {
+      gap: 1rem;
+    }
+    /* Inputs hold a 16px floor (iOS zoom) while rem paddings shrink with the
+       fluid root — give single-line shells fixed px padding AND a wider flex
+       gap so the label, icon and check never sit on the typed text. */
+    .setup-field__shell:not(.setup-field__shell--textarea) {
+      padding-block: 18px 12px;
+      padding-inline: 14px;
+      gap: 12px;
+    }
+    /* The bio textarea gets the same fixed padding so its first line and the
+       inside label clear the top edge like the single-line fields. */
+    .setup-field__shell--textarea {
+      padding-block-start: 18px;
+      padding-inline: 14px;
+    }
+    .setup-field__shell--textarea .setup-field__label {
+      inset-block-start: 16px;
+    }
+    .setup-field {
+      gap: 6px;
+    }
+  }
+
   @media (max-width: 419.98px) {
     .setup-page__brand-text {
       display: none;
+    }
+  }
+  /* Phone-first stepper — compact dots row: drop the labels entirely so
+     all five steps fit without horizontal scroll. Names stay available to
+     screen readers via each button's aria-label. */
+  @media (max-width: 419.98px) {
+    .setup-stepper__copy {
+      display: none;
+    }
+    .setup-stepper__list {
+      margin-inline: auto;
+    }
+    .setup-stepper__btn {
+      min-block-size: 40px;
+      min-inline-size: 40px;
+      justify-content: center;
+      padding: 0.5rem;
     }
   }
 
@@ -3300,7 +3567,7 @@
       gap: var(--space-3);
     }
     .setup-wizard__nav {
-      padding-inline: var(--space-4);
+      padding-inline: 0.875rem;
       min-block-size: 40px;
     }
     .setup-wizard__hint {
@@ -3318,10 +3585,11 @@
     .setup-stepper__statusbar {
       grid-template-columns: 1fr auto;
       grid-template-areas:
-        'pct eta'
-        'track track';
-      gap: 0.4rem 0.75rem;
-      padding: var(--space-3) var(--space-4);
+        "pct eta"
+        "track track";
+      gap: 0.35rem 0.6rem;
+      padding: 0.75rem 1rem;
+      border-radius: 1rem;
     }
     .setup-stepper__pct {
       grid-area: pct;
@@ -3344,10 +3612,10 @@
       font-size: 12px;
     }
     .setup-stepper__pct-num {
-      font-size: 17px;
+      font-size: 15px;
     }
     .setup-stepper__eta-num {
-      font-size: 13px;
+      font-size: 12px;
     }
   }
 
@@ -3358,7 +3626,24 @@
     .setup-stepper__list {
       grid-template-columns: repeat(5, auto);
       inline-size: max-content;
-      gap: var(--space-3);
+      gap: 0.5rem;
+    }
+    /* Compact the step discs so more of the five steps fit on the row. */
+    .setup-stepper__disc {
+      inline-size: 1.5rem;
+      block-size: 1.5rem;
+    }
+    .setup-stepper__disc-inner {
+      inline-size: 1.25rem;
+      block-size: 1.25rem;
+    }
+    .setup-stepper__glyph {
+      inline-size: 0.875rem;
+      block-size: 0.875rem;
+    }
+    .setup-stepper__btn {
+      gap: 0.4rem;
+      padding: 0.4rem;
     }
   }
 
@@ -3413,8 +3698,43 @@
     .setup-stepper__title {
       font-size: 12px;
     }
-    .setup-field__country {
-      font-size: 15px;
+    /* Floated (filled/focused) label — same floor as the inline label. */
+    .setup-field__shell:focus-within .setup-field__label,
+    .setup-field__input:not(:placeholder-shown) + .setup-field__label {
+      font-size: 11px;
+    }
+    .setup-preview-banner {
+      font-size: 12px;
+    }
+    .setup-wizard__autosave {
+      font-size: 12px;
+    }
+    .setup-wizard__resume {
+      font-size: 13px;
+    }
+    .setup-step-header__badge {
+      font-size: 11px;
+    }
+    .setup-stepper__sub {
+      font-size: 11px;
+    }
+    .setup-page__topnav-badge {
+      font-size: 11px;
+    }
+    .setup-intro__roadmap-title {
+      font-size: 13px;
+    }
+    .setup-intro__roadmap-sub {
+      font-size: 12px;
+    }
+    .setup-intro__perk-title {
+      font-size: 13px;
+    }
+    .setup-intro__perk-body {
+      font-size: 12px;
+    }
+    .setup-intro__needs-list li {
+      font-size: 12px;
     }
   }
 
@@ -3472,7 +3792,11 @@
     .setup-already__cta,
     .setup-req__item[data-passed="true"] .setup-req__indicator,
     .admin-preview__avatar-ring,
-    .setup-confetti__piece {
+    .setup-confetti__piece,
+    .setup-wizard__region > *,
+    .setup-field__valid,
+    .setup-stepper__pct-fill::after,
+    .setup-step-header__bar-fill::after {
       animation: none !important;
       transition: none !important;
     }

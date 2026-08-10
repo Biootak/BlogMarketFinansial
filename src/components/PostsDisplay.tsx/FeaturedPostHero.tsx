@@ -222,7 +222,7 @@ export default function FeaturedPostHero({ post, className }: FeaturedPostHeroPr
                 </p>
               )}
 
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-vazirmatn tabular-nums">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 font-sans tabular-nums">
                 <span className="inline-flex items-center gap-1">
                   <Calendar className="h-3 w-3" strokeWidth={2} aria-hidden />
                   <time dateTime={new Date(createdAt).toISOString()}>{dateStr}</time>

@@ -594,7 +594,6 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2 + i * 0.1 }}
                     className="flex-1 h-[160px] sm:h-[180px] @min-[448px]/main-hero:flex-1"
-                    onClick={() => setActiveIndex(initialPosts.findIndex((p) => p.id === post.id))}
                   >
                     <MagneticSpotlightCard
                       tiltStrength={0.25}
@@ -602,7 +601,13 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                       className="relative group h-full w-full rounded-2xl overflow-hidden cursor-pointer bg-neutral-200 dark:bg-neutral-900"
                       innerClassName="relative h-full"
                     >
-                      {/* Image */}
+                      {/* Image — full-card link navigates to the post */}
+                      <Link
+                        href={getPostLink(post.postType, post.slug)}
+                        className="absolute inset-0 z-10"
+                        aria-hidden
+                        tabIndex={-1}
+                      />
                       <SafeImage
                         src={post.featuredImage}
                         alt={post.title}
@@ -655,9 +660,14 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                       </div>
 
                       {/* Content */}
-                      <div className="absolute bottom-0 start-0 end-0 p-2.5 sm:p-4 z-10">
+                      <div className="absolute bottom-0 start-0 end-0 p-2.5 sm:p-4 z-20">
                         <h3 className="text-[11.5px] sm:text-sm font-bold text-white line-clamp-3 sm:line-clamp-2 leading-snug">
-                          {post.title}
+                          <Link
+                            href={getPostLink(post.postType, post.slug)}
+                            className="hover:opacity-90 transition-opacity"
+                          >
+                            {post.title}
+                          </Link>
                         </h3>
                         <div className="flex items-center gap-1.5 mt-1.5">
                           <Avatar
