@@ -30,13 +30,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function ExchangeInsightsPage() {
   const membership = await getExchangeForUser();
-  if (!membership)
-    redirect('/auth?callbackUrl=/exchange/dashboard/insights&reason=exchange-not-found');
+  // 2026-08-10: کاربر لاگین‌شده بدون عضویت صرافی → /forbidden (نه /auth —
+  // که با auto-redirect فرانت‌اند حلقهٔ بی‌پایان می‌سازد).
+  if (!membership) redirect('/forbidden');
   const exchangeId = membership.exchange.id;
 
   const data = await getExchangeDashboardData(exchangeId);
-  if (!data)
-    redirect('/auth?callbackUrl=/exchange/dashboard/insights&reason=exchange-data-unavailable');
+  if (!data) redirect('/forbidden');
 
   return (
     <div className={s.root}>

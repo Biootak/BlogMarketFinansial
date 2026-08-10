@@ -119,7 +119,10 @@ export async function updateProfile(formData: FormData): Promise<ActionResult<vo
         success: true,
         message: 'ایمیل تغییر کرد — کد تأیید به آدرس جدید ارسال شد',
         variant: 'success',
-        redirect: `/auth?step=reverify&email=${encodeURIComponent(updateData.email)}`,
+        // 2026-08-10: readInitialStep فقط stepهای مجاز را می‌پذیرد — 'reverify'
+        // نبود و کاربر به مرحلهٔ ایمیل برمی‌گشت. حالا step=verify + intent=reverify
+        // که مستقیم به کد OTP می‌رود.
+        redirect: `/auth?step=verify&intent=reverify&email=${encodeURIComponent(updateData.email)}`,
       };
     }
 

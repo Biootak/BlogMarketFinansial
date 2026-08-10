@@ -1,0 +1,105 @@
+/* DailyBriefing — compact, fits inside heroGlyph space (max 220px) */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  margin-inline: auto;
+}
+
+/* ── Ring (80px) ─────────────────────────────────────────────── */
+
+.ringWrap {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.ringSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ringProgress {
+  transition: stroke-dasharray 600ms var(--ds-ease-out-quart);
+}
+
+.ring_green { stroke: var(--fc-accent); }
+.ring_amber { stroke: oklch(0.65 0.18 85); }
+.ring_red { stroke: oklch(0.55 0.22 25); }
+
+.ringCenter {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringScore {
+  font-size: var(--ds-text-lg);
+  font-weight: var(--ds-weight-bold);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.ringCenter_green .ringScore { color: var(--fc-accent); }
+.ringCenter_amber .ringScore { color: oklch(0.65 0.18 85); }
+.ringCenter_red .ringScore { color: oklch(0.55 0.22 25); }
+
+.ringLabel {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin-top: 1px;
+}
+
+/* ── Action link ─────────────────────────────────────────────── */
+
+.actionLink {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--ds-radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: background 180ms var(--ds-ease-out-quart);
+}
+
+.actionLink:hover {
+  background: oklch(from var(--fc-accent) l c h / 0.08);
+}
+
+.actionDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fc-accent);
+  flex-shrink: 0;
+}
+
+.actionDotUrgent {
+  background: oklch(0.55 0.22 25);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.actionLabel {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+}
+
+.actionLinkUrgent .actionLabel {
+  color: oklch(0.55 0.22 25);
+}

@@ -54,7 +54,9 @@ export default async function Dashboard() {
       .catch(() => null);
 
     if (!dbUser) {
-      redirect('/auth?callbackUrl=/dashboard');
+      // 2026-08-10: لاگین‌شده ولی کاربر در DB نیست → صفحهٔ اصلی (نه /auth —
+      // با auto-redirect فرانت‌اند حلقهٔ بی‌پایان می‌سازد).
+      redirect('/');
     }
 
     const accountAgeDays = dbUser.createdAt

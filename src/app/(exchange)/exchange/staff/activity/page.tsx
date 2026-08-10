@@ -28,7 +28,8 @@ export default async function StaffActivityPage({ searchParams }: PageProps) {
   const session = await auth();
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/staff/activity');
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/auth?callbackUrl=/exchange/dashboard&reason=exchange-not-found');
+  // 2026-08-10: لاگین‌شده بدون عضویت → /forbidden (نه /auth — حلقهٔ بی‌پایان)
+  if (!membership) redirect('/forbidden');
 
   const exchangeId = membership.exchange.id;
   const sp = await searchParams;

@@ -1,0 +1,65 @@
+/* UpcomingDeadlines — slim deadline bar */
+
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--ds-radius-md);
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid transparent;
+  transition: all 180ms var(--ds-ease-out-quart);
+  font-size: var(--ds-text-xs);
+}
+
+.chip:hover {
+  background: oklch(from var(--fc-accent) l c h / 0.06);
+}
+
+/* ── Tones ─────────────────────────────────────────────────── */
+
+.chip_ok {
+  border-color: color-mix(in oklch, var(--fc-accent) 30%, transparent);
+  background: oklch(from var(--fc-accent) l c h / 0.04);
+}
+
+.chip_warn {
+  border-color: color-mix(in oklch, oklch(0.65 0.18 85) 40%, transparent);
+  background: oklch(0.65 0.18 85 / 0.06);
+}
+
+.chip_critical {
+  border-color: color-mix(in oklch, oklch(0.55 0.22 25) 40%, transparent);
+  background: oklch(0.55 0.22 25 / 0.06);
+}
+
+.chipLabel {
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+}
+
+.chipDetail {
+  color: var(--ds-text-muted);
+}
+
+.chipDays {
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.chipDays_ok { color: var(--fc-accent); }
+.chipDays_warn { color: oklch(0.65 0.18 85); }
+.chipDays_critical { color: oklch(0.55 0.22 25); }

@@ -37,6 +37,7 @@ type SocialProviderId = keyof typeof PROVIDER_META;
 // شود که خطا می‌دهد.
 const SocialProviders: React.FC = () => {
   const [enabled, setEnabled] = useState<SocialProviderId[] | null>(null);
+  const searchParams = useSearchParams();
   const [loadingProvider, setLoadingProvider] = useState<SocialProviderId | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,8 +66,7 @@ const SocialProviders: React.FC = () => {
       // احترام به callbackUrl از URL (که middleware موقع redirect به /auth
       // می‌فرستد) — به‌جای DEFAULT_REDIRECT ثابت. اگر نباشد، همان dashboard.
       const urlCallback = searchParams.get('callbackUrl');
-      const callbackUrl =
-        urlCallback && urlCallback.startsWith('/') ? urlCallback : DEFAULT_REDIRECT;
+      const callbackUrl = urlCallback?.startsWith('/') ? urlCallback : DEFAULT_REDIRECT;
       const result = await signIn(provider, {
         redirect: false,
         callbackUrl,

@@ -18,7 +18,9 @@ export const dynamic = 'force-dynamic';
 export default async function CustomerDashboardPage() {
   // auth() حذف شد — layout.tsx احراز هویت را انجام داده است.
   const data = await getCustomerDashboardData();
-  if (!data) redirect('/auth?callbackUrl=/customer/dashboard');
+  // 2026-08-10: لاگین‌شده ولی بدون پروفایل/دسترسی مشتری → /forbidden
+  // (نه /auth — با auto-redirect فرانت‌اند حلقهٔ بی‌پایان می‌سازد).
+  if (!data) redirect('/forbidden');
 
   return <CustomerDashboardContent data={data} />;
 }

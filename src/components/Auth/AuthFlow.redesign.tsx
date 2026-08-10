@@ -58,7 +58,9 @@ export default function AuthFlow() {
   // 2026-07-29 (R13-fix): وقتی middleware به‌خاطر session منقضی به /auth ریدایرکت
   // می‌کند، پارامتر `expired=1` را هم می‌فرستد. اینجا notice می‌سازیم تا کاربر
   // بداند چرا به اینجا برگشته و صفحهٔ خالی نبیند.
-  const expiredReason = searchParams.get('expired');
+  // middleware هر دو حالت را می‌فرستد: `expired=1` (نشست منقضی) و
+  // `unauthenticated=1` (بدون نشست). هر دو باید notice نشان بدهند.
+  const expiredReason = searchParams.get('expired') ?? searchParams.get('unauthenticated');
   const reasonMessages: Record<string, string> = {
     '1': 'نشست شما منقضی شده است. لطفاً دوباره وارد شوید.',
     unauthenticated: 'برای دسترسی به این بخش، لطفاً وارد حساب خود شوید.',
@@ -69,11 +71,10 @@ export default function AuthFlow() {
 
   // 2026-08-10: اگر کاربر قبلاً login کرده است (مثلاً بعد از OAuth callback)،
   // مستقیماً به مقصد نهایی بروید — بدون نمایش دوبارهٔ مرحلهٔ ایمیل.
-  const alreadyAuthed =
-    status === 'authenticated' && session?.user && !expiredReason;
+  const alreadyAuthed = status === 'authenticated' && session?.user && !expiredReason;
   useEffect(() => {
     if (!alreadyAuthed) return;
-    const dest = callbackUrl && callbackUrl.startsWith('/') ? callbackUrl : '/dashboard';
+    const dest = callbackUrl?.startsWith('/') ? callbackUrl : '/dashboard';
     router.replace(dest);
   }, [alreadyAuthed, callbackUrl, router]);
 

@@ -48,7 +48,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { type ReactNode, useMemo, useState } from 'react';
+import { DailyBriefing } from './DailyBriefing';
 import s from './FintechCockpit.module.css';
+import { UpcomingDeadlines } from './UpcomingDeadlines';
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -111,6 +113,14 @@ export interface FintechCockpitProps {
     events: FintechCockpitLiveEvent[];
     activityBars: number[];
   };
+  /** Optional deadline items (KYC expiry, subscriptions, etc.) */
+  deadlines: Array<{
+    label: string;
+    detail: string;
+    href: string;
+    daysLeft: number;
+    icon: LucideIcon;
+  }>;
   /** Optional editorial deck — only for editor roles */
   editorial?: ReactNode;
 }
@@ -244,6 +254,10 @@ function CockpitHero({
   urgent,
   liveCount,
   fraudCount,
+  txn24h,
+  activeCustomers,
+  dealsVolume,
+  dealsCurrency,
 }: {
   userName: string;
   userRole: string;
@@ -252,6 +266,10 @@ function CockpitHero({
   urgent: number;
   liveCount: number;
   fraudCount: number;
+  txn24h: number;
+  activeCustomers: number;
+  dealsVolume: number;
+  dealsCurrency: string;
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -346,59 +364,16 @@ function CockpitHero({
           </Badge>
         </div>
 
-        <div className={s.heroGlyph} aria-hidden>
-          <svg viewBox="0 0 200 200" width="100%" height="100%">
-            <defs>
-              <radialGradient id="fc-glow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="var(--fc-accent)" stopOpacity="0.18" />
-                <stop offset="60%" stopColor="var(--fc-accent)" stopOpacity="0.04" />
-                <stop offset="100%" stopColor="var(--fc-accent)" stopOpacity="0" />
-              </radialGradient>
-              <linearGradient id="fc-ring" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="var(--fc-accent)" stopOpacity="0.9" />
-                <stop offset="100%" stopColor="var(--fc-accent-2)" stopOpacity="0.4" />
-              </linearGradient>
-            </defs>
-            <circle cx="100" cy="100" r="90" fill="url(#fc-glow)" />
-            <circle
-              cx="100"
-              cy="100"
-              r="76"
-              fill="none"
-              stroke="var(--fc-line)"
-              strokeWidth="1"
-              strokeDasharray="2 4"
-            />
-            <circle
-              cx="100"
-              cy="100"
-              r="58"
-              fill="none"
-              stroke="url(#fc-ring)"
-              strokeWidth="1.4"
-              opacity="0.85"
-            />
-            <circle cx="100" cy="42" r="3" fill="var(--fc-accent)" />
-            <circle cx="158" cy="100" r="2.4" fill="var(--fc-accent-2)" opacity="0.7" />
-            <circle cx="100" cy="158" r="2.4" fill="var(--fc-accent)" opacity="0.5" />
-            <line
-              x1="100"
-              y1="100"
-              x2="158"
-              y2="100"
-              stroke="var(--fc-accent)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            <circle cx="100" cy="100" r="3" fill="var(--fc-accent)" />
-          </svg>
-          <div className={s.heroGlyphLabel}>
-            <span className={s.heroGlyphLabelNum} dir="ltr">
-              {time.slice(0, 5)}
-            </span>
-            <span className={s.heroGlyphLabelSub}>ساعت جهانی</span>
-          </div>
-        </div>
+        <DailyBriefing
+          pending={pending}
+          urgent={urgent}
+          fraudCount={fraudCount}
+          txn24h={txn24h}
+          activeCustomers={activeCustomers}
+          dealsVolume={dealsVolume}
+          dealsCurrency={dealsCurrency}
+          liveEventCount={liveCount}
+        />
       </div>
     </section>
   );
@@ -783,6 +758,7 @@ export function FintechCockpit({
   kpi,
   services,
   live,
+  deadlines,
   editorial,
 }: FintechCockpitProps) {
   return (
@@ -796,10 +772,17 @@ export function FintechCockpit({
         urgent={services.stats.pendingUrgent}
         liveCount={live.events.length}
         fraudCount={kpi.openFraudCases}
+        txn24h={kpi.txn24h}
+        activeCustomers={kpi.activeCustomers}
+        dealsVolume={kpi.dealsVolume}
+        dealsCurrency={kpi.dealsCurrency}
       />
 
       {/* KPI strip — single horizontal row, no card repetition */}
       <KpiStrip kpi={kpi} />
+
+      {/* Upcoming deadlines — slim bar */}
+      <UpcomingDeadlines items={deadlines} />
 
       {/* Quick actions row */}
       <QuickActionsRow />

@@ -14,8 +14,9 @@ export default async function ExchangeIndex() {
     redirect('/auth?callbackUrl=/exchange/dashboard');
   }
   const membership = await getExchangeForUser();
+  // 2026-08-10: لاگین‌شده بدون عضویت → /forbidden (نه /auth — حلقهٔ بی‌پایان)
   if (!membership) {
-    redirect('/auth?callbackUrl=/exchange/dashboard&reason=exchange-not-found');
+    redirect('/forbidden');
   }
   redirect('/exchange/dashboard');
 }

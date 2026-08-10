@@ -37,7 +37,12 @@ const CUSTOMER_PORTAL_ROLES = new Set(['CUSTOMER', 'TEST_CUSTOMER', 'MERCHANT'])
  * بروند واقعاً درد دارد.
  * ───────────────────────────────────────────────────────────────── */
 
-/** APIهایی که هرگز نباید پشت گاردِ نشست بروند: وب‌هوک، پروب، دارایی عمومی. */
+/** APIهایی که هرگز نباید پشت گاردِ نشست بروند: وب‌هوک، پروب، دارایی عمومی.
+ *
+ * 2026-08-10: matcher به `/:path*` گسترش یافت (برای maintenance gate) و
+ * این یعنی همهٔ `/api/*` الان از middleware رد می‌شوند — پس فهرست زیر باید
+ * شامل تمام APIهای عمومی واقعی باشد (نرخ بازار، پست‌ها، تبلیغ هدر، ترک
+ * لینک، …). قبلاً matcher صریح بود و این‌ها اصلاً اجرا نمی‌شدند. */
 const OPEN_API_PREFIXES = [
   '/api/auth',
   '/api/public',
@@ -46,6 +51,16 @@ const OPEN_API_PREFIXES = [
   '/api/cron',
   '/api/telegram',
   '/api/health',
+  '/api/ping',
+  '/api/market-rates',
+  '/api/exchange-rates',
+  '/api/header-ad',
+  '/api/categories',
+  '/api/tags',
+  '/api/archive',
+  '/api/deal',
+  '/api/exchange-quotes',
+  '/api/money-transfer',
 ];
 
 /** APIهای مدیریتی — فقط OWNER / SUPERADMIN / ADMIN. */
@@ -188,7 +203,7 @@ export async function middleware(req: NextRequest) {
     if (isApi) return jsonError(401, 'SESSION_EXPIRED', 'نشست شما منقضی شده است');
     if (pathname === '/auth' || pathname.startsWith('/auth?')) return NextResponse.next();
     return NextResponse.redirect(
-      new URL(`/auth?expired=1&callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
+      new URL(`/auth?step=login&expired=1&callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
     );
   }
   const isLoggedIn = !!token;
@@ -216,7 +231,10 @@ export async function middleware(req: NextRequest) {
   if (!isLoggedIn && pathname.startsWith('/dashboard')) {
     const callbackUrl = pathname + search;
     return NextResponse.redirect(
-      new URL(`/auth?unauthenticated=1&callbackUrl=${encodeURIComponent(callbackUrl)}`, nextUrl),
+      new URL(
+        `/auth?step=login&unauthenticated=1&callbackUrl=${encodeURIComponent(callbackUrl)}`,
+        nextUrl,
+      ),
     );
   }
   if (isLoggedIn && pathname === '/dashboard' && role) {
@@ -238,7 +256,7 @@ export async function middleware(req: NextRequest) {
   if (pathname === '/exchange' || pathname.startsWith('/exchange/')) {
     if (!isLoggedIn)
       return NextResponse.redirect(
-        new URL(`/auth?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
+        new URL(`/auth?step=login&callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
       );
     if (role && !new Set(['EXCHANGE', 'OWNER', 'SUPERADMIN', 'ADMIN']).has(role))
       return NextResponse.redirect(new URL('/', nextUrl));
@@ -246,7 +264,7 @@ export async function middleware(req: NextRequest) {
   if (pathname === '/customer' || pathname.startsWith('/customer/')) {
     if (!isLoggedIn)
       return NextResponse.redirect(
-        new URL(`/auth?callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
+        new URL(`/auth?step=login&callbackUrl=${encodeURIComponent(pathname)}`, nextUrl),
       );
     if (
       role &&

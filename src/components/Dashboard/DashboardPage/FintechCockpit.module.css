@@ -300,43 +300,7 @@
   font-weight: 700;
 }
 
-.heroGlyph {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1;
-  max-width: 220px;
-  margin-inline: auto;
-  display: grid;
-  place-items: center;
-}
-
-.heroGlyphLabel {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  pointer-events: none;
-  text-align: center;
-}
-
-.heroGlyphLabelNum {
-  font-size: clamp(1.4rem, 1rem + 1.5vw, 1.8rem);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-  color: var(--ds-text-primary);
-  line-height: 1;
-}
-
-.heroGlyphLabelSub {
-  display: block;
-  margin-block-start: 0.25rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--ds-text-muted);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
+/* heroGlyph removed — replaced by DailyBriefing component (2026-08-10) */
 
 /* ──────────────────────── KPI strip ──────────────────────── */
 
@@ -1343,9 +1307,6 @@
   .heroSide {
     border-inline-start: 0;
     padding-inline-start: 0;
-  }
-  .heroGlyph {
-    max-width: 160px;
   }
   .svcLiveItem {
     grid-template-columns: auto 1fr auto;

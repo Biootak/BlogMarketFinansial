@@ -40,14 +40,14 @@ export default async function SessionExpiredPage() {
       ]}
       suggestedLinks={[
         {
-          href: '/auth?step=email&intent=login',
+          href: '/auth?step=login',
           label: 'ورود دوباره',
           sub: 'شروع مجدد ورود',
           icon: 'login',
         },
         { href: '/', label: 'صفحهٔ اصلی', sub: 'مرور عمومی سایت' },
       ]}
-      primaryLink={{ href: '/auth?step=email&intent=login', label: 'ورود دوباره', icon: 'login' }}
+      primaryLink={{ href: '/auth?step=login', label: 'ورود دوباره', icon: 'login' }}
       secondaryLinks={[{ href: '/', label: 'بازگشت به خانه', icon: 'home' }]}
       foot={{
         label: 'مشکل در ورود؟',

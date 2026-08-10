@@ -25,7 +25,8 @@ export default async function StaffPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/staff');
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/auth?callbackUrl=/exchange/dashboard&reason=exchange-not-found');
+  // 2026-08-10: لاگین‌شده بدون عضویت → /forbidden (نه /auth — حلقهٔ بی‌پایان)
+  if (!membership) redirect('/forbidden');
 
   const exchangeId = membership.exchange.id;
   const exchangeName = membership.exchange.name ?? 'صرافی';

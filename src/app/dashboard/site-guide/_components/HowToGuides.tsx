@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
@@ -34,7 +34,7 @@ function GuideCard({
         </span>
         <span className={s.cardTitle}>{guide.title}</span>
         <span className={s.stepCount}>{guide.steps.length} مرحله</span>
-        <ChevronRight size={16} className={s.chevron} data-expanded={expanded} />
+        <ChevronLeft size={16} className={s.chevron} data-expanded={expanded} />
       </button>
 
       {expanded && (
