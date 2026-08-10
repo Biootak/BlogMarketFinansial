@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import type { PostWithRelations } from '@/types/types';
 
 // 2026-07-28: migrated from unstable_cache → safeCache.
@@ -45,8 +45,10 @@ async function fetchPosts(limit: number): Promise<PostWithRelations[]> {
   return posts as PostWithRelations[];
 }
 
-export const getPosts = safeCache(fetchPosts, [] as PostWithRelations[], {
+export const getPosts = tieredCache(fetchPosts, [] as PostWithRelations[], {
   key: 'gallery-posts',
-  ttl: 60,
+  l1Ttl: 60,
+  l2Ttl: 300,
   tags: ['posts', 'gallery-posts'],
+  swr: true,
 });

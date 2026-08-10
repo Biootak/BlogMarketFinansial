@@ -2,7 +2,7 @@
 
 import prisma from '@/lib/db';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import type { PostWithRelations } from '@/types/types';
 import { PostStatus } from '@prisma/client';
 
@@ -124,10 +124,12 @@ async function fetchLatestPosts(
 
 // 2026-06-21: قبلاً unstable_cache بود. حالا safeCache.
 // CACHE_VERSION در key هست تا با تغییرش کش قبلی invalidate شود.
-const getCachedLatestPosts = safeCache(fetchLatestPosts, [], {
+const getCachedLatestPosts = tieredCache(fetchLatestPosts, [], {
   key: `latest-posts::${CACHE_VERSION}`,
-  ttl: 60,
+  l1Ttl: 60,
+  l2Ttl: 300,
   tags: ['posts', 'latest-posts'],
+  swr: true,
 });
 
 // Public API
@@ -163,10 +165,12 @@ async function fetchPublishedPostCount(): Promise<number> {
   }
 }
 
-const getCachedPublishedPostCount = safeCache(fetchPublishedPostCount, 0, {
+const getCachedPublishedPostCount = tieredCache(fetchPublishedPostCount, 0, {
   key: `published-post-count::${CACHE_VERSION}`,
-  ttl: 60,
+  l1Ttl: 60,
+  l2Ttl: 300,
   tags: ['posts', 'latest-posts'],
+  swr: true,
 });
 
 export async function getPublishedPostCount(): Promise<number> {

@@ -3,7 +3,8 @@
 import prisma from '@/lib/db';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { safeCache, safeRevalidateTag } from '@/lib/safe-cache';
+import { tieredCache, revalidateTag as redisRevalidateTag } from '@/lib/tiered-cache';
+import { safeRevalidateTag } from '@/lib/safe-cache';
 import type { ExchangeRateData, FintechActionResult } from '@/types/types';
 import { z } from 'zod';
 
@@ -21,14 +22,14 @@ const exchangeRateSchema = z.object({
 
 // 2026-08-01: unstable_cache → safeCache for DB-resilience.
 // safeCache returns [] on failure — admin dashboard degrades gracefully.
-const _getExchangeRatesCached = safeCache(
+const _getExchangeRatesCached = tieredCache(
   async () => {
     return prisma.exchangeRate.findMany({
       orderBy: [{ createdAt: 'desc' }],
     });
   },
   [],
-  { key: 'exchange-rates:list', ttl: 60, tags: ['market-rates:exchange-rates', 'exchange-rates'] },
+  { key: 'exchange-rates:list', l1Ttl: 60, l2Ttl: 300, tags: ['market-rates:exchange-rates', 'exchange-rates'] },
 );
 
 export async function getExchangeRates(): Promise<ExchangeRateData[]> {
@@ -61,6 +62,8 @@ export async function createExchangeRate(
     revalidateTag('market-rates:ticker');
     revalidateTag('market-rates:exchange-rates');
     safeRevalidateTag('exchange-rates');
+    await redisRevalidateTag('exchange-rates');
+    await redisRevalidateTag('market-rates:exchange-rates');
 
     return { success: true, data: newExchangeRate };
   } catch {
@@ -99,6 +102,8 @@ export async function updateExchangeRate(
     revalidateTag('market-rates:ticker');
     revalidateTag('market-rates:exchange-rates');
     safeRevalidateTag('exchange-rates');
+    await redisRevalidateTag('exchange-rates');
+    await redisRevalidateTag('market-rates:exchange-rates');
 
     return { success: true, data: updatedExchangeRate };
   } catch {
@@ -120,6 +125,8 @@ export async function deleteExchangeRate(id: string): Promise<FintechActionResul
     revalidateTag('market-rates:ticker');
     revalidateTag('market-rates:exchange-rates');
     safeRevalidateTag('exchange-rates');
+    await redisRevalidateTag('exchange-rates');
+    await redisRevalidateTag('market-rates:exchange-rates');
 
     return { success: true, data: { id } };
   } catch {

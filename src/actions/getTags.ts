@@ -2,7 +2,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import type { ActionResult, TaxonomyType } from '@/types/types';
 
 // 2026-07-28: getTags previously called unstable_cache() inline inside an
@@ -65,9 +65,10 @@ async function fetchTags(
   };
 }
 
-const getCachedTags = safeCache(fetchTags, FALLBACK, {
+const getCachedTags = tieredCache(fetchTags, FALLBACK, {
   key: 'tags-list',
-  ttl: 3600,
+  l1Ttl: 300,
+  l2Ttl: 3600,
   tags: ['tags'],
 });
 

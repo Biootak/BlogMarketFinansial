@@ -1,16 +1,14 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import { generateColor } from '@/lib/utils';
 import type { PostWithRelations, SidebarData, TaxonomyType } from '@/types/types';
 import { type TopAuthor, getTopAuthors } from './getTopAuthors';
 
-// 2026-06-21: همه‌ی cached functions در این فایل از safeCache استفاده می‌کنند.
-// قبلاً unstable_cache بود که در Next.js 16 خطای DB را re-throw می‌کرد.
-// حالا اگر DB قطع باشد، stale value (اگر قبلاً موفق بود) یا fallback.
+// 2026-08-11: همه‌ی cached functions از tieredCache (L1 in-memory + L2 Redis) استفاده می‌کنند.
 
-export const getRecentPosts = safeCache(
+export const getRecentPosts = tieredCache(
   async (limit: number): Promise<PostWithRelations[]> => {
     const recentPosts = await prisma.post.findMany({
       where: { status: 'PUBLISHED' },
@@ -67,10 +65,10 @@ export const getRecentPosts = safeCache(
     return recentPosts as unknown as PostWithRelations[];
   },
   [],
-  { key: 'recent-posts', ttl: 3600, tags: ['recent-posts'] },
+  { key: 'recent-posts', l1Ttl: 300, l2Ttl: 3600, tags: ['recent-posts'] },
 );
 
-export const getPopularTags = safeCache(
+export const getPopularTags = tieredCache(
   async (limit: number): Promise<TaxonomyType[]> => {
     const popularTags = await prisma.tag.findMany({
       take: limit,
@@ -99,10 +97,10 @@ export const getPopularTags = safeCache(
     }));
   },
   [],
-  { key: 'popular-tags', ttl: 3600, tags: ['popular-tags'] },
+  { key: 'popular-tags', l1Ttl: 300, l2Ttl: 3600, tags: ['popular-tags'] },
 );
 
-export const getPopularCategories = safeCache(
+export const getPopularCategories = tieredCache(
   async (limit: number): Promise<TaxonomyType[]> => {
     const popularCategories = await prisma.category.findMany({
       take: limit,
@@ -132,19 +130,19 @@ export const getPopularCategories = safeCache(
     }));
   },
   [],
-  { key: 'popular-categories', ttl: 3600, tags: ['popular-categories'] },
+  { key: 'popular-categories', l1Ttl: 300, l2Ttl: 3600, tags: ['popular-categories'] },
 );
 
-export const getPopularAuthors = safeCache(
+export const getPopularAuthors = tieredCache(
   async (limit: number): Promise<TopAuthor[]> => {
     return await getTopAuthors(limit);
   },
   [],
-  { key: 'popular-authors', ttl: 3600, tags: ['popular-authors'] },
+  { key: 'popular-authors', l1Ttl: 300, l2Ttl: 3600, tags: ['popular-authors'] },
 );
 
 export async function getSidebarData(): Promise<SidebarData> {
-  return safeCache<[], SidebarData>(
+  return tieredCache<[], SidebarData>(
     async () => {
       const [posts, tags, categories, authors, ads] = await Promise.all([
         prisma.post.findMany({
@@ -287,7 +285,8 @@ export async function getSidebarData(): Promise<SidebarData> {
     } as SidebarData,
     {
       key: 'sidebar-data',
-      ttl: 3600,
+      l1Ttl: 300,
+      l2Ttl: 3600,
       tags: [
         'sidebar-data',
         'sidebar-posts',

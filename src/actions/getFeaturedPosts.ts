@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import type { ActionResult, PostWithRelations } from '@/types/types';
 import { PostStatus } from '@prisma/client';
 
@@ -72,10 +72,12 @@ const EMPTY_FEATURED: ActionResult<PostWithRelations[]> = {
   data: [],
 };
 
-const getCachedFeaturedPosts = safeCache(fetchFeaturedPosts, EMPTY_FEATURED, {
+const getCachedFeaturedPosts = tieredCache(fetchFeaturedPosts, EMPTY_FEATURED, {
   key: 'featured-posts',
-  ttl: 60,
+  l1Ttl: 60,
+  l2Ttl: 300,
   tags: ['posts', 'featured-posts'],
+  swr: true,
 });
 
 // Public API

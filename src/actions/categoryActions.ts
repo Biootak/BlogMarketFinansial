@@ -4,7 +4,7 @@ import { logActivity } from '@/lib/activity-logger';
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
-import { safeCache } from '@/lib/safe-cache'; // 2026-06-21: جایگزین unstable_cache شد
+import { tieredCache } from '@/lib/tiered-cache';
 import { generateColor, generateSlug, validateSlug } from '@/lib/utils';
 import { CreateCategorySchema, UpdateCategorySchema } from '@/schemas';
 import type {
@@ -574,13 +574,15 @@ const FALLBACK_POPULAR_CATS: ActionResult<{ categories: TaxonomyType[] }> = {
   data: { categories: [] },
 };
 
-const getCachedPopularCategoriesForHome = safeCache(
+const getCachedPopularCategoriesForHome = tieredCache(
   fetchPopularCategoriesForHomeRaw,
   FALLBACK_POPULAR_CATS,
   {
     key: 'popular-categories-home',
-    ttl: 60,
+    l1Ttl: 60,
+    l2Ttl: 300,
     tags: ['categories', 'popular-categories-home'],
+    swr: true,
   },
 );
 

@@ -3373,12 +3373,18 @@
     box-shadow: 0 0 0 3px oklch(55% 0.16 265 / 0.12), 0 8px 20px -8px oklch(40% 0.16 265 / 0.45);
   }
 
-  /* Staggered rise — each block of the step settles in sequence. */
+  /* Staggered rise — each block of the step settles in sequence.
+     Fill `backwards` (not `both`): with `both`, the finished animation keeps
+     applying its identity transform forever, which leaves a permanent
+     stacking context on every step block and traps absolutely-positioned
+     overlays (e.g. the CountryCodeSelect dropdown, z-index 70) underneath
+     later siblings like the autosave pill. `backwards` releases the effect
+     when it ends, so the block returns to its natural transform-free state. */
   .setup-wizard__region {
     animation: none;
   }
   .setup-wizard__region > * {
-    animation: setup-rise 0.45s var(--ds-ease-out-quart) both;
+    animation: setup-rise 0.45s var(--ds-ease-out-quart) backwards;
   }
   .setup-wizard__region > *:nth-child(2) {
     animation-delay: 0.05s;
@@ -3399,7 +3405,7 @@
     }
     to {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
     }
   }
 

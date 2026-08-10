@@ -2,15 +2,26 @@
 
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeRevalidateTag } from '@/lib/safe-cache';
+import { revalidateTag as redisRevalidateTag } from '@/lib/tiered-cache';
+
+async function invalidateAllTiers(...tags: string[]) {
+  for (const tag of tags) {
+    revalidateTag(tag);            // Next.js Data Cache
+    safeRevalidateTag(tag);        // L1 in-memory safeCache
+    await redisRevalidateTag(tag); // L2 Redis
+  }
+}
 
 export async function invalidateUserCache(userId: string) {
-  revalidateTag(`user-${userId}`);
-  revalidateTag('user-posts');
-  revalidateTag('user-comments');
-  revalidateTag('user-likes');
-  revalidateTag('user-subscription');
-  revalidateTag('user-billing');
-  revalidateTag(`dashboard-user-${userId}`);
+  await invalidateAllTiers(
+    `user-${userId}`,
+    'user-posts',
+    'user-comments',
+    'user-likes',
+    'user-subscription',
+    'user-billing',
+    `dashboard-user-${userId}`,
+  );
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/edit-profile');
   revalidatePath('/dashboard/subscription');
@@ -19,18 +30,17 @@ export async function invalidateUserCache(userId: string) {
 }
 
 export async function invalidatePublicCache() {
-  revalidateTag('posts');
-  revalidateTag('archive');
-  revalidateTag('categories');
-  revalidateTag('tags');
-  revalidateTag('comments');
-  revalidateTag('system-settings');
-  revalidateTag('transfer-providers');
-  revalidateTag('money-transfer');
-  revalidateTag('rate-lists');
-  safeRevalidateTag('system-settings');
-  safeRevalidateTag('transfer-providers');
-  safeRevalidateTag('money-transfer');
+  await invalidateAllTiers(
+    'posts',
+    'archive',
+    'categories',
+    'tags',
+    'comments',
+    'system-settings',
+    'transfer-providers',
+    'money-transfer',
+    'rate-lists',
+  );
   await invalidateSidebarCache();
 }
 
@@ -39,28 +49,27 @@ export async function invalidateHomePageCache() {
   // getPublishedPostCount, getPosts (gallery) and getFeaturedPosts all
   // listen on. Without busting it, a freshly published post stays stale
   // on the home page for up to 60s.
-  revalidateTag('posts');
-  revalidateTag('featured-posts');
-  revalidateTag('latest-posts');
-  revalidateTag('popular-posts');
-  revalidateTag('gallery-posts');
-  revalidateTag('top-authors');
-  // 2026-07-08: also purge the in-memory safeCache slots (H5).
-  safeRevalidateTag('posts');
-  safeRevalidateTag('featured-posts');
-  safeRevalidateTag('latest-posts');
-  safeRevalidateTag('popular-posts');
-  safeRevalidateTag('gallery-posts');
-  safeRevalidateTag('top-authors');
+  await invalidateAllTiers(
+    'posts',
+    'featured-posts',
+    'latest-posts',
+    'popular-posts',
+    'gallery-posts',
+    'top-authors',
+    'recent-posts',
+    'popular-categories-home',
+  );
 }
 
 export async function invalidatePostCache(postId: string) {
-  revalidateTag(`post-${postId}`);
-  revalidateTag('post-slug');
-  revalidateTag('posts');
-  revalidateTag('archive');
-  revalidateTag('comments');
-  revalidateTag('dashboard-stats');
+  await invalidateAllTiers(
+    `post-${postId}`,
+    'post-slug',
+    'posts',
+    'archive',
+    'comments',
+    'dashboard-stats',
+  );
 }
 
 export async function invalidateSidebarCache() {
@@ -68,44 +77,39 @@ export async function invalidateSidebarCache() {
   // `sidebarActions` (`recent-posts`, `popular-tags`, `popular-categories`,
   // `popular-authors`). The previous `sidebar-*` keys never matched any
   // producer, so the sidebar stayed stale up to its 3600s TTL after publish.
-  revalidateTag('recent-posts');
-  revalidateTag('popular-tags');
-  revalidateTag('popular-categories');
-  revalidateTag('popular-authors');
-  safeRevalidateTag('recent-posts');
-  safeRevalidateTag('popular-tags');
-  safeRevalidateTag('popular-categories');
-  safeRevalidateTag('popular-authors');
-  revalidateTag('sidebar-data');
-  revalidateTag('sidebar-posts');
-  revalidateTag('sidebar-tags');
-  revalidateTag('sidebar-categories');
-  revalidateTag('sidebar-authors');
-  revalidateTag('sidebar-ads');
-  // 2026-07-08: also purge the in-memory safeCache slots (H5).
-  safeRevalidateTag('sidebar-data');
-  safeRevalidateTag('sidebar-posts');
-  safeRevalidateTag('sidebar-tags');
-  safeRevalidateTag('sidebar-categories');
-  safeRevalidateTag('sidebar-authors');
-  safeRevalidateTag('sidebar-ads');
-  safeRevalidateTag('top-authors');
-  safeRevalidateTag('rate-lists');
+  await invalidateAllTiers(
+    'recent-posts',
+    'popular-tags',
+    'popular-categories',
+    'popular-categories-home',
+    'popular-authors',
+    'sidebar-data',
+    'sidebar-posts',
+    'sidebar-tags',
+    'sidebar-categories',
+    'sidebar-authors',
+    'sidebar-ads',
+    'top-authors',
+    'rate-lists',
+    'crypto-rates',
+  );
 }
 
 export async function invalidateDashboardCache() {
-  revalidateTag('dashboard');
-  revalidateTag('dashboard-posts');
-  revalidateTag('dashboard-categories');
-  revalidateTag('dashboard-users');
-  revalidateTag('dashboard-reports');
-  revalidateTag('dashboard-settings');
-  revalidateTag('dashboard-advertisements');
-  revalidateTag('dashboard-exchange-rates');
-  revalidateTag('dashboard-credit-rates');
-  revalidateTag('dashboard-rate-lists');
-  revalidateTag('dashboard-subscription');
-  revalidateTag('dashboard-stats');
+  await invalidateAllTiers(
+    'dashboard',
+    'dashboard-posts',
+    'dashboard-categories',
+    'dashboard-users',
+    'dashboard-reports',
+    'dashboard-settings',
+    'dashboard-advertisements',
+    'dashboard-exchange-rates',
+    'dashboard-credit-rates',
+    'dashboard-rate-lists',
+    'dashboard-subscription',
+    'dashboard-stats',
+  );
 
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/posts');

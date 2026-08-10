@@ -2,7 +2,7 @@
 
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import type { ActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 
@@ -49,9 +49,10 @@ const fetchPopularPostsRaw = async (userId: string, role: string): Promise<Popul
   }));
 };
 
-const getCachedPopularPosts = safeCache(fetchPopularPostsRaw, [], {
+const getCachedPopularPosts = tieredCache(fetchPopularPostsRaw, [], {
   key: 'popular-posts',
-  ttl: 120,
+  l1Ttl: 120,
+  l2Ttl: 600,
   tags: ['popular-posts', 'posts'],
 });
 

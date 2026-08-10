@@ -19,7 +19,7 @@
  */
 
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import { PostStatus } from '@prisma/client';
 
 export interface LatestPostCategory {
@@ -76,8 +76,10 @@ async function loadLatestPostCategories(): Promise<LatestPostCategory[]> {
   }
 }
 
-export const getLatestPostCategories = safeCache(loadLatestPostCategories, [], {
+export const getLatestPostCategories = tieredCache(loadLatestPostCategories, [], {
   key: 'latest-post-categories',
-  ttl: 60,
+  l1Ttl: 60,
+  l2Ttl: 300,
   tags: ['latest-post-categories', 'posts', 'categories'],
+  swr: true,
 });

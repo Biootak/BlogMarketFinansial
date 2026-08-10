@@ -1,7 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import { type Profile, Role, type User } from '@prisma/client';
 import { cache } from 'react';
 
@@ -62,9 +62,10 @@ const fetchTopAuthorsRaw = async (limit: number): Promise<TopAuthor[]> => {
   }
 };
 
-const getCachedTopAuthors = safeCache(fetchTopAuthorsRaw, [], {
+const getCachedTopAuthors = tieredCache(fetchTopAuthorsRaw, [], {
   key: 'top-authors',
-  ttl: 600,
+  l1Ttl: 120,
+  l2Ttl: 600,
   tags: ['top-authors', 'posts'],
 });
 

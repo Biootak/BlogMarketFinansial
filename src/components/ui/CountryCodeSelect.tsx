@@ -65,6 +65,7 @@ export function CountryCodeSelect({
   const [open, setOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | undefined>(undefined);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const listId = useId();
@@ -137,18 +138,29 @@ export function CountryCodeSelect({
     return () => clearTimeout(t);
   }, [open]);
 
+  /**
+   * Close the dropdown. When `refocus` is true, focus returns to the trigger
+   * (Escape, picking an option, toggling closed) so focus never falls back to
+   * <body> when the panel unmounts. Outside-click close passes false — the
+   * user clicked somewhere else and that target owns focus.
+   */
+  const close = useCallback((refocus: boolean) => {
+    setOpen(false);
+    if (refocus) triggerRef.current?.focus();
+  }, []);
+
   const pick = useCallback(
     (code: string) => {
       onChange(code);
-      setOpen(false);
+      close(true);
     },
-    [onChange],
+    [close, onChange],
   );
 
   const handleTriggerKeyDown = useCallback(
     (e: KeyboardEvent<HTMLButtonElement>) => {
       if (e.key === 'Escape') {
-        setOpen(false);
+        close(true);
         return;
       }
       if (
@@ -159,28 +171,31 @@ export function CountryCodeSelect({
         setOpen(true);
       }
     },
-    [open],
+    [close, open],
   );
 
-  const handleListKeyDown = useCallback((e: KeyboardEvent<HTMLUListElement>) => {
-    if (e.key === 'Escape') {
-      setOpen(false);
-      return;
-    }
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const opts = Array.from(e.currentTarget.querySelectorAll<HTMLElement>('[role="option"]'));
-      const active = document.activeElement as HTMLElement;
-      const idx = opts.indexOf(active);
-      const next =
-        e.key === 'ArrowDown' ? Math.min(idx + 1, opts.length - 1) : Math.max(idx - 1, 0);
-      const target = opts[next];
-      if (target) {
-        setActiveId(target.id);
-        target.focus();
+  const handleListKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLUListElement>) => {
+      if (e.key === 'Escape') {
+        close(true);
+        return;
       }
-    }
-  }, []);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const opts = Array.from(e.currentTarget.querySelectorAll<HTMLElement>('[role="option"]'));
+        const active = document.activeElement as HTMLElement;
+        const idx = opts.indexOf(active);
+        const next =
+          e.key === 'ArrowDown' ? Math.min(idx + 1, opts.length - 1) : Math.max(idx - 1, 0);
+        const target = opts[next];
+        if (target) {
+          setActiveId(target.id);
+          target.focus();
+        }
+      }
+    },
+    [close],
+  );
 
   const handleOptionKeyDown = useCallback(
     (e: KeyboardEvent<HTMLLIElement>, code: string) => {
@@ -195,6 +210,7 @@ export function CountryCodeSelect({
   return (
     <div ref={wrapRef} className={`${s.wrap}${className ? ` ${className}` : ''}`} dir="ltr">
       <button
+        ref={triggerRef}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -202,7 +218,18 @@ export function CountryCodeSelect({
         aria-label={ariaLabel ?? `پیش‌شماره: ${selected?.dial ?? ''}`}
         data-open={open ? 'true' : undefined}
         className={s.trigger}
-        onClick={() => !disabled && setOpen((p) => !p)}
+        // The dropdown owns focus management: keep the trigger from taking
+        // native focus on click (it would linger as a visible "focus ring"
+        // for the 20ms before the panel focuses the selected option).
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => {
+          if (disabled) return;
+          if (open) {
+            close(true);
+          } else {
+            setOpen(true);
+          }
+        }}
         onKeyDown={handleTriggerKeyDown}
         disabled={disabled}
       >

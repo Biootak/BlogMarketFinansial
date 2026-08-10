@@ -1,6 +1,6 @@
 'use server';
 
-import { safeCache } from '@/lib/safe-cache';
+import { tieredCache } from '@/lib/tiered-cache';
 import { serverLog } from '@/lib/server-logger';
 import { getExirCryptoRates } from '../lib/exir-crypto-rates';
 
@@ -14,7 +14,7 @@ export type CryptoRate = {
 // دریافت نرخ‌ها از Exir با کش ۶۰ ثانیه‌ای.
 // قبلاً داده‌های شبیه‌سازی‌شده با Math.random برمی‌گرداند — حالا داده واقعی
 // از API صرافی Exir (با fallback امن به mock در صورت قطعی سرویس).
-export const getLiveCryptoRates = safeCache(
+export const getLiveCryptoRates = tieredCache(
   async (): Promise<CryptoRate[]> => {
     try {
       const result = await getExirCryptoRates();
@@ -33,5 +33,10 @@ export const getLiveCryptoRates = safeCache(
     }
   },
   [],
-  { key: 'crypto:live-rates', ttl: 60 },
+  {
+    key: 'crypto:live-rates',
+    l1Ttl: 30,
+    l2Ttl: 120,
+    tags: ['crypto-rates'],
+  },
 );
