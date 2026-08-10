@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 import type { StepId } from '@/lib/setup/schema';
 import { useSetupWizard } from '@/lib/setup/useSetupWizard';
@@ -17,9 +18,12 @@ import { StepReview } from './StepReview';
 import { ArrowLeftGlyph, ArrowRightGlyph, SaveGlyph, ShieldCheckGlyph } from './WizardIcons';
 
 /** Map a step id to its canonical URL. `intro` lives at `/setup`; every
- *  other step is a real sub-route (`/setup/identity`, …). */
-export function stepPath(step: StepId): string {
-  return step === 'intro' ? '/setup' : `/setup/${step}`;
+ *  other step is a real sub-route (`/setup/identity`, …). In activation
+ *  mode the invite token rides in the query string so it survives
+ *  navigation between the real sub-routes. */
+export function stepPath(step: StepId, token?: string | null): string {
+  const base = step === 'intro' ? '/setup' : `/setup/${step}`;
+  return token ? `${base}?token=${encodeURIComponent(token)}` : base;
 }
 
 /**
@@ -43,20 +47,37 @@ export function stepPath(step: StepId): string {
  * The side panel is only rendered during form steps because the preview
  * has no useful content during intro or after completion.
  */
-export function SetupWizard({ step }: { step: StepId }) {
+export function SetupWizard({
+  step,
+  activation = null,
+}: {
+  step: StepId;
+  /** Invite-based handover — set when the owner opened a valid `?token=` link. */
+  activation?: { email: string; token: string } | null;
+}) {
   const router = useRouter();
+  const token = activation?.token ?? null;
 
   const onStepChange = (target: StepId) => {
-    router.push(stepPath(target));
+    router.push(stepPath(target, token));
   };
 
-  const w = useSetupWizard({ step, onStepChange });
+  const w = useSetupWizard({ step, onStepChange, activation });
+
+  // Activation mode never shows the intro: the owner lands directly on the
+  // identity step (the /setup route redirects). Defensive fallback in case
+  // someone deep-links /setup?token=… straight to a stale render.
+  useEffect(() => {
+    if (w.activationMode && w.step === 'intro' && token) {
+      router.replace(`/setup/identity?token=${encodeURIComponent(token)}`);
+    }
+  }, [w.activationMode, w.step, token, router]);
 
   if (w.completed) {
     return <SetupComplete email={w.values.email} onContinue={() => router.push('/auth')} />;
   }
 
-  if (w.step === 'intro') {
+  if (w.step === 'intro' && !w.activationMode) {
     return (
       <div className="setup-wizard setup-wizard--solo">
         <IntroStep onStart={w.handleStart} hasResume={w.hasResume} />
@@ -125,6 +146,7 @@ export function SetupWizard({ step }: { step: StepId }) {
                   errors={w.visibleErrors}
                   onChange={w.handleChange}
                   onBlur={w.handleBlur}
+                  emailLocked={w.activationMode}
                 />
               ) : null}
 

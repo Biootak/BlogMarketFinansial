@@ -1,35 +1,21 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
+import { normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { ownerSetupSchema } from '@/lib/setup/server-schema';
 import { Role } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { headers } from 'next/headers';
-import { z } from 'zod';
 
 // مالک مهم‌ترین حساب سامانه است — هش قوی‌تر از کاربران عادی (cost 13 = 8192
 // راند key-stretching؛ OWASP حداقل 10 را برای bcrypt الزامی می‌داند). چون ساخت
 // مالک فقط یک‌بار و در /setup انجام می‌شود، هزینه‌ی اضافه قابل‌قبول است.
 const OWNER_BCRYPT_COST = 13;
 
-// اعتبارسنجی قوی‌تر با zod
-const superAdminSchema = z.object({
-  email: z.string().email('ایمیل نامعتبر است'),
-  password: z
-    .string()
-    .min(12, 'رمز عبور باید حداقل 12 کاراکتر باشد')
-    .regex(/[A-Z]/, 'رمز عبور باید شامل حروف بزرگ باشد')
-    .regex(/[a-z]/, 'رمز عبور باید شامل حروف کوچک باشد')
-    .regex(/[0-9]/, 'رمز عبور باید شامل اعداد باشد')
-    .regex(/[^A-Za-z0-9]/, 'رمز عبور باید شامل کاراکترهای خاص باشد'),
-  name: z.string().min(2, 'نام باید حداقل 2 حرف داشته باشد'),
-  // همان مکانیزم واحد phone-validation: همهٔ کشورها + بلوک شمارهٔ مجازی (VoIP).
-  phoneNumber: z.string().refine(isPhoneValid, 'شماره تماس معتبر نیست'),
-  jobName: z.string().min(2, 'عنوان شغلی باید حداقل 2 حرف داشته باشد'),
-  company: z.string().min(2, 'نام شرکت باید حداقل 2 حرف داشته باشد'),
-  bio: z.string().min(10, 'بیوگرافی باید حداقل 10 حرف داشته باشد'),
-});
+// اعتبارسنجی قوی‌تر با zod — اسکیمای مشترک با activateOwner در
+// src/lib/setup/server-schema.ts (منبع واحد؛ هر تغییری در هر دو اعمال شود).
+const superAdminSchema = ownerSetupSchema;
 
 export async function createSuperAdmin(formData: FormData) {
   try {
@@ -103,7 +89,15 @@ export async function createSuperAdmin(formData: FormData) {
     const txResult = await prisma.$transaction(
       async (tx) => {
         const existingAdmin = await tx.user.findFirst({ where: { role: Role.OWNER } });
-        if (existingAdmin) return { existing: true as const, user: null };
+        if (existingAdmin) {
+          return {
+            existing: true as const,
+            // Pending یعنی مالک هنوز توسط خودش فعال نشده — باید از لینک دعوت
+            // استفاده کند نه bootstrap.
+            pending: existingAdmin.status === 'Pending',
+            user: null,
+          };
+        }
 
         const hashedPassword = await bcrypt.hash(formDataObj.password, OWNER_BCRYPT_COST);
         // ذخیرهٔ شماره به فرمت استاندارد E.164 (هماهنگ با بقیهٔ اپ)
@@ -125,7 +119,7 @@ export async function createSuperAdmin(formData: FormData) {
           },
           include: { profile: true },
         });
-        return { existing: false as const, user: created };
+        return { existing: false as const, pending: false as const, user: created };
       },
       { isolationLevel: 'Serializable' },
     );
@@ -133,7 +127,9 @@ export async function createSuperAdmin(formData: FormData) {
     if (txResult.existing || txResult.user === null) {
       return {
         success: false,
-        message: 'تنظیمات اولیه قبلاً انجام شده است. لطفاً وارد سیستم شوید',
+        message: txResult.pending
+          ? 'حساب مالک ثبت شده اما هنوز فعال نشده است. برای فعال‌سازی از لینک دعوت اختصاصی استفاده کنید.'
+          : 'تنظیمات اولیه قبلاً انجام شده است. لطفاً وارد سیستم شوید',
         errors: {},
         existingAdmin: null,
       };

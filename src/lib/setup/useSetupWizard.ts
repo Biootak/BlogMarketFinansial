@@ -1,5 +1,6 @@
 'use client';
 
+import { activateOwner } from '@/actions/activateOwner';
 import { createSuperAdmin } from '@/actions/createSuperAdmin';
 import { useSetupStore } from '@/hooks/setupStore';
 import * as React from 'react';
@@ -111,6 +112,15 @@ export interface UseSetupWizardOptions {
    * navigates to the step's sub-route (see SetupWizard).
    */
   onStepChange: (step: StepId) => void;
+  /**
+   * Invite-based owner handover. When present, the wizard runs in
+   * activation mode: the email is locked to the invited address, the intro
+   * step is skipped (the owner lands directly on the identity step), and
+   * submitting calls `activateOwner` (single-use token) instead of
+   * `createSuperAdmin`. Draft resume is disabled so a stale bootstrap draft
+   * can never clobber the activation session.
+   */
+  activation?: { email: string; token: string } | null;
 }
 
 export interface UseSetupWizard {
@@ -124,6 +134,13 @@ export interface UseSetupWizard {
   busy: boolean;
   serverError: string | null;
   completed: boolean;
+
+  // activation (invite-based handover)
+  activationMode: boolean;
+  /** Locked email from the invite — read-only in the identity step. */
+  activationEmail: string | null;
+  /** Invite token threaded through the URL for the submit action. */
+  activationToken: string | null;
 
   // derived
   visibleErrors: Partial<Record<keyof SetupFormValues, string>>;
@@ -160,7 +177,11 @@ export interface UseSetupWizard {
   setServerError: (serverError: string | null) => void;
 }
 
-export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): UseSetupWizard {
+export function useSetupWizard({
+  step,
+  onStepChange,
+  activation = null,
+}: UseSetupWizardOptions): UseSetupWizard {
   const hydrated = useSetupStore((s) => s.hydrated);
   const hasResume = useSetupStore((s) => s.hasResume);
   const values = useSetupStore((s) => s.values);
@@ -193,13 +214,23 @@ export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): U
     if (mountedAtMs === 0) mountedAtMs = Date.now();
   }, []);
 
-  // Hydrate from localStorage on mount (once per page session — the store
-  // persists across sub-route remounts, so `hydrated` guards re-entry). The
-  // step itself comes from the URL (deep link / refresh), so only values +
-  // furthest are restored; the draft step is used purely to decide the
+  // Hydrate on mount (once per page session — the store persists across
+  // sub-route remounts, so `hydrated` guards re-entry). The step itself
+  // comes from the URL (deep link / refresh), so only values + furthest are
+  // restored from the draft; the draft step is used purely to decide the
   // resume CTA on the intro page.
+  //
+  // Activation mode never restores a draft: the email must come from the
+  // invite (locked), and a stale bootstrap draft would clobber the session.
   React.useEffect(() => {
     if (hydrated) return;
+    if (activation) {
+      setValues({ ...DEFAULT_VALUES, email: activation.email });
+      setFurthest('identity');
+      setHasResume(false);
+      setHydrated(true);
+      return;
+    }
     const draft = loadDraft();
     if (draft?.values) {
       setValues(valuesFromDraft(draft));
@@ -207,7 +238,7 @@ export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): U
       if (draft.furthest) setFurthest(draft.furthest);
     }
     setHydrated(true);
-  }, [hydrated, setValues, setHasResume, setFurthest, setHydrated]);
+  }, [hydrated, activation, setValues, setHasResume, setFurthest, setHydrated]);
 
   // Persist non-secret fields on every change after hydration.
   React.useEffect(() => {
@@ -218,13 +249,16 @@ export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): U
 
   const handleChange = React.useCallback(
     <K extends keyof SetupFormValues>(key: K, value: string) => {
+      // In activation mode the email is fixed by the invite — never let the
+      // client rewrite it (a disabled input is UX only; this is the real guard).
+      if (activation && key === 'email') return;
       // Read the latest values from the store (not the render closure) so
       // fast consecutive keystrokes never clobber each other.
       const current = useSetupStore.getState().values;
       setValues({ ...current, [key]: value });
       setServerError(null);
     },
-    [setValues, setServerError],
+    [activation, setValues, setServerError],
   );
 
   const handleBlur = React.useCallback(
@@ -341,13 +375,13 @@ export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): U
       );
       if (!ok) return;
     }
-    setValues(DEFAULT_VALUES);
+    setValues(activation ? { ...DEFAULT_VALUES, email: activation.email } : DEFAULT_VALUES);
     setTouched({});
     setFurthest('intro');
     setServerError(null);
     clearDraft();
     onStepChange('intro');
-  }, [setValues, setTouched, setFurthest, setServerError, onStepChange]);
+  }, [activation, setValues, setTouched, setFurthest, setServerError, onStepChange]);
 
   const handleSubmit = React.useCallback(async () => {
     setTouched(ALL_TOUCHED);
@@ -420,8 +454,13 @@ export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): U
       for (const [key, value] of Object.entries(payload)) {
         formData.append(key, value);
       }
+      // Invite-based handover: the single-use token authorizes completion
+      // of the pending OWNER row instead of bootstrapping a new one.
+      if (activation) formData.append('token', activation.token);
 
-      const response = await createSuperAdmin(formData);
+      const response = activation
+        ? await activateOwner(formData)
+        : await createSuperAdmin(formData);
       if (response.success) {
         setCompleted(true);
         clearDraft();
@@ -438,7 +477,7 @@ export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): U
     } finally {
       setBusy(false);
     }
-  }, [goTo, values, honeypot, setBusy, setServerError, setTouched, setCompleted]);
+  }, [goTo, values, honeypot, activation, setBusy, setServerError, setTouched, setCompleted]);
 
   const handleFormSubmit = React.useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -482,6 +521,10 @@ export function useSetupWizard({ step, onStepChange }: UseSetupWizardOptions): U
     busy,
     serverError,
     completed,
+    // activation
+    activationMode: activation != null,
+    activationEmail: activation?.email ?? null,
+    activationToken: activation?.token ?? null,
     // derived
     visibleErrors,
     isStepValid,

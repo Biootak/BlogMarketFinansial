@@ -1,17 +1,17 @@
 'use client';
 
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/components/ThemeProvider';
 import { useEffect, useState } from 'react';
 
 export const useThemeMode = () => {
-  const { setTheme, resolvedTheme } = useTheme();
+  const { setTheme, theme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isDarkMode = mounted ? resolvedTheme === 'dark' : false;
+  const isDarkMode = mounted ? theme === 'dark' : false;
 
   const toDark = () => {
     setTheme('dark');
@@ -22,7 +22,7 @@ export const useThemeMode = () => {
   };
 
   const toggleDarkMode = () => {
-    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return {

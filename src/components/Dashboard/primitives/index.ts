@@ -93,4 +93,7 @@ export type { SearchInputProps } from './SearchInput';
 export { RouteError } from './RouteError';
 export type { RouteErrorProps } from './RouteError';
 
+export { NotFound } from './NotFound';
+export type { NotFoundProps, NotFoundLink, NotFoundTone } from './NotFound';
+
 export type { SettingsNavIconName } from './SettingsSubNav';

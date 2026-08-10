@@ -14,7 +14,6 @@
  */
 import { Toaster } from '@/components/ui/toaster';
 import type { Metadata, Viewport } from 'next';
-import Script from 'next/script';
 
 import './globals.css';
 // 2026-08-05 perf: `index.scss` (22KB SCSS → ~35KB compiled CSS) moved from
@@ -27,6 +26,7 @@ import './globals.css';
 
 import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';
+import { DevScriptInjector } from '@/components/DevScriptInjector';
 import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
 // فونت‌ها از `src/app/fonts/index.ts` مدیریت می‌شوند — تنها منبع حقیقت.
 // برای تعویض فونت فقط همان فایل را تغییر بده — CSS و کامپوننت‌ها بدون تغییر
@@ -118,16 +118,14 @@ export default function RootLayout({
         {/* 2026-08-05 perf: MutationObserver روی کل subtree در prod فقط
             CPU می‌سوزاند. hydration mismatch warning فقط در dev نمایش داده
             می‌شود، پس اسکریپت strip-extension-attrs فقط در dev لود می‌شود. */}
-        {process.env.NODE_ENV === 'development' && (
-          <Script id="strip-extension-attrs" strategy="beforeInteractive">
-            {STRIP_EXTENSION_ATTRS_SCRIPT}
-          </Script>
-        )}
       </head>
       <body
         className="bg-[var(--ds-canvas)] text-[var(--ds-text-primary)] antialiased"
         suppressHydrationWarning
       >
+        {process.env.NODE_ENV === 'development' && (
+          <DevScriptInjector id="strip-extension-attrs" code={STRIP_EXTENSION_ATTRS_SCRIPT} />
+        )}
         <Providers>
           <PageViewTracker />
           {children}

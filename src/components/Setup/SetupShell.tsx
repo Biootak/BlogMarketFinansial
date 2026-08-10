@@ -7,6 +7,7 @@ import { headers } from 'next/headers';
 import Link from 'next/link';
 import type * as React from 'react';
 import { AuroraBackdrop } from './AuroraBackdrop';
+import { InvalidInvite, InviteRequired } from './InviteScreens';
 import { SecurityNotice } from './SecurityNotice';
 import { ArrowLeftGlyph, ShieldCheckGlyph } from './WizardIcons';
 
@@ -53,9 +54,24 @@ export function SetupSkeleton({ siteName, logoUrl }: { siteName: string; logoUrl
 
 export interface SetupShellProps {
   children: React.ReactNode;
+  /**
+   * Invite-based handover mode: the owner opened a valid `/setup?token=…`
+   * link. The shell skips the "already configured" gate and renders the
+   * wizard; the email is locked in the UI (see SetupWizard).
+   */
+  activation?: { email: string } | null;
+  /**
+   * A `?token=` was present but invalid/expired/consumed — render the
+   * invalid-invite screen regardless of DB state.
+   */
+  invalidInvite?: boolean;
 }
 
-export async function SetupShell({ children }: SetupShellProps) {
+export async function SetupShell({
+  children,
+  activation = null,
+  invalidInvite = false,
+}: SetupShellProps) {
   const isProduction = process.env.NODE_ENV === 'production';
   // Dev-only preview: render the wizard even when a super-admin already
   // exists so the UI can be redesigned/tested without resetting the DB.
@@ -83,6 +99,23 @@ export async function SetupShell({ children }: SetupShellProps) {
     // operator can recover. The server action will be the authoritative
     // gate and will refuse the duplicate if it materialises.
   }
+
+  // Body precedence:
+  //   1. Valid invite (activation) — the owner is completing their own
+  //      account; the one-OWNER gate is bypassed by design (the pending
+  //      row IS that account).
+  //   2. Invalid invite link — show it regardless of DB state.
+  //   3. Existing OWNER — Pending → invite required; Active → already
+  //      configured (unless dev preview mode).
+  //   4. No OWNER — first-run bootstrap wizard.
+  const activationMode = activation != null;
+  const showGate = existingAdmin != null && !previewMode && !activationMode;
+  const blockedScreen =
+    existingAdmin != null && existingAdmin.status === 'Pending' ? (
+      <InviteRequired />
+    ) : (
+      <AlreadyConfigured email={existingAdmin?.email ?? ''} />
+    );
 
   const { siteName, logoUrl } = await getSiteIdentity();
 
@@ -116,8 +149,10 @@ export async function SetupShell({ children }: SetupShellProps) {
           <article className="setup-page__shell" aria-describedby="setup-trust">
             <div className="setup-page__shell-glow" aria-hidden="true" />
             <div className="setup-page__shell-inner">
-              {existingAdmin && !previewMode ? (
-                <AlreadyConfigured email={existingAdmin.email ?? ''} />
+              {invalidInvite && !activationMode ? (
+                <InvalidInvite />
+              ) : showGate ? (
+                blockedScreen
               ) : (
                 <>
                   {previewMode ? <PreviewBanner /> : null}

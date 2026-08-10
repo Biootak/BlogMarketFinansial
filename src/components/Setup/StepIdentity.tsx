@@ -9,9 +9,14 @@ export interface StepIdentityProps {
   errors: Partial<Record<keyof SetupFormValues, string>>;
   onChange: <K extends keyof SetupFormValues>(key: K, value: string) => void;
   onBlur: <K extends keyof SetupFormValues>(key: K) => void;
+  /**
+   * Invite-based handover: the email is fixed by the invite link and shown
+   * read-only. The server re-validates against the token regardless.
+   */
+  emailLocked?: boolean;
 }
 
-export function StepIdentity({ values, errors, onChange, onBlur }: StepIdentityProps) {
+export function StepIdentity({ values, errors, onChange, onBlur, emailLocked }: StepIdentityProps) {
   return (
     <div className="setup-step-grid">
       <Field
@@ -46,9 +51,14 @@ export function StepIdentity({ values, errors, onChange, onBlur }: StepIdentityP
         onBlur={() => onBlur('email')}
         maxLength={254}
         required
+        disabled={emailLocked}
         dir="ltr"
         error={errors.email ?? null}
-        help="برای بازیابی رمز عبور و ورود استفاده می‌شود."
+        help={
+          emailLocked
+            ? 'این ایمیل از لینک دعوت شما تعیین شده و قابل تغییر نیست.'
+            : 'برای بازیابی رمز عبور و ورود استفاده می‌شود.'
+        }
         leading={
           <span className="setup-field__ico">
             <MailGlyph />

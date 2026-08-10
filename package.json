@@ -21,6 +21,7 @@
     "db:seed": "node prisma/seed.js",
     "db:seed:quotes": "node prisma/seed-exchange-quotes.js",
     "db:seed:rates": "npx tsx prisma/seed-market-rates.ts",
+    "setup:owner-invite": "npx tsx scripts/owner-setup-invite.ts",
     "db:reset": "node scripts/reset-and-seed-50-posts.js",
     "db:fresh": "prisma migrate reset --force && npm run db:seed",
     "db:stats": "node scripts/db-stats.js",

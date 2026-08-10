@@ -1,27 +1,18 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import { ThemeProvider } from 'next-themes';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 /**
  * Providers — wraps the app in SessionProvider + ThemeProvider.
  *
  * Session strategy:
- *  - refetchOnWindowFocus=true  → re-validates token when user returns to tab.
- *    This is the primary fix for "logged in elsewhere but header still shows guest".
+ *  - refetchOnWindowFocus=false  → only fetch on mount.
  *  - refetchWhenOffline=false   → don't fire requests when network is down.
- *  - refetchInterval=0          → no background polling (avoids server pressure).
- *    After login/logout, router.refresh() + router.push() in the auth components
- *    re-renders the RSC tree and useSession() reflects the new state immediately.
+ *  - refetchInterval=0          → no background polling.
  *
- * Theme flash prevention: next-themes injects its own blocking script via
- * `<script>` that reads localStorage before paint. We rely on that built-in
- * mechanism instead of our own useState/useEffect mount guard, which was
- * causing an extra render cycle (mounted=false → mounted=true) on every page.
- *
- * `suppressHydrationWarning` on <html> (in layout.tsx) handles the class mismatch
- * that next-themes creates when the user has a dark preference stored — the HTML
- * attribute is set synchronously by the injected script before React hydrates.
+ * Theme: custom ThemeProvider (replaces next-themes) to avoid <script>
+ * injection which is blocked in Next.js 16 React tree.
  */
 export default function Providers({
   children,
@@ -33,20 +24,11 @@ export default function Providers({
   return (
     <SessionProvider
       {...(session ? { session: session as never } : {})}
-      // 2026-08-08: در هر visibilitychange/focus یک fetch /api/auth/session
-      // می‌رفت (در هر بازدید چند بار). برای سایت محتوایی که session کم تغییر
-      // می‌کند زائد است — فقط روی mount اولیه fetch می‌شود.
       refetchOnWindowFocus={false}
       refetchWhenOffline={false}
       refetchInterval={0}
     >
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem={false}
-        storageKey="bmf-theme"
-        disableTransitionOnChange
-      >
+      <ThemeProvider defaultTheme="light" storageKey="bmf-theme">
         {children}
       </ThemeProvider>
     </SessionProvider>
