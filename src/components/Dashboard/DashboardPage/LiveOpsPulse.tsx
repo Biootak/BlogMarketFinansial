@@ -36,6 +36,8 @@ export interface LiveOpsService {
   id: string;
   name: string;
   desc: string;
+  /** جزئیات بیشتر برای tooltip ردیف (مثل باکت‌ها/endpointهای پول S3). */
+  title?: string;
   /** یا `icon` (LucideIcon) برای استفاده مستقیم، یا `iconName` برای داده سرور. */
   icon?: LucideIcon;
   iconName?: string;
@@ -264,11 +266,13 @@ export function LiveOpsPulse({
                 return (
                   <li key={svc.id} className={s.serviceItem} data-status={svc.status}>
                     {svc.href ? (
-                      <Link href={svc.href} className={s.serviceLink}>
+                      <Link href={svc.href} className={s.serviceLink} title={svc.title}>
                         {inner}
                       </Link>
                     ) : (
-                      <div className={s.serviceLink}>{inner}</div>
+                      <div className={s.serviceLink} title={svc.title}>
+                        {inner}
+                      </div>
                     )}
                   </li>
                 );

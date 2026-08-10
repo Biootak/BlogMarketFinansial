@@ -1,26 +1,28 @@
 'use client';
 
 /**
- * KycReviewClient — Vault Command Center
+ * KycReviewClient — IDENTITY COMMAND CENTER (2026 Redesign)
  *
- * طراحی: Split-pane KYC review — لیست کارت‌های صف (راست) + پنل بررسی مداوم (چپ).
- * Mobile-first: stack عمودی. Desktop: split 55/45.
+ * Complete structural redesign: bento-grid command center with immersive
+ * review workspace. Mobile-first, RTL-first, token-only, zero AI-slop.
  *
- * ویژگی‌ها:
- *  - KPI strip مینیمال با accent stripe
- *  - Queue cards با glass + hover elevation + urgent pulse
- *  - Split-pane: انتخاب کارت → پنل بررسی بدون modal
- *  - Document preview با lazy load + fallback
- *  - Approve/Reject inline در پنل — بدون dialog اضافی
- *  - Dual-scope: کاربران پلتفرم + مشتریان صرافی‌ها
- *  - Search + filter inline
- *  - Keyboard nav: arrow keys روی کارت‌ها، Enter برای باز کردن، Esc برای بستن
- *  - Optimistic UI + rollback
- *  - Client-side rate-limit guard
+ * Layout:
+ *   - Top: KPI bento strip (compact, dense, professional)
+ *   - Middle: Command bar (scope + search + filters)
+ *   - Bottom: Split workspace — Queue (right, dense list) + Review (left, immersive)
+ *   - Mobile: vertical stack, queue → review
+ *
+ * Features preserved:
+ *   - Dual-scope (User / Customer)
+ *   - Keyboard nav (Arrow keys / Enter / Esc)
+ *   - Optimistic UI + rollback
+ *   - Client-side rate-limit guard
+ *   - All backend actions intact
  */
 
 import { reviewCustomerKycRecord } from '@/actions/customer-portal';
 import { reviewKycRecord } from '@/actions/kyc-onboarding';
+import { GeometricField } from '@/components/Dashboard/primitives/GeometricAccent';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives/MillionDollarEmpty';
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { SearchInput } from '@/components/Dashboard/primitives/SearchInput';
@@ -37,6 +39,8 @@ import { formatFaNumber } from '@/lib/fa-number';
 import { cn } from '@/lib/utils';
 import {
   AlertCircle,
+  ArrowDown,
+  ArrowUp,
   Building2,
   CheckCircle2,
   Clock,
@@ -44,7 +48,10 @@ import {
   FileText,
   Fingerprint,
   ImageOff,
+  KeyRound,
+  Layers,
   Shield,
+  ShieldCheck,
   User,
   Users,
   X,
@@ -56,12 +63,13 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useTransition,
 } from 'react';
 import s from './KycReviewClient.module.css';
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────
 
 type KycRow = {
   id: string;
@@ -92,7 +100,7 @@ type Props = { records: KycRow[]; customerRecords: CustomerKycRow[] };
 
 type Scope = 'user' | 'customer';
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────
 
 function formatDate(d: string | null): string {
   if (!d) return '—';
@@ -157,15 +165,15 @@ const KYC_LEVEL_LABELS: Record<string, string> = {
   LEVEL_3: 'سطح ۳',
 };
 
-// ─── DocImage with fallback ────────────────────────────────────────────────────
+// ─── DocThumb ─────────────────────────────────────────────────────────────
 
-function DocImage({ src, alt, label }: { src: string; alt: string; label: string }) {
+function DocThumb({ src, alt, label }: { src: string; alt: string; label: string }) {
   const [error, setError] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   if (error) {
     return (
-      <div className={s.imgFallback}>
+      <div className={s.docFallback}>
         <ImageOff size={24} aria-hidden />
         <span>{label} — بارگذاری ناموفق</span>
       </div>
@@ -173,9 +181,9 @@ function DocImage({ src, alt, label }: { src: string; alt: string; label: string
   }
 
   return (
-    <div className={s.docImgWrap}>
+    <div className={s.docThumb}>
       {!loaded && (
-        <div className={s.docImgSkeleton}>
+        <div className={s.docThumb__skeleton}>
           <FileText size={20} aria-hidden />
         </div>
       )}
@@ -183,15 +191,20 @@ function DocImage({ src, alt, label }: { src: string; alt: string; label: string
         src={src}
         alt={alt}
         fill
-        className={cn(s.docImg, loaded && s.docImgLoaded)}
+        className={cn(s.docThumb__img, loaded && s.docThumb__imgLoaded)}
         onLoad={() => setLoaded(true)}
         onError={() => setError(true)}
         unoptimized
         sizes="(max-width: 768px) 80vw, 400px"
       />
-      <div className={s.docImgOverlay}>
-        <span className={s.docImgLabel}>{label}</span>
-        <button type="button" className={s.docZoomBtn} title="بزرگنمایی" aria-label="بزرگنمایی">
+      <div className={s.docThumb__overlay}>
+        <span className={s.docThumb__label}>{label}</span>
+        <button
+          type="button"
+          className={s.docThumb__zoom}
+          onClick={() => window.open(src, '_blank')}
+          aria-label="بزرگنمایی"
+        >
           <Eye size={14} />
         </button>
       </div>
@@ -199,14 +212,14 @@ function DocImage({ src, alt, label }: { src: string; alt: string; label: string
   );
 }
 
-// ─── Avatar ────────────────────────────────────────────────────────────────────
+// ─── Avatar ───────────────────────────────────────────────────────────────
 
 function Avatar({ name, size = 'sm' }: { name: string | null; size?: 'sm' | 'md' | 'lg' }) {
   const hue = nameHue(name);
-  const sizeMap = { sm: s.avatarSm, md: s.avatarMd, lg: s.avatarLg };
+  const sizeClass = size === 'sm' ? s.avatarSm : size === 'md' ? s.avatarMd : s.avatarLg;
   return (
     <div
-      className={cn(s.avatar, sizeMap[size])}
+      className={cn(s.avatar, sizeClass)}
       aria-hidden
       style={{
         background: `oklch(91% 0.04 ${hue})`,
@@ -218,18 +231,51 @@ function Avatar({ name, size = 'sm' }: { name: string | null; size?: 'sm' | 'md'
   );
 }
 
-// ─── UrgentBadge ───────────────────────────────────────────────────────────────
+// ─── UrgentBadge ──────────────────────────────────────────────────────────
 
 function UrgentBadge() {
   return (
-    <span className={s.urgentBadge}>
-      <span className={s.urgentDot} aria-hidden />
+    <span className={s.urgent}>
+      <span className={s.urgent__dot} aria-hidden />
       فوری
     </span>
   );
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────────
+// ─── KpiTile ──────────────────────────────────────────────────────────────
+
+function KpiTile({
+  label,
+  value,
+  icon,
+  accent,
+  delay,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  accent: string;
+  delay: number;
+}) {
+  return (
+    <div
+      className={s.kpiTile}
+      style={{
+        '--kpi-accent': accent,
+        '--kpi-delay': `${delay}ms`,
+      } as React.CSSProperties}
+    >
+      <div className={s.kpiTile__glow} />
+      <div className={s.kpiTile__icon}>{icon}</div>
+      <div className={s.kpiTile__content}>
+        <span className={s.kpiTile__value}>{formatFaNumber(value)}</span>
+        <span className={s.kpiTile__label}>{label}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────
 
 export function KycReviewClient({ records: initial, customerRecords: initialCustomer }: Props) {
   const [rows, setRows] = useState<KycRow[]>(initial);
@@ -257,13 +303,14 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
   // Search
   const [search, setSearch] = useState('');
 
+  // Keyboard shortcut hints
+  const [showShortcuts, setShowShortcuts] = useState(false);
+  const shortcutsTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
   // Auto-clear banners
   useEffect(() => {
     if (!lastAction && !error) return;
-    const t = setTimeout(() => {
-      setLastAction(null);
-      setError(null);
-    }, 5000);
+    const t = setTimeout(() => { setLastAction(null); setError(null); }, 5000);
     return () => clearTimeout(t);
   }, [lastAction, error]);
 
@@ -275,7 +322,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
   }, [actionCooldown]);
   const actionLocked = actionCooldown > 0;
 
-  // ── Filtered rows ────────────────────────────────────────────────────────
+  // ── Filtered rows ────────────────────────────────────────────────────
   const filteredRows = useMemo(() => {
     if (!search.trim()) return rows;
     const q = search.trim().toLowerCase();
@@ -299,65 +346,52 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
     );
   }, [customerRows, search]);
 
-  // ── Derived counts ───────────────────────────────────────────────────────
-  const withDocs = useMemo(
-    () => rows.filter((r) => r.docFrontUrl || r.docBackUrl || r.selfieUrl).length,
-    [rows],
-  );
-  const withoutDocs = useMemo(
-    () => rows.filter((r) => !r.docFrontUrl && !r.docBackUrl && !r.selfieUrl).length,
-    [rows],
-  );
-  const urgentCount = useMemo(() => rows.filter((r) => isUrgent(r.submittedAt)).length, [rows]);
-  const customerUrgentCount = useMemo(
-    () => customerRows.filter((r) => isUrgent(r.createdAt)).length,
-    [customerRows],
-  );
+  // ── KPI computed ─────────────────────────────────────────────────────
+  const withDocs = rows.filter((r) => docCount(r) > 0).length;
+  const withoutDocs = rows.length - withDocs;
+  const urgentCount = rows.filter((r) => isUrgent(r.submittedAt)).length;
+  const customerUrgentCount = customerRows.filter((r) => isUrgent(r.createdAt)).length;
 
-  // ── Clear selection when switching scope ─────────────────────────────────
+  // ── Scope change ─────────────────────────────────────────────────────
   const handleScopeChange = useCallback((next: Scope) => {
     setScope(next);
     setSelectedUser(null);
     setSelectedCustomer(null);
-    setSearch('');
   }, []);
 
-  // ── User KYC Actions ─────────────────────────────────────────────────────
-
+  // ── User approve ─────────────────────────────────────────────────────
   const handleUserApprove = useCallback(
     (row: KycRow) => {
+      if (actionLocked) return;
+      setActionCooldown(1);
+      const name = row.fullName ?? row.user?.name ?? 'کاربر';
       setRows((prev) => prev.filter((r) => r.id !== row.id));
       if (selectedUser?.id === row.id) setSelectedUser(null);
       setError(null);
       setLastAction(null);
-
       startTransition(async () => {
         const res = await reviewKycRecord({ userId: row.userId, approved: true });
         if (!res.success) {
-          setRows((prev) =>
-            [row, ...prev].sort(
-              (a, b) =>
-                new Date(a.submittedAt ?? 0).getTime() - new Date(b.submittedAt ?? 0).getTime(),
-            ),
-          );
-          setError(res.error.message);
+          setRows((prev) => [row, ...prev]);
+          setError(typeof res.error === 'string' ? res.error : (res.error?.message ?? 'خطا'));
           return;
         }
-        setLastAction(`هویت «${row.fullName ?? row.user?.name ?? '—'}» تأیید شد`);
+        setLastAction(`KYC «${name}» تأیید شد`);
       });
     },
-    [selectedUser],
+    [actionLocked, selectedUser],
   );
 
+  // ── User reject ──────────────────────────────────────────────────────
   const handleUserReject = useCallback(
     (row: KycRow) => {
       setRejectTarget({
-        name: row.fullName ?? row.user?.name ?? '—',
+        name: row.fullName ?? row.user?.name ?? 'کاربر',
         handler: () => {
           if (actionLocked) return;
           setActionCooldown(1);
-          const reason = rejectReason.trim() || 'اطلاعات ناقص یا نادرست';
-          const name = row.fullName ?? row.user?.name ?? '—';
+          const name = row.fullName ?? row.user?.name ?? 'کاربر';
+          const reason = rejectReason.trim() || 'اطلاعات ناقص';
 
           setRows((prev) => prev.filter((r) => r.id !== row.id));
           if (selectedUser?.id === row.id) setSelectedUser(null);
@@ -373,16 +407,11 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
               rejectedReason: reason,
             });
             if (!res.success) {
-              setRows((prev) =>
-                [row, ...prev].sort(
-                  (a, b) =>
-                    new Date(a.submittedAt ?? 0).getTime() - new Date(b.submittedAt ?? 0).getTime(),
-                ),
-              );
-              setError(res.error.message);
+              setRows((prev) => [row, ...prev]);
+              setError(typeof res.error === 'string' ? res.error : (res.error?.message ?? 'خطا'));
               return;
             }
-            setLastAction(`درخواست «${name}» رد شد`);
+            setLastAction(`KYC «${name}» رد شد`);
           });
         },
       });
@@ -390,15 +419,16 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
     [actionLocked, rejectReason, selectedUser],
   );
 
-  // ── Customer KYC Actions ────────────────────────────────────────────────
-
+  // ── Customer approve ─────────────────────────────────────────────────
   const handleCustomerApprove = useCallback(
     (row: CustomerKycRow) => {
+      if (actionLocked) return;
+      setActionCooldown(1);
+      const name = row.customerName;
       setCustomerRows((prev) => prev.filter((r) => r.id !== row.id));
       if (selectedCustomer?.id === row.id) setSelectedCustomer(null);
       setError(null);
       setLastAction(null);
-
       startTransition(async () => {
         const res = await reviewCustomerKycRecord({ recordId: row.id, approved: true });
         if (!res.success) {
@@ -406,12 +436,13 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           setError(res.error ?? 'خطا');
           return;
         }
-        setLastAction(`KYC مشتری «${row.customerName}» تأیید شد`);
+        setLastAction(`KYC مشتری «${name}» تأیید شد`);
       });
     },
-    [selectedCustomer],
+    [actionLocked, selectedCustomer],
   );
 
+  // ── Customer reject ──────────────────────────────────────────────────
   const handleCustomerReject = useCallback(
     (row: CustomerKycRow) => {
       setRejectTarget({
@@ -448,7 +479,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
     [actionLocked, rejectReason, selectedCustomer],
   );
 
-  // ── Keyboard navigation ─────────────────────────────────────────────────
+  // ── Keyboard navigation ──────────────────────────────────────────────
   const activeList = scope === 'user' ? filteredRows : filteredCustomerRows;
   const activeIdx = selected
     ? activeList.findIndex((r) => r.id === selected.id)
@@ -473,18 +504,29 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
         scope === 'user' ? setSelectedUser(null) : setSelectedCustomer(null);
       }
     };
-    document.addEventListener('keydown' as any, handler as any);
-    return () => document.removeEventListener('keydown' as any, handler as any);
+    document.addEventListener('keydown' as never, handler as never);
+    return () => document.removeEventListener('keydown' as never, handler as never);
   }, [selected, activeList, activeIdx, scope]);
 
-  // ── KPI config ───────────────────────────────────────────────────────────
+  // ── Keyboard shortcuts hint ──────────────────────────────────────────
+  useEffect(() => {
+    if (!selected) {
+      setShowShortcuts(true);
+      if (shortcutsTimer.current) clearTimeout(shortcutsTimer.current);
+      shortcutsTimer.current = setTimeout(() => setShowShortcuts(false), 4000);
+      return;
+    }
+    setShowShortcuts(false);
+  }, [selected]);
+
+  // ── KPI config ───────────────────────────────────────────────────────
   const kpiItems = scope === 'user'
     ? [
         {
           label: 'در انتظار',
           value: rows.length,
           icon: <Users size={14} aria-hidden />,
-          accent: 'var(--nova-amber, oklch(60% .16 70))',
+          accent: 'var(--nova-amber, oklch(68% 0.14 70))',
         },
         {
           label: 'با مدرک',
@@ -502,7 +544,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           label: 'فوری',
           value: urgentCount,
           icon: <Clock size={14} aria-hidden />,
-          accent: 'var(--nova-rose, oklch(55% .18 25))',
+          accent: 'var(--nova-rose, oklch(60% 0.15 25))',
         },
       ]
     : [
@@ -510,20 +552,20 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           label: 'در انتظار',
           value: customerRows.length,
           icon: <Building2 size={14} aria-hidden />,
-          accent: 'var(--nova-amber, oklch(60% .16 70))',
+          accent: 'var(--nova-amber, oklch(68% 0.14 70))',
         },
         {
           label: 'فوری',
           value: customerUrgentCount,
           icon: <Clock size={14} aria-hidden />,
-          accent: 'var(--nova-rose, oklch(55% .18 25))',
+          accent: 'var(--nova-rose, oklch(60% 0.15 25))',
         },
       ];
 
   const totalQueue = rows.length + customerRows.length;
 
   return (
-    <div className={s.root}>
+    <div className={s.root} dir="rtl">
       {/* ═══ Header ═══ */}
       <PageHeader
         variant="compact"
@@ -532,87 +574,85 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'بررسی KYC' }]}
         eyebrow="احراز هویت"
         icon="shield-check"
-        accent="violet"
+        accent="emerald"
       />
 
-      {/* ═══ Controls Bar (scope tabs + search + KPI) ═══ */}
-      <div className={s.controlsBar}>
-        <div className={s.controlsRight}>
-          {/* Scope tabs */}
-          <div className={s.scopeTabs} role="tablist" aria-label="نوع KYC">
+      {/* ═══ KPI Bento Strip ═══ */}
+      <div className={s.kpiStrip} data-od-id="kpi-strip">
+        {kpiItems.map((item, i) => (
+          <KpiTile
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            icon={item.icon}
+            accent={item.accent}
+            delay={i * 60}
+          />
+        ))}
+      </div>
+
+      {/* ═══ Command Bar ═══ */}
+      <div className={s.commandBar} data-od-id="command-bar">
+        <div className={s.commandBar__inner}>
+          {/* Scope Pills */}
+          <div className={s.scopePills} role="tablist" aria-label="نوع KYC">
             <button
               type="button"
               role="tab"
               aria-selected={scope === 'user'}
-              className={cn(s.scopeTab, scope === 'user' && s.scopeTabActive)}
+              className={cn(s.scopePill, scope === 'user' && s.scopePillActive)}
               onClick={() => handleScopeChange('user')}
             >
               <User size={13} aria-hidden />
               <span>کاربران پلتفرم</span>
               {rows.length > 0 && (
-                <span className={s.scopeTabCount}>{formatFaNumber(rows.length)}</span>
+                <span className={s.scopePill__count}>{formatFaNumber(rows.length)}</span>
               )}
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={scope === 'customer'}
-              className={cn(s.scopeTab, scope === 'customer' && s.scopeTabActive)}
+              className={cn(s.scopePill, scope === 'customer' && s.scopePillActive)}
               onClick={() => handleScopeChange('customer')}
             >
               <Building2 size={13} aria-hidden />
               <span>مشتریان صرافی‌ها</span>
               {customerRows.length > 0 && (
-                <span className={s.scopeTabCount}>{formatFaNumber(customerRows.length)}</span>
+                <span className={s.scopePill__count}>{formatFaNumber(customerRows.length)}</span>
               )}
             </button>
           </div>
 
-          {/* KPI strip */}
-          <div className={s.kpiStrip}>
-            {kpiItems.map((item, i) => (
-              <div
-                key={item.label}
-                className={s.kpiCard}
-                style={
-                  { '--kpi-accent': item.accent, '--kpi-delay': `${i * 50}ms` } as React.CSSProperties
-                }
-              >
-                <span className={s.kpiIcon}>{item.icon}</span>
-                <span className={s.kpiValue}>{formatFaNumber(item.value)}</span>
-                <span className={s.kpiLabel}>{item.label}</span>
-              </div>
-            ))}
+          {/* Search */}
+          <div className={s.commandBar__search}>
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              placeholder="جستجوی نام، ایمیل یا شماره…"
+            />
           </div>
-        </div>
-
-        <div className={s.controlsLeft}>
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="جستجوی نام، ایمیل یا شماره…"
-          />
         </div>
       </div>
 
       {/* ═══ Status banners ═══ */}
       {lastAction && (
-        <div className={s.bannerSuccess} role="status" aria-live="polite">
+        <div className={cn(s.banner, s.bannerSuccess)} role="status" aria-live="polite" data-od-id="success-banner">
           <CheckCircle2 size={14} aria-hidden />
           {lastAction}
         </div>
       )}
       {error && (
-        <div className={s.bannerError} role="alert">
+        <div className={cn(s.banner, s.bannerError)} role="alert" data-od-id="error-banner">
           <AlertCircle size={14} aria-hidden />
           {error}
         </div>
       )}
 
-      {/* ═══ Split Pane ═══ */}
-      <div className={s.splitPane}>
-        {/* ── Queue List (right) ── */}
-        <div className={s.queuePane}>
+      {/* ═══ Workspace ═══ */}
+      <div className={s.workspace} data-od-id="workspace">
+        {/* ── Queue Column (right) ── */}
+        <div className={s.queueColumn} data-od-id="queue-column">
           {scope === 'user' && filteredRows.length === 0 ? (
             <div className={s.emptyState}>
               <MillionDollarEmpty
@@ -644,19 +684,21 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           ) : (
             <>
               {/* Queue header */}
-              <div className={s.queueHeader}>
-                <span className={s.queueCount}>
-                  {formatFaNumber(scope === 'user' ? filteredRows.length : filteredCustomerRows.length)}{' '}
-                  مورد
-                </span>
+              <div className={s.queueColumn__header}>
+                <div className={s.queueColumn__left}>
+                  <span className={s.queueColumn__count}>
+                    {formatFaNumber(scope === 'user' ? filteredRows.length : filteredCustomerRows.length)}{' '}
+                    مورد
+                  </span>
+                  <span className={s.queueColumn__scope}>
+                    {scope === 'user' ? 'کاربران' : 'مشتریان'}
+                  </span>
+                </div>
                 {selected && (
                   <button
                     type="button"
-                    className={s.clearSelectBtn}
-                    onClick={() => {
-                      setSelectedUser(null);
-                      setSelectedCustomer(null);
-                    }}
+                    className={s.queueColumn__clear}
+                    onClick={() => { setSelectedUser(null); setSelectedCustomer(null); }}
                   >
                     <X size={12} />
                     بستن پنل
@@ -665,7 +707,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
               </div>
 
               {/* Cards */}
-              <div className={s.cardList} role="listbox" aria-label="لیست درخواست‌ها">
+              <div className={s.queueCards} role="listbox" aria-label="لیست درخواست‌ها" data-od-id="queue-list">
                 {scope === 'user'
                   ? filteredRows.map((row, i) => {
                       const urgent = isUrgent(row.submittedAt);
@@ -683,34 +725,35 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                           key={row.id}
                           onClick={() => setSelectedUser(row)}
                         >
-                          {/* Accent stripe */}
-                          <div
-                            className={s.cardStripe}
-                            style={{
-                              background: urgent
-                                ? 'var(--nova-rose, oklch(55% .18 25))'
-                                : `oklch(91% 0.04 ${nameHue(displayName)})`,
-                            }}
-                          />
+                          <div className={s.queueCard__track}>
+                            <div
+                              className={s.queueCard__indicator}
+                              style={{
+                                background: urgent
+                                  ? 'var(--nova-rose, oklch(60% 0.15 25))'
+                                  : `oklch(91% 0.04 ${nameHue(displayName)})`,
+                              }}
+                            />
+                          </div>
 
-                          <div className={s.cardBody}>
-                            <div className={s.cardTop}>
+                          <div className={s.queueCard__body}>
+                            <div className={s.queueCard__top}>
                               <Avatar name={displayName} size="sm" />
-                              <div className={s.cardIdentity}>
-                                <span className={s.cardName}>{displayName}</span>
-                                <span className={s.cardMeta}>
+                              <div className={s.queueCard__identity}>
+                                <span className={s.queueCard__name}>{displayName}</span>
+                                <span className={s.queueCard__meta}>
                                   {row.user?.email ?? '—'}
                                 </span>
                               </div>
                             </div>
 
-                            <div className={s.cardBottom}>
-                              <div className={s.cardChips}>
-                                <span className={s.chipDocs}>
+                            <div className={s.queueCard__bottom}>
+                              <div className={s.queueCard__chips}>
+                                <span className={cn(s.chip, s.chipDocs)}>
                                   <Fingerprint size={10} aria-hidden />
                                   {formatFaNumber(docs)} مدرک
                                 </span>
-                                <span className={s.chipTime} dir="ltr">
+                                <span className={cn(s.chip, s.chipTime)} dir="ltr">
                                   <Clock size={10} aria-hidden />
                                   {formatRelative(row.submittedAt)}
                                 </span>
@@ -720,8 +763,8 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                           </div>
 
                           {isSelected && (
-                            <div className={s.cardSelectedIndicator} aria-hidden>
-                              <div className={s.cardSelectedDot} />
+                            <div className={s.queueCard__selected} aria-hidden>
+                              <div className={s.queueCard__dot} />
                             </div>
                           )}
                         </button>
@@ -742,33 +785,35 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                           key={row.id}
                           onClick={() => setSelectedCustomer(row)}
                         >
-                          <div
-                            className={s.cardStripe}
-                            style={{
-                              background: urgent
-                                ? 'var(--nova-rose, oklch(55% .18 25))'
-                                : `oklch(91% 0.04 ${nameHue(displayName)})`,
-                            }}
-                          />
+                          <div className={s.queueCard__track}>
+                            <div
+                              className={s.queueCard__indicator}
+                              style={{
+                                background: urgent
+                                  ? 'var(--nova-rose, oklch(60% 0.15 25))'
+                                  : `oklch(91% 0.04 ${nameHue(displayName)})`,
+                              }}
+                            />
+                          </div>
 
-                          <div className={s.cardBody}>
-                            <div className={s.cardTop}>
+                          <div className={s.queueCard__body}>
+                            <div className={s.queueCard__top}>
                               <Avatar name={displayName} size="sm" />
-                              <div className={s.cardIdentity}>
-                                <span className={s.cardName}>{displayName}</span>
-                                <span className={s.cardMeta}>{row.exchangeName}</span>
+                              <div className={s.queueCard__identity}>
+                                <span className={s.queueCard__name}>{displayName}</span>
+                                <span className={s.queueCard__meta}>{row.exchangeName}</span>
                               </div>
                             </div>
 
-                            <div className={s.cardBottom}>
-                              <div className={s.cardChips}>
-                                <span className={s.chipDocType}>
+                            <div className={s.queueCard__bottom}>
+                              <div className={s.queueCard__chips}>
+                                <span className={cn(s.chip, s.chipDocType)}>
                                   {DOC_TYPE_LABELS[row.docType] ?? row.docType}
                                 </span>
-                                <span className={s.chipLevel}>
+                                <span className={cn(s.chip, s.chipLevel)}>
                                   {KYC_LEVEL_LABELS[row.level] ?? row.level}
                                 </span>
-                                <span className={s.chipTime} dir="ltr">
+                                <span className={cn(s.chip, s.chipTime)} dir="ltr">
                                   <Clock size={10} aria-hidden />
                                   {formatRelative(row.createdAt)}
                                 </span>
@@ -778,8 +823,8 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                           </div>
 
                           {isSelected && (
-                            <div className={s.cardSelectedIndicator} aria-hidden>
-                              <div className={s.cardSelectedDot} />
+                            <div className={s.queueCard__selected} aria-hidden>
+                              <div className={s.queueCard__dot} />
                             </div>
                           )}
                         </button>
@@ -790,10 +835,11 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           )}
         </div>
 
-        {/* ── Review Panel (left) ── */}
-        <div className={s.reviewPane}>
+        {/* ── Review Pane (left) ── */}
+        <div className={s.reviewPane} data-od-id="review-pane">
           {selected ? (
             <div className={s.reviewContent}>
+              <GeometricField density="min" className={s.reviewGeo} />
               {scope === 'user' && selectedUser ? (
                 <UserReviewPanel
                   row={selectedUser}
@@ -812,15 +858,33 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
             </div>
           ) : (
             <div className={s.reviewPlaceholder}>
-              <div className={s.placeholderIcon} aria-hidden>
-                <Fingerprint size={32} />
+              <GeometricField density="min" className={s.placeholderGeo} />
+              <div className={s.reviewPlaceholder__inner}>
+                <div className={s.reviewPlaceholder__icon} aria-hidden>
+                  <ShieldCheck size={36} strokeWidth={1.25} />
+                </div>
+                <span className={s.reviewPlaceholder__title}>یک درخواست را انتخاب کنید</span>
+                <span className={s.reviewPlaceholder__desc}>
+                  {totalQueue > 0
+                    ? `${formatFaNumber(totalQueue)} درخواست در صف — برای بررسی یکی را انتخاب کنید.`
+                    : 'صف بررسی خالی است.'}
+                </span>
+
+                {/* Keyboard shortcuts hint */}
+                {showShortcuts && totalQueue > 0 && (
+                  <div className={s.shortcutsHint}>
+                    <div className={s.shortcutItem}>
+                      <kbd className={s.kbd}><ArrowUp size={10} /></kbd>
+                      <kbd className={s.kbd}><ArrowDown size={10} /></kbd>
+                      <span>پیمایش</span>
+                    </div>
+                    <div className={s.shortcutItem}>
+                      <kbd className={s.kbd}>Esc</kbd>
+                      <span>بستن</span>
+                    </div>
+                  </div>
+                )}
               </div>
-              <span className={s.placeholderTitle}>یک درخواست را انتخاب کنید</span>
-              <span className={s.placeholderDesc}>
-                {totalQueue > 0
-                  ? `${formatFaNumber(totalQueue)} درخواست در صف — برای بررسی یکی را انتخاب کنید.`
-                  : 'صف بررسی خالی است.'}
-              </span>
             </div>
           )}
         </div>
@@ -854,10 +918,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => {
-                setRejectTarget(null);
-                setRejectReason('');
-              }}
+              onClick={() => { setRejectTarget(null); setRejectReason(''); }}
               disabled={isPending}
             >
               انصراف
@@ -872,7 +933,7 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
   );
 }
 
-// ─── User Review Panel ─────────────────────────────────────────────────────────
+// ─── User Review Panel ───────────────────────────────────────────────────
 
 function UserReviewPanel({
   row,
@@ -895,63 +956,76 @@ function UserReviewPanel({
   ].filter(Boolean) as Array<{ src: string; label: string }>;
 
   return (
-    <div className={s.reviewInner}>
+    <div className={s.reviewCard}>
       {/* Header */}
       <div className={s.reviewHeader}>
-        <div
-          className={s.reviewAvatar}
-          aria-hidden
-          style={{
-            background: `oklch(91% 0.04 ${hue})`,
-            color: `oklch(36% 0.12 ${hue})`,
-          }}
-        >
-          {initials(displayName)}
-        </div>
-        <div className={s.reviewTitleGroup}>
-          <span className={s.reviewName}>{displayName}</span>
-          <span className={s.reviewMeta}>
-            {row.user?.email}
-            {row.user?.phone && ` · ${row.user.phone}`}
-          </span>
+        <div className={s.reviewHeader__main}>
+          <div
+            className={s.reviewAvatar}
+            aria-hidden
+            style={{
+              background: `oklch(91% 0.04 ${hue})`,
+              color: `oklch(36% 0.12 ${hue})`,
+            }}
+          >
+            {initials(displayName)}
+          </div>
+          <div className={s.reviewTitle}>
+            <span className={s.reviewName}>{displayName}</span>
+            <span className={s.reviewSub}>
+              {row.user?.email}
+              {row.user?.phone && ` · ${row.user.phone}`}
+            </span>
+          </div>
         </div>
         {urgent && <UrgentBadge />}
       </div>
 
       {/* Meta grid */}
       <div className={s.metaGrid}>
-        <div className={s.metaItem}>
-          <span className={s.metaLabel}>تاریخ ارسال</span>
-          <span className={s.metaValue}>{formatDate(row.submittedAt)}</span>
+        <div className={s.metaCell}>
+          <span className={s.metaCell__label}>تاریخ ارسال</span>
+          <span className={s.metaCell__value}>{formatDate(row.submittedAt)}</span>
         </div>
-        <div className={s.metaItem}>
-          <span className={s.metaLabel}>مدارک</span>
-          <span className={s.metaValue}>{formatFaNumber(docs.length)} عدد</span>
+        <div className={s.metaCell}>
+          <span className={s.metaCell__label}>مدارک</span>
+          <span className={s.metaCell__value}>{formatFaNumber(docs.length)} عدد</span>
         </div>
-        <div className={s.metaItem}>
-          <span className={s.metaLabel}>زمان انتظار</span>
-          <span className={s.metaValue}>{formatRelative(row.submittedAt)}</span>
+        <div className={s.metaCell}>
+          <span className={s.metaCell__label}>زمان انتظار</span>
+          <span className={s.metaCell__value}>{formatRelative(row.submittedAt)}</span>
+        </div>
+        <div className={s.metaCell}>
+          <span className={s.metaCell__label}>وضعیت</span>
+          <span className={cn(s.metaCell__value, s.metaPending)}>در انتظار بررسی</span>
         </div>
       </div>
 
       {/* Documents */}
-      {docs.length === 0 ? (
+      {docs.length > 0 && (
+        <div className={s.docSection}>
+          <div className={s.docSection__title}>
+            <Shield size={12} /> مدارک بارگذاری‌شده
+          </div>
+          <div className={s.docGrid}>
+            {docs.map((doc) => (
+              <DocThumb key={doc.src} src={doc.src} alt={doc.label} label={doc.label} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {docs.length === 0 && (
         <div className={s.noDocs}>
           <ImageOff size={24} aria-hidden />
           <span>هیچ مدرکی بارگذاری نشده</span>
-        </div>
-      ) : (
-        <div className={s.docGrid}>
-          {docs.map((doc) => (
-            <DocImage key={doc.src} src={doc.src} alt={doc.label} label={doc.label} />
-          ))}
         </div>
       )}
 
       {/* Actions */}
       <div className={s.reviewActions}>
         <Button
-          className={s.approveBtn}
+          className={s.btnApprove}
           onClick={onApprove}
           disabled={isPending || docs.length === 0}
         >
@@ -960,7 +1034,7 @@ function UserReviewPanel({
         </Button>
         <Button
           variant="outline"
-          className={s.rejectBtn}
+          className={s.btnReject}
           onClick={onReject}
           disabled={isPending}
         >
@@ -972,7 +1046,7 @@ function UserReviewPanel({
   );
 }
 
-// ─── Customer Review Panel ─────────────────────────────────────────────────────
+// ─── Customer Review Panel ───────────────────────────────────────────────
 
 function CustomerReviewPanel({
   row,
@@ -989,60 +1063,67 @@ function CustomerReviewPanel({
   const urgent = isUrgent(row.createdAt);
 
   return (
-    <div className={s.reviewInner}>
+    <div className={s.reviewCard}>
       {/* Header */}
       <div className={s.reviewHeader}>
-        <div
-          className={s.reviewAvatar}
-          aria-hidden
-          style={{
-            background: `oklch(91% 0.04 ${hue})`,
-            color: `oklch(36% 0.12 ${hue})`,
-          }}
-        >
-          {initials(row.customerName)}
-        </div>
-        <div className={s.reviewTitleGroup}>
-          <span className={s.reviewName}>{row.customerName}</span>
-          <span className={s.reviewMeta}>
-            <span dir="ltr">{row.customerPhone}</span>
-            {' · '}
-            {row.exchangeName}
-          </span>
+        <div className={s.reviewHeader__main}>
+          <div
+            className={s.reviewAvatar}
+            aria-hidden
+            style={{
+              background: `oklch(91% 0.04 ${hue})`,
+              color: `oklch(36% 0.12 ${hue})`,
+            }}
+          >
+            {initials(row.customerName)}
+          </div>
+          <div className={s.reviewTitle}>
+            <span className={s.reviewName}>{row.customerName}</span>
+            <span className={s.reviewSub}>
+              <span dir="ltr">{row.customerPhone}</span>
+              {' · '}
+              {row.exchangeName}
+            </span>
+          </div>
         </div>
         {urgent && <UrgentBadge />}
       </div>
 
       {/* Meta grid */}
       <div className={s.metaGrid}>
-        <div className={s.metaItem}>
-          <span className={s.metaLabel}>نوع مدرک</span>
-          <span className={s.metaValue}>
+        <div className={s.metaCell}>
+          <span className={s.metaCell__label}>نوع مدرک</span>
+          <span className={s.metaCell__value}>
             {DOC_TYPE_LABELS[row.docType] ?? row.docType}
           </span>
         </div>
-        <div className={s.metaItem}>
-          <span className={s.metaLabel}>شماره مدرک</span>
-          <span className={s.metaValue} dir="ltr">
+        <div className={s.metaCell}>
+          <span className={s.metaCell__label}>شماره مدرک</span>
+          <span className={s.metaCell__value} dir="ltr">
             {row.docNumber ?? '—'}
           </span>
         </div>
-        <div className={s.metaItem}>
-          <span className={s.metaLabel}>سطح درخواستی</span>
-          <span className={s.metaValue}>
+        <div className={s.metaCell}>
+          <span className={s.metaCell__label}>سطح درخواستی</span>
+          <span className={s.metaCell__value}>
             {KYC_LEVEL_LABELS[row.level] ?? row.level}
           </span>
         </div>
-        <div className={s.metaItem}>
-          <span className={s.metaLabel}>تاریخ ارسال</span>
-          <span className={s.metaValue}>{formatDate(row.createdAt)}</span>
+        <div className={s.metaCell}>
+          <span className={s.metaCell__label}>تاریخ ارسال</span>
+          <span className={s.metaCell__value}>{formatDate(row.createdAt)}</span>
         </div>
       </div>
 
       {/* Document */}
       {row.fileUrl ? (
-        <div className={s.docGrid}>
-          <DocImage src={row.fileUrl} alt={`مدرک ${row.customerName}`} label="تصویر مدرک" />
+        <div className={s.docSection}>
+          <div className={s.docSection__title}>
+            <Shield size={12} /> مدرک بارگذاری‌شده
+          </div>
+          <div className={s.docGrid}>
+            <DocThumb src={row.fileUrl} alt={`مدرک ${row.customerName}`} label="تصویر مدرک" />
+          </div>
         </div>
       ) : (
         <div className={s.noDocs}>
@@ -1054,7 +1135,7 @@ function CustomerReviewPanel({
       {/* Actions */}
       <div className={s.reviewActions}>
         <Button
-          className={s.approveBtn}
+          className={s.btnApprove}
           onClick={onApprove}
           disabled={isPending}
         >
@@ -1063,7 +1144,7 @@ function CustomerReviewPanel({
         </Button>
         <Button
           variant="outline"
-          className={s.rejectBtn}
+          className={s.btnReject}
           onClick={onReject}
           disabled={isPending}
         >

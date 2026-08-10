@@ -25,6 +25,8 @@ export interface LiveOpsData {
     id: string;
     name: string;
     desc: string;
+    /** جزئیات بیشتر برای tooltip (مثل باکت‌ها/endpointهای پول S3). */
+    title?: string;
     iconName: string;
     status: ServiceStatus;
     latencyMs?: number;
@@ -111,6 +113,51 @@ const fetchActivityBarsRaw = async (): Promise<number[]> => {
   return buckets.map((b) => Math.round((b / max) * 100));
 };
 
+/** شکل‌دهی وضعیت ذخیره‌سازی ابری برای ردیف LiveOps (سازگار با getStorageStatus). */
+interface StorageStatusLike {
+  configured: boolean;
+  bucket: string;
+  poolBuckets: Array<{ bucket: string; endpoint: string }>;
+  circuitBreakerActive: boolean;
+}
+
+/** هاست‌های endpoint پول — یکتا و بدون پروتکل برای نمایش فشرده. */
+const storageEndpointHosts = (status: StorageStatusLike): string[] => {
+  const hosts = new Set<string>();
+  for (const b of status.poolBuckets) {
+    try {
+      hosts.add(new URL(b.endpoint).host);
+    } catch {
+      hosts.add(b.endpoint);
+    }
+  }
+  return [...hosts];
+};
+
+/** خط اصلی ردیف — کوتاه تا با ellipsis بریده نشود: تعداد + endpointها. */
+const storageDesc = (status: StorageStatusLike): string => {
+  if (!status.configured) return 'پیکربندی نشده — فایل‌ها روی دیسک لوکال';
+  const hosts = storageEndpointHosts(status).join('، ');
+  if (status.poolBuckets.length > 1) {
+    return `پول S3 (${status.poolBuckets.length} باکت) — ${hosts}`;
+  }
+  return `S3 — bucket: ${status.bucket}`;
+};
+
+/** جزئیات کامل برای tooltip: باکت‌ها، endpointها، وضعیت breaker. */
+const storageTitle = (status: StorageStatusLike): string | undefined => {
+  if (!status.configured) return undefined;
+  const parts: string[] = [];
+  parts.push(
+    status.poolBuckets.length > 1
+      ? `باکت‌ها: ${status.poolBuckets.map((b) => b.bucket).join('، ')}`
+      : `bucket: ${status.bucket}`,
+  );
+  parts.push(`endpoint: ${storageEndpointHosts(status).join('، ')}`);
+  parts.push(status.circuitBreakerActive ? 'قطع موقت (circuit breaker فعال)' : 'S3 فعال');
+  return parts.join(' · ');
+};
+
 const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
   const since = new Date(Date.now() - 15 * 60 * 1000);
 
@@ -158,9 +205,8 @@ const fetchServiceHealthRaw = async (): Promise<LiveOpsData['services']> => {
     {
       id: 'storage',
       name: 'ذخیره‌سازی ابری',
-      desc: storageStatus.configured
-        ? `${storageStatus.provider === 's3-compatible-r2' ? 'R2' : 'S3'} — bucket: ${storageStatus.bucket}`
-        : 'پیکربندی نشده — فایل‌ها روی دیسک لوکال',
+      desc: storageDesc(storageStatus),
+      title: storageTitle(storageStatus),
       iconName: 'HardDrive',
       status: !storageStatus.configured
         ? 'idle'

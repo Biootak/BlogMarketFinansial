@@ -21,14 +21,14 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import prisma from '@/lib/db';
-import { S3_REGION, getS3Bucket } from '@/lib/s3-config';
+import { type S3PoolMember, buildPoolFromEntries } from '@/lib/s3-clients';
+import { nextUploadBucketIndex, parseS3Pool } from '@/lib/s3-pool';
 import { serverLog } from '@/lib/server-logger';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
-  S3Client,
 } from '@aws-sdk/client-s3';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -115,123 +115,122 @@ const BACKUP_DIR = path.join(process.cwd(), 'backups');
 
 const BACKUP_S3_PREFIX = 'backups/';
 
-/** فقط یک‌بار در هر restart دربارهٔ bucket مشترک هشدار بده. */
-let backupBucketWarningEmitted = false;
+// ── پول باکت‌های S3-compatible (همان s3-pool که storage.ts استفاده می‌کند) ──
+// backup ها زیر پیشوند `backups/` در همان پول باکت‌های مصرف ذخیره می‌شوند:
+//   آپلود → round-robin بین باکت‌ها (اولین موفق برنده است)
+//   خواندن → همهٔ باکت‌ها به موازات، اولین موفق
+//   حذف/لیست → همهٔ باکت‌ها (لیست dedupe می‌شود)
+// Legacy (بدون S3_POOL): همان رفتار قبلی با یک باکت از S3_*.
+
+// backup در پس‌زمینه (cron/ادمین) اجرا می‌شود — timeout بزرگ‌تر از پیش‌فرض
+// ذخیره‌سازی (که برای آپلود کاربر تند است) تا فایل‌های JSON بزرگ هم آپلود شوند.
+const BACKUP_TIMEOUTS = { requestTimeout: 5000, connectionTimeout: 4000 };
 
 /**
- * Bucket اختصاصی backup — از باکت عمومی (که تصاویر از روی آن سرو می‌شود) جدا.
- * ⚠️ امنیت: باکت تصاویر باید public-read باشد تا `S3_PUBLIC_URL` کار کند؛ اگر
- * backup با همان bucket آپلود شود، فایل‌های JSON حاوی ایمیل/موبایل/هش پسورد
- * کاربران برای عموم قابل دانلود می‌شود. پس حتماً `S3_BACKUP_BUCKET` را روی
- * یک bucket خصوصی (بدون public access) جدا ست کن.
+ * پول S3 برای backup — ساخته‌شده از `parseS3Pool()` در اولین import.
+ *
+ * امنیت legacy: اگر `S3_BACKUP_BUCKET` ست باشد (بدون S3_POOL)، باکت اختصاصی
+ * backup جایگزین باکت تصاویر می‌شود تا فایل‌های JSON حاوی ایمیل/موبایل/هش
+ * پسورد در باکت عمومی (R2/B2 با URL عمومی) قابل دانلود نباشد. در حالت پول
+ * (Filebase و…) همهٔ باکت‌ها خصوصی‌اند و پیشوند `backups/` کافی است.
  */
-function getBackupBucket(): string | null {
+const POOL: S3PoolMember[] = (() => {
+  const entries = parseS3Pool();
+  if (entries.length === 0) return [];
   const dedicated = process.env.S3_BACKUP_BUCKET;
-  if (dedicated) return dedicated;
-  const shared = getS3Bucket();
-  if (!shared) return null;
-  if (!backupBucketWarningEmitted) {
-    backupBucketWarningEmitted = true;
+  const buckets =
+    dedicated && !process.env.S3_POOL && entries.length === 1
+      ? [{ ...entries[0], bucket: dedicated }]
+      : entries;
+  if (!dedicated && !process.env.S3_POOL && entries.length === 1 && process.env.S3_PUBLIC_URL) {
+    // فقط یک‌بار در هر restart: باکت تصاویر public است و backup در همان باکت می‌رود.
     serverLog.warn('backup', 's3-backup-bucket-shared-with-public', {
-      message: 'S3_BACKUP_BUCKET تنظیم نشده — backup در باکت عمومی تصاویر ذخیره می‌شود',
+      message:
+        'S3_BACKUP_BUCKET تنظیم نشده و S3_PUBLIC_URL ست شده — backup در باکت عمومی تصاویر ذخیره می‌شود',
     });
   }
-  return shared;
-}
+  return buildPoolFromEntries(buckets, BACKUP_TIMEOUTS);
+})();
 
-function buildS3Client(): S3Client | null {
-  if (!process.env.S3_ENDPOINT || !process.env.S3_ACCESS_KEY || !process.env.S3_SECRET_KEY)
-    return null;
-  return new S3Client({
-    region: S3_REGION,
-    endpoint: process.env.S3_ENDPOINT,
-    credentials: {
-      accessKeyId: process.env.S3_ACCESS_KEY,
-      secretAccessKey: process.env.S3_SECRET_KEY,
-    },
-    forcePathStyle: true,
-    maxAttempts: 1,
-    requestHandler: { requestTimeout: 5000, connectionTimeout: 4000 },
-  });
-}
+const POOL_SIZE = POOL.length;
+/** شمارندهٔ round-robin برای توزیع آپلودها بین باکت‌ها. */
+let uploadCounter = 0;
 
 async function uploadBackupToS3(filename: string, json: string): Promise<boolean> {
-  const client = buildS3Client();
-  if (!client) return false;
-  // 2026-08-03: validate bucket name — if unset, cast to `string` silently
-  // produces undefined which crashes the S3 call.
-  const bucket = getBackupBucket();
-  if (!bucket) return false;
-  try {
-    await client.send(
-      new PutObjectCommand({
-        Bucket: bucket,
-        Key: `${BACKUP_S3_PREFIX}${filename}`,
-        Body: Buffer.from(json, 'utf8'),
-        ContentType: 'application/json',
-        CacheControl: 'no-store',
-      }),
-    );
-    return true;
-  } catch {
-    return false;
+  if (POOL_SIZE === 0) return false;
+  const key = `${BACKUP_S3_PREFIX}${filename}`;
+  // round-robin: از ایندکس بعدی شروع کن؛ اگر باکتی خطا داد باکت بعدی امتحان می‌شود.
+  const start = nextUploadBucketIndex(POOL_SIZE, uploadCounter++);
+  for (let i = 0; i < POOL_SIZE; i++) {
+    const entry = POOL[(start + i) % POOL_SIZE];
+    try {
+      await entry.client.send(
+        new PutObjectCommand({
+          Bucket: entry.bucket,
+          Key: key,
+          Body: Buffer.from(json, 'utf8'),
+          ContentType: 'application/json',
+          CacheControl: 'no-store',
+        }),
+      );
+      return true;
+    } catch {
+      // باکت بعدی را امتحان کن
+    }
   }
+  return false;
 }
 
 async function readBackupFromS3(filename: string): Promise<string | null> {
-  const client = buildS3Client();
-  if (!client) return null;
-  const bucket = getBackupBucket();
-  if (!bucket) return null;
-  try {
-    const res = await client.send(
-      new GetObjectCommand({
-        Bucket: bucket,
-        Key: `${BACKUP_S3_PREFIX}${filename}`,
-      }),
-    );
-    if (!res.Body) return null;
+  if (POOL_SIZE === 0) return null;
+  const key = `${BACKUP_S3_PREFIX}${filename}`;
+  // همهٔ باکت‌ها به موازات پرسیده می‌شوند؛ اولین موفق برمی‌گردد.
+  const settled = await Promise.allSettled(
+    POOL.map((entry) =>
+      entry.client.send(new GetObjectCommand({ Bucket: entry.bucket, Key: key })),
+    ),
+  );
+  for (const result of settled) {
+    if (result.status !== 'fulfilled') continue;
+    const body = result.value.Body;
+    if (!body) continue;
     const chunks: Uint8Array[] = [];
     // @ts-expect-error — Body is a Node stream at runtime
-    for await (const chunk of res.Body) chunks.push(chunk);
+    for await (const chunk of body) chunks.push(chunk);
     return Buffer.concat(chunks).toString('utf8');
-  } catch {
-    return null;
   }
+  return null;
 }
 
 async function deleteBackupFromS3(filename: string): Promise<void> {
-  const client = buildS3Client();
-  if (!client) return;
-  const bucket = getBackupBucket();
-  if (!bucket) return;
-  try {
-    await client.send(
-      new DeleteObjectCommand({
-        Bucket: bucket,
-        Key: `${BACKUP_S3_PREFIX}${filename}`,
-      }),
-    );
-  } catch {
-    /* best-effort */
-  }
+  if (POOL_SIZE === 0) return;
+  const key = `${BACKUP_S3_PREFIX}${filename}`;
+  // از همهٔ باکت‌ها حذف کن (best-effort — بعضی باکت‌ها ممکن است object نداشته باشند).
+  await Promise.allSettled(
+    POOL.map((entry) =>
+      entry.client.send(new DeleteObjectCommand({ Bucket: entry.bucket, Key: key })),
+    ),
+  );
 }
 
 async function listBackupsFromS3(): Promise<string[]> {
-  const client = buildS3Client();
-  if (!client) return [];
-  const bucket = getBackupBucket();
-  if (!bucket) return [];
-  try {
-    const res = await client.send(
-      new ListObjectsV2Command({ Bucket: bucket, Prefix: BACKUP_S3_PREFIX }),
-    );
-    return (res.Contents ?? [])
-      .map((obj) => obj.Key?.replace(BACKUP_S3_PREFIX, '') ?? '')
-      .filter((k) => k.startsWith('backup_') && k.endsWith('.json'));
-  } catch {
-    return [];
+  if (POOL_SIZE === 0) return [];
+  const settled = await Promise.allSettled(
+    POOL.map((entry) =>
+      entry.client.send(
+        new ListObjectsV2Command({ Bucket: entry.bucket, Prefix: BACKUP_S3_PREFIX }),
+      ),
+    ),
+  );
+  const names = new Set<string>();
+  for (const result of settled) {
+    if (result.status !== 'fulfilled') continue;
+    for (const obj of result.value.Contents ?? []) {
+      const name = (obj.Key ?? '').replace(BACKUP_S3_PREFIX, '');
+      if (name.startsWith('backup_') && name.endsWith('.json')) names.add(name);
+    }
   }
+  return [...names];
 }
 
 async function ensureBackupDir(): Promise<void> {

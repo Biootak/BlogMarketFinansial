@@ -102,6 +102,16 @@ heroku config:set \
 heroku config:set AUTH_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))") -a $APP
 heroku config:set NEXTAUTH_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))") -a $APP
 
+# ─── ورود با گوگل/گیت‌هاب (اختیاری ولی برای ادمین/نویسنده‌ها لازم است) ─────
+# بدون این‌ها دکمه‌های «ادامه با گوگل/گیت‌هاب» خطا می‌دهند. مقادیر را از
+# OAuth app ها کپی کن (جزئیات ساخت + callback URL ها در پایین همین بخش):
+heroku config:set \
+  AUTH_GOOGLE_ID=<Client ID> \
+  AUTH_GOOGLE_SECRET=<Client Secret> \
+  AUTH_GITHUB_ID=<Client ID> \
+  AUTH_GITHUB_SECRET=<Client Secret> \
+  -a $APP
+
 # ⚠️ CRON_SECRET — باید با GitHub secret یکی باشد (ببین مرحله ۳)
 heroku config:set CRON_SECRET=<همان مقدار GitHub> -a $APP
 
@@ -123,6 +133,25 @@ heroku config:set \
 
 **اختیاری (S3/R2 برای آپلودها — وگرنه بعد از هر restart آپلودها پاک می‌شوند):**
 مطابق توضیحات بخش «ذخیره‌سازی» پایین.
+
+### ساخت OAuth app ها (گوگل + گیت‌هاب)
+
+- **Google:** [Google Cloud Console](https://console.cloud.google.com) →
+  APIs & Services → Credentials → **Create OAuth client ID** (نوع Web).
+  در «Authorized redirect URIs» این را ثبت کن:
+  `https://$APP.herokuapp.com/api/auth/callback/google`
+  (برای dev هم `http://localhost:7180/api/auth/callback/google`).
+  اول صفحهٔ Consent Screen را تنظیم کن (حالت Testing بدون تأیید گوگل کار می‌کند؛
+  فقط اکانت‌های test اضافه‌شده وارد می‌شوند).
+
+- **GitHub:** GitHub → Settings → Developer settings → **OAuth Apps** →
+  New OAuth App. در «Authorization callback URL»:
+  `https://$APP.herokuapp.com/api/auth/callback/github`
+  (برای dev هم `http://localhost:7180/api/auth/callback/github`).
+
+> نکته: هر callback URL (dev + prod) باید در OAuth app ثبت شده باشد، وگرنه
+> گوگل/گیت‌هاب با «redirect_uri_mismatch» ورود را رد می‌کنند — همین خطا معمولاً
+> علت «گیت‌هاب و گوگل کار نمی‌کنه» است.
 
 ---
 
@@ -214,6 +243,67 @@ heroku config:set \
 ```
 
 باکت backup باید **خصوصی و جدا** باشد: `S3_BACKUP_BUCKET=<private-bucket>`.
+
+### گزینهٔ بدون کارت اعتباری — Filebase + پروکسی داخلی (2026-08-10)
+
+اگر کارت بین‌المللی در دسترس نیست (R2/B2 به payment method نیاز دارند)، از
+**Filebase** استفاده کن — تیر رایگان ۵GB با ثبت‌نام صرفاً با ایمیل، بدون کارت:
+
+```bash
+# Filebase (فقط S3 Object Storage — نه IPFS)
+S3_ENDPOINT=https://s3.filebase.io
+S3_REGION=auto
+S3_ACCESS_KEY=<key>
+S3_SECRET_KEY=<secret>
+S3_BUCKET_NAME=fm-blog-uploads
+# ⚠️ تیر رایگان Filebase باکت عمومی نمی‌دهد («Public buckets require a paid
+# subscription»). پس به‌جای URL عمومی، به پروکسی داخلی اپ اشاره کن:
+S3_PUBLIC_URL=/uploads
+```
+
+با `S3_PUBLIC_URL=/uploads` تصاویر از مسیر داخلی `/uploads/*` سرو می‌شوند
+(rewrite → `/api/uploads/*` → `getFileStream`: اول S3، بعد لوکال). این یعنی:
+- عکس‌ها بعد از هر restart/deploy روی Heroku هم می‌مانند (در S3 هستند)
+- نیازی به باکت عمومی نیست و هزینه صفر است
+- سقف تیر رایگان: ۵GB فضا + **۱٬۰۰۰ فایل** — برای وبلاگ با عکس‌های webp
+  چند صد پست کافی است؛ بعداً می‌توانی فایل‌های قدیمی را پاک کنی یا ارتقا دهی
+- هر درخواست تصویر از dyno رد می‌شود؛ با `Cache-Control: immutable` در
+  rewrite ها و کش مرورگر/CDN جبران می‌شود
+
+**چیدمان دو-اکانتی (تصمیم مالک 2026-08-10):** هر دو اکانت Filebase برای
+**مصرف (آپلودها)** هستند — اکانت فعال `fm-blog` و اکانت دوم `fm-blog-uploads`
+به‌عنوان جایگزین (در صورت پر شدن، فقط `S3_BUCKET_NAME` را عوض کن). **بکاپ
+فقط روی Backblaze B2** می‌رود:
+
+```bash
+# بکاپ (Backblaze B2 — همان اکانت financialmarket)
+BACKUP_S3_PRIMARY_ENDPOINT=https://s3.us-east-005.backblazeb2.com
+BACKUP_S3_PRIMARY_ACCESS_KEY=...
+BACKUP_S3_PRIMARY_SECRET_KEY=...
+BACKUP_S3_PRIMARY_BUCKET=financialmarket
+BACKUP_S3_PRIMARY_REGION=us-east-005
+```
+
+> نکته: بکاپ JSON اپ (`src/lib/backup.ts`) به `S3_*` متصل است و در همان باکت
+> مصرف (خصوصی) زیر پیشوند `backups/` ذخیره می‌شود — چون باکت Filebase خصوصی
+> است امن می‌ماند؛ بکاپ کامل pg_dump روی B2 می‌رود.
+
+### پول باکت‌های S3 (اختیاری — `S3_POOL`)
+
+اگر چند اکانت/provider داری (مثلاً دو اکانت Filebase برای دور زدن سقف ۱ باکت
+تیر رایگان)، به‌جای `S3_*` یک JSON array در `S3_POOL` بده — هر entry کلید
+مستقل خودش را دارد:
+
+```bash
+heroku config:set S3_POOL='[{"endpoint":"https://s3.filebase.io","accessKey":"...","secretKey":"...","bucket":"fm-blog","region":"auto"},{"endpoint":"https://s3.filebase.io","accessKey":"...","secretKey":"...","bucket":"fm-blog-uploads","region":"auto"}]' -a $APP
+```
+
+- آپلود round-robin بین باکت‌ها؛ اگر یکی خطا داد باکت بعدی امتحان می‌شود.
+- backup ها با پیشوند `backups/` در همان پول می‌روند — همهٔ باکت‌ها باید **خصوصی**
+  باشند (با Filebase که باکت عمومی نمی‌دهد درست است؛ با R2/B2 با URL عمومی
+  احتیاط کن).
+- بدون `S3_POOL` رفتار قبلی (تک‌باکتی `S3_*` + `S3_BACKUP_BUCKET`) حفظ
+  می‌شود — این گزینه صرفاً اختیاری است و دیپلوی فعلی بدون تغییر کار می‌کند.
 
 ---
 

@@ -1,32 +1,23 @@
 import { createReadStream, existsSync } from 'node:fs';
 import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { S3_REGION, getS3Bucket, isS3CredentialsSet } from '@/lib/s3-config';
+import { buildS3Pool } from '@/lib/s3-clients';
+import { getS3Bucket } from '@/lib/s3-config';
+import { isR2Endpoint, nextUploadBucketIndex } from '@/lib/s3-pool';
 import { serverLog } from '@/lib/server-logger';
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 
-// maxAttempts:1 = no SDK retries; requestTimeout/connectionTimeout = hard ceiling
-// so an unreachable storage doesn't block uploads (circuit breaker handles the rest).
-// Region از s3-config می‌آید: 'default' برای MinIO/B2، 'auto' برای Cloudflare R2.
-const s3Client = new S3Client({
-  region: S3_REGION,
-  endpoint: process.env.S3_ENDPOINT,
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY || '',
-    secretAccessKey: process.env.S3_SECRET_KEY || '',
-  },
-  forcePathStyle: true,
-  maxAttempts: 1,
-  requestHandler: {
-    requestTimeout: 2000,
-    connectionTimeout: 3000,
-  },
-});
+// ── پول باکت‌های S3-compatible («انگار که یک باکت است») ──────────────────────
+// از S3_POOL (JSON array — هر entry کلید مستقل خودش را دارد) ساخته می‌شود؛
+// اگر ست نشده باشد، legacy تک‌باکتی S3_* جایگزین می‌شود (رفتار قبلی حفظ است).
+// ساخت client در s3-clients.ts یک‌جا است؛ maxAttempts:1 = no SDK retries;
+// requestTimeout/connectionTimeout = hard ceiling so an unreachable storage
+// doesn't block uploads (circuit breaker handles the rest).
+const POOL = buildS3Pool();
+
+const POOL_SIZE = POOL.length;
+/** شمارندهٔ round-robin برای توزیع آپلودها بین باکت‌ها. */
+let uploadCounter = 0;
 
 const BUCKET_NAME = getS3Bucket();
 
@@ -69,7 +60,7 @@ const S3_BREAKER_TTL_MS = 60_000;
 let s3DisabledUntil = 0;
 
 function isS3Configured(): boolean {
-  if (!isS3CredentialsSet()) return false;
+  if (POOL_SIZE === 0) return false;
   if (Date.now() < s3DisabledUntil) return false;
   return true;
 }
@@ -93,14 +84,18 @@ let r2PublicUrlWarningEmitted = false;
  */
 export function getStorageStatus(): {
   configured: boolean;
-  provider: 's3-compatible' | 's3-compatible-r2' | 'none';
+  provider: 's3-compatible' | 's3-compatible-r2' | 's3-compatible-pool' | 'none';
   bucket: string;
+  /** تعداد باکت‌های پول S3 (۱ = legacy تک‌باکتی). */
+  buckets: number;
+  /** جزئیات هر باکت پول — برای نمایش در LiveOps/settings. */
+  poolBuckets: Array<{ bucket: string; endpoint: string }>;
   publicUrl: string;
   circuitBreakerActive: boolean;
 } {
-  const credentials = isS3CredentialsSet();
-  const endpoint = process.env.S3_ENDPOINT ?? '';
-  const isR2 = endpoint.includes('r2.cloudflarestorage.com');
+  const credentials = isS3Configured();
+  const endpoint = POOL[0]?.endpoint ?? '';
+  const isR2 = isR2Endpoint(endpoint);
 
   // R2 با مشتق‌گیری پیش‌فرض (bucket.endpoint-host) URL عمومی درست نمی‌سازد —
   // آن host برای SigV4 است نه مرورگر؛ بدون S3_PUBLIC_URL تصاویر آپلود می‌شوند
@@ -116,8 +111,16 @@ export function getStorageStatus(): {
 
   return {
     configured: credentials,
-    provider: !credentials ? 'none' : isR2 ? 's3-compatible-r2' : 's3-compatible',
+    provider: !credentials
+      ? 'none'
+      : isR2
+        ? 's3-compatible-r2'
+        : POOL_SIZE > 1
+          ? 's3-compatible-pool'
+          : 's3-compatible',
     bucket: BUCKET_NAME,
+    buckets: POOL_SIZE,
+    poolBuckets: POOL.map((member) => ({ bucket: member.bucket, endpoint: member.endpoint })),
     publicUrl: S3_PUBLIC_URL,
     circuitBreakerActive: Date.now() < s3DisabledUntil,
   };
@@ -192,34 +195,45 @@ export async function uploadFile(
 
   const s3Promise = (async (): Promise<{ kind: 's3'; url: string } | null> => {
     if (!isS3Configured()) return null;
-    try {
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: key,
-          Body: buffer,
-          ContentType: contentType,
-          ContentLength: buffer.length,
-          CacheControl: 'public, max-age=31536000, immutable',
-          Metadata: {
-            'uploaded-at': String(Date.now()),
-            ...(typeof dims?.width === 'number' ? { 'img-width': String(dims.width) } : {}),
-            ...(typeof dims?.height === 'number' ? { 'img-height': String(dims.height) } : {}),
-          },
-        }),
-      );
-      s3DisabledUntil = 0;
-      return { kind: 's3', url: `${S3_PUBLIC_URL}/${key}` };
-    } catch (error) {
-      const reason =
-        error instanceof Error ? ((error as { code?: string }).code ?? error.name) : 'unknown';
-      // Log every upload failure (not just the breaker trip) so transient
-      // failures are traceable — the breaker log is rate-limited to once per
-      // TTL, this one is per-upload.
-      serverLog.warn('storage', 's3-upload-failed', { key, reason });
-      tripCircuitBreaker(reason);
-      return null;
+    // round-robin: از ایندکس بعدی شروع کن؛ اگر باکتی خطا داد باکت بعدی
+    // امتحان می‌شود و اولین موفق برنده است (توزیع بین باکت‌های پول).
+    const start = nextUploadBucketIndex(POOL_SIZE, uploadCounter++);
+    for (let i = 0; i < POOL_SIZE; i++) {
+      const entry = POOL[(start + i) % POOL_SIZE];
+      try {
+        await entry.client.send(
+          new PutObjectCommand({
+            Bucket: entry.bucket,
+            Key: key,
+            Body: buffer,
+            ContentType: contentType,
+            ContentLength: buffer.length,
+            CacheControl: 'public, max-age=31536000, immutable',
+            Metadata: {
+              'uploaded-at': String(Date.now()),
+              ...(typeof dims?.width === 'number' ? { 'img-width': String(dims.width) } : {}),
+              ...(typeof dims?.height === 'number' ? { 'img-height': String(dims.height) } : {}),
+            },
+          }),
+        );
+        s3DisabledUntil = 0;
+        return { kind: 's3', url: `${S3_PUBLIC_URL}/${key}` };
+      } catch (error) {
+        const reason =
+          error instanceof Error ? ((error as { code?: string }).code ?? error.name) : 'unknown';
+        // Log every upload failure (not just the breaker trip) so transient
+        // failures are traceable — the breaker log is rate-limited to once per
+        // TTL, this one is per-bucket.
+        serverLog.warn('storage', 's3-upload-failed', {
+          key,
+          bucket: entry.bucket,
+          reason,
+        });
+        // آخرین باکت پول هم شکست → circuit breaker را فعال کن.
+        if (i === POOL_SIZE - 1) tripCircuitBreaker(reason);
+      }
     }
+    return null;
   })();
 
   const [localResult, s3Result] = await Promise.all([localPromise, s3Promise]);
@@ -237,7 +251,37 @@ export async function uploadFile(
 }
 
 /**
- * خواندن فایل به صورت stream — اول S3، سپس fallback لوکال.
+ * خواندن object از پول باکت‌ها — همه به موازات پرسیده می‌شوند، اولین موفق
+ * برمی‌گردد (بدنهٔ بقیه destroy می‌شود تا stream نشت نکند). اگر هیچ‌کدام
+ * موفق نشوند null. خطاها silent هستند (fallback لوکال عمدی است).
+ */
+async function readFromPool(key: string): Promise<NodeJS.ReadableStream | null> {
+  if (!isS3Configured()) return null;
+  const settled = await Promise.allSettled(
+    POOL.map((entry) =>
+      entry.client.send(new GetObjectCommand({ Bucket: entry.bucket, Key: key })),
+    ),
+  );
+  for (const result of settled) {
+    if (result.status !== 'fulfilled') continue;
+    // streamهای موفقِ بازنده را ببند تا اتصال/حافظه نشت نکند.
+    for (const other of settled) {
+      if (other !== result && other.status === 'fulfilled') {
+        const body = other.value.Body as { destroy?: () => void } | undefined;
+        try {
+          body?.destroy?.();
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return result.value.Body as unknown as NodeJS.ReadableStream;
+  }
+  return null;
+}
+
+/**
+ * خواندن فایل به صورت stream — اول پول S3، سپس fallback لوکال.
  * برای pipe مستقیم به HTTP response بدون buffer کردن در RAM.
  */
 export async function getFileStream(
@@ -246,15 +290,8 @@ export async function getFileStream(
 ): Promise<NodeJS.ReadableStream> {
   const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
 
-  if (isS3Configured()) {
-    try {
-      const response = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
-      return response.Body as unknown as NodeJS.ReadableStream;
-    } catch (_error) {
-      // Local fallback is intentional (files uploaded before S3 was configured),
-      // so this is not an error — only log when the breaker gets tripped.
-    }
-  }
+  const s3Body = await readFromPool(key);
+  if (s3Body) return s3Body;
 
   if (!existsSync(localFilePath)) {
     throw new Error('File not found');
@@ -263,25 +300,18 @@ export async function getFileStream(
 }
 
 /**
- * خواندن فایل به صورت Buffer — اول S3، سپس fallback لوکال.
+ * خواندن فایل به صورت Buffer — اول پول S3، سپس fallback لوکال.
  */
 export async function getFile(folder: string, filename: string): Promise<Buffer | null> {
   const { localPath: localFilePath, key } = resolveUploadTarget(folder, filename);
 
-  if (isS3Configured()) {
-    try {
-      const response = await s3Client.send(new GetObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
-      if (response.Body) {
-        const body = response.Body as unknown as AsyncIterable<Uint8Array>;
-        const chunks: Uint8Array[] = [];
-        for await (const chunk of body) {
-          chunks.push(chunk);
-        }
-        return Buffer.concat(chunks);
-      }
-    } catch {
-      // S3 failed — fall back to local.
+  const s3Body = await readFromPool(key);
+  if (s3Body) {
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of s3Body as unknown as AsyncIterable<Uint8Array>) {
+      chunks.push(chunk);
     }
+    return Buffer.concat(chunks);
   }
 
   try {
@@ -300,12 +330,14 @@ export async function deleteFile(folder: string, filename: string): Promise<bool
 
   const s3Promise = (async (): Promise<boolean> => {
     if (!isS3Configured()) return false;
-    try {
-      await s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
-      return true;
-    } catch (_error) {
-      return false;
-    }
+    // از همهٔ باکت‌های پول حذف کن (best-effort — بعضی باکت‌ها ممکن است
+    // object را نداشته باشند؛ حذف یک key موجود نبوده خطا نیست).
+    const results = await Promise.allSettled(
+      POOL.map((entry) =>
+        entry.client.send(new DeleteObjectCommand({ Bucket: entry.bucket, Key: key })),
+      ),
+    );
+    return results.some((r) => r.status === 'fulfilled');
   })();
 
   const localPromise = (async (): Promise<boolean> => {

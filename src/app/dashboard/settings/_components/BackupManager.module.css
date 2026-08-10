@@ -527,3 +527,89 @@
     animation: none;
   }
 }
+
+/* ── Cloud mirror tile — S3 pool details ─────────────────────────────── */
+
+.cloudTile {
+  grid-column: 1 / -1;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.cloudHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.poolDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px solid var(--ds-border-subtle);
+}
+
+.poolListHead {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ds-text-muted);
+}
+
+.poolList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.poolRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: 4px 8px;
+  background: var(--ds-surface-recessed);
+  border-radius: 6px;
+  font-family: ui-monospace, monospace;
+  font-size: var(--ds-text-xs);
+}
+
+.poolBucket {
+  color: var(--ds-text-primary);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.poolEndpoint {
+  color: var(--ds-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.breakerRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.breakerDot {
+  inline-size: 8px;
+  block-size: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--nova-emerald);
+}
+
+.breakerDot[data-on="false"] {
+  background: var(--at-danger, oklch(65% 0.18 25));
+}

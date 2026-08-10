@@ -432,6 +432,15 @@ const nextConfig: NextConfig = {
         return true;
       });
     }
+    // 2026-08-10: dev watcher — exclude the Freebuff desktop app's SQLite
+    // files (`.freebuff/desktop-v2.db-shm/-wal`, written & locked by the app
+    // while it runs) from the webpack watch. This block only applies to
+    // `next dev --webpack` / `build:webpack`; Turbopack has no equivalent
+    // watch-ignore option in Next 16.3 — see scripts/dev-turbo.mjs.
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: ['**/.freebuff/**', '**/.git/**', '**/.next/**', '**/node_modules/**'],
+    };
     return config;
   },
 };

@@ -6,8 +6,11 @@ import { redirect } from 'next/navigation';
 import { KycReviewClient } from './_components/KycReviewClient';
 
 export const metadata: Metadata = {
-  title: 'بررسی KYC | داشبورد',
+  title: 'مرکز بررسی احراز هویت | داشبورد',
 };
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getKycQueue() {
   const records = await prisma.kycRecord.findMany({
@@ -44,23 +47,21 @@ export default async function KycReviewPage() {
   ]);
 
   return (
-    <div className="at-page" dir="rtl">
-      <KycReviewClient
-        records={records}
-        customerRecords={customerRecords.map((c) => ({
-          id: c.id,
-          customerId: c.customerId,
-          customerName: c.customerName,
-          customerPhone: c.customerPhone,
-          docType: c.docType,
-          docNumber: c.docNumber,
-          fileUrl: c.fileUrl,
-          level: c.level,
-          exchangeId: c.exchangeId,
-          exchangeName: c.exchangeName,
-          createdAt: c.createdAt.toISOString(),
-        }))}
-      />
-    </div>
+    <KycReviewClient
+      records={records}
+      customerRecords={customerRecords.map((c) => ({
+        id: c.id,
+        customerId: c.customerId,
+        customerName: c.customerName,
+        customerPhone: c.customerPhone,
+        docType: c.docType,
+        docNumber: c.docNumber,
+        fileUrl: c.fileUrl,
+        level: c.level,
+        exchangeId: c.exchangeId,
+        exchangeName: c.exchangeName,
+        createdAt: c.createdAt.toISOString(),
+      }))}
+    />
   );
 }

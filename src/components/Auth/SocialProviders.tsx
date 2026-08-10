@@ -1,8 +1,11 @@
+'use client';
+
 import { DEFAULT_REDIRECT } from '@/config/routes';
+import { getEnabledSocialProviders } from '@/actions/auth-actions';
 import { Loader2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 import type React from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 // 2026-06-30: switched from a mix of `FcGoogle` (react-icons/fc, 1em,
 // colorful filled) + `Github` (lucide-react, 24px, monochrome outline)
 // to a single icon family — Simple Icons. Both now share the same
@@ -12,26 +15,48 @@ import { useMemo, useState } from 'react';
 // 1.25rem so any future icon swap can't reintroduce drift.
 import { SiGithub, SiGoogle } from 'react-icons/si';
 
-const PROVIDERS = [
-  {
-    id: 'google' as const,
+const PROVIDER_META = {
+  google: {
     label: 'ادامه با گوگل',
+    shortName: 'گوگل',
     icon: <SiGoogle aria-hidden="true" />,
   },
-  {
-    id: 'github' as const,
+  github: {
     label: 'ادامه با گیت‌هاب',
+    shortName: 'گیت‌هاب',
     icon: <SiGithub aria-hidden="true" />,
   },
-];
+} as const;
 
+type SocialProviderId = keyof typeof PROVIDER_META;
+
+// 2026-08-10: ورود اجتماعی فقط در production فعال است. فهرست provider ها را
+// از سرور می‌گیریم (NODE_ENV + وجود credential ها در runtime) نه از client —
+// چون AUTH_* فقط سمت سرور در دسترس است و در dev نباید دکمه‌ای نمایش داده
+// شود که خطا می‌دهد.
 const SocialProviders: React.FC = () => {
-  const [loadingProvider, setLoadingProvider] = useState<'google' | 'github' | null>(null);
+  const [enabled, setEnabled] = useState<SocialProviderId[] | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<SocialProviderId | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getEnabledSocialProviders()
+      .then((providers) => {
+        if (cancelled) return;
+        setEnabled(providers.filter((p): p is SocialProviderId => p in PROVIDER_META));
+      })
+      .catch(() => {
+        if (!cancelled) setEnabled([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const disabled = useMemo(() => loadingProvider !== null, [loadingProvider]);
 
-  const handleLogin = async (provider: 'google' | 'github') => {
+  const handleLogin = async (provider: SocialProviderId) => {
     try {
       setLoadingProvider(provider);
       setError(null);
@@ -43,7 +68,7 @@ const SocialProviders: React.FC = () => {
 
       if (result?.error) {
         setError(
-          `ورود با ${provider === 'google' ? 'گوگل' : 'گیت‌هاب'} ناموفق بود. لطفاً دوباره تلاش کنید.`,
+          `ورود با ${PROVIDER_META[provider].shortName} ناموفق بود. لطفاً دوباره تلاش کنید.`,
         );
         return;
       }
@@ -58,23 +83,30 @@ const SocialProviders: React.FC = () => {
     }
   };
 
+  // هنوز جواب سرور نیامده یا هیچ provider ای فعال نیست → چیزی نمایش نده
+  // (بدون فلش شدن دکمه‌ها قبل از جواب action).
+  if (!enabled || enabled.length === 0) {
+    return null;
+  }
+
   return (
     <div className="auth-social-stack" role="group" aria-label="ورود با ارائه‌دهنده‌های اجتماعی">
-      {PROVIDERS.map((provider) => {
-        const busy = loadingProvider === provider.id;
+      {enabled.map((provider) => {
+        const busy = loadingProvider === provider;
+        const meta = PROVIDER_META[provider];
 
         return (
           <button
-            key={provider.id}
+            key={provider}
             type="button"
             className="auth-social-btn"
-            onClick={() => handleLogin(provider.id)}
+            onClick={() => handleLogin(provider)}
             disabled={disabled}
-            aria-label={provider.label}
+            aria-label={meta.label}
             aria-busy={busy || undefined}
           >
-            {busy ? <Loader2 className="animate-spin" aria-hidden="true" /> : provider.icon}
-            <span>{provider.label}</span>
+            {busy ? <Loader2 className="animate-spin" aria-hidden="true" /> : meta.icon}
+            <span>{meta.label}</span>
           </button>
         );
       })}

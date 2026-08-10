@@ -6,7 +6,11 @@ Load when running scripts, migrations, or builds.
 
 ```bash
 npm install            # also runs `prisma generate` via postinstall
-npm run dev            # next dev (Turbopack — fast dev)
+npm run dev            # next dev (Turbopack) via scripts/dev-turbo.mjs — auto-restarts when
+                       #   Turbopack FATAL-panics reading the locked `.freebuff/desktop-v2.db-shm`
+                       #   (Freebuff desktop's SQLite file; no watch-ignore option in Next 16.3)
+npm run dev:raw        # plain next dev (Turbopack), no auto-restart (for debugging panics)
+npm run dev:webpack    # next dev --webpack fallback (slower; watcher ignores .freebuff)
 npm run build          # next build --webpack (Turbopack build panics on embedded lightningcss alpha)
 npm run lint           # next lint   (ESLint)
 npx tsc --noEmit       # no typecheck script in package.json — use this

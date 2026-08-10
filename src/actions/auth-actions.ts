@@ -983,6 +983,24 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
  * `/auth` so the AuthGroupLayout kicks in fresh. We don't need a
  * manual redirect here — the action result just signals success.
  */
+/**
+ * فهرست provider های ورود اجتماعی فعال در این محیط — برای SocialProviders.
+ * فقط production (تصمیم ۲۰۲۶-۰۸-۱۰): در dev ورود با گوگل/گیت‌هاب غیرفعال
+ * است و فقط Credentials (OTP/رمز) کار می‌کند — تا دکمه‌ای که خطا می‌دهد
+ * نمایش داده نشود و مجبور به نگه‌داری دو OAuth app (dev+prod) نباشیم.
+ *
+ * این تصمیم runtime است، نه build: در Docker بیلد env های AUTH_* وجود
+ * ندارند، پس نمی‌شود presence آن‌ها را در زمان ساخت قضاوت کرد. این action
+ * در runtime اجرا می‌شود و NODE_ENV + credential های واقعی را می‌بیند.
+ */
+export async function getEnabledSocialProviders(): Promise<string[]> {
+  if (process.env.NODE_ENV !== 'production') return [];
+  const providers: string[] = [];
+  if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) providers.push('google');
+  if (process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET) providers.push('github');
+  return providers;
+}
+
 export async function logout(): Promise<AuthResult> {
   try {
     await signOut({ redirect: false });

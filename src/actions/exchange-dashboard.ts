@@ -242,30 +242,12 @@ export async function getExchangeDashboardData(
 
   const statsCurrency = exchange.primaryCurrency || 'AFN';
 
-  // ── ۲۱ کوئری موازی (همه در یک roundtrip برای جلوگیری از N+1) ─────────
-  const [
-    basicAggs,
-    todayAgg,
-    yesterdayAgg,
-    last7DaysRows,
-    currencyAgg,
-    kindAgg,
-    topCustomersRaw,
-    pendingRaw,
-    totalLast30d,
-    pendingStaleCount,
-    kycIncompleteCount,
-    frozenCount,
-    rateSnapshotRaw,
-    customerStatusAgg,
-    customerKycAgg,
-    yesterdayAggs,
-    weekAggs,
-    monthAggs,
-    customerActivityAggs,
-    activeCustomersCount,
-    heatmapRows,
-  ] = await Promise.all([
+  // ── Batched queries (connection_limit=1 in dev — sequential batches) ───
+  // Each batch runs its queries in parallel internally, but batches execute
+  // sequentially so we never exhaust the single-connection pool.
+
+  // Batch 1: basic counts + today/yesterday volume + 7-day series
+  const [basicAggs, todayAgg, yesterdayAgg, last7DaysRows] = await Promise.all([
     // 1) basic counts
     Promise.all([
       prisma.customer.count({ where: { exchangeId } }),
@@ -304,6 +286,10 @@ export async function getExchangeDashboardData(
       where: { exchangeId, createdAt: { gte: weekAgo } },
       select: { createdAt: true, amount: true, currency: true },
     }),
+  ]);
+
+  // Batch 2: groupBy aggregations (currency, kind, top customers)
+  const [currencyAgg, kindAgg, topCustomersRaw] = await Promise.all([
     // 5) top currencies by volume in last 30 days
     prisma.transaction.groupBy({
       by: ['currency'],
@@ -330,6 +316,10 @@ export async function getExchangeDashboardData(
       orderBy: { _count: { id: 'desc' } },
       take: 5,
     }),
+  ]);
+
+  // Batch 3: pending + stale + rates + customer counts
+  const [pendingRaw, pendingStaleCount, kycIncompleteCount, frozenCount, rateSnapshotRaw] = await Promise.all([
     // 8) oldest 5 pending transactions
     prisma.transaction.findMany({
       where: { exchangeId, status: 'PENDING' },
@@ -348,8 +338,6 @@ export async function getExchangeDashboardData(
     prisma.customer.count({
       where: { exchangeId, kycStatus: { not: 'APPROVED' }, status: 'ACTIVE' },
     }),
-    // 11) total transactions in last 30 days (for daily average)
-    prisma.transaction.count({ where: { exchangeId, createdAt: { gte: monthAgo } } }),
     // 12) frozen customers
     prisma.customer.count({ where: { exchangeId, status: 'FROZEN' } }),
     // 13) top 6 active rates snapshot
@@ -370,6 +358,10 @@ export async function getExchangeDashboardData(
         rateType: true,
       },
     }),
+  ]);
+
+  // Batch 4: customer segmentation + 30-day total
+  const [customerStatusAgg, customerKycAgg, totalLast30d] = await Promise.all([
     // 14) customer status segmentation
     prisma.customer.groupBy({
       by: ['status'],
@@ -382,6 +374,12 @@ export async function getExchangeDashboardData(
       where: { exchangeId },
       _count: { _all: true },
     }),
+    // 11) total transactions in last 30 days (for daily average)
+    prisma.transaction.count({ where: { exchangeId, createdAt: { gte: monthAgo } } }),
+  ]);
+
+  // Batch 5: yesterday + week + month comparison aggregates
+  const [yesterdayAggs, weekAggs, monthAggs] = await Promise.all([
     // 16) yesterday's transaction count + volume (primary currency)
     Promise.all([
       prisma.transaction.count({
@@ -447,6 +445,10 @@ export async function getExchangeDashboardData(
         _sum: { amount: true },
       }),
     ]),
+  ]);
+
+  // Batch 6: customer activity + heatmap
+  const [customerActivityAggs, activeCustomersCount, heatmapRows] = await Promise.all([
     // 19) customer activity — new + activated in last 7 days
     Promise.all([
       prisma.customer.count({ where: { exchangeId, createdAt: { gte: weekAgo } } }),

@@ -20,6 +20,7 @@ tmp/
 scripts/*
 !scripts/backup-db.mjs
 !scripts/restore-db.mjs
+!scripts/dev-turbo.mjs
 .agents/skills/*/scripts/
 .claude/skills/*/scripts/
 # Logs

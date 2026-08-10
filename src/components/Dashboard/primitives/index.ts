@@ -96,4 +96,7 @@ export type { RouteErrorProps } from './RouteError';
 export { NotFound } from './NotFound';
 export type { NotFoundProps, NotFoundLink, NotFoundTone } from './NotFound';
 
+export { Forbidden } from './Forbidden';
+export type { ForbiddenProps, ForbiddenLink, ForbiddenTone } from './Forbidden';
+
 export type { SettingsNavIconName } from './SettingsSubNav';

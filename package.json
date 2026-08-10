@@ -6,7 +6,9 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next dev",
+    "dev": "node scripts/dev-turbo.mjs",
+    "dev:raw": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next dev",
+    "dev:webpack": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next dev --webpack",
     "build": "next build",
     "build:webpack": "next build --webpack",
     "start": "next start",

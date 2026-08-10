@@ -70,10 +70,22 @@ const formatRelative = (iso: string): string => {
   }
 };
 
+/** هاست endpoint — بدون پروتکل برای نمایش فشرده (همان منطق LiveOps). */
+const endpointHost = (endpoint: string): string => {
+  try {
+    return new URL(endpoint).host;
+  } catch {
+    return endpoint;
+  }
+};
+
 interface StorageStatusInfo {
   configured: boolean;
-  provider: 's3-compatible' | 's3-compatible-r2' | 'none';
+  provider: 's3-compatible' | 's3-compatible-r2' | 's3-compatible-pool' | 'none';
   bucket: string;
+  buckets: number;
+  /** جزئیات هر باکت پول S3 — bucket name + endpoint. */
+  poolBuckets: Array<{ bucket: string; endpoint: string }>;
   publicUrl: string;
   circuitBreakerActive: boolean;
 }
@@ -217,7 +229,11 @@ export function BackupManager() {
           </div>
         </div>
         <div
-          className={s.statusItem}
+          className={
+            storage?.configured && (storage.poolBuckets?.length ?? 0) > 0
+              ? `${s.statusItem} ${s.cloudTile}`
+              : s.statusItem
+          }
           title={
             storage
               ? storage.configured
@@ -226,27 +242,61 @@ export function BackupManager() {
               : undefined
           }
         >
-          <div
-            className={s.statusIcon}
-            data-on={storage?.configured ?? false}
-            data-breaker={storage?.circuitBreakerActive ? 'on' : undefined}
-          >
-            <Cloud size={14} strokeWidth={2} />
-          </div>
-          <div>
-            <div className={s.statusLabel}>آینه ابری</div>
-            <div className={s.statusVal}>
-              {!storage
-                ? '—'
-                : storage.configured
-                  ? storage.circuitBreakerActive
-                    ? 'قطع موقت'
-                    : storage.provider === 's3-compatible-r2'
-                      ? 'R2 فعال'
-                      : 'S3 فعال'
-                  : 'تنظیم نشده'}
+          <div className={s.cloudHead}>
+            <div
+              className={s.statusIcon}
+              data-on={storage?.configured ?? false}
+              data-breaker={storage?.circuitBreakerActive ? 'on' : undefined}
+            >
+              <Cloud size={14} strokeWidth={2} />
+            </div>
+            <div>
+              <div className={s.statusLabel}>آینه ابری</div>
+              <div className={s.statusVal}>
+                {!storage
+                  ? '—'
+                  : storage.configured
+                    ? storage.circuitBreakerActive
+                      ? 'قطع موقت'
+                      : storage.provider === 's3-compatible-r2'
+                        ? 'R2 فعال'
+                        : storage.buckets && storage.buckets > 1
+                          ? `${storage.buckets} باکت فعال`
+                          : 'S3 فعال'
+                    : 'تنظیم نشده'}
+              </div>
             </div>
           </div>
+
+          {storage?.configured && (storage.poolBuckets?.length ?? 0) > 0 && (
+            <div className={s.poolDetails}>
+              {storage.poolBuckets.length > 1 && (
+                <div className={s.poolListHead}>باکت‌های پول S3</div>
+              )}
+              <ul className={s.poolList}>
+                {storage.poolBuckets.map((b, i) => (
+                  <li key={`${b.bucket}-${i}`} className={s.poolRow}>
+                    <span className={s.poolBucket}>{b.bucket}</span>
+                    <span className={s.poolEndpoint} dir="ltr">
+                      {endpointHost(b.endpoint)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className={s.breakerRow}>
+                <span
+                  className={s.breakerDot}
+                  data-on={!storage.circuitBreakerActive}
+                  aria-hidden
+                />
+                <span>
+                  {storage.circuitBreakerActive
+                    ? 'قطع موقت — circuit breaker فعال است؛ تا ۶۰ ثانیه همهٔ باکت‌ها نادیده گرفته می‌شوند'
+                    : 'اتصال S3 فعال'}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 

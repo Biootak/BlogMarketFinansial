@@ -1,0 +1,475 @@
+/**
+ * Forbidden — canonical 403 page with VaultLock SVG illustration
+ *  - bespoke illustrated vault lock (VaultLockIllustration)
+ *  - ambient gradient orbs
+ *  - optical-kerned display numerals (fa)
+ *  - suggested destination cards (mini-cards)
+ *  - tone-driven accent colors
+ *  - RTL-safe, tokens only, prefers-reduced-motion
+ */
+
+/* ── Root ──────────────────────────────────────────────────────────── */
+.root {
+  position: relative;
+  isolation: isolate;
+  min-block-size: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2rem, 5vw, 3rem);
+  padding: clamp(3rem, 8vw, 5rem) clamp(1rem, 4vw, 2rem);
+  text-align: center;
+  overflow: hidden;
+  background: var(--ds-canvas, var(--ds-bg));
+}
+
+.root[data-variant="inline"] {
+  min-block-size: 70vh;
+  padding: var(--ds-space-8) var(--ds-space-4);
+  gap: var(--ds-space-5);
+}
+
+/* ── Ambient gradient orbs ─────────────────────────────────────────── */
+.ambients {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(80px) saturate(140%);
+  opacity: 0.7;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+}
+
+.orbA {
+  inset-block-start: 8%;
+  inset-inline-start: 12%;
+  inline-size: 320px;
+  block-size: 320px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--ds-primary) 22%, transparent) 0%,
+    transparent 70%
+  );
+  animation: fl-orb-drift-a 22s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.orbB {
+  inset-block-end: 10%;
+  inset-inline-end: 8%;
+  inline-size: 380px;
+  block-size: 380px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--ds-primary) 14%, transparent) 0%,
+    transparent 70%
+  );
+  animation: fl-orb-drift-b 28s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.orbC {
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  inline-size: 240px;
+  block-size: 240px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--ds-primary) 10%, transparent) 0%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%);
+  animation: fl-orb-drift-c 18s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes fl-orb-drift-a {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, 30px); }
+}
+
+@keyframes fl-orb-drift-b {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-30px, -40px); }
+}
+
+@keyframes fl-orb-drift-c {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.15); }
+}
+
+/* ── Spotlight ─────────────────────────────────────────────────────── */
+.spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── Stage (illustration container) ────────────────────────────────── */
+.stage {
+  position: relative;
+  inline-size: min(400px, 80vw);
+  block-size: min(400px, 80vw);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.illustration {
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+}
+
+/* ── SVG illustration animations ───────────────────────────────────── */
+.outerRing {
+  transform-origin: 200px 200px;
+  animation: fl-ring-rotate 60s linear infinite;
+}
+
+@keyframes fl-ring-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.outerRing2 {
+  transform-origin: 200px 200px;
+  animation: fl-ring-rotate 90s linear infinite reverse;
+}
+
+.ticks {
+  transform-origin: 200px 200px;
+  animation: fl-ring-rotate 120s linear infinite reverse;
+}
+
+.shieldGroup {
+  transform-origin: 200px 200px;
+  animation: fl-shield-pulse 6s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes fl-shield-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+.innerGlow {
+  animation: fl-glow-pulse 4s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes fl-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.lockBody {
+  transform-origin: 200px 225px;
+  animation: fl-lock-breathe 5s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes fl-lock-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.shackle {
+  transform-origin: 200px 145px;
+  animation: fl-shackle-sway 4s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes fl-shackle-sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.keyhole {
+  animation: fl-keyhole-pulse 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes fl-keyhole-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.xMark {
+  transform-origin: 267.5px 162.5px;
+  animation: fl-x-mark 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes fl-x-mark {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+  50% { transform: scale(1.08) rotate(5deg); opacity: 0.8; }
+}
+
+.stars circle {
+  animation: fl-star-twinkle 3s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.stars circle:nth-child(2) { animation-delay: 0.6s; }
+.stars circle:nth-child(3) { animation-delay: 1.2s; }
+.stars circle:nth-child(4) { animation-delay: 1.8s; }
+.stars circle:nth-child(5) { animation-delay: 2.4s; }
+.stars circle:nth-child(6) { animation-delay: 3.0s; }
+
+@keyframes fl-star-twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.9; }
+}
+
+.numeral {
+  user-select: none;
+}
+
+/* ── Headline ──────────────────────────────────────────────────────── */
+.headBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+  max-inline-size: 540px;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5, 6px);
+  padding: 6px var(--ds-space-3, 12px);
+  font-size: var(--ds-text-xs, 12px);
+  font-weight: 600;
+  color: var(--ds-primary);
+  background: color-mix(in oklch, var(--ds-primary) 8%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-primary) 22%, transparent);
+  border-radius: var(--ds-radius-full, 9999px);
+  letter-spacing: -0.01em;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--ds-fg);
+  font-feature-settings: "ss01", "ss02";
+}
+
+.lead {
+  margin: 0;
+  font-size: var(--ds-text-sm, 14px);
+  line-height: 1.7;
+  color: var(--ds-fg-muted);
+  max-inline-size: 460px;
+}
+
+.pathCode,
+.errorCode {
+  display: inline-block;
+  margin-block-start: var(--ds-space-1, 4px);
+  padding: 6px var(--ds-space-3, 12px);
+  font-family: var(--ds-font-mono, ui-monospace);
+  font-size: var(--ds-text-xs, 12px);
+  font-weight: 500;
+  color: var(--ds-fg-muted);
+  background: color-mix(in oklch, var(--ds-fg) 5%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 8%, transparent);
+  border-radius: var(--ds-radius-md, 12px);
+  word-break: break-all;
+  max-inline-size: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Suggested destination cards ───────────────────────────────────── */
+.suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ds-space-2, 8px);
+  inline-size: 100%;
+  max-inline-size: 540px;
+}
+
+@media (max-width: 540px) {
+  .suggestions {
+    grid-template-columns: 1fr;
+  }
+}
+
+.suggestCard {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3, 12px);
+  padding: var(--ds-space-3, 12px) var(--ds-space-4, 16px);
+  background: color-mix(in oklch, var(--ds-bg, white) 90%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 8%, transparent);
+  border-radius: var(--ds-radius-lg, 16px);
+  text-decoration: none;
+  color: var(--ds-fg);
+  transition:
+    transform 220ms var(--ds-ease-out-quart, ease),
+    border-color 220ms,
+    background 220ms;
+  text-align: start;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.suggestCard:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in oklch, var(--ds-primary) 35%, transparent);
+  background: color-mix(in oklch, var(--ds-primary) 4%, var(--ds-bg, white));
+}
+
+.suggestMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.suggestLabel {
+  font-size: var(--ds-text-sm, 13px);
+  font-weight: 700;
+  color: var(--ds-fg);
+  letter-spacing: -0.005em;
+}
+
+.suggestSub {
+  font-size: var(--ds-text-xs, 11px);
+  line-height: 1.5;
+  color: var(--ds-fg-muted);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.suggestArrow {
+  flex-shrink: 0;
+  color: var(--ds-fg-muted);
+  transition:
+    transform 220ms var(--ds-ease-out-quart, ease),
+    color 220ms;
+}
+
+[dir="rtl"] .suggestCard:hover .suggestArrow {
+  transform: translateX(-4px);
+  color: var(--ds-primary);
+}
+
+.suggestCard:hover .suggestArrow {
+  transform: translateX(-4px);
+  color: var(--ds-primary);
+}
+
+[dir="ltr"] .suggestCard:hover .suggestArrow {
+  transform: translateX(4px);
+  color: var(--ds-primary);
+}
+
+/* ── Actions ───────────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  gap: var(--ds-space-3, 12px);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.primaryCta,
+.ghostCta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2, 8px);
+  padding: var(--ds-space-3, 12px) var(--ds-space-5, 20px);
+  border-radius: var(--ds-radius-md, 12px);
+  font-size: var(--ds-text-sm, 14px);
+  font-weight: 600;
+  text-decoration: none;
+  font-family: inherit;
+  transition:
+    transform 200ms var(--ds-ease-out-quart, ease),
+    filter 200ms,
+    background 200ms;
+  white-space: nowrap;
+}
+
+.primaryCta {
+  background: var(--ds-fg, currentColor);
+  color: var(--ds-bg, white);
+  border: 1px solid var(--ds-fg, currentColor);
+}
+
+.primaryCta:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.ghostCta {
+  background: color-mix(in oklch, var(--ds-bg, white) 92%, transparent);
+  color: var(--ds-fg);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 12%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+.ghostCta:hover {
+  background: color-mix(in oklch, var(--ds-fg) 4%, transparent);
+  border-color: color-mix(in oklch, var(--ds-fg) 20%, transparent);
+}
+
+/* ── Tone variants (accent color overrides) ────────────────────────── */
+.root[data-tone="rose"] {
+  --ds-primary: oklch(55% 0.18 25);
+}
+
+.root[data-tone="violet"] {
+  --ds-primary: oklch(58% 0.12 165);
+}
+
+.root[data-tone="amber"] {
+  --ds-primary: oklch(72% 0.16 80);
+}
+
+.root[data-tone="emerald"] {
+  --ds-primary: oklch(58% 0.12 165);
+}
+
+.root[data-tone="cyan"] {
+  --ds-primary: oklch(62% 0.12 220);
+}
+
+.root[data-tone="indigo"] {
+  --ds-primary: oklch(55% 0.14 270);
+}
+
+.root[data-tone="accent"] {
+  --ds-primary: oklch(55% 0.18 25);
+}
+
+/* ── prefers-reduced-motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .orbA,
+  .orbB,
+  .orbC,
+  .outerRing,
+  .outerRing2,
+  .ticks,
+  .shieldGroup,
+  .innerGlow,
+  .lockBody,
+  .shackle,
+  .keyhole,
+  .xMark,
+  .stars circle,
+  .suggestCard,
+  .suggestArrow,
+  .primaryCta,
+  .ghostCta {
+    animation: none !important;
+    transition: none !important;
+  }
+}
