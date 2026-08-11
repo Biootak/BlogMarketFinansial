@@ -9,6 +9,14 @@ npm install            # also runs `prisma generate` via postinstall
 npm run dev            # next dev (Turbopack) via scripts/dev-turbo.mjs — auto-restarts when
                        #   Turbopack FATAL-panics reading the locked `.freebuff/desktop-v2.db-shm`
                        #   (Freebuff desktop's SQLite file; no watch-ignore option in Next 16.3)
+npm run cache:clean    # scripts/clear-dev-cache.mjs — deletes .next/cache + turbopack dev cache
+                       #   + compiled CSS. Kills the running next-server (dev-turbo restarts it).
+                       #   ⚠️ ALWAYS run this after changing CSS tokens (--fs-base, --ds-*): the
+                       #   persistent Turbopack cache can serve STALE compiled styles after a
+                       #   plain restart, silently regressing the site. Then hard-refresh the
+                       #   browser (Ctrl+Shift+R).
+npm run dev:clean      # cache:clean + npm run dev — use when NO dev server is running
+                       #   (if one is running, cache:clean's auto-restart already covers it)
 npm run dev:raw        # plain next dev (Turbopack), no auto-restart (for debugging panics)
 npm run dev:webpack    # next dev --webpack fallback (slower; watcher ignores .freebuff)
 npm run build          # next build --webpack (Turbopack build panics on embedded lightningcss alpha)

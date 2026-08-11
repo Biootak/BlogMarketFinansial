@@ -7,6 +7,8 @@
   },
   "scripts": {
     "dev": "node scripts/dev-turbo.mjs",
+    "cache:clean": "node scripts/clear-dev-cache.mjs",
+    "dev:clean": "node scripts/clear-dev-cache.mjs && npm run dev",
     "dev:raw": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next dev",
     "dev:webpack": "cross-env NODE_OPTIONS=--dns-result-order=ipv4first next dev --webpack",
     "build": "next build",
@@ -24,6 +26,7 @@
     "db:seed:quotes": "node prisma/seed-exchange-quotes.js",
     "db:seed:rates": "npx tsx prisma/seed-market-rates.ts",
     "setup:owner-invite": "npx tsx scripts/owner-setup-invite.ts",
+    "setup:dev-owner": "npx tsx scripts/create-dev-owner.ts",
     "db:reset": "node scripts/reset-and-seed-50-posts.js",
     "db:fresh": "prisma migrate reset --force && npm run db:seed",
     "db:stats": "node scripts/db-stats.js",

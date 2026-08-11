@@ -8,6 +8,7 @@ import {
   superAdminRoutes,
   userFintechRoutes,
 } from '@/config/routes';
+import { getAuthSecret } from '@/lib/auth-secret';
 import { canAccessRoute } from '@/lib/dashboard-sections';
 import prisma from '@/lib/db';
 import { type JWT, encode, getToken } from 'next-auth/jwt';
@@ -227,7 +228,7 @@ async function refreshStaleTokenClaims(
     // دوباره رمز کن تا رفرش از همین درخواست، دائمی شود.
     const value = await encode({
       token,
-      secret: process.env.AUTH_SECRET as string,
+      secret: getAuthSecret(),
       salt: cookieName,
       maxAge: 3 * 24 * 60 * 60,
     });
@@ -386,7 +387,7 @@ export async function middleware(req: NextRequest) {
   const authBaseUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? '';
   const useSecureCookies = isProduction || authBaseUrl.startsWith('https://');
   const cookieName = useSecureCookies ? SECURE_COOKIE_NAME : DEV_COOKIE_NAME;
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET, cookieName });
+  const token = await getToken({ req, secret: getAuthSecret(), cookieName });
   if (DEBUG_MODE && pathname.startsWith('/dashboard')) {
     /* no sensitive logging */
   }

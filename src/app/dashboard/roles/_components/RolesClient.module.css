@@ -981,7 +981,7 @@
     font-size: 14px;
   }
   .heroKpiLabel {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .heroDiagramWrap {
     padding-block-start: 0.5rem;
@@ -997,7 +997,7 @@
     padding-block: 6px;
   }
   .hierLevelLabel {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
     inline-size: 40px;
   }
   .hierLevelRoles {
@@ -1005,7 +1005,7 @@
   }
   .hierRolePill {
     padding: 2px 6px;
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .rolesGrid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -1033,7 +1033,7 @@
     font-size: 16px;
   }
   .roleCardCountLabel {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .roleCardActive2 {
     margin-block-end: 8px;
@@ -1042,7 +1042,7 @@
     font-size: 0.7rem;
   }
   .roleCardActiveLabel {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .roleCardHier {
     gap: 6px;
@@ -1137,7 +1137,7 @@
   }
   .roleTag {
     padding: 2px 6px;
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
 }
 
@@ -1214,7 +1214,7 @@
     font-size: 0.68rem;
   }
   .userEmail {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .pagBtn {
     inline-size: 24px;

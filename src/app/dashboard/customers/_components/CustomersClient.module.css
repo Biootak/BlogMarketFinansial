@@ -392,7 +392,7 @@
     font-size: 0.9rem;
   }
   .kpiLabel {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .toolbar {
     padding: 0.35rem 0.4rem;
@@ -410,7 +410,7 @@
   }
   .table th {
     padding: 5px 5px;
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .table td {
     padding: 6px 5px;

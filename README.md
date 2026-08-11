@@ -64,13 +64,20 @@ npm run dev
 
 | دستور | توضیح |
 |-------|------|
-| `npm run dev` | اجرای سرور توسعه |
+| `npm run dev` | اجرای سرور توسعه (Turbopack + ری‌استارت خودکار) |
+| `npm run cache:clean` | پاک کردن کش Turbopack و خروجی CSS کامپایل‌شده (سرور در حال اجرا را ری‌استارت می‌کند) |
+| `npm run dev:clean` | پاک کردن کش و اجرای دوباره سرور توسعه (وقتی سروری در حال اجرا نیست) |
 | `npm run build` | ساخت نسخه production |
 | `npm start` | اجرای نسخه production |
 | `npm run lint` | بررسی کد با ESLint |
 | `npx prisma studio` | باز کردن Prisma Studio |
 | `npx prisma migrate dev` | اجرای migration ها |
 | `npx prisma generate` | تولید Prisma Client |
+
+> ⚠️ **بعد از هر تغییر در توکن‌های CSS (`--fs-base`، `--ds-*` و …)** در حالت توسعه،
+> `npm run cache:clean` را اجرا کنید: کش incremental توربوپک ممکن است نسخهٔ کهنهٔ CSS
+> را حتی بعد از ری‌استارت ساده سرو کند و ظاهر سایت بی‌سروصدا به حالت قبلی برگردد.
+> سپس مرورگر را با hard refresh (Ctrl+Shift+R) رفرش کنید.
 
 ## 🐛 رفع مشکلات رایج
 

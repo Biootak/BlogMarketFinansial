@@ -3686,11 +3686,9 @@
   }
 
   /* Readability floors for phones — px on purpose.
-     The global design system ships a fluid root font (--fs-base) that
-     compresses rem text to ~10–12px on small screens. On a first-run flow
-     that is (a) below comfortable reading size and (b) under 16px, which
-     makes iOS Safari auto-zoom into every field on focus. These floors are
-     scoped to the setup page only. */
+     The global fluid root font (--fs-base) lands at ~14–15px on small
+     screens — under 16px, which makes iOS Safari auto-zoom into every
+     field on focus. These floors are scoped to the setup page only. */
   @media (max-width: 639.98px) {
     .setup-field__label,
     .setup-field__help,

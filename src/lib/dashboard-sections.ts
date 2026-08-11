@@ -141,6 +141,13 @@ const ALWAYS_ALLOWED_PREFIXES = [
   '/dashboard/site-guide',
 ];
 
+/**
+ * مسیرهای شخصی/حساب — برای هر کاربر داشبورد بدون توجه به بخش‌ها باز هستند
+ * (کیف پول شخصی، KYC شخصی، انتقال، دستگاه‌ها، اعلان‌ها، …). اکسبورت شده تا
+ * ویرایشگر دسترسی بتواند آن‌ها را جدا از بخش‌ها نمایش دهد.
+ */
+export const ALWAYS_ALLOWED_ROUTES: readonly string[] = ALWAYS_ALLOWED_PREFIXES;
+
 /** مسیرِ یک پیشوند، دقیقاً خودش یا با ادامهٔ `/` — تطبیق امن (نه startswith ساده). */
 function underPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);

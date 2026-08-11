@@ -5,9 +5,9 @@
 // This marks the module server-only so the client bundle stays slim.
 import 'server-only';
 
-import { randomBytes } from 'node:crypto';
 import authConfig from '@/auth.config';
 import { getUserByEmail } from '@/data/user';
+import { getAuthSecret } from '@/lib/auth-secret';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
@@ -22,30 +22,22 @@ import { z } from 'zod';
 
 // 2026-08-09 fix: accept both AUTH_SECRET (canonical, used by middleware +
 // totp-secrets) and NEXTAUTH_SECRET; fail-closed in production (the previous
-// version only logged and let Auth.js continue with an undefined secret);
-// dev fallback is random per process, not a shared hardcoded string.
-const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
-if (!authSecret) {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      'AUTH_SECRET (or NEXTAUTH_SECRET) is required in production. ' +
-        "Generate one with: node -e \"console.log(require('crypto').randomBytes(32).toString('base64'))\"",
-    );
-  }
-  const generated = randomBytes(32).toString('base64');
-  // Keep both names in sync so middleware's getToken and Auth.js share
-  // the same signing secret in dev.
-  process.env.AUTH_SECRET = generated;
-  process.env.NEXTAUTH_SECRET = generated;
+// version only logged and let Auth.js continue with an undefined secret).
+// The dev fallback (src/lib/auth-secret.ts) is PERSISTED to a gitignored
+// file — not a random per-process string — so the auto-restarting dev server
+// (dev-turbo restarts on Turbopack panics) and parallel dev servers on
+// localhost keep signing sessions with the same secret. Without this, every
+// restart invalidated all sessions and users had to re-login.
+const hadEnvAuthSecret = !!(process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET);
+// Side effect: mirrors the resolved secret into process.env.AUTH_SECRET /
+// NEXTAUTH_SECRET, which is what Auth.js, middleware, and totp-secrets read.
+getAuthSecret();
+if (!hadEnvAuthSecret && process.env.NODE_ENV !== 'production') {
   serverLog.warn(
     'auth',
     'dev-secret-generated',
-    'No AUTH_SECRET/NEXTAUTH_SECRET set; generated a random dev secret. Sessions expire on restart.',
+    'No AUTH_SECRET in env; using persisted dev secret (.freebuff/dev-auth-secret). Sessions survive restarts.',
   );
-} else {
-  // If only one name is set, mirror it so middleware + Auth.js never drift apart.
-  if (!process.env.AUTH_SECRET) process.env.AUTH_SECRET = authSecret;
-  if (!process.env.NEXTAUTH_SECRET) process.env.NEXTAUTH_SECRET = authSecret;
 }
 
 // 2026-06-24: P1-3. Credentials provider accepts two *internal* fields
@@ -190,13 +182,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // sign-out occurs. If the value in the token no longer matches the DB,
         // we refresh the role immediately — making role revocations effective
         // within the next request rather than waiting up to 24 h (updateAge).
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id as string },
-          select: { tokenVersion: true, permissions: true, deniedPermissions: true },
-        });
-        token.tokenVersion = dbUser?.tokenVersion ?? 0;
-        token.permissions = dbUser?.permissions ?? [];
-        token.deniedPermissions = dbUser?.deniedPermissions ?? [];
+        // 2026-08-11: best-effort — a DB pool timeout (dev uses a single
+        // connection) must not fail the sign-in. The every-request check below
+        // backfills permissions on the next request once the DB recovers.
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id as string },
+            select: { tokenVersion: true, permissions: true, deniedPermissions: true },
+          });
+          token.tokenVersion = dbUser?.tokenVersion ?? 0;
+          token.permissions = dbUser?.permissions ?? [];
+          token.deniedPermissions = dbUser?.deniedPermissions ?? [];
+        } catch (error) {
+          serverLog.warn('auth', 'jwt-seed-db-unavailable', error);
+          token.tokenVersion = 0;
+          token.permissions = [];
+          token.deniedPermissions = [];
+        }
       }
 
       // ── Explicit session.update() call (e.g. from useCurrentUser) ───────────
@@ -214,22 +216,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // and no explicit update trigger is in flight. The DB query is a single
       // indexed lookup on the primary key — negligible overhead.
       if (!user && !trigger && token.sub) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.sub },
-          select: { role: true, tokenVersion: true, permissions: true, deniedPermissions: true },
-        });
-        if (dbUser) {
-          const storedVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
-          if (dbUser.tokenVersion !== storedVersion) {
-            // Version mismatch → role/permissions changed or session was
-            // force-invalidated. Refresh role + permissions + version in the
-            // token so the session stays alive but reflects the new access
-            // immediately (instant revocation without forced sign-out).
-            token.role = dbUser.role;
-            token.permissions = dbUser.permissions ?? [];
-            token.deniedPermissions = dbUser.deniedPermissions ?? [];
-            token.tokenVersion = dbUser.tokenVersion;
+        // 2026-08-11: fail-open. This DB query runs on EVERY authenticated
+        // request; with the dev single-connection pool, a busy DB (pageview
+        // writes, market tickers, parallel tabs) makes it time out. Letting
+        // the error propagate 500s /api/auth/session and auth() — the client
+        // then treats the user as logged out and shows the login form on
+        // refresh. Keep the existing token instead; the check retries on the
+        // next request and revocation just waits for the DB to recover.
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { role: true, tokenVersion: true, permissions: true, deniedPermissions: true },
+          });
+          if (dbUser) {
+            const storedVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
+            if (dbUser.tokenVersion !== storedVersion) {
+              // Version mismatch → role/permissions changed or session was
+              // force-invalidated. Refresh role + permissions + version in the
+              // token so the session stays alive but reflects the new access
+              // immediately (instant revocation without forced sign-out).
+              token.role = dbUser.role;
+              token.permissions = dbUser.permissions ?? [];
+              token.deniedPermissions = dbUser.deniedPermissions ?? [];
+              token.tokenVersion = dbUser.tokenVersion;
+            }
           }
+        } catch (error) {
+          serverLog.warn('auth', 'jwt-refresh-db-unavailable', error);
         }
       }
 

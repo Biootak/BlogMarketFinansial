@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import {
   ACTION_LABELS,
+  ALWAYS_ALLOWED_ROUTES,
   DASHBOARD_SECTIONS,
   type DashboardSectionKey,
   type SectionActionKey,
@@ -36,6 +37,7 @@ import {
 import {
   Activity,
   CalendarDays,
+  ChevronDown,
   ChevronRight,
   CircleUserRound,
   Eye,
@@ -48,6 +50,7 @@ import {
   MessageSquare,
   Pencil,
   Phone,
+  Route,
   Shield,
   ShieldAlert,
   ShieldCheck,
@@ -614,6 +617,21 @@ const SECTION_STATE_COLOR: Record<SectionAccessState, string> = {
   default: 'var(--at-fg-muted)',
 };
 
+/**
+ * بخش‌های حساس — «فقط مشاهده» روی این‌ها حتی بدون ازدست‌دادن اکشن (مثلاً رفع
+ * مسدودیت عمدی) هم ConfirmDialog می‌گیرد؛ جایی که اکشن‌های پرقدرت (approve،
+ * create، block، manage، publish، resolve) در خطر حذف‌شدن‌اند.
+ */
+const SENSITIVE_VIEW_ONLY_SECTIONS = new Set<DashboardSectionKey>([
+  'kyc',
+  'settlements',
+  'users',
+  'settings',
+  'roles',
+  'content',
+  'fraud',
+]);
+
 function SectionStateBadge({ state }: { state: SectionAccessState }) {
   const color = SECTION_STATE_COLOR[state];
   return (
@@ -735,6 +753,8 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
       } else {
         state = 'default';
         defaultSections += 1;
+        // در حالت پیش‌فرض نقش، همهٔ بخش‌های غیرمسدود عملاً باز هستند
+        openSections += 1;
         openRoutes.push(...routesForSection(section.key));
       }
       states.set(section.key, state);
@@ -786,10 +806,83 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
     });
   };
 
+  // ── Confirm برای «فقط مشاهده» در حالت‌های پرمخاطره ────────────────────────
+  const [viewOnlyTarget, setViewOnlyTarget] = useState<DashboardSectionKey | null>(null);
+
+  // ── Confirm برای «بازگشت به پیش‌فرض نقش» — حذف همهٔ grants/denies ────────
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // مسیرهای بازشدهٔ هر ردیف (فقط برای بخش‌های «بسته/مسدود» نمایش داده می‌شود)
+  const [expandedRoutes, setExpandedRoutes] = useState<Set<DashboardSectionKey>>(new Set());
+  const toggleExpandedRoutes = (section: DashboardSectionKey) => {
+    setExpandedRoutes((prev) => {
+      const next = new Set(prev);
+      if (next.has(section)) next.delete(section);
+      else next.add(section);
+      return next;
+    });
+  };
+
+  const needsViewOnlyConfirm = (section: DashboardSectionKey): boolean => {
+    const granted = grants.get(section) ?? new Set<SectionActionKey>();
+    const losing = [...granted].filter((a) => a !== 'view');
+    // اکشن غیر-view در این بخش grant شده → با «فقط مشاهده» حذف می‌شود
+    if (losing.length > 0) return true;
+    // اولین grant در کل ویرایشگر → whitelist فعال می‌شود و بقیهٔ بخش‌ها بسته می‌شوند
+    if (grants.size === 0) return true;
+    // رفع مسدودیت عمدی یک بخش حساس (مثل KYC یا تسویه)
+    if (SENSITIVE_VIEW_ONLY_SECTIONS.has(section) && denies.has(section)) return true;
+    return false;
+  };
+
+  const requestViewOnly = (section: DashboardSectionKey) => {
+    if (needsViewOnlyConfirm(section)) setViewOnlyTarget(section);
+    else setViewOnly(section);
+  };
+
+  const viewOnlyDescription = (section: DashboardSectionKey): string => {
+    const label = DASHBOARD_SECTIONS.find((s) => s.key === section)?.label ?? section;
+    const granted = grants.get(section);
+    const losing = granted ? [...granted].filter((a) => a !== 'view') : [];
+    const parts: string[] = [];
+    if (losing.length > 0)
+      parts.push(`اکشن ${losing.map((a) => ACTION_LABELS[a]).join('، ')} برداشته می‌شود`);
+    if (denies.has(section)) parts.push('مسدودیت بخش برداشته می‌شود');
+    if (grants.size === 0) parts.push('با فعال‌شدن whitelist، دسترسی بقیهٔ بخش‌ها بسته می‌شود');
+    if (parts.length === 0) parts.push('دسترسی بخش فقط به مشاهده محدود می‌شود');
+    return `بخش «${label}» — ${parts.join('؛ ')}. با تأیید، این تغییر بلافاصله ذخیره می‌شود.`;
+  };
+
+  // تأیید «فقط مشاهده» → اعمال تغییر روی state و ذخیرهٔ خودکار همان لحظه
+  const confirmViewOnly = () => {
+    if (!viewOnlyTarget) return;
+    const section = viewOnlyTarget;
+    const nextGrants = new Map(grants);
+    nextGrants.set(section, new Set<SectionActionKey>(['view']));
+    const nextDenies = new Set(denies);
+    nextDenies.delete(section);
+    setViewOnly(section);
+    save(flattenGrants(nextGrants), [...nextDenies]);
+    setViewOnlyTarget(null);
+  };
+
+  // توضیح داینامیک «بازگشت به پیش‌فرض نقش» بر اساس وضعیت فعلی
+  const resetDescription = (): string => {
+    const parts: string[] = [];
+    if (grants.size > 0)
+      parts.push(
+        'در حالت whitelist، همهٔ بخش‌ها (از جمله بخش‌های بسته) طبق نقش کاربر دوباره باز می‌شوند',
+      );
+    if (denies.size > 0) parts.push('مسدودیت‌های بخشی هم برداشته می‌شوند');
+    return parts.join(' و ');
+  };
+
   // فشرده‌سازی: همهٔ اکشن‌های یک بخش → کلید بخش؛ در غیر این صورت کلیدهای اکشن
-  const flattenGrants = (): string[] => {
+  const flattenGrants = (
+    source: Map<DashboardSectionKey, Set<SectionActionKey>> = grants,
+  ): string[] => {
     const out: string[] = [];
-    for (const [section, actions] of grants) {
+    for (const [section, actions] of source) {
       const all = actionsOfSection(section);
       if (actions.size === all.length) out.push(section);
       else for (const a of actions) out.push(actionKey(section, a));
@@ -852,7 +945,10 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
           <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--at-fg)' }}>
             {summary.whitelistActive
               ? 'حالت whitelist فعال است — دسترسی کاربر فقط به همین بخش‌های انتخاب‌شده است'
-              : 'پیش‌فرض نقش — کاربر به همهٔ بخش‌های غیرمسدود دسترسی دارد'}
+              : 'پیش‌فرض نقش — کاربر به همهٔ بخش‌های غیرمسدود دسترسی دارد'}{' '}
+            <span style={{ fontWeight: 500, color: 'var(--at-fg-muted)' }}>
+              — مسیرهای شخصی (پروفایل، کیف پول، انتقال و…) مستقل از این تنظیمات همیشه باز هستند.
+            </span>
           </span>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <SummaryChip
@@ -867,14 +963,12 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
               color="var(--at-danger)"
               routes={summary.blockedRoutes}
             />
-            {!summary.whitelistActive && summary.defaultSections > 0 ? (
-              <SummaryChip
-                label="پیش‌فرض"
-                text={`${summary.defaultSections} بخش`}
-                color="var(--at-fg-muted)"
-                routes={[]}
-              />
-            ) : null}
+            <SummaryChip
+              label="همیشه باز"
+              text={`${ALWAYS_ALLOWED_ROUTES.length} مسیر شخصی`}
+              color="var(--nova-violet)"
+              routes={ALWAYS_ALLOWED_ROUTES}
+            />
             {summary.whitelistActive && summary.closedSections > 0 ? (
               <SummaryChip
                 label="بسته"
@@ -897,17 +991,15 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
           {DASHBOARD_SECTIONS.map((section) => {
             const denied = denies.has(section.key);
             const sectionGrants = grants.get(section.key) ?? new Set<SectionActionKey>();
+            const accessState = summary.states.get(section.key) ?? 'default';
+            const showRoutes = accessState === 'closed' || accessState === 'denied';
+            const routesOpen = expandedRoutes.has(section.key);
+            const sectionRoutes = routesForSection(section.key);
             return (
               <div
                 key={section.key}
+                className={s.accessRow}
                 style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(150px, 1fr) auto 92px',
-                  gap: '10px',
-                  alignItems: 'center',
-                  padding: '8px 10px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--at-line)',
                   background: denied
                     ? 'color-mix(in oklch, var(--at-danger) 6%, transparent)'
                     : sectionGrants.size > 0
@@ -915,21 +1007,89 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
                       : 'transparent',
                 }}
               >
-                <span
+                <div
                   style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
+                    flexDirection: 'column',
+                    gap: '4px',
                     minWidth: 0,
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: 'var(--at-fg)',
                   }}
                 >
-                  {section.label}
-                  <SectionStateBadge state={summary.states.get(section.key) ?? 'default'} />
-                </span>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  <span
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: 'var(--at-fg)',
+                    }}
+                  >
+                    {section.label}
+                    <SectionStateBadge state={accessState} />
+                  </span>
+
+                  {/* مسیرهای بخش برای وضعیت «بسته/مسدود» — جمع‌شده با امکان بازشدن */}
+                  {showRoutes && (
+                    <button
+                      type="button"
+                      onClick={() => toggleExpandedRoutes(section.key)}
+                      title="مسیرهای این بخش را نشان بده"
+                      aria-expanded={routesOpen}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        alignSelf: 'flex-start',
+                        padding: '2px 6px',
+                        borderRadius: '6px',
+                        border: '1px solid var(--at-line)',
+                        background: 'transparent',
+                        fontSize: '9.5px',
+                        fontWeight: 600,
+                        color: 'var(--at-fg-muted)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Route size={10} aria-hidden />
+                      {sectionRoutes.length} مسیر
+                      <ChevronDown
+                        size={10}
+                        aria-hidden
+                        style={{
+                          transform: routesOpen ? 'rotate(180deg)' : undefined,
+                          transition: 'transform 120ms',
+                        }}
+                      />
+                    </button>
+                  )}
+                  {showRoutes && routesOpen && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1px',
+                        paddingInlineStart: '2px',
+                      }}
+                    >
+                      {sectionRoutes.map((r) => (
+                        <code
+                          key={r}
+                          dir="ltr"
+                          style={{
+                            fontSize: '9.5px',
+                            color: 'var(--at-fg-muted)',
+                            opacity: 0.8,
+                            textAlign: 'start',
+                          }}
+                        >
+                          {r}
+                        </code>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className={s.accessRowActions}>
                   {section.actions.map((action) => {
                     const on = sectionGrants.has(action);
                     return (
@@ -962,43 +1122,20 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
                     );
                   })}
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '5px',
-                    alignItems: 'flex-start',
-                  }}
-                >
+                <div className={s.accessRowTools}>
                   <button
                     type="button"
-                    onClick={() => setViewOnly(section.key)}
+                    onClick={() => requestViewOnly(section.key)}
                     disabled={isPending}
                     title="همهٔ اکشن‌های این بخش فقط به مشاهده کاهش می‌یابد"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      padding: '3px 7px',
-                      borderRadius: '8px',
-                      border: '1px solid var(--at-line)',
-                      background: 'transparent',
-                      fontSize: '10.5px',
-                      fontWeight: 600,
-                      color: 'var(--at-fg-muted)',
-                      cursor: 'pointer',
-                    }}
+                    className={s.accessToolBtn}
                   >
                     <Eye size={11} aria-hidden />
                     فقط مشاهده
                   </button>
                   <label
+                    className={s.accessDenyLabel}
                     style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      cursor: 'pointer',
-                      fontSize: '11px',
                       fontWeight: denied ? 700 : 500,
                       color: denied ? 'var(--at-danger)' : 'var(--at-fg-muted)',
                     }}
@@ -1021,10 +1158,48 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
           <Button size="sm" onClick={() => save(flattenGrants(), [...denies])} disabled={isPending}>
             ذخیره دسترسی‌ها
           </Button>
-          <Button size="sm" variant="outline" onClick={() => save([], [])} disabled={isPending}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowResetConfirm(true)}
+            disabled={isPending || !hasOverride}
+            title={!hasOverride ? 'دسترسی خاصی تنظیم نشده است' : undefined}
+          >
             بازگشت به پیش‌فرض نقش (حذف همه)
           </Button>
         </div>
+
+        <ConfirmDialog
+          open={showResetConfirm}
+          onOpenChange={(o) => {
+            if (!o) setShowResetConfirm(false);
+          }}
+          title="بازگشت به پیش‌فرض نقش؟"
+          description={`همهٔ دسترسی‌های بخشی این کاربر حذف می‌شود؛ ${resetDescription()}.`}
+          confirmLabel="حذف همه و بازگشت"
+          cancelLabel="انصراف"
+          variant="danger"
+          onConfirm={() => {
+            save([], []);
+            setShowResetConfirm(false);
+          }}
+        />
+        <ConfirmDialog
+          open={viewOnlyTarget !== null}
+          onOpenChange={(o) => {
+            if (!o) setViewOnlyTarget(null);
+          }}
+          title={
+            viewOnlyTarget
+              ? `فقط مشاهده برای «${DASHBOARD_SECTIONS.find((s) => s.key === viewOnlyTarget)?.label ?? viewOnlyTarget}»؟`
+              : ''
+          }
+          description={viewOnlyTarget ? viewOnlyDescription(viewOnlyTarget) : ''}
+          confirmLabel="فقط مشاهده"
+          cancelLabel="انصراف"
+          variant="danger"
+          onConfirm={confirmViewOnly}
+        />
       </div>
     </div>
   );

@@ -1523,9 +1523,12 @@
     --fc-gap: 0.5rem;
     --fc-pad: 0.5rem;
   }
+  /* Hero — premium mobile depth */
   .hero {
     padding: 0.9rem;
     border-radius: var(--ds-radius-lg);
+    box-shadow: 0 2px 10px color-mix(in oklch, var(--ds-brand-500) 8%, transparent), 0 1px 4px
+      color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
   .heroMain {
     gap: 0.5rem;
@@ -1547,6 +1550,11 @@
   .heroVitalMain {
     padding: 0.65rem 0.8rem;
     gap: 0.3rem 0.5rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  }
+  .heroVitalMain:hover {
+    box-shadow: 0 4px 12px color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
   }
   .heroVitalLabel {
     font-size: 0.75rem;
@@ -1557,6 +1565,8 @@
   .heroVitalMinor {
     padding: 0.45rem 0.6rem;
     gap: 0.5rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
   .heroVitalMinorLabel {
     font-size: 0.75rem;
@@ -1566,6 +1576,9 @@
   }
   .heroVitalDivider {
     height: 1.2rem;
+  }
+  .heroVitalFlag {
+    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-accent-amber) 10%, transparent);
   }
   /* Hero side: collapse on mobile — max 2 zones */
   .heroSide {
@@ -1584,13 +1597,19 @@
   .ambientGlow {
     opacity: 0.4;
   }
-  /* KPI — grid on mobile (no horizontal scroll) */
+  /* KPI — grid on mobile with premium depth */
   .kpiStrip {
     border-radius: var(--ds-radius-lg);
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-text-primary) 5%, transparent), 0 1px 3px
+      color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
   }
   .kpiCell {
     padding: 0.6rem 0.7rem;
     gap: 0.15rem 0.5rem;
+  }
+  .kpiCell:hover {
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--ds-brand-500) 15%, transparent), 0 2px 6px
+      color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
   }
   .kpiCellIcon {
     width: 1.6rem;
@@ -1604,7 +1623,7 @@
   .kpiCellLabel {
     font-size: 0.75rem;
   }
-  /* Quick actions — 3 column on mobile */
+  /* Quick actions — 3 column on mobile with depth */
   .quickRow {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.35rem;
@@ -1614,16 +1633,22 @@
     gap: 0.4rem;
     font-size: 0.8rem;
     border-radius: var(--ds-radius-sm);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+  }
+  .quickChip:hover {
+    box-shadow: 0 3px 8px color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
   }
   .quickChipIcon {
     width: 1.3rem;
     height: 1.3rem;
     flex: 0 0 1.3rem;
   }
-  /* Services panel — tighter */
+  /* Services panel — tighter with depth */
   .svcPanel,
   .livePanel {
     border-radius: var(--ds-radius-lg);
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-text-primary) 5%, transparent), 0 1px 3px
+      color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
   }
   .panelHeader {
     padding: 0.7rem 0.7rem 0.5rem;
@@ -1664,6 +1689,11 @@
   .svcItemLink {
     padding: 0.55rem 0.7rem;
     column-gap: 0.5rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+  }
+  .svcItemLink:hover {
+    box-shadow: 0 3px 10px color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
   }
   .svcAvatar {
     width: 1.85rem;
@@ -1723,22 +1753,29 @@
     justify-content: center;
     padding: 0.45rem 0.6rem;
     font-size: 0.8rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
+  }
+  .svcFootCta:hover {
+    box-shadow: 0 4px 12px color-mix(in oklch, var(--ds-brand-500) 16%, transparent);
   }
   .svcFootLink {
     font-size: 0.75rem;
   }
-  /* Inline actions — mobile */
+  /* Inline actions — mobile with depth */
   .svcItemActions {
     gap: 0.3rem;
   }
   .svcActionBtn {
     padding: 0.2rem 0.35rem;
     font-size: 0.7rem;
+    box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
   }
-  /* Live panel — tighter */
+  /* Live panel — tighter with depth */
   .healthPill {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
   .liveStats {
     grid-template-columns: repeat(3, 1fr);
@@ -1782,6 +1819,8 @@
     padding: 0.45rem 0.7rem;
     gap: 0.4rem;
     font-size: 0.8rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
   }
   .eventIcon {
     width: 1.3rem;
@@ -1813,35 +1852,62 @@
   }
   .hero {
     padding: 0.75rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-brand-500) 8%, transparent), 0 1px 3px
+      color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
   .heroTitle {
     font-size: 1.15rem;
+  }
+  .heroEyebrow {
+    font-size: 0.7rem;
+  }
+  .heroLead {
+    font-size: 0.8rem;
   }
   .heroVital {
     grid-template-columns: 1fr;
   }
   .heroVitalMain {
     padding: 0.55rem 0.7rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
   }
   .heroVitalValue {
     font-size: 1.3rem;
   }
   .heroVitalFlag {
-    font-size: 0.75rem;
-    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    padding: 0.15rem 0.35rem;
+    border-radius: 999px;
   }
   .heroVitalMinor {
     padding: 0.4rem 0.5rem;
     gap: 0.4rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
   .heroVitalMinorLabel {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   .heroVitalMinorValue {
     font-size: 0.8rem;
   }
   .heroVitalDivider {
     height: 1rem;
+  }
+  .heroVitalLabel {
+    font-size: 0.7rem;
+  }
+  .heroSideLabel {
+    font-size: 0.7rem;
+  }
+  .heroSideRole {
+    font-size: 0.7rem;
+  }
+  .kpiStrip {
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
   .kpiCell {
     padding: 0.55rem 0.5rem;
@@ -1850,7 +1916,7 @@
     font-size: 0.85rem;
   }
   .kpiCellLabel {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   .kpiCellIcon {
     width: 1.35rem;
@@ -1864,11 +1930,18 @@
   .quickChip {
     padding: 0.45rem 0.35rem;
     font-size: 0.75rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
   .quickChipIcon {
     width: 1.2rem;
     height: 1.2rem;
     flex: 0 0 1.2rem;
+  }
+  .svcPanel,
+  .livePanel {
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
   .svcLiveItem {
     grid-template-columns: auto 1fr auto;
@@ -1886,8 +1959,16 @@
   .panelTitle {
     font-size: 0.85rem;
   }
+  .panelEyebrow {
+    font-size: 0.7rem;
+  }
+  .panelMore {
+    font-size: 0.7rem;
+  }
   .svcItemLink {
     padding: 0.45rem 0.5rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
   .svcItemName {
     font-size: 0.75rem;
@@ -1896,28 +1977,118 @@
     width: 1.5rem;
     height: 1.5rem;
     flex: 0 0 1.5rem;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   .svcItemMeta {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+  }
+  .svcItemCode {
+    font-size: 0.7rem;
   }
   .svcItemAmount {
     font-size: 0.75rem;
   }
+  .svcItemCurrency {
+    font-size: 0.7rem;
+  }
   .svcStatus {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.3rem;
+  }
+  .svcItemTime {
+    font-size: 0.7rem;
+  }
+  .svcFlag {
+    font-size: 0.65rem;
+  }
+  .svcKpiLabel {
+    font-size: 0.7rem;
+  }
+  .svcKpiValue {
+    font-size: 0.8rem;
+  }
+  .svcEmpty {
+    padding: 0.8rem 0.5rem;
     font-size: 0.75rem;
+  }
+  .svcFoot {
+    padding: 0.4rem 0.5rem;
+    gap: 0.3rem;
+  }
+  .svcFootCta {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
+  }
+  .svcFootLink {
+    font-size: 0.7rem;
+  }
+  .svcItemActions {
+    gap: 0.25rem;
+  }
+  .svcActionBtn {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.65rem;
+  }
+  .healthPill {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+  }
+  .liveStat {
+    padding: 0.4rem 0.5rem;
   }
   .liveStatValue {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   .liveStatLabel {
+    font-size: 0.7rem;
+  }
+  .svcLiveItem {
+    padding: 0.35rem 0.5rem;
+    gap: 0.3rem;
+    font-size: 0.7rem;
+  }
+  .svcLiveName {
+    font-size: 0.7rem;
+  }
+  .svcLiveStatus {
+    font-size: 0.7rem;
+  }
+  .svcLiveLatency {
+    font-size: 0.7rem;
+  }
+  .eventList {
+    padding: 0.25rem 0;
+    max-height: 180px;
+  }
+  .eventItem {
+    padding: 0.4rem 0.5rem;
+    gap: 0.35rem;
     font-size: 0.75rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
+  }
+  .eventIcon {
+    width: 1.2rem;
+    height: 1.2rem;
+    flex: 0 0 1.2rem;
+  }
+  .eventActor {
+    font-size: 0.7rem;
+  }
+  .eventAction {
+    font-size: 0.7rem;
+  }
+  .eventAmount {
+    font-size: 0.7rem;
   }
   .eventTop {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   .eventBottom {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   .editorial {
     gap: 0.5rem;
@@ -1932,25 +2103,74 @@
   }
   .hero {
     padding: 0.6rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-brand-500) 7%, transparent), 0 1px 2px
+      color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
   .heroTitle {
     font-size: 1.05rem;
   }
+  .heroEyebrow {
+    font-size: 0.65rem;
+  }
+  .heroLead {
+    font-size: 0.75rem;
+  }
+  .heroVitalMain {
+    padding: 0.5rem 0.6rem;
+  }
+  .heroVitalValue {
+    font-size: 1.15rem;
+  }
+  .heroVitalMinor {
+    padding: 0.35rem 0.45rem;
+    gap: 0.35rem;
+  }
+  .heroVitalMinorLabel {
+    font-size: 0.65rem;
+  }
+  .heroVitalMinorValue {
+    font-size: 0.75rem;
+  }
+  .heroVitalLabel {
+    font-size: 0.65rem;
+  }
   /* KPI: keep 3-col grid (no horizontal scroll) */
   .kpiStrip {
     grid-template-columns: repeat(3, 1fr);
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
   .kpiCell {
     padding: 0.45rem 0.35rem;
   }
   .kpiCellValue {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
   .kpiCellLabel {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
+  }
+  .kpiCellIcon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 1.25rem;
   }
   .quickRow {
     grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+  .quickChip {
+    padding: 0.4rem 0.3rem;
+    font-size: 0.7rem;
+  }
+  .quickChipIcon {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: 0 0 1.1rem;
+  }
+  .svcPanel,
+  .livePanel {
+    border-radius: var(--ds-radius-md);
   }
   .svcKpis {
     grid-template-columns: repeat(2, 1fr);
@@ -1958,7 +2178,101 @@
   .svcKpi {
     padding: 0.35rem 0.4rem;
   }
+  .svcKpiLabel {
+    font-size: 0.65rem;
+  }
+  .svcKpiValue {
+    font-size: 0.75rem;
+  }
   .svcItemLink {
     padding: 0.4rem 0.4rem;
+    border-radius: var(--ds-radius-sm);
+  }
+  .svcAvatar {
+    width: 1.4rem;
+    height: 1.4rem;
+    flex: 0 0 1.4rem;
+    font-size: 0.65rem;
+  }
+  .svcItemName {
+    font-size: 0.7rem;
+  }
+  .svcItemMeta {
+    font-size: 0.65rem;
+  }
+  .svcItemAmount {
+    font-size: 0.7rem;
+  }
+  .svcStatus {
+    font-size: 0.65rem;
+  }
+  .panelHeader {
+    padding: 0.4rem 0.4rem 0.25rem;
+  }
+  .panelTitle {
+    font-size: 0.8rem;
+  }
+  .panelEyebrow {
+    font-size: 0.65rem;
+  }
+  .svcFoot {
+    padding: 0.35rem 0.4rem;
+  }
+  .svcFootCta {
+    padding: 0.35rem 0.45rem;
+    font-size: 0.7rem;
+  }
+  .healthPill {
+    padding: 0.2rem 0.35rem;
+    font-size: 0.65rem;
+  }
+  .liveStat {
+    padding: 0.35rem 0.4rem;
+  }
+  .liveStatLabel {
+    font-size: 0.65rem;
+  }
+  .liveStatValue {
+    font-size: 0.8rem;
+  }
+  .strip24 {
+    height: 24px;
+  }
+  .svcLiveItem {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.65rem;
+  }
+  .svcLiveName {
+    font-size: 0.65rem;
+  }
+  .svcLiveStatus {
+    font-size: 0.65rem;
+  }
+  .svcLiveLatency {
+    font-size: 0.65rem;
+  }
+  .eventList {
+    max-height: 150px;
+  }
+  .eventItem {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.7rem;
+  }
+  .eventIcon {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: 0 0 1.1rem;
+  }
+  .eventActor {
+    font-size: 0.65rem;
+  }
+  .eventAction {
+    font-size: 0.65rem;
+  }
+  .eventAmount {
+    font-size: 0.65rem;
+  }
+  .eventBottom {
+    font-size: 0.65rem;
   }
 }

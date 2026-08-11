@@ -434,6 +434,46 @@
   }
 }
 
+/* ─── Elevation system (desktop + mobile) ──────────────────────── */
+/* Tier 1 — hero/stat cards: subtle lift */
+/* Tier 2 — interactive cards: hover lift + glow border */
+/* Tier 3 — CTAs: press-ready depth */
+
+/* Tier 1 — subtle depth for static cards */
+.welcome,
+.kycBanner,
+.statCard {
+  box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 6%, transparent), 0 1px 2px
+    color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+}
+
+/* Tier 2 — interactive cards with glow on hover */
+.actionCard,
+.requestLink,
+.activityItem {
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+}
+.actionCard:hover,
+.requestLink:hover,
+.activityItem:hover {
+  box-shadow: 0 4px 12px color-mix(in oklch, var(--ds-brand-500) 10%, transparent), 0 2px 4px
+    color-mix(in oklch, var(--ds-text-primary) 6%, transparent);
+}
+
+/* Tier 3 — CTA buttons with press depth */
+.primaryCta,
+.kycCta,
+.emptyCta,
+.welcomeStep {
+  box-shadow: 0 2px 4px color-mix(in oklch, var(--ds-brand-500) 12%, transparent), 0 1px 2px
+    color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+}
+.primaryCta:hover,
+.emptyCta:hover {
+  box-shadow: 0 6px 16px color-mix(in oklch, var(--ds-brand-500) 18%, transparent), 0 2px 6px
+    color-mix(in oklch, var(--ds-text-primary) 8%, transparent);
+}
+
 /* ─── Quick actions grid ──────────────────────────────────────── */
 .quickActions,
 .recent,
@@ -678,9 +718,11 @@
 }
 
 /* ─── Responsive ──────────────────────────────────────────────── */
+
+/* Tablet breakpoint */
 @media (max-width: 720px) {
   .root {
-    --uh-gap: var(--ds-space-3);
+    --uh-gap: 0.6rem;
     --uh-pad: 0.6rem;
   }
 
@@ -696,62 +738,319 @@
   .primaryCta {
     width: 100%;
     justify-content: center;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.85rem;
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-brand-500) 15%, transparent), 0 1px 3px
+      color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
 
   .welcome {
     grid-template-columns: auto 1fr;
-    padding: var(--ds-space-4);
+    padding: var(--ds-space-3);
+    border-radius: var(--ds-radius-lg);
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-brand-500) 8%, transparent), 0 1px 3px
+      color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
+  }
+
+  .welcomeIcon {
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 2.5rem;
+  }
+
+  .welcomeTitle {
+    font-size: var(--ds-text-base);
+  }
+
+  .welcomeDesc {
+    font-size: 0.8rem;
   }
 
   .welcomeSteps {
     flex-direction: row;
+    gap: 0.4rem;
+  }
+
+  .welcomeStep {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  }
+
+  .welcomeStepIndex {
+    width: 1.2rem;
+    height: 1.2rem;
+    font-size: 0.7rem;
   }
 
   .kycBanner {
     grid-template-columns: auto 1fr;
     padding: var(--ds-space-3);
+    border-radius: var(--ds-radius-lg);
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-accent-amber) 8%, transparent), 0 1px 3px
+      color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
+  }
+
+  .kycIcon {
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
+  }
+
+  .kycTitle {
+    font-size: var(--ds-text-sm);
+  }
+
+  .kycDesc {
+    font-size: 0.75rem;
   }
 
   .kycCta {
     grid-column: 1 / -1;
     justify-content: center;
     justify-self: stretch;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-accent-amber) 12%, transparent);
   }
 
   .name {
-    font-size: 1.35rem;
+    font-size: clamp(1.15rem, 0.8rem + 1.5vw, 1.4rem);
+  }
+
+  .greeting {
+    font-size: 0.8rem;
+  }
+
+  .subtitle {
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding-inline: 0.4rem;
+    padding-block: 0.1rem;
   }
 
   .sectionTitle {
     font-size: var(--ds-text-base);
   }
 
+  .seeAll {
+    font-size: 0.8rem;
+  }
+
+  .sectionMeta {
+    font-size: 0.8rem;
+  }
+
+  .actionsGrid {
+    gap: 0.5rem;
+  }
+
   .actionCard {
-    min-height: 52px;
-    padding: var(--ds-space-3);
+    min-height: 48px;
+    padding: 0.5rem 0.6rem;
+    gap: 0.5rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-text-primary) 5%, transparent), 0 1px 2px
+      color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
+  }
+
+  .actionCard:hover {
+    box-shadow: 0 4px 12px color-mix(in oklch, var(--ds-brand-500) 12%, transparent), 0 2px 4px
+      color-mix(in oklch, var(--ds-text-primary) 6%, transparent);
   }
 
   .actionIcon {
-    width: 1.85rem;
-    height: 1.85rem;
-    flex: 0 0 1.85rem;
+    width: 1.7rem;
+    height: 1.7rem;
+    flex: 0 0 1.7rem;
+    border-radius: var(--ds-radius-sm);
   }
 
   .actionLabel {
-    font-size: var(--ds-text-xs);
+    font-size: 0.8rem;
+  }
+
+  .actionHint {
+    font-size: 0.7rem;
+  }
+
+  .statsGrid {
+    gap: 0.5rem;
+  }
+
+  .requestLink {
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+  }
+
+  .requestLink:hover {
+    box-shadow: 0 4px 10px color-mix(in oklch, var(--ds-brand-500) 10%, transparent), 0 1px 3px
+      color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
+  }
+
+  .requestType {
+    font-size: 0.8rem;
+  }
+
+  .requestCode {
+    font-size: 0.7rem;
+  }
+
+  .requestAmount {
+    font-size: 0.8rem;
+  }
+
+  .requestDate {
+    font-size: 0.7rem;
+  }
+
+  .activityItem {
+    padding: 0.5rem 0.6rem;
+    gap: 0.5rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+  }
+
+  .activityMessage {
+    font-size: 0.8rem;
+  }
+
+  .activityTime {
+    font-size: 0.7rem;
+  }
+
+  .activityDot {
+    width: 0.4rem;
+    height: 0.4rem;
+    flex: 0 0 0.4rem;
+  }
+
+  .emptyCta {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    border-radius: var(--ds-radius-sm);
+    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
   }
 }
 
+/* Mobile — compact with premium depth */
 @media (max-width: 480px) {
   .root {
     --uh-gap: 0.5rem;
     --uh-pad: 0.5rem;
   }
 
+  .header {
+    padding-block-end: 0.5rem;
+  }
+
+  .name {
+    font-size: clamp(1.05rem, 0.7rem + 1.2vw, 1.25rem);
+  }
+
+  .greeting {
+    font-size: 0.75rem;
+  }
+
+  .subtitle {
+    font-size: 0.75rem;
+  }
+
+  .primaryCta {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: var(--ds-radius-sm);
+  }
+
+  .welcome {
+    padding: 0.6rem;
+    gap: 0.5rem;
+    border-radius: var(--ds-radius-md);
+  }
+
+  .welcomeIcon {
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
+  }
+
+  .welcomeTitle {
+    font-size: 0.85rem;
+  }
+
+  .welcomeDesc {
+    font-size: 0.75rem;
+  }
+
+  .welcomeStep {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+    gap: 0.3rem;
+  }
+
+  .welcomeStepIndex {
+    width: 1.1rem;
+    height: 1.1rem;
+    font-size: 0.65rem;
+  }
+
+  .kycBanner {
+    padding: 0.6rem;
+    gap: 0.5rem;
+    border-radius: var(--ds-radius-md);
+  }
+
+  .kycIcon {
+    width: 1.8rem;
+    height: 1.8rem;
+    flex: 0 0 1.8rem;
+  }
+
+  .kycTitle {
+    font-size: 0.8rem;
+  }
+
+  .kycDesc {
+    font-size: 0.7rem;
+  }
+
+  .kycCta {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  .kycBadge {
+    font-size: 0.65rem;
+  }
+
+  .sectionTitle {
+    font-size: 0.85rem;
+  }
+
+  .seeAll {
+    font-size: 0.7rem;
+  }
+
+  .sectionMeta {
+    font-size: 0.75rem;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    padding-inline: 0.35rem;
+  }
+
   .requestLink {
     grid-template-columns: 1fr;
-    gap: var(--ds-space-2);
-    padding: 0.5rem 0.6rem;
+    gap: 0.3rem;
+    padding: 0.45rem 0.5rem;
+    border-radius: var(--ds-radius-sm);
   }
 
   .requestBody {
@@ -764,11 +1063,15 @@
   }
 
   .requestCode {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
   }
 
   .requestAmount {
     font-size: 0.75rem;
+  }
+
+  .requestDate {
+    font-size: 0.65rem;
   }
 
   .actionsGrid {
@@ -777,18 +1080,24 @@
   }
 
   .actionCard {
-    min-height: 48px;
-    padding: 0.45rem 0.5rem;
+    min-height: 44px;
+    padding: 0.4rem 0.45rem;
+    gap: 0.4rem;
+    border-radius: var(--ds-radius-sm);
   }
 
   .actionIcon {
-    width: 1.65rem;
-    height: 1.65rem;
-    flex: 0 0 1.65rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
   }
 
   .actionLabel {
     font-size: 0.75rem;
+  }
+
+  .actionHint {
+    display: none;
   }
 
   .statsGrid {
@@ -797,8 +1106,9 @@
   }
 
   .activityItem {
-    padding: 0.5rem 0.6rem;
-    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    gap: 0.4rem;
+    border-radius: var(--ds-radius-sm);
   }
 
   .activityMessage {
@@ -806,42 +1116,22 @@
   }
 
   .activityTime {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
   }
 
-  .welcomeStep {
+  .activityDot {
+    width: 0.35rem;
+    height: 0.35rem;
+    flex: 0 0 0.35rem;
+  }
+
+  .emptyCta {
     padding: 0.4rem 0.6rem;
     font-size: 0.75rem;
   }
-
-  .welcomeStepIndex {
-    width: 1.2rem;
-    height: 1.2rem;
-    font-size: 0.75rem;
-  }
-
-  .badge {
-    font-size: 0.75rem;
-  }
-
-  .kycTitle {
-    font-size: var(--ds-text-sm);
-  }
-
-  .kycDesc {
-    font-size: 0.68rem;
-  }
-
-  .kycCta {
-    padding: 0.45rem 0.75rem;
-    font-size: 0.7rem;
-  }
-
-  .seeAll {
-    font-size: 0.7rem;
-  }
 }
 
+/* Ultra-small mobile */
 @media (max-width: 360px) {
   .root {
     --uh-gap: 0.4rem;
@@ -849,20 +1139,88 @@
   }
 
   .name {
-    font-size: 1.15rem;
+    font-size: 1rem;
+  }
+
+  .greeting {
+    font-size: 0.7rem;
   }
 
   .primaryCta {
-    padding: 0.55rem 0.85rem;
+    padding: 0.45rem 0.65rem;
     font-size: 0.75rem;
+  }
+
+  .welcome {
+    padding: 0.5rem;
+  }
+
+  .welcomeTitle {
+    font-size: 0.8rem;
+  }
+
+  .welcomeDesc {
+    font-size: 0.7rem;
+  }
+
+  .welcomeStep {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .kycBanner {
+    padding: 0.5rem;
+  }
+
+  .kycTitle {
+    font-size: 0.75rem;
+  }
+
+  .kycDesc {
+    font-size: 0.65rem;
+  }
+
+  .kycCta {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.7rem;
+  }
+
+  .sectionTitle {
+    font-size: 0.8rem;
   }
 
   .actionCard {
-    min-height: 44px;
-    padding: 0.4rem;
+    min-height: 40px;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .actionIcon {
+    width: 1.4rem;
+    height: 1.4rem;
+    flex: 0 0 1.4rem;
   }
 
   .actionLabel {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+  }
+
+  .statsGrid {
+    gap: 0.3rem;
+  }
+
+  .requestLink {
+    padding: 0.4rem 0.4rem;
+  }
+
+  .activityItem {
+    padding: 0.35rem 0.4rem;
+  }
+
+  .activityMessage {
+    font-size: 0.7rem;
+  }
+
+  .activityTime {
+    font-size: 0.6rem;
   }
 }

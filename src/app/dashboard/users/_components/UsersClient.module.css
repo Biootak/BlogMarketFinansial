@@ -257,7 +257,7 @@
     font-size: 0.9rem;
   }
   .kpiLabel {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .table thead th {
     padding: 6px 6px;
@@ -277,7 +277,7 @@
     font-size: 0.58rem;
   }
   .badge {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
     padding: 1px 5px;
   }
   .editBtn,

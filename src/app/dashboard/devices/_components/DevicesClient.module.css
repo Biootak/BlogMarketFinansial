@@ -1294,7 +1294,7 @@
     font-size: 0.75rem;
   }
   .liveBadge {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
     gap: 4px;
     padding: 2px 6px;
   }
@@ -1378,7 +1378,7 @@
     font-size: 0.6rem;
   }
   .statusBadge {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
     padding: 2px 6px;
     gap: 3px;
   }
@@ -1396,7 +1396,7 @@
     gap: 0.3rem;
   }
   .fpCode {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .cardActions {
     gap: 0.3rem;
@@ -1485,7 +1485,7 @@
     font-size: 0.65rem;
   }
   .timelineMeta {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   /* Tips */
   .tipsCard {
@@ -1550,10 +1550,10 @@
     gap: 0.3rem;
   }
   .fpFullValue {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .uaDataText {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
     padding: 0.4rem;
   }
   .sheetActionTrust,
@@ -1597,7 +1597,7 @@
     font-size: 0.7rem;
   }
   .osTitle {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .statusBadge {
     font-size: 0.5rem;
@@ -1623,7 +1623,7 @@
     font-size: var(--ds-text-lg);
   }
   .scoreDescText {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .emergencyRevokeBtn {
     font-size: 0.6rem;
@@ -1641,7 +1641,7 @@
     font-size: 0.7rem;
   }
   .tipsList li {
-    font-size: 0.55rem;
+    font-size: 0.625rem;
   }
   .sheetInner {
     padding: 0.6rem;

@@ -35,6 +35,11 @@
  * The real long-term fixes live outside this repo:
  *   - relocate the Freebuff app DB out of the watched project root, or
  *   - a future Turbopack fix that skips unreadable/locked files.
+ *
+ * Stale CSS after token changes? Turbopack's persistent dev cache can serve
+ * OLD compiled styles even after this script restarts the server. Run
+ * `npm run cache:clean` (scripts/clear-dev-cache.mjs) after editing CSS
+ * design tokens, then hard-refresh the browser.
  */
 
 import { spawn, spawnSync } from 'node:child_process';
