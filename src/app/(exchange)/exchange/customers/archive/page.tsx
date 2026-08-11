@@ -16,7 +16,7 @@ export default async function ArchivePage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers/archive');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   const [{ rows: archived }, { rows: frozen }, stats] = await Promise.all([
     getCustomers(membership.exchange.id, { status: 'CLOSED', limit: 200 }),

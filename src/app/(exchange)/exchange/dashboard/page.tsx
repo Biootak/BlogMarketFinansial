@@ -14,6 +14,8 @@
 import { getExchangeDashboardData } from '@/actions/exchange-dashboard';
 import { getTransactions } from '@/actions/exchange-transactions';
 import { getExchangeForUser } from '@/actions/exchanges';
+import { PageHeader, Section, StatusTimeline } from '@/components/Dashboard/primitives';
+import { BookmarkButton } from '@/components/Dashboard/primitives/BookmarkButton';
 import {
   Banknote,
   BarChart3,
@@ -75,6 +77,21 @@ export default async function ExchangeDashboardPage() {
 
   return (
     <div className={s.root}>
+      {/* ۰. PageHeader — unified breadcrumb + title */}
+      <PageHeader
+        title="داشبورد صراف"
+        description="نمای کلی فعالیت صرافی در لحظه"
+        icon="layout-dashboard"
+        accent="indigo"
+        variant="compact"
+        meta={[
+          { label: 'حجم امروز', value: data.kpi.todayVolume },
+          { label: 'تراکنش‌ها', value: data.kpi.todayCount },
+          { label: 'مشتریان فعال', value: data.kpi.activeCustomers },
+        ]}
+        actions={<BookmarkButton pageKey="exchange-dashboard" />}
+      />
+
       {/* ۱. Hero pulse — signature moment */}
       <ExchangeHeroPulse
         todayVolume={data.kpi.todayVolume}
@@ -260,7 +277,24 @@ export default async function ExchangeDashboardPage() {
         </section>
       </div>
 
-      {/* ۱۱. Footer link to insights page */}
+      {/* ۱۱. Activity Feed — recent transactions as timeline */}
+      <Section title="فعالیت‌های اخیر" subtitle="آخرین تراکنش‌ها" data-testid="activity-feed">
+        <StatusTimeline
+          items={recent.slice(0, 5).map((t) => ({
+            icon:
+              t.kind === 'DEPOSIT' ? 'wallet' : t.kind === 'WITHDRAWAL' ? 'creditCard' : 'activity',
+            label: `${t.customer?.fullName ?? 'مشتری'} — ${t.kind}`,
+            description: `${t.amount} ${t.currency}`,
+            timestamp: t.createdAt,
+            tone:
+              t.status === 'COMPLETED' ? 'success' : t.status === 'PENDING' ? 'warning' : 'danger',
+            href: `/exchange/transactions/${t.id}`,
+          }))}
+          emptyMessage="هنوز تراکنشی ثبت نشده"
+        />
+      </Section>
+
+      {/* ۱۲. Footer link to insights page */}
       <footer className={s.footer} aria-label="پاورقی">
         <Link href="/exchange/dashboard/insights" className={s.footerLink}>
           <LineChart size={14} aria-hidden />

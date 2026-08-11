@@ -24,7 +24,7 @@ export default async function SegmentsPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers/segments');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   const { exchange } = membership;
 

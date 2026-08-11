@@ -24,7 +24,9 @@ export default async function ExchangeKycReviewPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/kyc-review');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  // 2026-08-10: لاگین‌شده بدون عضویت → /forbidden (نه /dashboard —
+  // برای نقش EXCHANGE به /exchange/dashboard برمی‌گردد و loop می‌شود).
+  if (!membership) redirect('/forbidden');
 
   const canWrite = membership.staffRole !== 'VIEWER';
 

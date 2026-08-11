@@ -19,7 +19,7 @@ export default async function NotificationsPage() {
   ]);
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <NotificationsClient notifications={notifications} total={total} />
     </div>
   );

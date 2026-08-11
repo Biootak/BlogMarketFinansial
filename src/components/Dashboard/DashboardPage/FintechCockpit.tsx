@@ -28,6 +28,7 @@
  *   - Mobile-first responsive (320 → 1440).
  */
 
+import { QuickActionRow } from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import {
@@ -119,7 +120,8 @@ export interface FintechCockpitProps {
     detail: string;
     href: string;
     daysLeft: number;
-    icon: LucideIcon;
+    /** string key mapped to a Lucide icon client-side (server→client safe) */
+    iconName: string;
   }>;
   /** Optional editorial deck — only for editor roles */
   editorial?: ReactNode;
@@ -723,31 +725,16 @@ function LivePanel({
 // ─── Quick actions row ─────────────────────────────────────────────────
 
 function QuickActionsRow() {
-  const items: Array<{ label: string; href: string; icon: LucideIcon; hint: string }> = [
-    { label: 'صرافی‌ها', href: '/exchanges', icon: Users, hint: 'مدیریت صرافی‌ها' },
-    { label: 'نرخ‌های ارز', href: '/exchange-rates', icon: TrendingUp, hint: 'نرخ لحظه‌ای' },
-    { label: 'حواله‌ها', href: '/dashboard/transfer', icon: ArrowRight, hint: 'انتقال وجه' },
-    { label: 'گزارش‌ها', href: '/dashboard/reports', icon: Wallet, hint: 'گزارش مالی' },
-    { label: 'امنیت', href: '/dashboard/permissions', icon: ShieldAlert, hint: 'دسترسی‌ها' },
-    { label: 'پشتیبانی', href: '/dashboard/helpdesk', icon: Plus, hint: 'تیکت‌ها' },
+  const items = [
+    { href: '/exchanges', icon: <Users size={14} />, label: 'صرافی‌ها' },
+    { href: '/exchange-rates', icon: <TrendingUp size={14} />, label: 'نرخ‌های ارز' },
+    { href: '/dashboard/transfer', icon: <ArrowRight size={14} />, label: 'حواله‌ها' },
+    { href: '/dashboard/reports', icon: <Wallet size={14} />, label: 'گزارش‌ها' },
+    { href: '/dashboard/permissions', icon: <ShieldAlert size={14} />, label: 'امنیت' },
+    { href: '/dashboard/helpdesk', icon: <Plus size={14} />, label: 'پشتیبانی' },
   ];
 
-  return (
-    <nav className={s.quickRow} aria-label="دسترسی سریع">
-      {items.map((it) => {
-        const Icon = it.icon;
-        return (
-          <Link key={it.href} href={it.href} className={s.quickChip}>
-            <span className={s.quickChipIcon} aria-hidden>
-              <Icon size={14} />
-            </span>
-            <span className={s.quickChipLabel}>{it.label}</span>
-            <span className={s.quickChipHint}>{it.hint}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  return <QuickActionRow items={items} />;
 }
 
 // ─── Main ──────────────────────────────────────────────────────────────

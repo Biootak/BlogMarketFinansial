@@ -1,5 +1,6 @@
 'use client';
 
+import { ExportButton } from '@/components/Dashboard/primitives';
 import { cn } from '@/lib/utils';
 import {
   type ReactNode,
@@ -49,9 +50,23 @@ export interface TableToolbarProps {
   actions?: ReactNode;
   className?: string;
   children?: ReactNode;
+  /** Optional: CSV export config */
+  exportData?: {
+    data: Record<string, unknown>[];
+    columns: Array<{ key: string; header: string }>;
+    filename?: string;
+    label?: string;
+  };
 }
 
-export function TableToolbar({ filters, search, actions, className, children }: TableToolbarProps) {
+export function TableToolbar({
+  filters,
+  search,
+  actions,
+  className,
+  children,
+  exportData,
+}: TableToolbarProps) {
   const [density, setDensityState] = useState<TableDensity>(DEFAULT_DENSITY);
   const [hydrated, setHydrated] = useState(false);
 
@@ -93,6 +108,7 @@ export function TableToolbar({ filters, search, actions, className, children }: 
           {children}
           {search}
           <DensityToggle />
+          {exportData && <ExportButton {...exportData} />}
           {actions}
         </div>
       </div>

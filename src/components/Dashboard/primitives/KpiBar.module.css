@@ -1,0 +1,55 @@
+/* KpiBar — horizontal progress bar for dashboard KPIs */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.label {
+  font-size: var(--ds-text-xs, 0.75rem);
+  color: var(--ds-text-secondary, inherit);
+  font-weight: 500;
+}
+
+.percent {
+  font-size: var(--ds-text-xs, 0.75rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary, inherit);
+}
+
+.track {
+  width: 100%;
+  background: color-mix(
+    in oklch,
+    var(--ds-border-subtle, var(--ds-border-default, #e2e8f0)) 50%,
+    transparent
+  );
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.fill {
+  border-radius: 9999px;
+  transition: width 420ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.tone_green {
+  background: var(--nova-up, var(--ds-accent-emerald, #10b981));
+}
+.tone_amber {
+  background: var(--nova-amber, var(--ds-accent-amber, #f59e0b));
+}
+.tone_red {
+  background: var(--nova-down, var(--ds-accent-rose, #ef4444));
+}
+.tone_blue {
+  background: var(--nova-primary, var(--ds-brand-500, #6366f1));
+}

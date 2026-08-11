@@ -252,20 +252,37 @@ export async function computePeriodSettlement(
 
   const id = createId();
 
-  await prisma.settlement.create({
-    data: {
-      id,
-      exchangeId,
-      periodStart,
-      periodEnd,
-      totalVolume: totalVolumeDecimal,
-      dealCount: deals.length,
-      platformFee,
-      exchangeNet,
-      currency,
-      status: 'PENDING',
-    },
-  });
+  try {
+    await prisma.settlement.create({
+      data: {
+        id,
+        exchangeId,
+        periodStart,
+        periodEnd,
+        totalVolume: totalVolumeDecimal,
+        dealCount: deals.length,
+        platformFee,
+        exchangeNet,
+        currency,
+        status: 'PENDING',
+      },
+    });
+  } catch (err) {
+    // R1-fix: unique constraint — دو cron هم‌زمان برای همان دوره، دومی P2002
+    // می‌گیرد و باید settlement موجود را برگرداند (double-settlement race).
+    const code =
+      typeof err === 'object' && err !== null && 'code' in err
+        ? (err as { code?: string }).code
+        : undefined;
+    if (code === 'P2002') {
+      const existing = await prisma.settlement.findFirst({
+        where: { exchangeId, periodStart, periodEnd, currency },
+        select: { id: true },
+      });
+      if (existing) return { success: true, data: { id: existing.id } };
+    }
+    throw err;
+  }
 
   try {
     await logSettlementAudit({
@@ -330,14 +347,20 @@ export async function approveSettlement(settlementId: string): Promise<FintechAc
     };
   }
 
-  await prisma.settlement.update({
-    where: { id: settlementId },
+  // ── Atomic claim: فقط یک approve هم‌زمان می‌تواند PENDING→APPROVED را اجرا کند
+  // (دو ادمین هم‌زمان → یکی برنده، دیگری ALREADY_APPROVED → idempotent success).
+  const claim = await prisma.settlement.updateMany({
+    where: { id: settlementId, status: 'PENDING' },
     data: {
       status: 'APPROVED',
       approvedById: auth.user.id,
       approvedAt: new Date(),
     },
   });
+  if (claim.count === 0) {
+    // یا قبلاً توسط ادمین دیگر تأیید شده یا وضعیت تغییر کرده — idempotent success
+    return { success: true, data: undefined };
+  }
 
   try {
     await logSettlementAudit({
@@ -380,10 +403,27 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
   }
 
   // همه write ها در یک transaction — اگر LedgerEntry fail کند، settlement هم rollback می‌شود
-  const paidSettlement = await prisma.$transaction(async (tx) => {
-    const updated = await tx.settlement.update({
-      where: { id: settlementId },
+  type PaidPayload = {
+    exchangeId: string;
+    platformFee: bigint;
+    exchangeNet: bigint;
+    currency: string;
+    totalVolume: bigint;
+    dealCount: number;
+  };
+  let paidSettlement: PaidPayload;
+  try {
+    paidSettlement = await prisma.$transaction(async (tx): Promise<PaidPayload> => {
+    // ── Atomic claim: فقط یک پرداخت هم‌زمان می‌تواند APPROVED→PAID را اجرا کند.
+    // بدون این قفل، دو ادمین هم‌زمان هر دو ledger ثبت می‌کردند → دوبار پرداخت.
+    const claim = await tx.settlement.updateMany({
+      where: { id: settlementId, status: 'APPROVED' },
       data: { status: 'PAID', paidAt: new Date() },
+    });
+    if (claim.count === 0) throw new Error('ALREADY_PAID');
+
+    const updated = await tx.settlement.findUniqueOrThrow({
+      where: { id: settlementId },
       select: {
         exchangeId: true,
         platformFee: true,
@@ -429,8 +469,15 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
       },
     });
 
-    return updated;
-  });
+      return updated;
+    });
+  } catch (err) {
+    if ((err as Error).message === 'ALREADY_PAID') {
+      // پرداخت هم‌زمان دیگر همین تسویه را کامل کرده — idempotent success
+      return { success: true, data: undefined };
+    }
+    throw err;
+  }
 
   try {
     await logSettlementAudit({
@@ -454,6 +501,12 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
 
   return { success: true, data: undefined };
 }
+
+// ─── INTERNAL: atomic claim helper ───────────────────────────────────────────
+// markSettlementPaid از updateMany شرطی (claim) استفاده می‌کند تا دو درخواست
+// هم‌زمان فقط یکی موفق شود. ALREADY_PAID از داخل transaction پرتاب می‌شود و
+// اینجا به حالت idempotent تبدیل می‌شود (اگر قبلاً PAID شده، success).
+
 
 // ─── CSV EXPORT (dead-button fix 2026-08-01) ────────────────────────────────
 // دکمهٔ «خروجی CSV» در SettlementCockpit بدون onClick بود — dead button.

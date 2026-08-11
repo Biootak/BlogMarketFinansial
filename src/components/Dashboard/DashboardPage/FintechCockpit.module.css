@@ -305,19 +305,29 @@
 /* ──────────────────────── KPI strip ──────────────────────── */
 
 .kpiStrip {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  /* موبایل: ریل افقی قابل‌کشیدن — همهٔ ۵ KPI در یک خط با swipe،
+     به‌جای wrap ناهموار به ردیف بعدی (روش اپ‌های فین‌تک پریمیوم ۲۰۲۶). */
+  display: flex;
   gap: 0;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-xl);
-  overflow: hidden;
   position: relative;
+}
+
+.kpiStrip::-webkit-scrollbar {
+  display: none;
 }
 
 @media (min-width: 720px) {
   .kpiStrip {
+    display: grid;
     grid-template-columns: repeat(5, 1fr);
+    overflow: hidden;
   }
 }
 
@@ -334,6 +344,17 @@
   position: relative;
   transition: background var(--ds-duration-fast);
   min-width: 0;
+  /* موبایل: عرض ثابت برای swipe — روی دسکتاپ grid آن را override می‌کند */
+  flex: 0 0 auto;
+  inline-size: 160px;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 720px) {
+  .kpiCell {
+    flex: none;
+    inline-size: auto;
+  }
 }
 
 .kpiCell:first-child {

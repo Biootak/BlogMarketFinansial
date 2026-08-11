@@ -35,7 +35,7 @@
 .label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--ds-text, #16181d);
+  color: var(--at-fg, var(--ds-text-primary));
 }
 
 .select {
@@ -45,7 +45,7 @@
 .error {
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--nova-rose, #e11d48);
+  color: var(--nova-rose, var(--ds-status-error-fg));
   margin: 0;
 }
 
@@ -54,7 +54,7 @@
   align-items: center;
   gap: 0.5rem;
   padding-top: var(--ds-space-4, 1rem);
-  border-top: 1px solid var(--ds-border-subtle, #f0f1f3);
+  border-top: 1px solid var(--at-line, var(--ds-border-subtle));
 }
 
 .save {

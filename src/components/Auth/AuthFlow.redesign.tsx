@@ -91,7 +91,18 @@ export default function AuthFlow() {
   const [resetToken, setResetToken] = useState<string | null>(null);
 
   const liveId = useId();
-  const copy = STEP_COPY[step];
+  // در حالت 2FA عنوان/زیرعنوان را با ماهیت واقعی کد (Authenticator یا پشتیبان)
+  // جایگزین می‌کنیم — «کد ایمیل» برای این مرحله گمراه‌کننده است.
+  const copy =
+    step === 'verify' && intent === '2fa'
+      ? {
+          ...STEP_COPY.verify,
+          eyebrow: 'احراز هویت دو مرحله‌ای',
+          title: 'کد احراز هویت دو مرحله‌ای را وارد کنید',
+          subtitle: 'کد ۶ رقمی اپ Authenticator یا کد پشتیبان ۸ کاراکتری.',
+          help: 'کد را وارد کنید؛ بعد از کامل شدن، با دکمه «تأیید» ادامه دهید.',
+        }
+      : STEP_COPY[step];
   const dotIdx = STEP_DOT[step];
 
   useEffect(() => {

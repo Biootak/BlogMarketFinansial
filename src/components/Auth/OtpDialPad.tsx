@@ -29,10 +29,15 @@ interface OtpDialPadProps {
   describedBy?: string;
   disabled?: boolean;
   autoSubmit?: boolean;
+  /** حالت 2FA: کد پشتیبان ۸ کاراکتری هگز (مثل 17B024DB) هم پذیرفته می‌شود */
+  allowBackupCode?: boolean;
 }
 
+// 6 رقم برای OTP ایمیل، 8 کاراکتر هگز برای کد پشتیبان 2FA
 const CELLS = 6;
+const BACKUP_CELLS = 8;
 const VALID = /^\d{0,6}$/;
+const VALID_BACKUP = /^[a-fA-F0-9]{0,8}$/;
 
 const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDialPad(
   {
@@ -43,10 +48,15 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
     describedBy,
     disabled = false,
     autoSubmit = true,
+    allowBackupCode = false,
   },
   ref,
 ) {
-  const [value, setValue] = useState<string>(() => initialValue.replace(/\D/g, '').slice(0, CELLS));
+  const [value, setValue] = useState<string>(() =>
+    allowBackupCode
+      ? initialValue.replace(/[^a-fA-F0-9]/g, '').slice(0, BACKUP_CELLS)
+      : initialValue.replace(/\D/g, '').slice(0, CELLS),
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const lastSubmitRef = useRef<string>('');
   // 2026-06-24: A1 / F1 — replace hard-coded `id="otp-input"` with a
@@ -70,20 +80,26 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
     getValue: () => value,
   }));
 
+  const maxLen = allowBackupCode ? BACKUP_CELLS : CELLS;
+  const valid = allowBackupCode ? VALID_BACKUP : VALID;
+
   const handleChange = (raw: string) => {
-    const next = raw.replace(/\D/g, '').slice(0, CELLS);
-    if (!VALID.test(next)) return;
+    const next = allowBackupCode
+      ? raw.replace(/[^a-fA-F0-9]/g, '').toUpperCase().slice(0, BACKUP_CELLS)
+      : raw.replace(/\D/g, '').slice(0, CELLS);
+    if (!valid.test(next)) return;
     setValue(next);
     onChange?.(next);
 
-    if (autoSubmit && next.length === CELLS && next !== lastSubmitRef.current) {
+    const targetLen = allowBackupCode ? BACKUP_CELLS : CELLS;
+    if (autoSubmit && next.length === targetLen && next !== lastSubmitRef.current) {
       lastSubmitRef.current = next;
       onComplete(next);
     }
   };
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLInputElement> = (event) => {
-    if (event.key === 'Enter' && value.length === CELLS && !disabled) {
+    if (event.key === 'Enter' && value.length === maxLen && !disabled) {
       event.preventDefault();
       lastSubmitRef.current = value;
       onComplete(value);
@@ -97,12 +113,18 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
     inputRef.current?.focus({ preventScroll: true });
   };
 
-  const cells: string[] = Array.from({ length: CELLS });
-  for (let i = 0; i < CELLS; i++) cells[i] = value[i] ?? '';
+  const cells: string[] = Array.from({ length: maxLen });
+  for (let i = 0; i < maxLen; i++) cells[i] = value[i] ?? '';
 
   return (
-    <div className="auth-otp-shell" aria-label="کد ۶ رقمی را وارد کنید">
-      <div className="auth-otp-grid" aria-hidden="true">
+    <div
+      className={`auth-otp-shell${allowBackupCode ? ' auth-otp-shell--backup' : ''}`}
+      aria-label={allowBackupCode ? 'کد ۶ رقمی یا کد پشتیبان ۸ کاراکتری را وارد کنید' : 'کد ۶ رقمی را وارد کنید'}
+    >
+      <div
+        className={`auth-otp-grid${allowBackupCode ? ' auth-otp-grid--backup' : ''}`}
+        aria-hidden="true"
+      >
         {cells.map((char, i) => {
           const cls = [
             'auth-otp-cell',
@@ -124,10 +146,10 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
         ref={inputRef}
         id={inputId}
         type="text"
-        inputMode="numeric"
-        autoComplete="one-time-code"
-        pattern="\d{6}"
-        maxLength={CELLS}
+        inputMode={allowBackupCode ? 'text' : 'numeric'}
+        autoComplete={allowBackupCode ? 'off' : 'one-time-code'}
+        pattern={allowBackupCode ? '[A-F0-9]{8}' : '\\d{6}'}
+        maxLength={maxLen}
         dir="ltr"
         disabled={disabled}
         value={value}

@@ -3,6 +3,7 @@ import '@/app/dashboard/dashboard-shell.css';
 import { getExchangeForOwner, getExchangeForUser } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
+import UniversalCommandPalette from '@/components/Dashboard/DashboardPage/UniversalCommandPalette';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { redirect } from 'next/navigation';
@@ -36,6 +37,7 @@ export default async function ExchangeLayout({ children }: { children: React.Rea
               {children}
             </DashboardProviders>
           </Suspense>
+          <UniversalCommandPalette portal="exchange" />
         </div>
       </SiteSettingsProvider>
     );
@@ -45,6 +47,7 @@ export default async function ExchangeLayout({ children }: { children: React.Rea
   if (!membership) redirect('/');
   if (membership.exchange.status === 'SUSPENDED') redirect('/exchange-suspended');
 
+  const exchangeRole: 'OWNER' | 'SUPERADMIN' | 'ADMIN' = 'OWNER';
   return (
     <SiteSettingsProvider initialSettings={initialSettings}>
       <div className="dashboard-shell" data-portal="exchange">
@@ -53,6 +56,11 @@ export default async function ExchangeLayout({ children }: { children: React.Rea
             {children}
           </DashboardProviders>
         </Suspense>
+        <UniversalCommandPalette
+          portal="exchange"
+          role={exchangeRole}
+          exchangeName={membership.exchange.name}
+        />
       </div>
     </SiteSettingsProvider>
   );

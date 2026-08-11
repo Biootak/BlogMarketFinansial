@@ -38,7 +38,11 @@ export default function VerifyStep({
   const [isPending, startTransition] = useTransition();
   const otpRef = useRef<OtpDialPadHandle>(null);
   const [otpCode, setOtpCode] = useState('');
-  const canSubmitOtp = otpCode.length === 6 && !isPending;
+  const is2FA = intent === '2fa';
+  // کد ۶ رقمی اپ Authenticator یا کد پشتیبان ۸ کاراکتری (فقط 2FA)
+  const canSubmitOtp = is2FA
+    ? (otpCode.length === 6 || otpCode.length === 8) && !isPending
+    : otpCode.length === 6 && !isPending;
 
   // Countdown progress percentage (100% = full cooldown, 0% = ready)
   const cooldownPct = Math.round((cooldownMs / RESEND_COOLDOWN_MS) * 100);
@@ -78,8 +82,6 @@ export default function VerifyStep({
     });
   };
 
-  const is2FA = intent === '2fa';
-
   return (
     <form noValidate onSubmit={(event) => event.preventDefault()} className="auth-stage-form">
       {/* Email destination summary — برای 2FA به اپ Authenticator ارجاع می‌دهیم */}
@@ -87,7 +89,8 @@ export default function VerifyStep({
         <span className="auth-verify-chip">{INTENT_LABEL[intent]}</span>
         {is2FA ? (
           <p className="auth-helper">
-            کد ۶ رقمی را از اپلیکیشن احراز هویت (Google Authenticator / Authy) وارد کنید برای حساب{' '}
+            کد ۶ رقمی را از اپلیکیشن احراز هویت (Google Authenticator / Authy) یا کد پشتیبان
+            ۸ کاراکتری وارد کنید برای حساب{' '}
             <span dir="ltr" className="auth-inline-email">
               {email}
             </span>
@@ -126,6 +129,7 @@ export default function VerifyStep({
           invalid={invalid}
           disabled={isPending}
           autoSubmit={false}
+          allowBackupCode={is2FA}
           describedBy="otp-help"
         />
         <p id="otp-help" className="auth-helper">

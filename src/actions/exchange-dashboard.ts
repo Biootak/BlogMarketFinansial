@@ -25,6 +25,8 @@ const PERSIAN_WEEKDAY = ['یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چ�
 
 export type DashboardKpi = {
   totalCustomers: number;
+  /** مشتریان فعال در ۳۰ روز اخیر */
+  activeCustomers: number;
   totalTransactions: number;
   totalVolume: string;
   statsCurrency: string;
@@ -628,6 +630,7 @@ export async function getExchangeDashboardData(
 
   const kpi: DashboardKpi = {
     totalCustomers,
+    activeCustomers: activeCustomersCount,
     totalTransactions,
     totalVolume: bigIntToStr(volumeResult._sum.amount ?? BigInt(0)),
     statsCurrency,

@@ -1,9 +1,10 @@
 'use client';
 
+import { Search } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
-import { HiMagnifyingGlass } from 'react-icons/hi2';
 import { useDebouncedCallback } from 'use-debounce';
+import s from './categories.module.css';
 
 export default function SearchCategories() {
   const router = useRouter();
@@ -37,19 +38,16 @@ export default function SearchCategories() {
   };
 
   return (
-    <div className="at-filterbar__search">
+    <div className={s.search}>
       <input
         type="text"
         placeholder="جستجوی دسته‌بندی…"
         value={searchTerm}
         onChange={(e) => handleSearch(e.target.value)}
+        aria-label="جستجوی دسته‌بندی"
       />
-      <HiMagnifyingGlass className="at-filterbar__search__ico size-4" />
-      {isPending && (
-        <span className="text-[10px] text-[color:var(--at-fg-subtle)] mt-1 block">
-          در حال جستجو…
-        </span>
-      )}
+      <Search size={15} className={s.searchIcon} aria-hidden />
+      {isPending && <span className={s.searchPending}>در حال جستجو…</span>}
     </div>
   );
 }

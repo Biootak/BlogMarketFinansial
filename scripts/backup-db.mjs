@@ -258,7 +258,9 @@ function runPgDump(dbUrl, outPath) {
       { stdio: ['ignore', 'pipe', 'pipe'] },
     );
     let stderr = '';
-    child.stderr.on('data', (c) => (stderr += c));
+    child.stderr.on('data', (c) => {
+      stderr += c;
+    });
     child.on('error', (err) =>
       reject(
         new Error(
@@ -283,7 +285,9 @@ function tarUploads(outPath) {
       { stdio: ['ignore', 'pipe', 'pipe'] },
     );
     let stderr = '';
-    child.stderr.on('data', (c) => (stderr += c));
+    child.stderr.on('data', (c) => {
+      stderr += c;
+    });
     child.on('error', (err) => reject(new Error(`tar اجرا نشد: ${err.message}`)));
     child.on('close', (code) =>
       code === 0

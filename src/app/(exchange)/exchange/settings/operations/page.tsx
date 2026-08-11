@@ -23,7 +23,7 @@ export default async function OperationsPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settings/operations');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
   if (!['OWNER', 'MANAGER'].includes(membership.staffRole)) {
     redirect('/exchange/dashboard');
   }

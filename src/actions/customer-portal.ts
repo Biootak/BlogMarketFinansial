@@ -16,6 +16,7 @@ import {
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { computeKycProgression } from '@/lib/kyc-progression';
 import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -515,24 +516,42 @@ export async function submitKycDocument(raw: unknown): Promise<{
 
   const selectedLevel = parsed.data.level;
 
-  // ── گیت سکوئنشی: هر سطح فقط بعد از تأیید کامل سطح قبلی باز می‌شود ──
-  if (selectedLevel === 'LEVEL_2' && customer.kycLevel !== 'LEVEL_1') {
-    return {
-      success: false,
-      error:
-        customer.kycLevel === 'NONE'
-          ? 'ابتدا سطح ۱ (تأیید موبایل و تلگرام) را تکمیل کنید'
-          : 'سطح ۲ قبلاً تأیید شده است',
-    };
+  // ── گیت سکوئنشی: هر سطح فقط بعد از تکمیل کامل سطح قبلی باز می‌شود ──
+  // FIX (2026-08-11): گیت قبلی فقط `customer.kycLevel` را می‌سنجید. بعد از تأییدِ
+  // جزئی (مثلاً مدرک APPROVED ولی سلفی REJECTED) کیک‌لول جلو رفته بود و کاربر در
+  // ارسال مجدد قفل می‌شد («سطح ۲ قبلاً تأیید شده است»). حالا از computeKycProgression
+  // استفاده می‌شود که مجموعهٔ کامل مدارک هر سطح را می‌سنجد؛ در نتیجه تأیید جزئی،
+  // سطح را کامل حساب نمی‌کند و مسیر ارسال مجدد باز می‌ماند.
+  const kycRecords = await prisma.kycVerification.findMany({
+    where: { customerId: access.customerId },
+    select: { level: true, docType: true, status: true },
+  });
+  const progression = computeKycProgression(kycRecords);
+
+  if (selectedLevel === 'LEVEL_2') {
+    if (progression.finalLevel === 'NONE') {
+      return {
+        success: false,
+        error: 'ابتدا سطح ۱ (تأیید موبایل و تلگرام) را تکمیل کنید',
+      };
+    }
+    if (progression.finalLevel !== 'LEVEL_1') {
+      return {
+        success: false,
+        error: 'سطح ۲ قبلاً تأیید شده است',
+      };
+    }
   }
-  if (selectedLevel === 'LEVEL_3' && customer.kycLevel !== 'LEVEL_2') {
-    return {
-      success: false,
-      error:
-        customer.kycLevel === 'NONE' || customer.kycLevel === 'LEVEL_1'
-          ? 'ابتدا سطح ۲ (مدرک و سلفی) را تکمیل کنید'
-          : 'سطح ۳ قبلاً تأیید شده است',
-    };
+  if (selectedLevel === 'LEVEL_3') {
+    if (progression.finalLevel !== 'LEVEL_2') {
+      return {
+        success: false,
+        error:
+          progression.finalLevel === 'NONE' || progression.finalLevel === 'LEVEL_1'
+            ? 'ابتدا سطح ۲ (مدرک و سلفی) را تکمیل کنید'
+            : 'سطح ۳ قبلاً تأیید شده است',
+      };
+    }
   }
 
   // جلوگیری از ارسال مجدد وقتی رکورد همان سطح هنوز در صف بررسی است
@@ -658,6 +677,16 @@ export async function submitKycPhone(raw: unknown): Promise<{
     return { success: false, error: 'سطح ۱ قبلاً تأیید شده است' };
   }
 
+  // FIX (2026-08-11): جلوگیری از رکوردهای تکراری — درخواستِ LEVEL_1 در صف بررسی
+  // مانع ارسال مجدد می‌شود (هماهنگ با submitKycDocument که این چک را داشت).
+  const existingPending = await prisma.kycVerification.findFirst({
+    where: { customerId: access.customerId, level: 'LEVEL_1', status: 'PENDING' },
+    select: { id: true },
+  });
+  if (existingPending) {
+    return { success: false, error: 'درخواست سطح ۱ هنوز در حال بررسی است' };
+  }
+
   const phone = parsed.data.phone.trim();
   if (!isPhoneValid(phone)) {
     return { success: false, error: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)' };
@@ -769,6 +798,7 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
     select: {
       id: true,
       status: true,
+      level: true,
       customerId: true,
       exchangeId: true,
       Customer: { select: { id: true, userId: true, exchangeId: true } },
@@ -799,7 +829,7 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
     : null;
   const newStatus: 'APPROVED' | 'REJECTED' = approved ? 'APPROVED' : 'REJECTED';
 
-  let remainingPending = 0;
+  let pendingCount = 0;
   await prisma.$transaction(async (tx) => {
     await tx.kycVerification.update({
       where: { id: recordId },
@@ -813,39 +843,34 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
       },
     });
 
-    // رکوردهای هنوز در صف بررسی برای همین مشتری
-    remainingPending = await tx.kycVerification.count({
-      where: { customerId: record.customerId, status: 'PENDING' },
+    // ── FIX (2026-08-11): وضعیت مشتری از «مجموعهٔ کامل مدارک» استخراج می‌شود، نه از
+    // بالاترین سطحِ هر رکورد APPROVED. قبل از این فیکس:
+    //   ۱) تأیید فقط سلفی → سطح ۲ بدون مدرک هویتی باز می‌شد (حفرهٔ امنیتی)
+    //   ۲) تأیید فقط مدرک → kycLevel جلو می‌رفت و بعد از ردِ سلفی، کاربر در ارسال
+    //      مجدد قفل می‌شد («سطح ۲ قبلاً تأیید شده است»)
+    const allRecords = await tx.kycVerification.findMany({
+      where: { customerId: record.customerId },
+      select: { level: true, docType: true, status: true },
     });
+    pendingCount = allRecords.filter((r) => r.status === 'PENDING').length;
+    const progression = computeKycProgression(allRecords);
 
-    if (approved) {
-      // بالاترین سطح تأییدشده (LEVEL_1 → 1 …)
-      const approvedLevels = await tx.kycVerification.findMany({
-        where: { customerId: record.customerId, status: 'APPROVED' },
-        select: { level: true },
-      });
-      const maxNum = approvedLevels.reduce((acc, r) => {
-        const n =
-          r.level === 'LEVEL_1' ? 1 : r.level === 'LEVEL_2' ? 2 : r.level === 'LEVEL_3' ? 3 : 0;
-        return Math.max(acc, n);
-      }, 0);
-      const finalLevel: 'LEVEL_1' | 'LEVEL_2' | 'LEVEL_3' | undefined =
-        maxNum === 3 ? 'LEVEL_3' : maxNum === 2 ? 'LEVEL_2' : maxNum === 1 ? 'LEVEL_1' : undefined;
-      await tx.customer.update({
-        where: { id: record.customerId },
-        data: {
-          // تا وقتی رکورد دیگری در صف است، PENDING بماند تا همه یک‌جا تکمیل شوند
-          kycStatus: remainingPending > 0 ? 'PENDING' : 'APPROVED',
-          ...(finalLevel ? { kycLevel: finalLevel } : {}),
-          updatedAt: now,
-        },
-      });
-    } else {
-      await tx.customer.update({
-        where: { id: record.customerId },
-        data: { kycStatus: 'REJECTED', updatedAt: now },
-      });
+    // kycLevel فقط وقتی جلو می‌رود که سطحِ هدف کامل تأیید شده باشد.
+    // kycStatus: کامل → APPROVED | در صف → PENDING | ردشده → REJECTED | شروع‌نشده → APPROVED
+    let nextKycStatus: 'APPROVED' | 'PENDING' | 'REJECTED' = 'APPROVED';
+    if (progression.finalLevel !== 'LEVEL_3') {
+      if (progression.pendingAtNext) nextKycStatus = 'PENDING';
+      else if (progression.rejectedAtNext) nextKycStatus = 'REJECTED';
     }
+
+    await tx.customer.update({
+      where: { id: record.customerId },
+      data: {
+        kycStatus: nextKycStatus,
+        kycLevel: progression.finalLevel === 'NONE' ? 'NONE' : progression.finalLevel,
+        updatedAt: now,
+      },
+    });
   });
 
   revalidateTag('customer-kyc');
@@ -866,7 +891,7 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
         meta: {
           customerId: record.customerId,
           approved,
-          remainingPending,
+          remainingPending: pendingCount,
           ...(rejectedReason ? { rejectedReason } : {}),
         } as Prisma.InputJsonValue,
       },
@@ -876,18 +901,27 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
   }
 
   // نوتیفیکیشن برای کاربر (اگر userId داشته باشد)
+  // FIX (2026-08-11): پیام‌ها برای «خود کاربر» نوشته می‌شوند (گیرنده مشتری است، نه
+  // صراف) و سطحِ دقیق ذکر می‌شود — قبلاً «احراز هویت مشتری شما…» بود که به مشتری
+  // ارسال می‌شد و برای تأیید جزئی هم «کامل» ادعا می‌کرد.
   const userId = record.Customer?.userId;
   if (userId) {
+    const levelFa = record.level === 'LEVEL_1' ? '۱' : record.level === 'LEVEL_2' ? '۲' : '۳';
+    let message: string;
+    if (approved) {
+      if (pendingCount > 0) {
+        message = `✅ سطح ${levelFa} از احراز هویت شما تأیید شد — بقیهٔ مدارک در صف بررسی است.`;
+      } else if (record.level === 'LEVEL_3') {
+        message = '✅ احراز هویت شما کامل و تأیید شد. به تمام امکانات دسترسی دارید.';
+      } else {
+        message = `✅ سطح ${levelFa} از احراز هویت شما تأیید شد.`;
+      }
+    } else {
+      message = `❌ احراز هویت شما رد شد. دلیل: ${rejectedReason ?? 'نامشخص'}. لطفاً مدارک را اصلاح و دوباره ارسال کنید.`;
+    }
     try {
       const { createNotification } = await import('@/actions/notification-actions');
-      await createNotification(
-        userId,
-        approved
-          ? remainingPending > 0
-            ? '✅ یک مرحله از احراز هویت مشتری شما تأیید شد — بقیه مدارک در صف بررسی است.'
-            : '✅ احراز هویت مشتری شما کامل و تأیید شد.'
-          : `❌ احراز هویت مشتری شما رد شد. دلیل: ${rejectedReason ?? 'نامشخص'}.`,
-      );
+      await createNotification(userId, message);
     } catch {
       // best-effort
     }
@@ -2404,6 +2438,33 @@ export async function transferBetweenAccounts(
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'TRANSFER_FAILED';
+    // R4-fix: دو درخواست هم‌زمان با یک idempotencyKey → دومی P2002 می‌گیرد
+    // (unique). چون کل تراکنش rollback شده (debit برگشته)، دوبار برداشت نمی‌شود؛
+    // فقط باید نتیجهٔ اولی را برگردانیم (idempotent).
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'code' in err &&
+      (err as { code?: string }).code === 'P2002'
+    ) {
+      const dup = await prisma.transaction.findUnique({ where: { idempotencyKey } });
+      if (dup) {
+        const meta = (dup.meta as Record<string, unknown> | null) ?? {};
+        return {
+          success: true,
+          data: {
+            txnId: dup.id,
+            txnRef: typeof meta.txnRef === 'string' ? meta.txnRef : dup.id,
+            fromAccountId: dup.accountId ?? fromAccountId,
+            toAccountId: typeof meta.toAccountId === 'string' ? meta.toAccountId : toAccountId,
+            amountCents: Number(dup.amount),
+            currency: dup.currency,
+            fromBalance: typeof meta.fromBalance === 'string' ? meta.fromBalance : '0',
+            toBalance: typeof meta.toBalance === 'string' ? meta.toBalance : '0',
+          },
+        };
+      }
+    }
     if (msg === 'INSUFFICIENT_BALANCE') {
       return {
         success: false,

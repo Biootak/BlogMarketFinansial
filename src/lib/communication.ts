@@ -15,6 +15,63 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
+import { serverLog } from '@/lib/server-logger';
+
+const FANOUT_BATCH_SIZE = 500;
+
+/**
+ * fanOutInAppAnnouncement — تحویل درون‌برنامه‌ای (in-app) اعلان به مخاطبان.
+ *
+ * قبلاً publish فقط status را عوض می‌کرد و هیچ کاربری اعلان نمی‌دید.
+ * حالا وقتی channels شامل inapp است، برای اعضای مخاطب ردیف Notification ساخته
+ * می‌شود (batch، بدون تکرار). 'segment' هنوز موتور segment ندارد → skip با هشدار.
+ * این تابع خطا نمی‌اندازد — شکست آن نباید انتشار را متوقف کند.
+ */
+async function fanOutInAppAnnouncement(input: {
+  title: string;
+  body: string;
+  channels: string;
+  audience: string;
+  audienceFilter: string | null;
+}): Promise<void> {
+  if (!input.channels.split(',').includes('inapp')) return;
+
+  try {
+    const message = `${input.title}${input.body ? ` — ${input.body}` : ''}`.slice(0, 500);
+    const where =
+      input.audience === 'role' && input.audienceFilter
+        ? { role: input.audienceFilter as never }
+        : input.audience === 'all'
+          ? {}
+          : null; // 'segment' → هنوز پشتیبانی نمی‌شود
+    if (!where) {
+      serverLog.warn('communication', 'announcement-segment-not-wired', {
+        audienceFilter: input.audienceFilter,
+      });
+      return;
+    }
+
+    const ids = await prisma.user.findMany({
+      where,
+      select: { id: true },
+    });
+
+    for (let i = 0; i < ids.length; i += FANOUT_BATCH_SIZE) {
+      const chunk = ids.slice(i, i + FANOUT_BATCH_SIZE).map((u) => ({
+        userId: u.id,
+        message,
+      }));
+      if (chunk.length > 0) {
+        await prisma.notification.createMany({ data: chunk, skipDuplicates: true });
+      }
+    }
+  } catch (err) {
+    // fan-out شکست → اعلان دیده نمی‌شود ولی خود انتشار (status) باید موفق بماند
+    serverLog.warn('communication', 'announcement-fanout-failed', {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
 
 export type AnnouncementStatus = 'draft' | 'scheduled' | 'published' | 'archived';
 export type CampaignStatus = 'draft' | 'scheduled' | 'sending' | 'completed' | 'paused';
@@ -1040,6 +1097,7 @@ export async function createAnnouncement(
   }
 
   try {
+    const isPublishedNow = input.status === 'published';
     const created = await prisma.announcement.create({
       data: {
         title: input.title.trim(),
@@ -1051,10 +1109,29 @@ export async function createAnnouncement(
         expiresAt: input.expiresAt ?? null,
         status: input.status ?? 'draft',
         createdById: guard.userId,
-        publishedAt: input.status === 'published' ? new Date() : null,
+        publishedAt: isPublishedNow ? new Date() : null,
       },
-      select: { id: true },
+      select: {
+        id: true,
+        title: true,
+        body: true,
+        channels: true,
+        audience: true,
+        audienceFilter: true,
+      },
     });
+
+    // انتشار مستقیم (بدون draft) → همان‌جا تحویل in-app کن
+    if (isPublishedNow) {
+      await fanOutInAppAnnouncement({
+        title: created.title,
+        body: created.body,
+        channels: created.channels,
+        audience: created.audience,
+        audienceFilter: created.audienceFilter,
+      });
+    }
+
     revalidateTag('communication');
     revalidateTag('announcement');
     return { success: true, id: created.id };
@@ -1072,10 +1149,26 @@ export async function publishAnnouncement(
   const guard = await requireAdminRole();
   if (!guard.ok) return { success: false, message: guard.reason };
   try {
+    const target = await prisma.announcement.findUnique({
+      where: { id },
+      select: { title: true, body: true, channels: true, audience: true, audienceFilter: true },
+    });
+    if (!target) return { success: false, message: 'اعلان یافت نشد' };
+
     await prisma.announcement.update({
       where: { id },
       data: { status: 'published', publishedAt: new Date() },
     });
+
+    // تحویل درون‌برنامه‌ای — قبلاً هیچ‌جا به کاربر نمی‌رسید
+    await fanOutInAppAnnouncement({
+      title: target.title,
+      body: target.body,
+      channels: target.channels,
+      audience: target.audience,
+      audienceFilter: target.audienceFilter,
+    });
+
     revalidateTag('communication');
     revalidateTag('announcement');
     return { success: true };
@@ -1186,7 +1279,29 @@ export async function updateAnnouncement(
         data.publishedAt = new Date();
       }
     }
-    await prisma.announcement.update({ where: { id }, data });
+    const updated = await prisma.announcement.update({
+      where: { id },
+      data,
+      select: {
+        title: true,
+        body: true,
+        channels: true,
+        audience: true,
+        audienceFilter: true,
+      },
+    });
+
+    // ویرایش با انتشار مستقیم (draft → published) → تحویل in-app
+    if (patch.status === 'published') {
+      await fanOutInAppAnnouncement({
+        title: updated.title,
+        body: updated.body,
+        channels: updated.channels,
+        audience: updated.audience,
+        audienceFilter: updated.audienceFilter,
+      });
+    }
+
     revalidateTag('communication');
     revalidateTag('announcement');
     return { success: true };

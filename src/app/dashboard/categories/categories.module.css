@@ -1,0 +1,527 @@
+/* ============================================================================
+   Categories — «سالنامهٔ دسته‌بندی‌ها» (الهام از بخش observability)
+   ----------------------------------------------------------------------------
+   استعاره: دفتر سالنامهٔ عملیاتی — هر دسته‌بندی یک مدخل شماره‌دار با ریل حاشیه،
+   مثل مدخل‌های مرکز مشاهده‌پذیری. کارت تکراری نه؛ «مدخل با وزن» بله.
+
+   - فقط توکن‌های --ds-* / --nova-* (بدون hex در کد جدید — fallback فقط برای امنیت)
+   - logical properties (RTL-safe)
+   - mobile-first
+   ============================================================================ */
+
+/* ── پوستهٔ صفحه ───────────────────────────────────────────────── */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+}
+
+/* ── تختهٔ مدخل‌ها ─────────────────────────────────────────────── */
+
+.board {
+  counter-reset: cat-entry;
+  position: relative;
+  padding-inline-start: var(--ds-space-6);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-surface);
+  overflow: hidden;
+}
+
+/* ریلِ حاشیه — نخی که مدخل‌ها را به هم می‌دوزد (امضای سالنامه) */
+.board::before {
+  content: "";
+  position: absolute;
+  inset-block: var(--ds-space-3) var(--ds-space-3);
+  inset-inline-start: var(--ds-space-3);
+  inline-size: 1px;
+  background: linear-gradient(
+    to bottom,
+    var(--ds-border-subtle),
+    var(--ds-border-default) 60%,
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* ── مدخل ──────────────────────────────────────────────────────── */
+
+.entry {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "index icon main actions";
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.entry:last-child {
+  border-block-end: 0;
+}
+
+.entry:hover {
+  background: color-mix(
+    in oklch,
+    var(--nova-primary, var(--ds-brand-500, #6366f1)) 4%,
+    var(--ds-surface)
+  );
+}
+
+/* شمارهٔ مدخل — شمارنده در CSS است، نه در props (مثل obs) */
+.index {
+  grid-area: index;
+  flex: none;
+  inline-size: 1.25rem;
+  color: var(--ds-text-muted);
+  font: 500 0.68rem / 1.6 var(--ds-font-mono, ui-monospace, monospace);
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.index::before {
+  counter-increment: cat-entry;
+  content: counter(cat-entry, persian);
+}
+
+/* ── نشانِ آیکون ───────────────────────────────────────────────── */
+
+.iconChip {
+  grid-area: icon;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--ds-radius-md);
+  background: color-mix(
+    in oklch,
+    var(--nova-primary, var(--ds-brand-500, #6366f1)) 10%,
+    var(--ds-surface-elevated)
+  );
+  color: var(--nova-primary, var(--ds-brand-600, #4f46e5));
+  flex: none;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.entry:hover .iconChip {
+  transform: translateY(-1px);
+}
+
+.iconChipChild {
+  background: color-mix(in oklch, var(--ds-text-secondary) 8%, var(--ds-surface-elevated));
+  color: var(--ds-text-secondary);
+}
+
+/* ── بدنهٔ مدخل ────────────────────────────────────────────────── */
+
+.main {
+  grid-area: main;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-inline-size: 0;
+  flex-wrap: wrap;
+}
+
+.name {
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 22ch;
+}
+
+.nameChild {
+  color: var(--ds-text-secondary);
+  font-weight: var(--ds-weight-medium);
+}
+
+.slug {
+  font-family: var(--ds-font-mono, ui-monospace, monospace);
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+  direction: ltr;
+  unicode-bidi: isolate;
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  padding: 0.15rem 0.5rem;
+  max-inline-size: 24ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* شمارندهٔ پست‌ها — پیل کوچک، نه بج عریض */
+.countPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-secondary);
+  font-size: 0.7rem;
+  font-weight: var(--ds-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.countPill strong {
+  color: var(--nova-primary, var(--ds-brand-600, #4f46e5));
+  font-weight: var(--ds-weight-bold);
+}
+
+/* دکمهٔ باز/بسته کردن زیرمجموعه */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: var(--ds-radius-md);
+  color: var(--ds-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), background-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+}
+
+.toggle:hover {
+  border-color: var(--ds-border-default);
+  background: var(--ds-surface-elevated);
+  color: var(--ds-text-primary);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--nova-primary, var(--ds-brand-500, #6366f1));
+  outline-offset: 2px;
+}
+
+/* ── عملیات ────────────────────────────────────────────────────── */
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-block-size: 2.25rem;
+  padding-inline: 0.6rem;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: transparent;
+  color: var(--ds-text-secondary);
+  font-size: 0.75rem;
+  font-weight: var(--ds-weight-medium);
+  cursor: pointer;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), background-color var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+}
+
+.actionBtn:hover {
+  border-color: var(--nova-primary, var(--ds-brand-500, #6366f1));
+  color: var(--nova-primary, var(--ds-brand-600, #4f46e5));
+  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500, #6366f1)) 6%, transparent);
+}
+
+.actionBtnDanger:hover {
+  border-color: var(--nova-down, #dc2626);
+  color: var(--nova-down, #dc2626);
+  background: color-mix(in oklch, var(--nova-down, #dc2626) 6%, transparent);
+}
+
+.actionBtn:focus-visible {
+  outline: 2px solid var(--nova-primary, var(--ds-brand-500, #6366f1));
+  outline-offset: 2px;
+}
+
+.actionLabel {
+  display: none;
+}
+
+@media (min-width: 40rem) {
+  .actionLabel {
+    display: inline;
+  }
+}
+
+/* ── حالت خالی ─────────────────────────────────────────────────── */
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: var(--ds-space-8) var(--ds-space-4);
+  border: 1px dashed var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+}
+
+.emptyIcon {
+  color: var(--ds-text-muted);
+}
+
+.emptyTitle {
+  margin: 0.25rem 0 0;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+}
+
+.emptyHint {
+  margin: 0;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-relaxed);
+}
+
+/* ── پاورقی ────────────────────────────────────────────────────── */
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  color: var(--ds-text-muted);
+  font-size: 0.72rem;
+  flex-wrap: wrap;
+}
+
+.footCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.footCount strong {
+  color: var(--ds-text-secondary);
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-semibold);
+}
+
+.footHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.footDot {
+  inline-size: 5px;
+  block-size: 5px;
+  border-radius: 50%;
+  background: var(--nova-primary, var(--ds-brand-500, #6366f1));
+  opacity: 0.7;
+  animation: cat-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes cat-breathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footDot {
+    animation: none;
+  }
+}
+
+/* ── اسکلت بارگذاری ────────────────────────────────────────────── */
+
+.skel {
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-surface);
+  padding: var(--ds-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.skelRow {
+  block-size: 3rem;
+  border-radius: var(--ds-radius-md);
+  background: linear-gradient(
+    100deg,
+    var(--ds-surface-recessed) 30%,
+    color-mix(in oklch, var(--ds-surface-recessed) 55%, var(--ds-surface)) 50%,
+    var(--ds-surface-recessed) 70%
+  );
+  background-size: 220% 100%;
+  animation: cat-shimmer 1.5s linear infinite;
+}
+
+.skelRow:nth-child(2n) {
+  opacity: 0.7;
+}
+
+@keyframes cat-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -20% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skelRow {
+    animation: none;
+  }
+}
+
+/* ── فرم (داخل دیالوگ) ─────────────────────────────────────────── */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.formLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+}
+
+.formLabelIco {
+  color: var(--nova-primary, var(--ds-brand-600, #4f46e5));
+}
+
+.formHint {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-relaxed);
+}
+
+.formFoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+  padding-block-start: var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  margin-block-start: var(--ds-space-2);
+}
+
+/* پیل‌های والدهای انتخاب‌شده */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(
+    in oklch,
+    var(--nova-primary, var(--ds-brand-500, #6366f1)) 8%,
+    var(--ds-surface-recessed)
+  );
+  border: 1px solid
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500, #6366f1)) 22%, transparent);
+  color: var(--ds-text-secondary);
+  font-size: 0.75rem;
+}
+
+.pillClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  transition: background var(--ds-duration-fast) ease, color var(--ds-duration-fast) ease;
+}
+
+.pillClose:hover {
+  background: color-mix(in oklch, var(--nova-down, #dc2626) 12%, transparent);
+  color: var(--nova-down, #dc2626);
+}
+
+.dialogTitle {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+}
+
+.dialogSub {
+  margin: 0.2rem 0 0;
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-xs);
+}
+
+/* ── جستجو (در نوار اکشن هدر) ──────────────────────────────────── */
+
+.search {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.search input {
+  inline-size: clamp(9rem, 20vw, 14rem);
+  min-block-size: 40px;
+  padding: 0.5rem 0.9rem 0.5rem 2.2rem;
+  border: 1.5px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-sm);
+  font-family: inherit;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.search input::placeholder {
+  color: var(--ds-text-muted);
+}
+
+.search input:focus {
+  outline: none;
+  border-color: var(--nova-primary, var(--ds-brand-500, #6366f1));
+  box-shadow: 0 0 0 3px
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500, #6366f1)) 12%, transparent);
+}
+
+.searchIcon {
+  position: absolute;
+  inset-inline-end: 0.75rem;
+  color: var(--ds-text-muted);
+  pointer-events: none;
+}
+
+.searchPending {
+  position: absolute;
+  inset-block-start: calc(100% + 0.25rem);
+  inset-inline-end: 0;
+  font-size: 0.65rem;
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}

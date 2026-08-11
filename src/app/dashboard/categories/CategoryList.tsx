@@ -5,9 +5,10 @@ import LoadingMore from '@/components/LoadingMore';
 import { useToast } from '@/components/ui/use-toast';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { TaxonomyType } from '@/types/types';
+import { FolderOpen } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import { HiOutlineFolderOpen } from 'react-icons/hi2';
 import CategoryItem from './CategoryItem';
+import s from './categories.module.css';
 
 interface CategoryListProps {
   initialData:
@@ -20,6 +21,12 @@ interface CategoryListProps {
   parentCategories: TaxonomyType[];
 }
 
+/**
+ * CategoryList — «سالنامهٔ دسته‌بندی‌ها».
+ *
+ * - هر دسته‌بندی یک مدخل شماره‌دار است (counter در CSS) با ریل حاشیه.
+ * - اسکرول بی‌نهایت و منطق fetch دست‌نخورده — فقط لایهٔ نمایش عوض شده.
+ */
 export function CategoryList({
   initialData = { categories: [], totalCount: 0 },
   search,
@@ -83,42 +90,33 @@ export function CategoryList({
 
   if (categories.length === 0) {
     return (
-      <div className="at-table">
-        <div className="at-empty">
-          <div className="at-empty__ico">
-            <HiOutlineFolderOpen className="size-5" />
-          </div>
-          <div className="at-empty__title">دسته‌بندی یافت نشد</div>
-          <div className="at-empty__sub">هنوز هیچ دسته‌بندی در سیستم ثبت نشده است.</div>
-        </div>
+      <div className={s.empty}>
+        <FolderOpen size={20} strokeWidth={1.5} className={s.emptyIcon} aria-hidden />
+        <p className={s.emptyTitle}>دسته‌بندی یافت نشد</p>
+        <p className={s.emptyHint}>هنوز هیچ دسته‌بندی در سیستم ثبت نشده است.</p>
       </div>
     );
   }
 
   return (
-    <div className="at-table">
-      <div className="at-table__scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>تصویر</th>
-              <th>نام</th>
-              <th className="hidden sm:table-cell">اسلاگ</th>
-              <th className="hidden sm:table-cell">تعداد پست‌ها</th>
-              <th>عملیات</th>
-            </tr>
-          </thead>
-          <tbody>{renderCategories(categories)}</tbody>
-        </table>
-      </div>
+    <div>
+      <ul className={s.board}>{renderCategories(categories)}</ul>
+
       {isLoading && <LoadingMore message="در حال دریافت دسته‌بندی‌های بیشتر…" />}
-      <div className="at-table__foot">
-        <span>
-          {categories.length} از {initialData.totalCount} دسته‌بندی
+
+      <footer className={s.foot}>
+        <span className={s.footCount}>
+          <strong>{categories.length}</strong> از <strong>{initialData.totalCount}</strong> دسته‌بندی
         </span>
-        {hasNextPage && <span>اسکرول برای بارگذاری بیشتر</span>}
-      </div>
-      <div ref={elementRef} style={{ height: '20px' }} />
+        {hasNextPage && (
+          <span className={s.footHint}>
+            <span className={s.footDot} aria-hidden />
+            اسکرول برای بارگذاری بیشتر
+          </span>
+        )}
+      </footer>
+
+      <div ref={elementRef} style={{ blockSize: '1px' }} aria-hidden />
     </div>
   );
 }

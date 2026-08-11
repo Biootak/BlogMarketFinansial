@@ -18,7 +18,7 @@ export default async function ImportPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers/import');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   if (membership.staffRole === 'VIEWER') {
     redirect('/exchange/customers');

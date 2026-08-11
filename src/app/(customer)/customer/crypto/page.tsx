@@ -7,7 +7,8 @@
 
 import { getCustomerProfile } from '@/actions/customer-portal';
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
-import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { PageHeader, Section } from '@/components/Dashboard/primitives';
+import { BookmarkButton } from '@/components/Dashboard/primitives/BookmarkButton';
 import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -83,7 +84,7 @@ export default async function CustomerCryptoPage() {
   const rates = ratesRes.success && ratesRes.data ? ratesRes.data : [];
 
   return (
-    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl">
       <PageHeader
         eyebrow="دارایی‌های دیجیتال"
         title="کیف پول ارزهای دیجیتال"
@@ -94,13 +95,16 @@ export default async function CustomerCryptoPage() {
         ]}
         icon="circle-dollar-sign"
         accent="violet"
+        actions={<BookmarkButton pageKey="customer-crypto" />}
       />
-      <CryptoAssetsPanel
-        wallets={wallets}
-        rates={rates}
-        kycStatus={profile.kycStatus}
-        exchangeName={profile.exchange.name}
-      />
+      <Section padding="none">
+        <CryptoAssetsPanel
+          wallets={wallets}
+          rates={rates}
+          kycStatus={profile.kycStatus}
+          exchangeName={profile.exchange.name}
+        />
+      </Section>
     </div>
   );
 }

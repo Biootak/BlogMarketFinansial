@@ -11,7 +11,6 @@ import { getLiveOpsData } from '@/actions/liveOpsActions';
 import { getServiceRequestStats, getServiceRequests } from '@/actions/serviceRequestActions';
 import { auth } from '@/auth';
 import { checkRole } from '@/lib/auth';
-import { AlertTriangle, Clock, ShieldAlert } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { FintechCockpit, type FintechCockpitProps } from './FintechCockpit';
 
@@ -129,21 +128,21 @@ export async function FintechCockpitServer() {
         detail: `${safeNum(statsData?.pending, kpiData.pendingRequests)} مورد در انتظار`,
         href: '/dashboard/kyc-review',
         daysLeft: kpiData.pendingRequests > 5 ? -1 : 2,
-        icon: ShieldAlert,
+        iconName: 'shield-alert',
       },
       {
         label: 'تأیید درخواست‌ها',
         detail: `${safeNum(statsData?.pendingUrgent)} مورد فوری`,
         href: '/dashboard/approvals',
         daysLeft: safeNum(statsData?.pendingUrgent) > 3 ? 0 : 5,
-        icon: AlertTriangle,
+        iconName: 'alert-triangle',
       },
       {
         label: 'اشتراک',
         detail: 'بررسی وضعیت اشتراک',
         href: '/dashboard/subscription',
         daysLeft: 14,
-        icon: Clock,
+        iconName: 'clock',
       },
     ],
   };

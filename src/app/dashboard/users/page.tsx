@@ -41,7 +41,7 @@ export default async function UsersPage({ searchParams }: Props) {
     : { users: [], totalCount: 0 };
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <UsersClient
         users={users}
         totalCount={totalCount}

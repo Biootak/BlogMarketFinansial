@@ -158,9 +158,6 @@ function rand(min, max) {
 function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
-function randIP() {
-  return `${rand(1, 255)}.${rand(0, 255)}.${rand(0, 255)}.${rand(0, 255)}`;
-}
 function daysAgo(n) {
   return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 }
@@ -208,6 +205,7 @@ function randIP() {
   const prefix = pick([...IR_IP_PREFIXES, ...AF_IP_PREFIXES]);
   return `${prefix}.${rand(1, 254)}`;
 }
+
 /** شماره موبایل افغانستان: +93 7X XXX XXXX */
 function afghanPhone() {
   return `+937${rand(0, 9)}${rand(1000000, 9999999)}`;

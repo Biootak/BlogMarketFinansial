@@ -9,7 +9,7 @@ import { listCustomerBeneficiaries } from '@/actions/customer-beneficiaries';
  * دسترسی: CUSTOMER / TEST_CUSTOMER / MERCHANT + platform admins
  * (platform admins برای پشتیبانی).
  */
-import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { CustomerBeneficiaryManager } from './_components/CustomerBeneficiaryManager';
 
 export const metadata = {

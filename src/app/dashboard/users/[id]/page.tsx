@@ -33,7 +33,7 @@ export default async function UserDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <UserDetail
         user={detail.data}
         financials={financials.success ? financials.data : null}

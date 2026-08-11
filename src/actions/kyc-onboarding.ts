@@ -52,7 +52,7 @@ async function logKycAudit(params: {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type KycStatus = 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED';
+export type KycStatus = 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
 
 export type KycRecordRow = {
   id: string;
@@ -91,6 +91,9 @@ export async function getMyKycRecord(): Promise<KycRecordRow | null> {
   // تعیین وضعیت بر اساس فیلدها
   let status: KycStatus = 'NONE';
   if (record.submittedAt && !record.reviewedAt) status = 'PENDING';
+  // 2026-08-10: کرون انقضا rejectedReason='KYC_EXPIRED' می‌گذارد — باید
+  // EXPIRED نمایش داده شود، نه REJECTED (دلیل فنی، نه ردِ ادمین).
+  else if (record.reviewedAt && record.rejectedReason === 'KYC_EXPIRED') status = 'EXPIRED';
   else if (record.reviewedAt && record.rejectedReason) status = 'REJECTED';
   else if (record.reviewedAt && !record.rejectedReason) status = 'APPROVED';
   else if (record.fullName) status = 'PENDING';

@@ -6,7 +6,8 @@
  */
 
 import { getMyDevices } from '@/actions/deviceActions';
-import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { PageHeader, Section } from '@/components/Dashboard/primitives';
+import { BookmarkButton } from '@/components/Dashboard/primitives/BookmarkButton';
 import type { Metadata } from 'next';
 import { DevicesCenter } from './_components/DevicesCenter';
 
@@ -24,7 +25,7 @@ export default async function CustomerDevicesPage() {
   const initial = result.success ? result.data : [];
 
   return (
-    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div dir="rtl">
       <PageHeader
         eyebrow="امنیت"
         title="دستگاه‌های من"
@@ -36,8 +37,11 @@ export default async function CustomerDevicesPage() {
         ]}
         icon="device-phone-mobile"
         accent="indigo"
+        actions={<BookmarkButton pageKey="customer-devices" />}
       />
-      <DevicesCenter initial={initial} />
+      <Section padding="none">
+        <DevicesCenter initial={initial} />
+      </Section>
     </div>
   );
 }

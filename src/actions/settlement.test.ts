@@ -16,6 +16,7 @@ vi.mock('@/lib/db', () => ({
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
     currencyDeal: {
       findMany: vi.fn(),
@@ -29,7 +30,8 @@ vi.mock('@/lib/db', () => ({
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) =>
       fn({
         settlement: {
-          update: vi.fn().mockResolvedValue({
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
             exchangeId: 'exch-1',
             platformFee: BigInt(5000),
             exchangeNet: BigInt(45000),
@@ -208,17 +210,32 @@ describe('approveSettlement', () => {
       status: 'PENDING',
       exchangeId: 'exch-1',
     } as never);
-    vi.mocked(prisma.settlement.update).mockResolvedValue(PENDING_SETTLEMENT as never);
+    vi.mocked(prisma.settlement.updateMany).mockResolvedValue({ count: 1 } as never);
     vi.mocked(prisma.auditLog.create).mockResolvedValue({} as never);
 
     const result = await approveSettlement('settle-1');
     expect(result.success).toBe(true);
-    expect(prisma.settlement.update).toHaveBeenCalledWith(
+    expect(prisma.settlement.updateMany).toHaveBeenCalledWith(
       expect.objectContaining({
+        where: expect.objectContaining({ status: 'PENDING' }),
         data: expect.objectContaining({ status: 'APPROVED' }),
       }),
     );
     expect(revalidateTag).toHaveBeenCalledWith('settlements');
+  });
+
+  it('race: دو approve هم‌زمان → دومی idempotent success (بدون خطا)', async () => {
+    vi.mocked(requireAdmin).mockResolvedValue(ADMIN);
+    vi.mocked(prisma.settlement.findUnique).mockResolvedValue({
+      status: 'PENDING',
+      exchangeId: 'exch-1',
+    } as never);
+    // دومی updateMany را اجرا می‌کند ولی هیچ ردیفی PENDING نیست → count=0
+    vi.mocked(prisma.settlement.updateMany).mockResolvedValue({ count: 0 } as never);
+
+    const result = await approveSettlement('settle-1');
+    expect(result.success).toBe(true);
+    expect(prisma.auditLog.create).not.toHaveBeenCalled();
   });
 });
 
@@ -258,6 +275,33 @@ describe('markSettlementPaid', () => {
     expect(result.success).toBe(true);
     expect(prisma.$transaction).toHaveBeenCalledOnce();
     expect(revalidateTag).toHaveBeenCalledWith('settlements');
+  });
+
+  it('race: دو پرداخت هم‌زمان → فقط یک ledger ثبت می‌شود (بدون double-pay)', async () => {
+    vi.mocked(requireAdmin).mockResolvedValue(ADMIN);
+    vi.mocked(prisma.settlement.findUnique).mockResolvedValue({ status: 'APPROVED' } as never);
+    vi.mocked(prisma.auditLog.create).mockResolvedValue({} as never);
+
+    // شبیه‌سازی: transaction اجرا می‌شود ولی claim هیچ ردیفی را APPROVED نیافت
+    // (درخواست اول قبلاً PAID کرده) → ALREADY_PAID → idempotent success
+    const loseTx = {
+      settlement: {
+        updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+        findUniqueOrThrow: vi.fn(),
+      },
+      ledgerEntry: { create: vi.fn() },
+    };
+    vi.mocked(prisma.$transaction).mockImplementationOnce(
+      ((fn: (tx: unknown) => Promise<unknown>) => Promise.resolve(fn(loseTx))) as never,
+    );
+
+    const result = await markSettlementPaid('settle-1');
+    expect(result.success).toBe(true); // idempotent — نه خطا
+    // ledger باید اصلاً صدا زده نشود چون claim شکست خورد
+    expect(loseTx.ledgerEntry.create.mock.calls.length).toBe(0);
+    // بازنده: نه audit و نه revalidate اجرا می‌شود
+    expect(prisma.auditLog.create).not.toHaveBeenCalled();
+    expect(revalidateTag).not.toHaveBeenCalled();
   });
 });
 

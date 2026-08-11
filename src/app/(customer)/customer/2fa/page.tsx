@@ -9,7 +9,7 @@
  */
 
 import { auth } from '@/auth';
-import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { requireCustomerAccess } from '@/lib/customer-auth';
 import prisma from '@/lib/db';
 import type { Metadata } from 'next';

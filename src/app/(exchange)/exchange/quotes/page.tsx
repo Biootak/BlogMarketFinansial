@@ -27,7 +27,7 @@ export default async function ExchangeQuotesPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/quotes');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   const { exchange } = membership;
   const quotes = await getExchangeQuotes(exchange.id);

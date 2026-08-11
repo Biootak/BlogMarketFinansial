@@ -369,6 +369,7 @@ function DepositForm({
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!canSubmit) return;
+      onResult(null);
       startT(async () => {
         const res = await requestDeposit({
           amountCents: cents,
@@ -413,7 +414,12 @@ function DepositForm({
         name="account"
         label="حساب مقصد"
         value={accountId}
-        onChange={setAccountId}
+        onChange={(v) => {
+          setAccountId(v);
+          setCents(0);
+          setAmount('');
+          onResult(null);
+        }}
         accounts={activeAccounts}
       />
       <AmountInput
@@ -423,6 +429,7 @@ function DepositForm({
         onChange={(raw, c) => {
           setAmount(raw);
           setCents(c);
+          onResult(null);
         }}
         currency={currency}
         min={1}
@@ -434,7 +441,10 @@ function DepositForm({
         <textarea
           id="dep-note"
           value={note}
-          onChange={(e) => setNote(e.target.value)}
+          onChange={(e) => {
+            setNote(e.target.value);
+            onResult(null);
+          }}
           className={s.textarea}
           rows={2}
           maxLength={200}
@@ -482,6 +492,7 @@ function WithdrawForm({
     (e: React.FormEvent) => {
       e.preventDefault();
       if (!accountId || cents <= 0 || !dest.trim() || overBalance) return;
+      onResult(null);
       startT(async () => {
         const res = await requestWithdraw({
           amountCents: cents,
@@ -524,6 +535,7 @@ function WithdrawForm({
       e.preventDefault();
       if (!pendingResult) return;
       if (pendingResult.needsOtp && otp.length < 4) return;
+      onResult(null);
       startT(async () => {
         const res = await confirmWithdraw({
           txnId: pendingResult.txnId,
@@ -582,7 +594,10 @@ function WithdrawForm({
             className={s.input}
             value={otp}
             dir="ltr"
-            onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+            onChange={(e) => {
+              setOtp(e.target.value.replace(/[^0-9]/g, ''));
+              onResult(null);
+            }}
             placeholder="000000"
             autoComplete="one-time-code"
           />
@@ -606,6 +621,7 @@ function WithdrawForm({
           setAccountId(v);
           setCents(0);
           setAmount('');
+          onResult(null);
         }}
         accounts={activeAccounts}
       />
@@ -621,6 +637,7 @@ function WithdrawForm({
         onChange={(raw, c) => {
           setAmount(raw);
           setCents(c);
+          onResult(null);
         }}
         currency={currency}
         min={1}
@@ -636,7 +653,10 @@ function WithdrawForm({
           className={s.input}
           value={dest}
           dir="ltr"
-          onChange={(e) => setDest(e.target.value)}
+          onChange={(e) => {
+            setDest(e.target.value);
+            onResult(null);
+          }}
           placeholder="شماره حساب یا کارت بانکی"
           autoComplete="off"
         />
@@ -710,6 +730,7 @@ function TransferForm({
         onResult({ kind: 'error', message: 'کد تأیید باید ۶ رقم باشد' });
         return;
       }
+      onResult(null);
       startT(async () => {
         const idempotencyKey = flowKey || newIdempotencyKey();
         const res = await transferBetweenAccounts({
@@ -767,7 +788,10 @@ function TransferForm({
           name="from"
           label="از حساب"
           value={fromId}
-          onChange={setFromId}
+          onChange={(v) => {
+            setFromId(v);
+            onResult(null);
+          }}
           accounts={activeAccounts}
         />
         <span className={s.transferArrow} aria-hidden>
@@ -778,7 +802,10 @@ function TransferForm({
           name="to"
           label="به حساب"
           value={toId}
-          onChange={setToId}
+          onChange={(v) => {
+            setToId(v);
+            onResult(null);
+          }}
           accounts={activeAccounts.filter((a) => a.id !== fromId)}
         />
       </div>
@@ -794,6 +821,7 @@ function TransferForm({
         onChange={(raw, c) => {
           setAmount(raw);
           setCents(c);
+          onResult(null);
         }}
         currency={from?.currency ?? 'AFN'}
         min={1}
@@ -820,7 +848,10 @@ function TransferForm({
               autoComplete="one-time-code"
               maxLength={6}
               placeholder="••••••"
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+              onChange={(e) => {
+                setOtp(e.target.value.replace(/\D/g, ''));
+                onResult(null);
+              }}
             />
           </div>
           <button type="submit" className={s.submit} disabled={otp.length !== 6 || isPending}>
@@ -905,6 +936,7 @@ function ExchangeForm({
     (e: React.FormEvent) => {
       e.preventDefault();
       if (sameCurrency || overBalance || cents <= 0) return;
+      onResult(null);
       startT(async () => {
         const res = await executeFxTrade({
           fromCurrency: fromCur,
@@ -949,7 +981,10 @@ function ExchangeForm({
           <CurrencySelect
             items={currencyItems}
             value={fromCur}
-            onChange={setFromCur}
+            onChange={(v) => {
+              setFromCur(v);
+              onResult(null);
+            }}
             ariaLabel="ارز مبدأ"
             size="default"
           />
@@ -964,7 +999,10 @@ function ExchangeForm({
           <CurrencySelect
             items={toItems}
             value={toCur}
-            onChange={setToCur}
+            onChange={(v) => {
+              setToCur(v);
+              onResult(null);
+            }}
             ariaLabel="ارز مقصد"
             size="default"
             disabled={sameCurrency}
@@ -978,6 +1016,7 @@ function ExchangeForm({
         onChange={(raw, c) => {
           setAmount(raw);
           setCents(c);
+          onResult(null);
         }}
         currency={fromCur}
         min={1}

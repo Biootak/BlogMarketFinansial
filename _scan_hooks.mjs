@@ -42,8 +42,8 @@ const out = [];
 for (const f of files) {
   const src = fs.readFileSync(f, 'utf8');
   const re = /use(?:Layout)?Effect\(/g;
-  let m;
-  while ((m = re.exec(src))) {
+  let m = re.exec(src);
+  while (m) {
     const start = m.index + m[0].length;
     let depth = 1;
     let i = start;
@@ -97,5 +97,6 @@ for (const f of files) {
         if (fnBody.includes(`${setter}(`)) out.push(`SELF_SETSTATE_DEP ${f}:${line} :: ${dn}`);
       }
     }
+    m = re.exec(src);
   }
 }

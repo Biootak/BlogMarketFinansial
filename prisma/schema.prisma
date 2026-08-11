@@ -2067,6 +2067,9 @@ model Settlement {
   @@index([exchangeId, status])
   @@index([periodStart, periodEnd])
   @@index([status])
+  // R1-fix: unique برای جلوگیری از تسویه تکراری دوره (double-settlement race)
+  // — دو cron هم‌زمان برای همان دوره فقط یکی می‌تواند رکورد بسازد.
+  @@unique([exchangeId, periodStart, periodEnd, currency])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

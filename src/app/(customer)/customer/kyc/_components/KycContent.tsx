@@ -409,6 +409,12 @@ export default function KycContent({ profile, records }: Props) {
               درخواست قبلی رد شد — مدارک جدید ارسال کنید یا با پشتیبانی تماس بگیرید.
             </div>
           )}
+          {profile.kycStatus === 'EXPIRED' && (
+            <div className={s.heroNote} data-tone="warning">
+              <AlertTriangle size={11} aria-hidden />
+              احراز هویت شما منقضی شده است — برای ادامهٔ تراکنش‌ها دوباره مدارک را ارسال کنید.
+            </div>
+          )}
           {profile.kycStatus === 'APPROVED' && currentNum >= 3 && (
             <div className={s.heroNote} data-tone="success">
               <CheckCircle2 size={11} aria-hidden />

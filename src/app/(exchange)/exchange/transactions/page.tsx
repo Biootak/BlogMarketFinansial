@@ -21,7 +21,7 @@ export default async function TransactionsPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/transactions');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   const { exchange } = membership;
   const [txResult, customersResult] = await Promise.all([

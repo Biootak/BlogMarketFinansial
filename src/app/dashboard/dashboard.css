@@ -1714,6 +1714,30 @@
     }
   }
 
+  /* ---- Mobile overrides (≤480px) — text never overflows ──────────────────── */
+  @media (max-width: 480px) {
+    .dash-pane__grid {
+      grid-template-columns: 1fr;
+    }
+    .dash-pane--compact,
+    .dash-pane--hero {
+      grid-column: span 1;
+    }
+    .dash-pane__value {
+      font-size: 1.375rem;
+    }
+    .dash-pane__title-text {
+      font-size: 0.75rem;
+    }
+    .dash-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .dash-toolbar__right {
+      justify-content: space-between;
+    }
+  }
+
   /* Subtle hover affordance - panels never move more than 2px */
   .dash-pane:hover {
     border-color: rgba(255, 255, 255, 0.8);

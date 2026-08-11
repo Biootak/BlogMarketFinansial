@@ -1,0 +1,18 @@
+/* TrendSparkline — compact inline sparkline for KPI cells */
+
+.root {
+  display: block;
+  overflow: visible;
+}
+
+.line {
+  transition: d 300ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.area {
+  transition: d 300ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.dot {
+  transition: cy 300ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}

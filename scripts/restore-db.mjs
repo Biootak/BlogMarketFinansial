@@ -179,7 +179,9 @@ function runPgRestore(filePath, dbUrl) {
     args.push('--dbname', dbUrl, filePath);
     const child = spawn('pg_restore', args, { stdio: ['inherit', 'inherit', 'pipe'] });
     let stderr = '';
-    child.stderr.on('data', (c) => (stderr += c));
+    child.stderr.on('data', (c) => {
+      stderr += c;
+    });
     child.on('error', (err) =>
       reject(new Error(`pg_restore اجرا نشد: ${err.message}. نصب: apt install postgresql-client`)),
     );

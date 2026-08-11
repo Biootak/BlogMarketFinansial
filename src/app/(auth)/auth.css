@@ -1039,6 +1039,16 @@
   gap: 0.4rem;
   direction: ltr;
 }
+/* حالت کد پشتیبان 2FA: ۸ سلول — در موبایل کمی جمع‌تر تا جا نشود */
+.auth-otp-grid--backup {
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.3rem;
+}
+.auth-otp-grid--backup .auth-otp-cell {
+  min-block-size: clamp(2.4rem, 8.5vw, 2.9rem);
+  border-radius: 0.6rem;
+  font-size: 0.95em;
+}
 .auth-otp-cell {
   display: flex;
   align-items: center;

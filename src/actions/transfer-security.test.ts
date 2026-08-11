@@ -31,7 +31,7 @@ vi.mock('@/lib/db', () => ({
           findUniqueOrThrow: vi.fn().mockResolvedValue({ balance: BigInt(950000) }),
         },
         ledgerEntry: { create: vi.fn() },
-        transaction: { update: vi.fn() },
+        transaction: { update: vi.fn(), updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       }),
     ),
   },

@@ -11,18 +11,29 @@
  * Each item is clickable → destination page.
  */
 
-import type { LucideIcon } from 'lucide-react';
+import { AlertTriangle, Clock, type LucideIcon, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import s from './UpcomingDeadlines.module.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────
+
+/**
+ * iconName — string key, NOT a component: this component receives props
+ * across the server→client boundary, and functions cannot be serialized.
+ * Map to the icon component here (client side) instead.
+ */
+const ICON_MAP: Record<string, LucideIcon> = {
+  'shield-alert': ShieldAlert,
+  'alert-triangle': AlertTriangle,
+  clock: Clock,
+};
 
 interface DeadlineItem {
   label: string;
   detail: string;
   href: string;
   daysLeft: number; // negative = overdue
-  icon: LucideIcon;
+  iconName: string;
 }
 
 interface UpcomingDeadlinesProps {
@@ -50,7 +61,7 @@ export function UpcomingDeadlines({ items }: UpcomingDeadlinesProps) {
     <section className={s.root} aria-label="مهلت‌های نزدیک">
       {topItems.map((item) => {
         const { text, tone } = daysLabel(item.daysLeft);
-        const Icon = item.icon;
+        const Icon = ICON_MAP[item.iconName] ?? AlertTriangle;
 
         return (
           <Link

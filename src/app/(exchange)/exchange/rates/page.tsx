@@ -20,7 +20,7 @@ export default async function ExchangeRatesPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/rates');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   const { exchange } = membership;
 

@@ -7,7 +7,8 @@
  *  - scopes در dialog انتخاب می‌شوند و در DB ذخیره می‌گردند
  */
 import { getMyApiKeyAudits, getMyApiKeys, getMyWebhooks } from '@/actions/developer-portal';
-import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { PageHeader, Section } from '@/components/Dashboard/primitives';
+import { BookmarkButton } from '@/components/Dashboard/primitives/BookmarkButton';
 import { WEBHOOK_EVENTS } from '@/lib/developer-portal-constants';
 import type { Metadata } from 'next';
 import DeveloperPortalClient from './_components/DeveloperPortalClient';
@@ -102,14 +103,7 @@ export default async function DeveloperPortalPage() {
   }));
 
   return (
-    <div
-      dir="rtl"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--ds-space-6)',
-      }}
-    >
+    <div dir="rtl">
       <PageHeader
         title="پنل توسعه‌دهندگان"
         description="ابزارهای اتصال پلتفرم به سیستم‌های شما — کلید API، وب‌هوک و مستندات"
@@ -119,13 +113,16 @@ export default async function DeveloperPortalPage() {
         ]}
         icon="settings"
         accent="violet"
+        actions={<BookmarkButton pageKey="customer-developer" />}
       />
-      <DeveloperPortalClient
-        initialKeys={keys}
-        initialWebhooks={webhooks}
-        initialAudits={audits}
-        webhookEvents={WEBHOOK_EVENTS.map((e) => ({ value: e.value, label: e.label }))}
-      />
+      <Section padding="none">
+        <DeveloperPortalClient
+          initialKeys={keys}
+          initialWebhooks={webhooks}
+          initialAudits={audits}
+          webhookEvents={WEBHOOK_EVENTS.map((e) => ({ value: e.value, label: e.label }))}
+        />
+      </Section>
     </div>
   );
 }

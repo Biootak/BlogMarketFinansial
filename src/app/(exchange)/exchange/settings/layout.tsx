@@ -24,7 +24,7 @@ export default async function SettingsLayout({
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settings');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
   if (!['OWNER', 'MANAGER'].includes(membership.staffRole)) {
     redirect('/exchange/dashboard');
   }

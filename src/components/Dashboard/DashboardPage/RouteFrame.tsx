@@ -70,7 +70,13 @@ const LOCAL_HEADER_ROUTES = [
   '/customers',
 ];
 
+/* Customer and exchange portals: every page owns its own header
+   (PageHeader or a settings-shell header), so the shared route header
+   must not render on top of them — otherwise pages show two h1s and
+   admin-flavored copy («مرکز عملیات») on consumer pages. */
 const hasLocalHeader = (path: string) =>
+  path.startsWith('/customer') ||
+  path.startsWith('/exchange') ||
   LOCAL_HEADER_ROUTES.some(
     (route) => path === `/dashboard${route}` || path.startsWith(`/dashboard${route}/`),
   );

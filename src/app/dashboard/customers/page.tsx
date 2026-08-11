@@ -59,7 +59,7 @@ export default async function CustomersPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <CustomersClient
         customers={customersData.rows}
         total={customersData.total}

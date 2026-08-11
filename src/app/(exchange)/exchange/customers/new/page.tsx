@@ -19,7 +19,7 @@ export default async function NewCustomerPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers/new');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   if (membership.staffRole === 'VIEWER') {
     redirect('/exchange/customers');

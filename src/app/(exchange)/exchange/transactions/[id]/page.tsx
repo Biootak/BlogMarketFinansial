@@ -32,7 +32,7 @@ export default async function ExchangeTransactionDetailPage({ params }: PageProp
     getExchangeForUser(),
     getCustomers(tx.exchangeId, { limit: 200 }),
   ]);
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   const canEdit = ['OWNER', 'MANAGER'].includes(membership.staffRole);
   const canAdd = ['OWNER', 'MANAGER', 'STAFF'].includes(membership.staffRole);

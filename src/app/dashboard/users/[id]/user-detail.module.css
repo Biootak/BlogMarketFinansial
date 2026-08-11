@@ -168,12 +168,12 @@
 
 .actionBtn[data-variant="danger"] {
   background: transparent;
-  color: var(--at-danger, #e5484d);
-  border-color: color-mix(in oklab, var(--at-danger, #e5484d) 30%, var(--at-line));
+  color: var(--nova-rose);
+  border-color: color-mix(in oklab, var(--nova-rose) 30%, var(--at-line));
 }
 
 .actionBtn[data-variant="danger"]:hover {
-  background: color-mix(in oklab, var(--at-danger, #e5484d) 10%, transparent);
+  background: color-mix(in oklab, var(--nova-rose) 10%, transparent);
 }
 
 .actionBtn:disabled {
@@ -203,15 +203,15 @@
 }
 
 .badgeAdmin {
-  background: color-mix(in oklab, #6366f1 14%, transparent);
-  color: #6366f1;
-  border-color: color-mix(in oklab, #6366f1 30%, transparent);
+  background: color-mix(in oklab, var(--nova-violet) 14%, transparent);
+  color: var(--nova-violet);
+  border-color: color-mix(in oklab, var(--nova-violet) 30%, transparent);
 }
 
 .badgeAuthor {
-  background: color-mix(in oklab, #0ea5e9 14%, transparent);
-  color: #0ea5e9;
-  border-color: color-mix(in oklab, #0ea5e9 30%, transparent);
+  background: color-mix(in oklab, var(--nova-cyan) 14%, transparent);
+  color: var(--nova-cyan);
+  border-color: color-mix(in oklab, var(--nova-cyan) 30%, transparent);
 }
 
 .badgeUser {
@@ -221,33 +221,33 @@
 }
 
 .badgeActive {
-  background: color-mix(in oklab, #16a34a 14%, transparent);
-  color: #16a34a;
-  border-color: color-mix(in oklab, #16a34a 30%, transparent);
+  background: color-mix(in oklab, var(--nova-emerald) 14%, transparent);
+  color: var(--nova-emerald);
+  border-color: color-mix(in oklab, var(--nova-emerald) 30%, transparent);
 }
 
 .badgePending {
-  background: color-mix(in oklab, #f59e0b 14%, transparent);
-  color: #f59e0b;
-  border-color: color-mix(in oklab, #f59e0b 30%, transparent);
+  background: color-mix(in oklab, var(--nova-amber) 14%, transparent);
+  color: var(--nova-amber);
+  border-color: color-mix(in oklab, var(--nova-amber) 30%, transparent);
 }
 
 .badgeBanned {
-  background: color-mix(in oklab, #e5484d 14%, transparent);
-  color: #e5484d;
-  border-color: color-mix(in oklab, #e5484d 30%, transparent);
+  background: color-mix(in oklab, var(--nova-rose) 14%, transparent);
+  color: var(--nova-rose);
+  border-color: color-mix(in oklab, var(--nova-rose) 30%, transparent);
 }
 
 .badgeRejected {
-  background: color-mix(in oklab, #71717a 14%, transparent);
-  color: #71717a;
-  border-color: color-mix(in oklab, #71717a 30%, transparent);
+  background: color-mix(in oklab, var(--nova-muted) 14%, transparent);
+  color: var(--nova-muted);
+  border-color: color-mix(in oklab, var(--nova-muted) 30%, transparent);
 }
 
 .badgeOk {
-  background: color-mix(in oklab, #16a34a 14%, transparent);
-  color: #16a34a;
-  border-color: color-mix(in oklab, #16a34a 30%, transparent);
+  background: color-mix(in oklab, var(--nova-emerald) 14%, transparent);
+  color: var(--nova-emerald);
+  border-color: color-mix(in oklab, var(--nova-emerald) 30%, transparent);
 }
 
 .badgeOff {
@@ -549,12 +549,12 @@
 }
 
 .dangerZone {
-  border-color: color-mix(in oklab, #e5484d 28%, var(--at-line));
-  background: color-mix(in oklab, #e5484d 4%, var(--at-surface-1));
+  border-color: color-mix(in oklab, var(--nova-rose) 28%, var(--at-line));
+  background: color-mix(in oklab, var(--nova-rose) 4%, var(--at-surface-1));
 }
 
 .dangerTitle {
-  color: #e5484d;
+  color: var(--nova-rose);
 }
 
 .dangerText {

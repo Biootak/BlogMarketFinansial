@@ -60,6 +60,12 @@
   unicode-bidi: isolate;
 }
 
-.chipDays_ok { color: var(--fc-accent); }
-.chipDays_warn { color: oklch(0.65 0.18 85); }
-.chipDays_critical { color: oklch(0.55 0.22 25); }
+.chipDays_ok {
+  color: var(--fc-accent);
+}
+.chipDays_warn {
+  color: oklch(0.65 0.18 85);
+}
+.chipDays_critical {
+  color: oklch(0.55 0.22 25);
+}

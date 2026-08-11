@@ -29,6 +29,26 @@ import { headers } from 'next/headers';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
+// R2-fix: تشخیص خطاهای Prisma در race conditions
+// P2002 = unique violation (idempotencyKey تکراری — درخواست هم‌زمان)
+// P2034 = serialization failure (دو تراکنش هم‌زمان روی یک ردیف)
+function isPrismaP2002(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: string }).code === 'P2002'
+  );
+}
+function isPrismaP2034(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code?: string }).code === 'P2034'
+  );
+}
+
 // ─── Constants ──────────────────────────────────────────────────────────────
 
 const TX_KINDS = ['DEPOSIT', 'WITHDRAWAL', 'EXCHANGE', 'TRANSFER', 'FEE'] as const;
@@ -371,28 +391,39 @@ export async function createTransaction(
   try {
     txResult = await prisma.$transaction(
       async (tx) => {
-        const freshAccount = await tx.fintechAccount.findUniqueOrThrow({
-          where: { id: account.id },
-          select: { balance: true },
-        });
-
         const direction = kind === 'DEPOSIT' ? 'CREDIT' : 'DEBIT';
 
-        if (direction === 'DEBIT' && freshAccount.balance < amountBig) {
-          throw new Error(
-            `INSUFFICIENT_FUNDS:موجودی حساب کافی نیست. موجودی فعلی: ${freshAccount.balance}, برداشت: ${amountBig}`,
-          );
+        // R2-fix: به‌جای read-modify-write (که در race دو درخواست هم‌زمان می‌توانست
+        // مقدار قبلی را بازنویسی کند و دوبار برداشت/واریز شود)، از updateMany
+        // اتمیک با شرط balance استفاده می‌کنیم. شرط در همان UPDATE چک می‌شود.
+        let newBalance: bigint;
+        if (direction === 'DEBIT') {
+          const debit = await tx.fintechAccount.updateMany({
+            where: { id: account.id, balance: { gte: amountBig } },
+            data: { balance: { decrement: amountBig }, updatedAt: new Date() },
+          });
+          if (debit.count === 0) {
+            const fresh = await tx.fintechAccount.findUnique({
+              where: { id: account.id },
+              select: { balance: true },
+            });
+            throw new Error(
+              `INSUFFICIENT_FUNDS:موجودی حساب کافی نیست. موجودی فعلی: ${fresh?.balance ?? '?'}, برداشت: ${amountBig}`,
+            );
+          }
+          const after = await tx.fintechAccount.findUniqueOrThrow({
+            where: { id: account.id },
+            select: { balance: true },
+          });
+          newBalance = after.balance;
+        } else {
+          const credited = await tx.fintechAccount.update({
+            where: { id: account.id },
+            data: { balance: { increment: amountBig }, updatedAt: new Date() },
+            select: { balance: true },
+          });
+          newBalance = credited.balance;
         }
-
-        const newBalance =
-          direction === 'CREDIT'
-            ? freshAccount.balance + amountBig
-            : freshAccount.balance - amountBig;
-
-        await tx.fintechAccount.update({
-          where: { id: account.id },
-          data: { balance: newBalance, updatedAt: new Date() },
-        });
 
         const transaction = await tx.transaction.create({
           data: {
@@ -488,6 +519,29 @@ export async function createTransaction(
       return {
         success: false,
         error: { code: 'INSUFFICIENT_FUNDS', message: msg.slice('INSUFFICIENT_FUNDS:'.length) },
+      };
+    }
+    // R2-fix: unique(idempotencyKey) — دو درخواست هم‌زمان با یک کلید، دومی P2002
+    // می‌گیرد. به‌جای خطای 500، تراکنش موجود را برمی‌گردانیم (idempotent).
+    if (isPrismaP2002(err)) {
+      const dup = idempotencyKey
+        ? await prisma.transaction.findUnique({ where: { idempotencyKey } })
+        : null;
+      if (dup) {
+        txResult = dup as Awaited<ReturnType<typeof prisma.transaction.create>>;
+        return { success: true, data: txResult } as never;
+      }
+    }
+    // Serializable isolation: اگر دو تراکنش هم‌زمان روی یک حساب رخ بدهد، Postgres
+    // یکی را با P2034 (serialization failure) abort می‌کند. این خطا نباید به
+    // صورت 500 به کاربر برسد — بگوییم دوباره تلاش کند.
+    if (isPrismaP2034(err)) {
+      return {
+        success: false,
+        error: {
+          code: 'CONCURRENT_RETRY',
+          message: 'درخواست هم‌زمان دیگری در حال پردازش است. لطفاً دوباره تلاش کنید',
+        },
       };
     }
     throw err;

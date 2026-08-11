@@ -60,17 +60,32 @@ export const ForgotPasswordSchema = z.object({ email: emailSchema });
 export const MagicLinkSchema = z.object({ email: emailSchema });
 
 // 2026-06-23: OTP pipeline schemas.
-const otpCodeSchema = z.string().regex(/^\d{6}$/, 'کد باید دقیقاً ۶ رقم باشد');
-
 export const EmailLookupSchema = z.object({ email: emailSchema });
 
-export const VerifyOtpSchema = z.object({
-  email: emailSchema,
-  code: otpCodeSchema,
-  // C1-fix: '2fa' برای مرحلهٔ دوم ورود (TOTP Authenticator).
-  // 'service-verify' هم مجاز است (progressive capture).
-  intent: z.enum(['register', 'login', 'reverify', 'recover', '2fa', 'service-verify']),
-});
+export const VerifyOtpSchema = z
+  .object({
+    email: emailSchema,
+    // اعتبارسنجی دقیق در superRefine پایین انجام می‌شود چون برای 2FA
+    // کد پشتیبان ۸ کاراکتری هگز هم باید پذیرفته شود
+    code: z.string().min(1, 'کد را وارد کنید'),
+    // C1-fix: '2fa' برای مرحلهٔ دوم ورود (TOTP Authenticator).
+    // 'service-verify' هم مجاز است (progressive capture).
+    intent: z.enum(['register', 'login', 'reverify', 'recover', '2fa', 'service-verify']),
+  })
+  .superRefine((val, ctx) => {
+    // در حالت 2FA علاوه بر کد ۶ رقمی، کد پشتیبان ۸ کاراکتری هگز هم پذیرفته می‌شود
+    if (val.intent === '2fa' && /^[A-Fa-f0-9]{8}$/.test(val.code)) return;
+    if (!/^\d{6}$/.test(val.code)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['code'],
+        message:
+          val.intent === '2fa'
+            ? 'کد باید ۶ رقم یا ۸ کاراکتر (کد پشتیبان) باشد'
+            : 'کد باید دقیقاً ۶ رقم باشد',
+      });
+    }
+  });
 
 // 2026-06-24: schema for the resetToken + password submission. We don't
 // validate the token shape here beyond length — the DB lookup is the

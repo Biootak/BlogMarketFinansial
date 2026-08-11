@@ -407,6 +407,34 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
       },
     };
   } catch (err) {
+    // R3-fix: دو درخواست هم‌زمان با یک idempotencyKey → دومی روی transaction.create
+    // P2002 می‌گیرد (unique). به‌جای خطای مبهم، تراکنش موجود را برمی‌گردانیم
+    // (idempotent) — race بدون دوبار برداشت حل می‌شود چون کل تراکنش rollback است.
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'code' in err &&
+      (err as { code?: string }).code === 'P2002'
+    ) {
+      const dup = await prisma.transaction.findUnique({ where: { idempotencyKey } });
+      if (dup) {
+        const meta = (dup.meta as Record<string, unknown> | null) ?? {};
+        return {
+          success: true,
+          data: {
+            txnId: dup.id,
+            fromCurrency,
+            toCurrency,
+            fromAmountCents: amountCents,
+            toAmountCents: Number(meta.toAmountCents ?? 0),
+            rate: Number(meta.rate ?? 0),
+            feeCents: Number(meta.feeCents ?? 0),
+            fromBalance: '0',
+            toBalance: '0',
+          },
+        };
+      }
+    }
     const code = err instanceof Error ? err.message : 'TXN_FAILED';
     const mapped: Record<string, { code: string; message: string }> = {
       QUOTE_EXPIRED: { code: 'QUOTE_EXPIRED', message: 'نرخ معامله منقضی شده است' },

@@ -21,7 +21,7 @@ export default async function ExchangeReportsPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/reports');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   const { exchange } = membership;
 

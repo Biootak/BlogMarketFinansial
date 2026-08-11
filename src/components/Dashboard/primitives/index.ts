@@ -108,3 +108,29 @@ export type {
 } from './StateHero';
 
 export type { SettingsNavIconName } from './SettingsSubNav';
+
+export { TrendSparkline } from './TrendSparkline';
+export type { TrendSparklineProps } from './TrendSparkline';
+
+export { KpiBar } from './KpiBar';
+export type { KpiBarProps } from './KpiBar';
+
+export { DataCard } from './DataCard';
+export type { DataCardProps, DataCardTone } from './DataCard';
+
+export { QuickAction, QuickActionRow } from './QuickAction';
+export type { QuickActionProps } from './QuickAction';
+
+export { StatusTimeline } from './StatusTimeline';
+export type {
+  StatusTimelineProps,
+  TimelineItem,
+  TimelineGroup,
+  TimelineTone,
+} from './StatusTimeline';
+
+export { BookmarkButton, useBookmarks } from './BookmarkButton';
+
+export { ExportButton } from './ExportButton';
+
+export { ActivityFeed } from './ActivityFeed';

@@ -1,0 +1,115 @@
+/* DataCard — unified card for all 3 dashboards */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  background: var(--nova-surface, var(--ds-surface, #ffffff));
+  border: 1px solid var(--nova-line, var(--ds-border-subtle, #e2e8f0));
+  border-radius: var(--ds-radius-lg, 1rem);
+  overflow: hidden;
+  transition: border-color 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.interactive {
+  cursor: pointer;
+}
+
+.interactive:hover {
+  border-color: var(--nova-primary, var(--ds-brand-500, #6366f1));
+  box-shadow: 0 0 0 3px
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 12%, transparent);
+}
+
+/* ── Radius variants ─────────────────────────────────────────────── */
+
+.radius_sm {
+  border-radius: var(--ds-radius-sm, 0.5rem);
+}
+.radius_md {
+  border-radius: var(--ds-radius-md, 0.75rem);
+}
+.radius_lg {
+  border-radius: var(--ds-radius-lg, 1rem);
+}
+.radius_xl {
+  border-radius: var(--ds-radius-xl, 1.25rem);
+}
+
+/* ── Accent top border ───────────────────────────────────────────── */
+
+.accent_emerald {
+  border-top: 3px solid var(--nova-up, var(--ds-accent-emerald));
+}
+.accent_amber {
+  border-top: 3px solid var(--nova-amber, var(--ds-accent-amber));
+}
+.accent_rose {
+  border-top: 3px solid var(--nova-down, var(--ds-accent-rose));
+}
+.accent_violet {
+  border-top: 3px solid var(--nova-violet, var(--ds-accent-violet));
+}
+.accent_cyan {
+  border-top: 3px solid var(--nova-cyan, var(--ds-accent-cyan));
+}
+.accent_blue {
+  border-top: 3px solid var(--nova-primary, var(--ds-brand-500));
+}
+
+/* ── Header ──────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-3, 0.75rem);
+  padding: var(--ds-space-4, 1rem) var(--ds-space-5, 1.25rem) var(--ds-space-3, 0.75rem);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.title {
+  font-size: var(--ds-text-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--nova-ink, var(--ds-text-primary));
+  line-height: 1.4;
+}
+
+.description {
+  font-size: var(--ds-text-xs, 0.75rem);
+  color: var(--nova-muted, var(--ds-text-secondary));
+  line-height: 1.4;
+}
+
+.actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2, 0.5rem);
+}
+
+/* ── Body ────────────────────────────────────────────────────────── */
+
+.body {
+  padding: var(--ds-space-4, 1rem) var(--ds-space-5, 1.25rem);
+  flex: 1;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3, 0.75rem);
+  padding: var(--ds-space-3, 0.75rem) var(--ds-space-5, 1.25rem);
+  border-top: 1px solid var(--nova-line, var(--ds-border-subtle));
+  font-size: var(--ds-text-xs, 0.75rem);
+  color: var(--nova-muted, var(--ds-text-muted));
+}

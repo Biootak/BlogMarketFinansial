@@ -4,6 +4,7 @@ import { getCustomerProfile } from '@/actions/customer-portal';
 import { auth } from '@/auth';
 import { AdminCustomerSwitcher } from '@/components/Dashboard/DashboardPage/AdminCustomerSwitcher';
 import { DashboardProviders } from '@/components/Dashboard/DashboardPage/DashboardProviders';
+import UniversalCommandPalette from '@/components/Dashboard/DashboardPage/UniversalCommandPalette';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { cookies } from 'next/headers';
@@ -54,6 +55,7 @@ export default async function CustomerLayout({ children }: { children: React.Rea
             {children}
           </DashboardProviders>
         </Suspense>
+        <UniversalCommandPalette portal="customer" />
       </div>
     </SiteSettingsProvider>
   );

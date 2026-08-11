@@ -51,21 +51,20 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import {
-  HiOutlineCheckCircle,
-  HiOutlineClock,
-  HiOutlineEnvelope,
-  HiOutlineEye,
-  HiOutlineLockClosed,
-  HiOutlineNoSymbol,
-  HiOutlinePencil,
-  HiOutlinePhone,
-  HiOutlinePlus,
-  HiOutlineTrash,
-  HiOutlineUser,
-  HiOutlineUserGroup,
-  HiOutlineUsers,
-  HiOutlineXMark,
-} from 'react-icons/hi2';
+  BadgeCheck,
+  Clock,
+  Eye,
+  Mail,
+  LockKeyhole,
+  Pencil,
+  Phone,
+  Plus,
+  ShieldAlert,
+  Trash2,
+  User,
+  Users,
+  X,
+} from 'lucide-react';
 import s from './UsersClient.module.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -296,7 +295,7 @@ export function UsersClient({
         accent="indigo"
         actions={
           <button type="button" className={s.addBtn} onClick={openCreate}>
-            <HiOutlinePlus className="size-4" aria-hidden />
+            <Plus className="size-4" aria-hidden />
             افزودن کاربر
           </button>
         }
@@ -305,21 +304,21 @@ export function UsersClient({
       {/* ── KPI Strip ── */}
       <div className={s.kpiStrip}>
         {[
-          { icon: HiOutlineUsers, label: 'کل کاربران', value: totalCount, cls: '' },
+          { icon: Users, label: 'کل کاربران', value: totalCount, cls: '' },
           {
-            icon: HiOutlineCheckCircle,
+            icon: BadgeCheck,
             label: 'فعال',
             value: users.filter((u) => u.status === 'Active').length,
             cls: s.kpiGreen,
           },
           {
-            icon: HiOutlineClock,
+            icon: Clock,
             label: 'در انتظار',
             value: users.filter((u) => u.status === 'Pending').length,
             cls: s.kpiAmber,
           },
           {
-            icon: HiOutlineNoSymbol,
+            icon: ShieldAlert,
             label: 'مسدود',
             value: users.filter((u) => u.status === 'Banned').length,
             cls: s.kpiRed,
@@ -344,38 +343,38 @@ export function UsersClient({
           ariaLabel="جستجوی کاربر"
         />
 
-        <select
-          className={s.filterSelect}
-          value={currentStatus}
-          onChange={(e) => navigate({ status: e.target.value })}
-          aria-label="فیلتر وضعیت"
-        >
-          <option value="all">همه وضعیت‌ها</option>
-          <option value="Active">فعال</option>
-          <option value="Pending">در انتظار</option>
-          <option value="Banned">مسدود</option>
-          <option value="Rejected">رد شده</option>
-        </select>
+        <Select dir="rtl" value={currentStatus} onValueChange={(v) => navigate({ status: v })}>
+          <SelectTrigger className={s.filterSelect} aria-label="فیلتر وضعیت">
+            <SelectValue placeholder="همه وضعیت‌ها" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">همه وضعیت‌ها</SelectItem>
+            <SelectItem value="Active">فعال</SelectItem>
+            <SelectItem value="Pending">در انتظار</SelectItem>
+            <SelectItem value="Banned">مسدود</SelectItem>
+            <SelectItem value="Rejected">رد شده</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <select
-          className={s.filterSelect}
-          value={currentRole}
-          onChange={(e) => navigate({ role: e.target.value })}
-          aria-label="فیلتر نقش"
-        >
-          <option value="all">همه نقش‌ها</option>
-          <option value="USER">کاربر</option>
-          <option value="AUTHOR">نویسنده</option>
-          <option value="ADMIN">مدیر</option>
-          {currentUserRole === 'OWNER' && <option value="OWNER">مالک</option>}
-        </select>
+        <Select dir="rtl" value={currentRole} onValueChange={(v) => navigate({ role: v })}>
+          <SelectTrigger className={s.filterSelect} aria-label="فیلتر نقش">
+            <SelectValue placeholder="همه نقش‌ها" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">همه نقش‌ها</SelectItem>
+            <SelectItem value="USER">کاربر</SelectItem>
+            <SelectItem value="AUTHOR">نویسنده</SelectItem>
+            <SelectItem value="ADMIN">مدیر</SelectItem>
+            {currentUserRole === 'OWNER' && <SelectItem value="OWNER">مالک</SelectItem>}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* ── Table ── */}
       <div className={s.tableWrap}>
         {users.length === 0 ? (
           <div className={s.empty}>
-            <HiOutlineUsers className={s.emptyIco} aria-hidden />
+            <Users className={s.emptyIco} aria-hidden />
             <p className={s.emptyTitle}>کاربری یافت نشد</p>
             <p className={s.emptySub}>
               {currentSearch ? `جستجوی «${currentSearch}» نتیجه‌ای نداشت` : 'هنوز کاربری ثبت نشده'}
@@ -466,7 +465,7 @@ export function UsersClient({
                             disabled={!manageable || isPending}
                             aria-label={`ویرایش ${user.name}`}
                           >
-                            <HiOutlinePencil className="size-3.5" aria-hidden />
+                            <Pencil className="size-3.5" aria-hidden />
                             <span className={s.btnLabel}>ویرایش</span>
                           </button>
                           <button
@@ -476,7 +475,7 @@ export function UsersClient({
                             disabled={!manageable || isPending}
                             aria-label={`حذف ${user.name}`}
                           >
-                            <HiOutlineTrash className="size-3.5" aria-hidden />
+                            <Trash2 className="size-3.5" aria-hidden />
                             <span className={s.btnLabel}>حذف</span>
                           </button>
                         </div>
@@ -532,9 +531,9 @@ export function UsersClient({
             <div className={cm.header}>
               <div className={s.sheetIcon} aria-hidden>
                 {editingUser ? (
-                  <HiOutlinePencil className="size-4" />
+                  <Pencil className="size-4" />
                 ) : (
-                  <HiOutlinePlus className="size-4" />
+                  <Plus className="size-4" />
                 )}
               </div>
               <div>
@@ -548,7 +547,7 @@ export function UsersClient({
                 </p>
               </div>
               <DialogClose className={cm.close} aria-label="بستن">
-                <HiOutlineXMark className="size-4" aria-hidden />
+                <X className="size-4" aria-hidden />
               </DialogClose>
             </div>
 
@@ -577,7 +576,7 @@ export function UsersClient({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className={s.label}>
-                            <HiOutlineEnvelope className="size-4" aria-hidden /> ایمیل
+                            <Mail className="size-4" aria-hidden /> ایمیل
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -623,7 +622,7 @@ export function UsersClient({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className={s.label}>
-                            <HiOutlinePhone className="size-4" aria-hidden /> شماره تلفن
+                            <Phone className="size-4" aria-hidden /> شماره تلفن
                           </FormLabel>
                           <FormControl>
                             <Input placeholder="شماره تلفن" {...field} className={s.input} />
@@ -670,8 +669,8 @@ export function UsersClient({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className={s.label}>
-                          <HiOutlineCheckCircle className="size-4" aria-hidden /> وضعیت
-                        </FormLabel>
+                            <BadgeCheck className="size-4" aria-hidden /> وضعیت
+                          </FormLabel>
                         <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className={s.input}>

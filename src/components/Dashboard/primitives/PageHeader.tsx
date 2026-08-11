@@ -1,3 +1,4 @@
+import { BookmarkButton } from '@/components/Dashboard/primitives';
 import { cn } from '@/lib/utils';
 import {
   Activity,
@@ -135,6 +136,8 @@ export interface PageHeaderProps {
   className?: string;
   /** فقط در compact/minimal: متریک‌های inline کنار title */
   meta?: Array<{ label: string; value: string | number }>;
+  /** Optional: enable bookmark button for this page */
+  bookmarkId?: string;
 }
 
 const ACCENT_CLASS: Record<PageHeaderAccent, string> = {
@@ -158,6 +161,7 @@ export function PageHeader({
   transition = 'none',
   className,
   meta,
+  bookmarkId,
 }: PageHeaderProps) {
   const Icon = icon ? ICON_MAP[icon] : null;
 
@@ -217,6 +221,11 @@ export function PageHeader({
             </div>
           )}
           {actions && <div className={s.stripActions}>{actions}</div>}
+          {bookmarkId && (
+            <div className={s.stripActions}>
+              <BookmarkButton id={bookmarkId} label="نشان‌کردن صفحه" />
+            </div>
+          )}
         </div>
         {description && <p className={cn(s.description, s.stripDescription)}>{description}</p>}
       </header>

@@ -422,6 +422,15 @@ export async function confirmWithdraw(
   const customerId = txn.customerId;
   try {
     await prisma.$transaction(async (tx) => {
+      // ── Atomic claim: فقط یک confirm هم‌زمان می‌تواند PENDING→COMPLETED را
+      // اجرا کند. بدون این قفل، دو درخواست هم‌زمان هر دو debit اتمیک موفق
+      // می‌شدند (اگر موجودی ≥ ۲×مبلغ بود) → دوبار برداشت برای یک تراکنش.
+      const claim = await tx.transaction.updateMany({
+        where: { id: txn.id, status: 'PENDING' },
+        data: { status: 'COMPLETED', updatedAt: now },
+      });
+      if (claim.count === 0) throw new Error('ALREADY_PROCESSED');
+
       // race-condition fix: شرط balance >= amount در همان UPDATE چک می‌شود تا
       // دو درخواست هم‌زمان نتوانند موجودی را منفی کنند (double-spend).
       const debit = await tx.fintechAccount.updateMany({
@@ -449,13 +458,15 @@ export async function confirmWithdraw(
           createdAt: now,
         },
       });
-      await tx.transaction.update({
-        where: { id: txn.id },
-        data: { status: 'COMPLETED', updatedAt: now },
-      });
+      // وضعیت قبلاً در atomic claim به COMPLETED رفته — به‌روزرسانی اضافه نیست.
     });
   } catch (err) {
-    if ((err as Error).message === 'INSUFFICIENT_BALANCE') {
+    const msg = (err as Error).message;
+    if (msg === 'ALREADY_PROCESSED') {
+      // confirm هم‌زمان دیگر همین تراکنش را کامل کرده — idempotent success
+      return { success: true, data: { txnId } };
+    }
+    if (msg === 'INSUFFICIENT_BALANCE') {
       return {
         success: false,
         error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' },

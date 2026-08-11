@@ -26,7 +26,7 @@ export default async function CustomerDetailPage({ params }: Props) {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/customers');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   const { exchange } = membership;
 

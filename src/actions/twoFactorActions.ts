@@ -68,7 +68,8 @@ export async function confirmEnable2FA(
   const secret = decryptTotpSecret(user.twoFactorSecretEnc.slice('pending:'.length));
   if (!(await verifyTotp(secret, token)))
     return { success: false, error: { code: 'INVALID_TOKEN', message: 'کد وارد شده نادرست است' } };
-  const backupCodes = Array.from({ length: 8 }, () => randomBytes(4).toString('hex').toUpperCase());
+  // 10 کد پشتیبان — هماهنگ با وعده UI (TwoFactorCenter) و استاندارد صنعتی (Google/Microsoft 10 کد)
+  const backupCodes = Array.from({ length: 10 }, () => randomBytes(4).toString('hex').toUpperCase());
   // C2-fix: secret را رمزنگاری‌شده ذخیره کن — plaintext هرگز در DB نباشد
   await prisma.$transaction(async (tx) => {
     await tx.user.update({

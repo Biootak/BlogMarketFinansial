@@ -9,8 +9,9 @@
 
 import { getExchangeDashboardData } from '@/actions/exchange-dashboard';
 import { getExchangeForUser } from '@/actions/exchanges';
-import { Activity, BarChart3, ChevronRight, Grid3x3, TrendingUp, Users } from 'lucide-react';
-import Link from 'next/link';
+import { PageHeader } from '@/components/Dashboard/primitives';
+import { BookmarkButton } from '@/components/Dashboard/primitives/BookmarkButton';
+import { Activity, BarChart3, Grid3x3, TrendingUp, Users } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import ExchangeActivityHeatmap from '../_components/ExchangeActivityHeatmap';
 import ExchangeCurrencyFlow from '../_components/ExchangeCurrencyFlow';
@@ -40,23 +41,16 @@ export default async function ExchangeInsightsPage() {
 
   return (
     <div className={s.root}>
-      {/* Header */}
-      <header className={s.pageHeader}>
-        <nav aria-label="مسیر">
-          <Link href="/exchange/dashboard" className={s.crumb}>
-            <ChevronRight size={12} aria-hidden />
-            داشبورد
-          </Link>
-          <span className={s.crumbSep} aria-hidden>
-            /
-          </span>
-          <span className={s.crumbCurrent}>بینش‌ها</span>
-        </nav>
-        <h1 className={s.pageTitle}>بینش‌های عملکردی</h1>
-        <p className={s.pageSub}>
-          مقایسهٔ ادوار، الگوی فعالیت مشتریان، و توزیع تفصیلی تراکنش‌ها در یک نما.
-        </p>
-      </header>
+      {/* ۰. PageHeader — unified with dashboard */}
+      <PageHeader
+        breadcrumb={[{ href: '/exchange/dashboard', label: 'داشبورد صراف' }, { label: 'بینش‌ها' }]}
+        title="بینش‌های عملکردی"
+        description="مقایسهٔ ادوار، الگوی فعالیت مشتریان، و توزیع تفصیلی تراکنش‌ها در یک نما."
+        icon="bar-chart"
+        accent="indigo"
+        variant="compact"
+        actions={<BookmarkButton pageKey="exchange-insights" />}
+      />
 
       {/* Performance band — full width */}
       <section className={s.insightsPanel} aria-label="مقایسهٔ ادوار">

@@ -21,7 +21,7 @@ export default async function SecurityPage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/settings/security');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
   if (!['OWNER', 'MANAGER'].includes(membership.staffRole)) {
     redirect('/exchange/dashboard');
   }

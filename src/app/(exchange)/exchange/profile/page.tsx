@@ -21,7 +21,7 @@ export default async function ExchangeProfilePage() {
   if (!session?.user?.id) redirect('/auth?callbackUrl=/exchange/profile');
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/dashboard');
+  if (!membership) redirect('/forbidden');
 
   // فقط OWNER و MANAGER صرافی به این صفحه دسترسی دارند
   if (!['OWNER', 'MANAGER'].includes(membership.staffRole)) redirect('/exchange/dashboard');

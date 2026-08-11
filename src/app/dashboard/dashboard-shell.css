@@ -127,6 +127,13 @@
   border-inline-end: 1px solid var(--ds-border-subtle);
   box-shadow: none;
 }
+/* Dark mode: dashboard.css's `.dark .dash-side` has equal specificity but
+   loads BEFORE this file, so its dark background was being overridden by the
+   light rule above — the sidebar stayed light with light text in dark mode. */
+.dark .dash-root .dash-side {
+  background: linear-gradient(180deg, oklch(15% 0.016 255) 0%, oklch(12% 0.014 255) 100%);
+  border-inline-end-color: oklch(28% 0.018 255 / 0.85);
+}
 .dash-root .dash-side__brand-logo {
   border-color: color-mix(in oklch, var(--dashboard-accent) 30%, var(--ds-border-subtle));
   background: var(--dashboard-accent-soft);
@@ -362,6 +369,22 @@
     font-size: var(--ds-text-2xl);
   }
 }
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE READABILITY — dashboards must NOT inherit the global fluid root
+   font (--fs-base → ~0.625rem ≈ 10px on ≤40rem). That fluid scale shrinks
+   the entire dashboard to ~63%, producing 7–9px text and sub-44px touch
+   targets — the biggest mobile complaint. Inside any dashboard shell we
+   restore a 1rem root on mobile so every rem-based token (text, spacing,
+   radius) snaps back to its intended size, while layout still adapts via
+   the dashboards' own px-based media queries. Desktop (≥40rem) keeps the
+   dense admin scale untouched.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 40rem) {
+  html:has(.dashboard-shell) {
+    --fs-base: 1rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dashboard-shell :where(a, button):active {
     transform: none;

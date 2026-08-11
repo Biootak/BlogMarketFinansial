@@ -1,0 +1,91 @@
+/* QuickAction — compact action chips for all dashboards */
+
+/* ── Single chip ─────────────────────────────────────────────────── */
+
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--ds-border-subtle, var(--ds-border-default));
+  border-radius: var(--ds-radius-md, 0.75rem);
+  background: var(--ds-surface, var(--ds-canvas));
+  color: var(--ds-text-primary);
+  text-decoration: none;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium, 500);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.root:hover {
+  border-color: var(--nova-primary, var(--ds-brand-500));
+  box-shadow: 0 0 0 2px
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 10%, transparent);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nova-muted, var(--ds-text-muted));
+  flex-shrink: 0;
+}
+
+.label {
+  line-height: 1;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 9999px;
+  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 12%, transparent);
+  color: var(--nova-primary, var(--ds-brand-500));
+  font-size: 0.65rem;
+  font-weight: var(--ds-weight-semibold, 600);
+  line-height: 1;
+}
+
+/* ── Tone variants ───────────────────────────────────────────────── */
+
+.tone_emerald .icon {
+  color: var(--nova-up, var(--ds-accent-emerald));
+}
+.tone_amber .icon {
+  color: var(--nova-amber, var(--ds-accent-amber));
+}
+.tone_rose .icon {
+  color: var(--nova-down, var(--ds-accent-rose));
+}
+.tone_violet .icon {
+  color: var(--nova-violet, var(--ds-accent-violet));
+}
+.tone_cyan .icon {
+  color: var(--nova-cyan, var(--ds-accent-cyan));
+}
+
+/* ── Row (horizontal scrollable) ─────────────────────────────────── */
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .row {
+    gap: 0.35rem;
+  }
+
+  .root {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.6875rem;
+  }
+}

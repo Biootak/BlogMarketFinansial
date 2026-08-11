@@ -640,7 +640,30 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       }
       // C2-fix: decrypt secret رمزنگاری‌شده قبل از verify
       const totpOk = await verifyTotp(decryptTotpSecret(twoFaUser.twoFactorSecretEnc), input.code);
+
+      // ── کد پشتیبان (backup code) ──
+      // اگر TOTP درست نبود، کد پشتیبان ۸ کاراکتری (هگز) را هم امتحان کن.
+      // کاربری که اپ Authenticator را گم/عوض کرده باشد با کد پشتیبان
+      // (که هنگام فعال‌سازی دریافت کرده) باید بتواند وارد شود؛ در غیر این
+      // صورت حسابش برای همیشه قفل می‌ماند. کد پشتیبان یک‌بارمصرف است.
+      let backupCodeId: string | null = null;
       if (!totpOk) {
+        const normalized = input.code.trim().toUpperCase();
+        if (/^[A-F0-9]{8}$/.test(normalized)) {
+          const backupCodes = await prisma.twoFactorBackupCode.findMany({
+            where: { userId: twoFaUser.id, usedAt: null },
+            select: { id: true, codeHash: true },
+          });
+          for (const bc of backupCodes) {
+            if (await bcrypt.compare(normalized, bc.codeHash)) {
+              backupCodeId = bc.id;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!totpOk && !backupCodeId) {
         // consume challenge را به‌گونه‌ای انجام می‌دهیم که brute-force محدود بماند
         await prisma.verificationToken.deleteMany({
           where: { email: input.email.toLowerCase(), intent: '2fa' },
@@ -655,6 +678,14 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       await prisma.verificationToken.deleteMany({
         where: { email: input.email.toLowerCase(), intent: '2fa' },
       });
+
+      // کد پشتیبان را یک‌بارمصرف کن
+      if (backupCodeId) {
+        await prisma.twoFactorBackupCode.update({
+          where: { id: backupCodeId },
+          data: { usedAt: new Date() },
+        });
+      }
 
       // single-use login token + signIn — همان الگوی امن after_otp
       try {

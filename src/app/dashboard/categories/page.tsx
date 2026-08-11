@@ -1,5 +1,5 @@
 import { getAllParentCategories, getCategories } from '@/actions/categoryActions';
-import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { unstable_noStore as noStore } from 'next/cache';
 import { Suspense } from 'react';
 import { CategoryForm } from './CategoryForm';

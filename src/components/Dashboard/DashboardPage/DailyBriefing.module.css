@@ -29,9 +29,15 @@
   transition: stroke-dasharray 600ms var(--ds-ease-out-quart);
 }
 
-.ring_green { stroke: var(--fc-accent); }
-.ring_amber { stroke: oklch(0.65 0.18 85); }
-.ring_red { stroke: oklch(0.55 0.22 25); }
+.ring_green {
+  stroke: var(--fc-accent);
+}
+.ring_amber {
+  stroke: oklch(0.65 0.18 85);
+}
+.ring_red {
+  stroke: oklch(0.55 0.22 25);
+}
 
 .ringCenter {
   position: absolute;
@@ -49,9 +55,15 @@
   line-height: 1;
 }
 
-.ringCenter_green .ringScore { color: var(--fc-accent); }
-.ringCenter_amber .ringScore { color: oklch(0.65 0.18 85); }
-.ringCenter_red .ringScore { color: oklch(0.55 0.22 25); }
+.ringCenter_green .ringScore {
+  color: var(--fc-accent);
+}
+.ringCenter_amber .ringScore {
+  color: oklch(0.65 0.18 85);
+}
+.ringCenter_red .ringScore {
+  color: oklch(0.55 0.22 25);
+}
 
 .ringLabel {
   font-size: var(--ds-text-xs);
@@ -90,8 +102,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 .actionLabel {
