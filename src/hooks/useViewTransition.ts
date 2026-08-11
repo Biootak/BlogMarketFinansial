@@ -50,8 +50,24 @@ export function useViewTransition(): (href: string) => void {
 
       // callback باید sync باشد — نه async، نه await، نه rAF
       // مرورگر خودش DOM update را detect می‌کند
-      doc.startViewTransition(() => {
+      const transition = doc.startViewTransition(() => {
         router.push(href);
+      });
+      // اگر transition skip شود (مثلاً کاربر در حال transition دوباره کلیک
+      // کند)، promise های finished/ready/updateCallbackDone با AbortError
+      // «Transition was skipped» reject می‌شوند — رفتار طبیعی مرورگر. بدون
+      // handler به‌صورت unhandled rejection بالا می‌آید و در dev به overlay
+      // خطای Next تبدیل می‌شود.
+      transition.finished.catch((err: unknown) => {
+        if ((err as DOMException | undefined)?.name !== 'AbortError') {
+          console.error('[view-transition] navigation failed:', err);
+        }
+      });
+      transition.ready.catch(() => {
+        // skip/abort — مورد انتظار؛ نادیده بگیر
+      });
+      transition.updateCallbackDone.catch(() => {
+        // skip/abort — مورد انتظار؛ نادیده بگیر
       });
     },
     [router],

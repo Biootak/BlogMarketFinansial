@@ -50,11 +50,10 @@ export default async function FraudReviewPage() {
         title="صف بررسی تقلب"
         description="بررسی و تصمیم‌گیری روی تراکنش‌های مشکوک"
         eyebrow="امنیت"
-        icon="shield-alert"
+        icon="alert-triangle"
         accent="rose"
       />
       <FraudReviewClient reviews={reviews} />
     </div>
   );
 }
-

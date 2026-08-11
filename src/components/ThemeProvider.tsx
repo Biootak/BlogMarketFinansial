@@ -67,8 +67,17 @@ export function ThemeProvider({
 
     // Use View Transitions API if available
     if (typeof document.startViewTransition === 'function') {
-      document.startViewTransition(() => {
+      const transition = document.startViewTransition(() => {
         // class already applied above
+      });
+      // تغییر تم سریع → transition قبلی skip می‌شود و promise های
+      // finished/ready با AbortError reject می‌شوند. این طبیعی است و نباید
+      // به overlay خطای dev تبدیل شود.
+      transition.finished.catch(() => {
+        // AbortError مورد انتظار — نادیده بگیر
+      });
+      transition.ready.catch(() => {
+        // AbortError مورد انتظار — نادیده بگیر
       });
     }
   }, []);

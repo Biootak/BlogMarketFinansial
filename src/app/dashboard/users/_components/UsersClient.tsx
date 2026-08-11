@@ -54,8 +54,9 @@ import {
   BadgeCheck,
   Clock,
   Eye,
-  Mail,
+  KeyRound,
   LockKeyhole,
+  Mail,
   Pencil,
   Phone,
   Plus,
@@ -455,7 +456,7 @@ export function UsersClient({
                             className={s.editBtn}
                             aria-label={`مشاهده ${user.name}`}
                           >
-                            <HiOutlineEye className="size-3.5" aria-hidden />
+                            <Eye className="size-3.5" aria-hidden />
                             <span className={s.btnLabel}>مشاهده</span>
                           </Link>
                           <button
@@ -530,11 +531,7 @@ export function UsersClient({
           >
             <div className={cm.header}>
               <div className={s.sheetIcon} aria-hidden>
-                {editingUser ? (
-                  <Pencil className="size-4" />
-                ) : (
-                  <Plus className="size-4" />
-                )}
+                {editingUser ? <Pencil className="size-4" /> : <Plus className="size-4" />}
               </div>
               <div>
                 <SheetTitle className={s.sheetTitle}>
@@ -561,7 +558,7 @@ export function UsersClient({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className={s.label}>
-                            <HiOutlineUser className="size-4" aria-hidden /> نام
+                            <User className="size-4" aria-hidden /> نام
                           </FormLabel>
                           <FormControl>
                             <Input placeholder="نام کاربر" {...field} className={s.input} />
@@ -599,7 +596,7 @@ export function UsersClient({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className={s.label}>
-                            <HiOutlineLockClosed className="size-4" aria-hidden /> رمز عبور
+                            <LockKeyhole className="size-4" aria-hidden /> رمز عبور
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -637,7 +634,7 @@ export function UsersClient({
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className={s.label}>
-                            <HiOutlineUserGroup className="size-4" aria-hidden /> نقش
+                            <Users className="size-4" aria-hidden /> نقش
                           </FormLabel>
                           <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
                             <FormControl>
@@ -669,8 +666,8 @@ export function UsersClient({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className={s.label}>
-                            <BadgeCheck className="size-4" aria-hidden /> وضعیت
-                          </FormLabel>
+                          <BadgeCheck className="size-4" aria-hidden /> وضعیت
+                        </FormLabel>
                         <Select dir="rtl" onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger className={s.input}>

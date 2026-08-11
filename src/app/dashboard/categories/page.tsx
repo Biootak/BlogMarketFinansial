@@ -1,10 +1,15 @@
-﻿import { getAllParentCategories, getCategories } from '@/actions/categoryActions';
-import { PageHeader } from '@/components/Dashboard/primitives';
+import { getAllParentCategories, getCategories } from '@/actions/categoryActions';
+import {
+  PageHeader,
+  Section,
+  StatGrid,
+} from '@/components/Dashboard/primitives';
 import { unstable_noStore as noStore } from 'next/cache';
 import { Suspense } from 'react';
-import { CategoryForm } from './CategoryForm';
-import { CategoryList } from './CategoryList';
-import SearchCategories from './SearchCategories';
+import { CategoryForm } from './_components/CategoryForm';
+import { CategoryList } from './_components/CategoryList';
+import { CategoriesStats } from './_components/CategoriesStats';
+import { SearchCategories } from './_components/SearchCategories';
 
 export default async function CategoriesPage({
   searchParams,
@@ -18,19 +23,16 @@ export default async function CategoriesPage({
   const page = Number(searchParamsData.page) || 1;
   const limit = 10;
 
-  const categoriesPromise = getCategories({ search, page, limit });
-  const parentCategoriesPromise = getAllParentCategories();
-
   const [categoriesResult, parentCategoriesResult] = await Promise.all([
-    categoriesPromise,
-    parentCategoriesPromise,
+    getCategories({ search, page, limit }),
+    getAllParentCategories(),
   ]);
 
   const categories = categoriesResult.data || { categories: [], totalCount: 0 };
   const parentCategories = parentCategoriesResult.data || [];
 
   return (
-    <div className="route-frame" dir="rtl">
+    <div className="route-frame">
       <PageHeader
         variant="compact"
         eyebrow="ساختار"
@@ -48,24 +50,33 @@ export default async function CategoriesPage({
         }
       />
 
-      <Suspense
-        fallback={
-          <div className="at-loading">
-            <span className="at-loading__dot" />
-            <span className="at-loading__dot" />
-            <span className="at-loading__dot" />
-            <span>در حال بارگذاری دسته‌بندی‌ها…</span>
-          </div>
-        }
+      <CategoriesStats
+        totalCount={categories.totalCount}
+        parentCount={parentCategories.length}
+      />
+
+      <Section
+        title="سالنامهٔ دسته‌بندی‌ها"
+        subtitle="هر دسته‌بندی یک مدخل شماره‌دار — اسکرول برای بارگذاری بیشتر"
+        icon="folder-tree"
       >
-        <CategoryList
-          initialData={categories}
-          search={search}
-          parentCategories={parentCategories}
-        />
-      </Suspense>
+        <Suspense
+          fallback={
+            <div className="at-loading">
+              <span className="at-loading__dot" />
+              <span className="at-loading__dot" />
+              <span className="at-loading__dot" />
+              <span>در حال بارگذاری دسته‌بندی‌ها…</span>
+            </div>
+          }
+        >
+          <CategoryList
+            initialData={categories}
+            search={search}
+            parentCategories={parentCategories}
+          />
+        </Suspense>
+      </Section>
     </div>
   );
 }
-
-

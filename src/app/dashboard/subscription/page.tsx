@@ -107,6 +107,7 @@ export default async function AccountPage() {
   const arcLen = (secScore / 100) * 100.5;
 
   return (
+    <div className="route-frame">
     <div className={s.root} dir="rtl">
       {/* ═══════════════════════════════════════════════════════════════
           HERO — identity strip
@@ -437,6 +438,7 @@ export default async function AccountPage() {
           </ol>
         </section>
       )}
+    </div>
     </div>
   );
 }

@@ -64,7 +64,7 @@ export default async function JobsPage() {
   const outflowPerMin = calcOutflowPerMin(recentJobs);
 
   return (
-    <div dir="rtl" className={s.page}>
+    <div className="route-frame" dir="rtl">
       <JobCenter
         totalJobs={recentJobs.length}
         metrics={metrics}

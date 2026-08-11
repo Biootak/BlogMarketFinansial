@@ -44,14 +44,7 @@ export default async function ExchangeRatesPage() {
   }));
 
   return (
-    <main
-      className="mx-auto flex flex-col"
-      style={{
-        maxWidth: '1200px',
-        padding: 'var(--ds-space-6) var(--ds-space-5)',
-        gap: 'var(--ds-space-7)',
-      }}
-    >
+    <div className="route-frame" dir="rtl">
       <PageHeader
         variant="compact"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'نرخ ارزها' }]}
@@ -71,6 +64,6 @@ export default async function ExchangeRatesPage() {
       <Suspense fallback={null}>
         <ExchangeRatesShell initialRows={tableRows} initialLists={lists} />
       </Suspense>
-    </main>
+    </div>
   );
 }

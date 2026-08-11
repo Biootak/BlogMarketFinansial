@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ArrowLeftRight,
   BarChart2,
+  BarChart3,
   Bell,
   Building2,
   ChevronLeft,
@@ -15,6 +16,7 @@ import {
   FileText,
   FolderOpen,
   Gauge,
+  Headset,
   Inbox,
   KeyRound,
   Layers,
@@ -52,6 +54,7 @@ export type PageHeaderIcon =
   | 'bell'
   | 'folder-open'
   | 'bar-chart'
+  | 'bar-chart-3'
   | 'layout-dashboard'
   | 'settings'
   | 'wallet'
@@ -74,7 +77,8 @@ export type PageHeaderIcon =
   | 'ticket'
   | 'key-round'
   | 'circle-dollar-sign'
-  | 'device-phone-mobile';
+  | 'device-phone-mobile'
+  | 'headset';
 
 const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   'user-circle': UserCircle,
@@ -87,6 +91,7 @@ const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   bell: Bell,
   'folder-open': FolderOpen,
   'bar-chart': BarChart2,
+  'bar-chart-3': BarChart3,
   'layout-dashboard': LayoutDashboard,
   settings: Settings,
   wallet: Wallet,
@@ -110,6 +115,7 @@ const ICON_MAP: Record<PageHeaderIcon, FC<LucideProps>> = {
   'key-round': KeyRound,
   'circle-dollar-sign': CircleDollarSign,
   'device-phone-mobile': Smartphone,
+  headset: Headset,
 };
 
 export type PageHeaderAccent = 'indigo' | 'emerald' | 'amber' | 'rose' | 'violet' | 'cyan';

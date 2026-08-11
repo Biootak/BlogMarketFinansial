@@ -522,11 +522,11 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
 
       await logOwnerSecurityEvent('OWNER_LOGIN_2FA_PENDING', twoFaUser.id, await getClientIp());
 
+      const ownerLabel = twoFaUser.role === Role.OWNER ? 'مالک' : 'سوپرادمین';
       return {
         success: true,
-        message:
-          'برای حساب مالک، احراز هویت دو مرحله‌ای (2FA) اجباری است. لطفاً همین حالا آن را فعال کنید.',
-        redirect: '/dashboard/edit-profile?2fa=required',
+        message: `برای حساب ${ownerLabel}، احراز هویت دو مرحله‌ای (2FA) اجباری است. لطفاً همین حالا آن را فعال کنید.`,
+        redirect: '/2fa-setup',
       };
     }
 

@@ -1,0 +1,210 @@
+/* LeadRateHero — Premium spotlight card (2026) */
+
+.root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--ds-brand-500) 6%, var(--ds-surface)) 0%,
+    var(--ds-surface) 70%
+  );
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 20%, var(--ds-border-subtle));
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-5);
+  gap: var(--ds-space-3);
+  box-shadow: var(
+    --ds-shadow-md,
+    0 4px 12px color-mix(in oklch, var(--ds-text-primary) 8%, transparent)
+  );
+  min-height: 11rem;
+  isolation: isolate;
+}
+
+/* Ambient glow — signature moment */
+.ambientGlow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.root > :not(.ambientGlow) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Corner symbol */
+.cornerSymbol {
+  position: absolute;
+  inset-inline-end: var(--ds-space-4);
+  top: var(--ds-space-4);
+  font-size: 0.7rem;
+  color: var(--ds-text-muted);
+  letter-spacing: 0.1em;
+  font-family: var(--ds-font-mono, monospace);
+}
+
+/* Eyebrow row */
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.eyebrowIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
+  color: var(--ds-brand-500);
+}
+
+.eyebrowText {
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--ds-text-muted);
+  text-transform: uppercase;
+}
+
+/* Title */
+.title {
+  font-size: var(--ds-text-xl);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Value area */
+.valueArea {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+}
+
+.valueBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.value {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ds-text-primary);
+  text-align: start;
+}
+
+.unit {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-muted);
+}
+
+.trendBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: end;
+  gap: 0.4rem;
+}
+
+/* Trend chip */
+.trendChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding-inline: 0.6rem;
+  height: 1.7rem;
+  border-radius: var(--ds-radius-full);
+}
+
+.trendChipUp {
+  background: color-mix(in oklch, var(--ds-accent-emerald) 14%, transparent);
+  color: var(--ds-accent-emerald);
+}
+
+.trendChipDown {
+  background: color-mix(in oklch, var(--ds-accent-rose) 14%, transparent);
+  color: var(--ds-accent-rose);
+}
+
+.trendChipFlat {
+  background: var(--ds-canvas-subtle, var(--ds-surface-recessed));
+  color: var(--ds-text-muted);
+}
+
+/* Timestamp */
+.timestamp {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin-block-start: auto;
+}
+
+/* Sparkline */
+.sparkline {
+  display: block;
+}
+
+@media (max-width: 480px) {
+  .root {
+    padding: var(--ds-space-3);
+    min-height: auto;
+    gap: var(--ds-space-2);
+  }
+  .value {
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+  }
+  .title {
+    font-size: var(--ds-text-base);
+  }
+  .cornerSymbol {
+    display: none;
+  }
+  .eyebrowIcon {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+  .eyebrowText {
+    font-size: var(--ds-text-xs);
+  }
+  .unit {
+    font-size: var(--ds-text-xs);
+  }
+  .trendChip {
+    font-size: var(--ds-text-xs);
+    height: 1.5rem;
+    padding-inline: 0.5rem;
+  }
+  .timestamp {
+    font-size: var(--ds-text-xs);
+    gap: 0.3rem;
+  }
+  .timestamp svg {
+    width: 11px;
+    height: 11px;
+  }
+  .sparkline {
+    width: 90px;
+    height: 28px;
+  }
+}

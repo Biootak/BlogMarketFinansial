@@ -52,9 +52,14 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
   },
   ref,
 ) {
+  // حالت ورود: پیش‌فرض کد ۶ رقمی TOTP است؛ کد پشتیبان ۸ کاراکتری هگز فقط
+  // وقتی کاربر خودش به آن حالت برود (کلید «ورود با کد پشتیبان»).
+  const [mode, setMode] = useState<'otp' | 'backup'>(() =>
+    allowBackupCode && /^[a-fA-F0-9]{8}$/.test(initialValue) ? 'backup' : 'otp',
+  );
   const [value, setValue] = useState<string>(() =>
-    allowBackupCode
-      ? initialValue.replace(/[^a-fA-F0-9]/g, '').slice(0, BACKUP_CELLS)
+    allowBackupCode && /^[a-fA-F0-9]{8}$/.test(initialValue)
+      ? initialValue.toUpperCase()
       : initialValue.replace(/\D/g, '').slice(0, CELLS),
   );
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,18 +85,27 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
     getValue: () => value,
   }));
 
-  const maxLen = allowBackupCode ? BACKUP_CELLS : CELLS;
-  const valid = allowBackupCode ? VALID_BACKUP : VALID;
+  const isBackup = mode === 'backup';
+  const maxLen = isBackup ? BACKUP_CELLS : CELLS;
+  const valid = isBackup ? VALID_BACKUP : VALID;
+
+  const switchMode = () => {
+    setMode((m) => (m === 'otp' ? 'backup' : 'otp'));
+    setValue('');
+    lastSubmitRef.current = '';
+    onChange?.('');
+    inputRef.current?.focus({ preventScroll: true });
+  };
 
   const handleChange = (raw: string) => {
-    const next = allowBackupCode
+    const next = isBackup
       ? raw.replace(/[^a-fA-F0-9]/g, '').toUpperCase().slice(0, BACKUP_CELLS)
       : raw.replace(/\D/g, '').slice(0, CELLS);
     if (!valid.test(next)) return;
     setValue(next);
     onChange?.(next);
 
-    const targetLen = allowBackupCode ? BACKUP_CELLS : CELLS;
+    const targetLen = isBackup ? BACKUP_CELLS : CELLS;
     if (autoSubmit && next.length === targetLen && next !== lastSubmitRef.current) {
       lastSubmitRef.current = next;
       onComplete(next);
@@ -118,11 +132,13 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
 
   return (
     <div
-      className={`auth-otp-shell${allowBackupCode ? ' auth-otp-shell--backup' : ''}`}
-      aria-label={allowBackupCode ? 'کد ۶ رقمی یا کد پشتیبان ۸ کاراکتری را وارد کنید' : 'کد ۶ رقمی را وارد کنید'}
+      className={`auth-otp-shell${isBackup ? ' auth-otp-shell--backup' : ''}`}
+      aria-label={
+        isBackup ? 'کد پشتیبان ۸ کاراکتری را وارد کنید' : 'کد ۶ رقمی را وارد کنید'
+      }
     >
       <div
-        className={`auth-otp-grid${allowBackupCode ? ' auth-otp-grid--backup' : ''}`}
+        className={`auth-otp-grid${isBackup ? ' auth-otp-grid--backup' : ''}`}
         aria-hidden="true"
       >
         {cells.map((char, i) => {
@@ -146,9 +162,9 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
         ref={inputRef}
         id={inputId}
         type="text"
-        inputMode={allowBackupCode ? 'text' : 'numeric'}
-        autoComplete={allowBackupCode ? 'off' : 'one-time-code'}
-        pattern={allowBackupCode ? '[A-F0-9]{8}' : '\\d{6}'}
+        inputMode={isBackup ? 'text' : 'numeric'}
+        autoComplete={isBackup ? 'off' : 'one-time-code'}
+        pattern={isBackup ? '[A-F0-9]{8}' : '\\d{6}'}
         maxLength={maxLen}
         dir="ltr"
         disabled={disabled}
@@ -181,6 +197,16 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
           <Delete aria-hidden="true" />
           پاک کردن کد
         </button>
+        {allowBackupCode && (
+          <button
+            type="button"
+            className="auth-link-row auth-link-row--inline"
+            onClick={switchMode}
+            disabled={disabled}
+          >
+            {isBackup ? 'بازگشت به کد ۶ رقمی' : 'ورود با کد پشتیبان'}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -18,7 +18,7 @@ export default async function RolesPage() {
   const stats = result.success ? result.data.stats : [];
 
   return (
-    <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
+    <div className="route-frame" dir="rtl">
       <PageHeader
         breadcrumb={[
           { label: 'مرکز فرماندهی', href: '/dashboard' },
@@ -35,6 +35,6 @@ export default async function RolesPage() {
       <Section>
         <RolesClient stats={stats} currentUserRole={session.user.role ?? 'USER'} />
       </Section>
-    </main>
+    </div>
   );
 }

@@ -3,10 +3,10 @@
 /**
  * TransferWizard — 2026 P2P Transfer 4-step wizard
  *
- * گام ۱: انتخاب گیرنده (جستجو با شماره موبایل)
- * گام ۲: وارد کردن مبلغ + خلاصه کارمزد
+ * گام ۱: انتخاب گیرنده (جستجو با شماره موبایل + تماس‌های اخیر)
+ * گام ۲: وارد کردن مبلغ + خلاصه کارمزد + زمان تحویل
  * گام ۳: تأیید + OTP اگر مبلغ بالا بود
- * گام ۴: موفقیت + شماره پیگیری
+ * گام ۴: موفقیت + شماره پیگیری + confetti
  */
 
 import {
@@ -19,11 +19,45 @@ import {
 import { PageHeader } from '@/components/Dashboard/primitives/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Clock, Send, User } from 'lucide-react';
-import { useCallback, useState, useTransition } from 'react';
+import { toast } from '@/components/ui/use-toast';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Copy,
+  Send,
+  User,
+  Zap,
+} from 'lucide-react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import s from './TransferWizard.module.css';
 
 type Step = 1 | 2 | 3 | 4;
+
+interface RecentContact {
+  phone: string;
+  name: string;
+}
+
+const RECENT_CONTACTS_KEY = 'dashboard_recent_contacts';
+
+function loadRecentContacts(): RecentContact[] {
+  try {
+    const raw = localStorage.getItem(RECENT_CONTACTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentContact(contact: RecentContact) {
+  const contacts = loadRecentContacts();
+  const filtered = contacts.filter((c) => c.phone !== contact.phone);
+  filtered.unshift(contact);
+  localStorage.setItem(RECENT_CONTACTS_KEY, JSON.stringify(filtered.slice(0, 5)));
+}
 
 function formatAFN(cents: number): string {
   const formatted = new Intl.NumberFormat('fa-IR', {
@@ -36,6 +70,15 @@ function formatAFN(cents: number): string {
 
 const QUICK_AMOUNTS = [50_000_00, 100_000_00, 500_000_00]; // cents
 
+// Confetti colors
+const CONFETTI_COLORS = [
+  'var(--ds-brand-500)',
+  'var(--nova-emerald, oklch(55% 0.14 165))',
+  'var(--nova-cyan, oklch(55% 0.14 230))',
+  'var(--nova-amber, oklch(60% 0.15 80))',
+  'var(--nova-violet, oklch(55% 0.12 300))',
+];
+
 export function TransferWizard() {
   const [step, setStep] = useState<Step>(1);
   const [isPending, startTransition] = useTransition();
@@ -44,6 +87,7 @@ export function TransferWizard() {
   // Step 1 state
   const [identifier, setIdentifier] = useState('');
   const [recipient, setRecipient] = useState<RecipientInfo | null>(null);
+  const [recentContacts] = useState<RecentContact[]>(() => loadRecentContacts());
 
   // Step 2 state
   const [amountCents, setAmountCents] = useState(0);
@@ -56,6 +100,23 @@ export function TransferWizard() {
 
   // Step 4 state
   const [finalTxnId, setFinalTxnId] = useState<string | null>(null);
+  const [confettiPieces, setConfettiPieces] = useState<
+    { id: number; left: number; color: string; delay: number; size: number }[]
+  >([]);
+
+  // Generate confetti on success
+  useEffect(() => {
+    if (step === 4) {
+      const pieces = Array.from({ length: 30 }, (_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+        delay: Math.random() * 1.5,
+        size: 4 + Math.random() * 6,
+      }));
+      setConfettiPieces(pieces);
+    }
+  }, [step]);
 
   // ── Step 1: Find recipient ────────────────────────────────────────────────
   const handleFindRecipient = useCallback(() => {
@@ -67,9 +128,24 @@ export function TransferWizard() {
         return;
       }
       setRecipient(res.data);
+      saveRecentContact({ phone: res.data.phone, name: res.data.fullName });
       setStep(2);
     });
   }, [identifier]);
+
+  const handleQuickContact = useCallback((phone: string, name: string) => {
+    setIdentifier(phone);
+    // Simulate finding the recipient
+    startTransition(async () => {
+      const res = await findTransferRecipient({ identifier: phone });
+      if (!res.success) {
+        setError(res.error.message);
+        return;
+      }
+      setRecipient(res.data);
+      setStep(2);
+    });
+  }, []);
 
   // ── Step 2: Amount ────────────────────────────────────────────────────────
   const handleAmountChange = (val: string) => {
@@ -121,6 +197,13 @@ export function TransferWizard() {
     });
   }, [transferResult, otp]);
 
+  const handleCopyTxnId = useCallback(() => {
+    if (finalTxnId) {
+      navigator.clipboard.writeText(finalTxnId);
+      toast({ title: 'کپی شد', description: 'شماره پیگیری در کلیپ‌بورد کپی شد.' });
+    }
+  }, [finalTxnId]);
+
   const stepState = (id: number) => (id < step ? 'done' : id === step ? 'active' : 'pending');
 
   const STEPS = [
@@ -129,6 +212,19 @@ export function TransferWizard() {
     { id: 3, label: 'تأیید', Icon: CheckCircle2 },
     { id: 4, label: 'موفق', Icon: CheckCircle2 },
   ];
+
+  const resetWizard = () => {
+    setStep(1);
+    setRecipient(null);
+    setIdentifier('');
+    setAmountCents(0);
+    setAmountRaw('');
+    setNote('');
+    setOtp('');
+    setTransferResult(null);
+    setFinalTxnId(null);
+    setError(null);
+  };
 
   return (
     <div className={s.page}>
@@ -155,7 +251,7 @@ export function TransferWizard() {
                   />
                 )}
                 <div
-                  className={`${s.stepDot} ${s[`stepDot_${state}`]}`}
+                  className={`${s.stepDot} ${s['stepDot_' + state]}`}
                   aria-current={state === 'active' ? 'step' : undefined}
                 >
                   {state === 'done' ? (
@@ -164,7 +260,7 @@ export function TransferWizard() {
                     <StepIcon size={14} aria-hidden />
                   )}
                 </div>
-                <span className={`${s.stepLabel} ${s[`stepLabel_${state}`]}`}>{st.label}</span>
+                <span className={`${s.stepLabel} ${s['stepLabel_' + state]}`}>{st.label}</span>
               </div>
             );
           })}
@@ -175,7 +271,9 @@ export function TransferWizard() {
           <div className={s.form}>
             <div className={s.formHead}>
               <h2 className={s.formTitle}>انتخاب گیرنده</h2>
-              <p className={s.formDesc}>شماره موبایل گیرنده را جستجو کنید.</p>
+              <p className={s.formDesc}>
+                شماره موبایل گیرنده را جستجو کنید یا از تماس‌های اخیر انتخاب کنید.
+              </p>
             </div>
 
             {error && (
@@ -204,6 +302,33 @@ export function TransferWizard() {
                 onKeyDown={(e) => e.key === 'Enter' && handleFindRecipient()}
               />
             </div>
+
+            {/* Quick Contacts */}
+            {recentContacts.length > 0 && (
+              <div className={s.fieldGroup}>
+                <span className={s.fieldLabel}>تماس‌های اخیر</span>
+                <div className={s.quickContacts}>
+                  {recentContacts.slice(0, 3).map((c) => (
+                    <button
+                      key={c.phone}
+                      type="button"
+                      className={s.quickContactBtn}
+                      onClick={() => handleQuickContact(c.phone, c.name)}
+                    >
+                      <div className={s.quickContactAvatar} aria-hidden>
+                        {c.name.charAt(0)}
+                      </div>
+                      <div className={s.quickContactInfo}>
+                        <span className={s.quickContactName}>{c.name}</span>
+                        <span className={s.quickContactPhone} dir="ltr">
+                          {c.phone}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className={s.footer}>
               <span />
@@ -239,6 +364,12 @@ export function TransferWizard() {
               >
                 {recipient.kycStatus === 'APPROVED' ? 'تأیید شده' : 'در انتظار'}
               </span>
+            </div>
+
+            {/* Delivery Badge */}
+            <div className={s.deliveryBadge}>
+              <Zap size={12} aria-hidden />
+              <span>تحویل فوری — حداکثر ۲ دقیقه</span>
             </div>
 
             {error && (
@@ -401,6 +532,23 @@ export function TransferWizard() {
         {/* ── Step 4: Success ── */}
         {step === 4 && (
           <div className={s.successView}>
+            {/* Confetti */}
+            <div className={s.confettiContainer} aria-hidden>
+              {confettiPieces.map((piece) => (
+                <div
+                  key={piece.id}
+                  className={s.confettiPiece}
+                  style={{
+                    left: `${piece.left}%`,
+                    background: piece.color,
+                    animationDelay: `${piece.delay}s`,
+                    width: `${piece.size}px`,
+                    height: `${piece.size}px`,
+                  }}
+                />
+              ))}
+            </div>
+
             <div className={s.successRing} aria-hidden>
               <CheckCircle2 size={40} />
             </div>
@@ -410,27 +558,31 @@ export function TransferWizard() {
             {finalTxnId && (
               <div className={s.txnIdBox}>
                 <span className={s.txnIdLabel}>شماره پیگیری</span>
-                <span className={s.txnIdVal} dir="ltr">
-                  {finalTxnId.slice(0, 16)}…
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className={s.txnIdVal} dir="ltr">
+                    {finalTxnId.slice(0, 16)}…
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyTxnId}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--ds-text-muted)',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                    aria-label="کپی شماره پیگیری"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
               </div>
             )}
             <div className={s.successActions}>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setStep(1);
-                  setRecipient(null);
-                  setIdentifier('');
-                  setAmountCents(0);
-                  setAmountRaw('');
-                  setNote('');
-                  setOtp('');
-                  setTransferResult(null);
-                  setFinalTxnId(null);
-                  setError(null);
-                }}
-              >
+              <Button variant="outline" onClick={resetWizard}>
                 انتقال جدید
               </Button>
               <Button asChild>

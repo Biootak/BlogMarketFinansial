@@ -12,7 +12,7 @@ export default async function VirtualCardsPage() {
   const initialCards = await getMyVirtualCards();
 
   return (
-    <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
+    <div className="route-frame">
       <PageHeader
         variant="compact"
         breadcrumb={[
@@ -30,6 +30,6 @@ export default async function VirtualCardsPage() {
       <Section>
         <VirtualCardsClient initialCards={initialCards} />
       </Section>
-    </main>
+    </div>
   );
 }

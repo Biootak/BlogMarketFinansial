@@ -17,7 +17,7 @@ import {
   toggleHeaderAd,
   updateHeaderAd,
 } from '@/actions/headerAdActions';
-import { MillionDollarEmpty } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, MillionDollarEmpty } from '@/components/Dashboard/primitives';
 import {
   ActionButton,
   DashboardPageHeader,
@@ -369,7 +369,7 @@ export default function HeaderAdsClient({
                         <HiOutlinePencil className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">ویرایش</span>
                       </ActionButton>
-                      <ActionButton variant="delete" onClick={() => handleDelete(ad.id)}>
+                      <ActionButton variant="delete" onClick={() => openDelete(ad)}>
                         <HiOutlineTrash className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">حذف</span>
                       </ActionButton>

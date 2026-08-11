@@ -844,19 +844,226 @@
 }
 
 /* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .kpiStrip {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 560px) {
+  .page {
+    gap: var(--ds-space-3);
+  }
+
+  .kpiStrip {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ds-space-2);
+  }
+
+  .kpiCard {
+    padding: var(--ds-space-3) var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .kpiIconWrap {
+    width: 28px;
+    height: 28px;
+  }
+
+  .kpiIconWrap svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .kpiVal {
+    font-size: 0.9rem;
+  }
+
+  .kpiLabel {
+    font-size: 0.65rem;
+  }
+
+  .arcSvg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .arcText {
+    font-size: 10px;
+  }
+
+  .filterNav {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-block-end: var(--ds-space-1);
+    scrollbar-width: none;
+  }
+
+  .filterNav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filterBtn {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+  }
+
+  .card {
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .cardInner {
+    gap: var(--ds-space-1-5);
+    padding-inline-start: var(--ds-space-1-5);
+  }
+
+  .cardHead {
+    gap: var(--ds-space-1);
+  }
+
+  .trackingCode {
+    font-size: 0.65rem;
+  }
+
+  .statusBadge {
+    font-size: 0.65rem;
+    padding: 1px 7px;
+  }
+
+  .fromAmount,
+  .toAmount {
+    font-size: var(--ds-text-sm);
+  }
+
+  .chip {
+    font-size: 0.6rem;
+    padding: 1px 6px;
+  }
+
+  .cardChevron {
+    font-size: 1rem;
+  }
+
+  .filteredEmpty {
+    padding: var(--ds-space-5) var(--ds-space-3);
+    font-size: 0.8rem;
+  }
+
+  .errorBox {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    font-size: var(--ds-text-xs);
+  }
+
+  .pagination {
+    gap: var(--ds-space-2);
+  }
+
+  .pageBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .pageInfo {
+    font-size: var(--ds-text-xs);
+  }
+
+  .newBtn,
+  .emptyBtn {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    font-size: 0.8rem;
+  }
+
+  /* Detail Sheet */
+  .detailHead {
+    padding: var(--ds-space-3) var(--ds-space-4);
+    gap: var(--ds-space-2);
+  }
+
+  .detailStatusIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .detailStatusIcon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .detailTitle {
+    font-size: 0.875rem;
+  }
+
+  .detailTracking {
+    font-size: 0.65rem;
+  }
+
+  .detailBody {
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-3);
+  }
+
+  .detailAmountCard {
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .detailAmountFrom {
+    font-size: 0.875rem;
+  }
+
+  .detailAmountTo {
+    font-size: 0.9375rem;
+  }
+
   .amounts {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--ds-space-1);
   }
+
   .detailAmountCard {
     flex-direction: column;
   }
+
+  .timeline {
+    overflow-x: auto;
+    padding: var(--ds-space-3) 0;
+  }
+
+  .timelineDot {
+    width: 20px;
+    height: 20px;
+  }
+
+  .timelinePulse {
+    width: 6px;
+    height: 6px;
+  }
+
+  .timelineLabel {
+    font-size: 0.65rem;
+  }
+
   .metaGrid {
     grid-template-columns: 1fr;
   }
-  .timeline {
-    overflow-x: auto;
+
+  .metaDef {
+    font-size: 0.8rem;
+  }
+
+  .noteBox {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .noteText {
+    font-size: 0.8rem;
+  }
+
+  .skeleton {
+    height: 70px;
   }
 }

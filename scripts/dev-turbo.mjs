@@ -120,7 +120,15 @@ function startDevServer() {
       : `${nodeOptions} --dns-result-order=ipv4first`.trim(),
   };
 
-  const args = [nextBin, 'dev', ...process.argv.slice(2)];
+  const passthrough = process.argv.slice(2);
+  const hasPortFlag = passthrough.some(
+    (a) => a === '-p' || a === '--port' || a.startsWith('-p=') || a.startsWith('--port='),
+  );
+  // Official docs: `next dev` default port is 3000, env: PORT. The desktop host
+  // exports PORT in the ambient environment, which would otherwise silently move
+  // the server off 3000. Pin the documented default explicitly — the CLI `-p`
+  // flag always wins over the env var (docs: `-p, --port <port>`).
+  const args = [nextBin, 'dev', ...(hasPortFlag ? passthrough : [...passthrough, '-p', '3000'])];
   log(`starting: node ${args.join(' ')}`);
 
   child = spawn(process.execPath, args, {

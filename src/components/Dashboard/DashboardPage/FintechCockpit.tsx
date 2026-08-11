@@ -9,6 +9,9 @@
  * component. Editorial deck still available as a child row when role
  * allows.
  *
+ * 2026-08-11 premium update: ambient SVG glow, count-up KPIs, stagger
+ * choreography, elevation tiers, mobile readability boost.
+ *
  * Layout (≥1280):
  *   ┌────────────────────────────────────────────────────────┐
  *   │  COCKPIT HERO  (welcome + vital + radial health)        │
@@ -48,7 +51,8 @@ import {
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import CountUp from './CountUp';
 import { DailyBriefing } from './DailyBriefing';
 import s from './FintechCockpit.module.css';
 import { UpcomingDeadlines } from './UpcomingDeadlines';
@@ -246,6 +250,74 @@ const getInitial = (name: string): string => {
   return trimmed[0] ?? '؟';
 };
 
+// ─── Ambient SVG glow (signature moment) ────────────────────────────────
+
+function AmbientGlow() {
+  return (
+    <svg
+      className={s.ambientGlow}
+      viewBox="0 0 1440 400"
+      preserveAspectRatio="none"
+      aria-hidden
+    >
+      <defs>
+        <radialGradient id="ambientA" cx="80%" cy="0%" r="60%">
+          <stop offset="0%" stopColor="var(--ds-brand-500)" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="var(--ds-brand-500)" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="ambientB" cx="20%" cy="100%" r="50%">
+          <stop offset="0%" stopColor="var(--ds-brand-500)" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="var(--ds-brand-500)" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="1440" height="400" fill="url(#ambientA)" />
+      <rect width="1440" height="400" fill="url(#ambientB)" />
+    </svg>
+  );
+}
+
+// ─── Stagger wrapper ────────────────────────────────────────────────────
+
+function StaggerChildren({
+  children,
+  className,
+  count,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  count?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={`${s.staggerContainer} ${className ?? ''}`}
+      data-count={count ?? 1}
+      data-visible={visible}
+    >
+      {children}
+    </div>
+  );
+}
+
 // ─── Subcomponents ──────────────────────────────────────────────────────
 
 function CockpitHero({
@@ -295,6 +367,7 @@ function CockpitHero({
 
   return (
     <section className={s.hero} aria-label="مرکز عملیات">
+      <AmbientGlow />
       <div className={s.heroMain}>
         <div className={s.heroEyebrow}>
           <span className={s.heroEyebrowDot} aria-hidden />
@@ -325,7 +398,7 @@ function CockpitHero({
           <Link href="/dashboard/service-requests" className={s.heroVitalMain}>
             <span className={s.heroVitalLabel}>درخواست در جریان</span>
             <span className={s.heroVitalValue} dir="ltr">
-              {formatIntFa(pending)}
+              <CountUp value={pending} duration={900} />
             </span>
             {urgent > 0 ? (
               <span className={s.heroVitalFlag}>
@@ -338,19 +411,25 @@ function CockpitHero({
           <div className={s.heroVitalMinor}>
             <div className={s.heroVitalMinorItem}>
               <span className={s.heroVitalMinorLabel}>کل</span>
-              <span className={s.heroVitalMinorValue}>{formatIntFa(total)}</span>
+              <span className={s.heroVitalMinorValue}>
+                <CountUp value={total} duration={900} />
+              </span>
             </div>
             <span className={s.heroVitalDivider} aria-hidden />
             <div className={s.heroVitalMinorItem}>
               <span className={s.heroVitalMinorLabel}>رویداد زنده</span>
-              <span className={s.heroVitalMinorValue}>{formatCompactFa(liveCount)}</span>
+              <span className={s.heroVitalMinorValue}>
+                <CountUp value={liveCount} duration={900} />
+              </span>
             </div>
             {fraudCount > 0 ? (
               <>
                 <span className={s.heroVitalDivider} aria-hidden />
                 <div className={`${s.heroVitalMinorItem} ${s.heroVitalMinorItemWarn}`}>
                   <span className={s.heroVitalMinorLabel}>هشدار باز</span>
-                  <span className={s.heroVitalMinorValue}>{formatIntFa(fraudCount)}</span>
+                  <span className={s.heroVitalMinorValue}>
+                    <CountUp value={fraudCount} duration={900} />
+                  </span>
                 </div>
               </>
             ) : null}
@@ -394,7 +473,7 @@ function KpiStrip({
         key: 'pending',
         label: 'در انتظار',
         value: kpi.pendingRequests,
-        display: formatIntFa(kpi.pendingRequests),
+        display: <CountUp value={kpi.pendingRequests} duration={900} />,
         icon: Zap,
         accent: 'pending',
         href: '/dashboard/service-requests',
@@ -412,7 +491,7 @@ function KpiStrip({
         key: 'customers',
         label: 'مشتری فعال',
         value: kpi.activeCustomers,
-        display: formatIntFa(kpi.activeCustomers),
+        display: <CountUp value={kpi.activeCustomers} duration={900} />,
         icon: Users,
         accent: 'customers',
         href: '/dashboard/customers',
@@ -421,7 +500,7 @@ function KpiStrip({
         key: 'txn',
         label: 'تراکنش ۲۴ ساعت',
         value: kpi.txn24h,
-        display: formatIntFa(kpi.txn24h),
+        display: <CountUp value={kpi.txn24h} duration={900} />,
         icon: TrendingUp,
         accent: 'txn',
         href: '/dashboard/audit-log',
@@ -430,7 +509,7 @@ function KpiStrip({
         key: 'fraud',
         label: 'هشدار باز',
         value: kpi.openFraudCases,
-        display: formatIntFa(kpi.openFraudCases),
+        display: <CountUp value={kpi.openFraudCases} duration={900} />,
         icon: ShieldAlert,
         accent: kpi.openFraudCases > 0 ? 'fraud' : 'idle',
         href: '/dashboard/fraud-review',
@@ -441,7 +520,7 @@ function KpiStrip({
   );
 
   return (
-    <section className={s.kpiStrip} aria-label="شاخص‌های کلیدی">
+    <StaggerChildren className={s.kpiStrip} count={items.length} data-visible>
       {items.map((it) => {
         const Icon = it.icon;
         return (
@@ -458,7 +537,7 @@ function KpiStrip({
           </Link>
         );
       })}
-    </section>
+    </StaggerChildren>
   );
 }
 

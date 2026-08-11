@@ -1,4 +1,4 @@
-﻿/* SettingsHub.module.css
+/* SettingsHub.module.css
  * ─────────────────────────────────────────────────────────────
  *  Hub layout — sidebar + main + right rail.
  *  Three-column grid که در mobile به یک ستون collapse می‌شود.
@@ -13,6 +13,251 @@
   padding: var(--ds-space-5);
   min-block-size: 100dvb;
   direction: rtl;
+}
+
+/* ── Tablet (≤1023px) ─────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .hub {
+    gap: var(--ds-space-4);
+    padding: var(--ds-space-4);
+  }
+  .pageHead {
+    gap: var(--ds-space-3);
+    padding-block-end: var(--ds-space-3);
+  }
+  .title {
+    font-size: var(--ds-text-xl);
+  }
+  .panel {
+    padding: var(--ds-space-4);
+    gap: var(--ds-space-3);
+  }
+  .logoPreviewWrap {
+    inline-size: 64px;
+    block-size: 64px;
+  }
+  .logoEmpty {
+    inline-size: 64px;
+    block-size: 64px;
+  }
+}
+
+/* ── Mobile (≤720px) ─────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .hub {
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+  .pageHead {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    padding-block-end: 0.5rem;
+  }
+  .pageHeadMeta {
+    justify-content: flex-start;
+  }
+  .crumbRow {
+    font-size: 0.62rem;
+    gap: 3px;
+    margin-block-end: 0.25rem;
+  }
+  .title {
+    font-size: var(--ds-text-lg);
+  }
+  .subtitle {
+    font-size: 0.7rem;
+    margin-block-start: 3px;
+  }
+  .pill {
+    padding: 3px 7px;
+    gap: 4px;
+    font-size: 0.62rem;
+  }
+  .pillDot {
+    inline-size: 5px;
+    block-size: 5px;
+  }
+  .body {
+    gap: 0.5rem;
+  }
+  .panel {
+    padding: 0.7rem;
+    gap: 0.5rem;
+    border-radius: var(--ds-radius-md);
+  }
+  .panelHead {
+    gap: 0.5rem;
+    padding-block-end: 0.5rem;
+  }
+  .panelIcon {
+    inline-size: 26px;
+    block-size: 26px;
+    border-radius: 7px;
+  }
+  .panelTitle {
+    font-size: 0.8rem;
+  }
+  .panelDesc {
+    font-size: 0.65rem;
+    margin-block-start: 2px;
+  }
+  .panelBody {
+    gap: 0.5rem;
+  }
+  .formGrid {
+    gap: 0.5rem;
+  }
+  .field {
+    gap: 4px;
+  }
+  .fieldLabel {
+    font-size: 0.7rem;
+  }
+  .fieldHint {
+    font-size: 0.65rem;
+  }
+  .input,
+  .textarea {
+    block-size: 34px;
+    font-size: 0.75rem;
+    border-radius: 7px;
+  }
+  .textarea {
+    min-block-size: 70px;
+  }
+  .logoBlock {
+    gap: 0.3rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+  .logoRow {
+    gap: 0.5rem;
+  }
+  .logoPreviewWrap {
+    inline-size: 52px;
+    block-size: 52px;
+    border-radius: 9px;
+  }
+  .logoEmpty {
+    inline-size: 52px;
+    block-size: 52px;
+    border-radius: 9px;
+  }
+  .logoRemove {
+    inline-size: 18px;
+    block-size: 18px;
+    font-size: 11px;
+  }
+  .logoFields {
+    gap: 0.3rem;
+  }
+  .logoActions {
+    gap: 0.4rem;
+  }
+  .uploadBtn {
+    padding: 5px 9px;
+    gap: 4px;
+    font-size: 0.65rem;
+    border-radius: 6px;
+  }
+  .toggleStack {
+    gap: 0.3rem;
+  }
+  .toggleRow {
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+  }
+  .toggleTitle {
+    font-size: 0.72rem;
+  }
+  .toggleDesc {
+    font-size: 0.65rem;
+  }
+  .toggleSwitch {
+    inline-size: 38px;
+    block-size: 20px;
+    border-radius: 10px;
+  }
+  .toggleKnob {
+    inline-size: 16px;
+    block-size: 16px;
+  }
+  :global([dir="rtl"]) .toggleSwitch[data-on="true"] .toggleKnob,
+  .toggleSwitch[data-on="true"] .toggleKnob {
+    transform: translateX(-18px);
+  }
+  .maintenanceBanner {
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+  }
+  .maintenanceBannerIcon {
+    inline-size: 28px;
+    block-size: 28px;
+    border-radius: 7px;
+  }
+  .maintenanceBannerText strong {
+    font-size: 0.72rem;
+  }
+  .maintenanceBannerText span {
+    font-size: 0.65rem;
+  }
+  .testResult {
+    padding: 6px 9px;
+    gap: 4px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+  }
+  .actionRow {
+    gap: 0.4rem;
+  }
+  .btnSecondary {
+    block-size: 30px;
+    padding: 0 0.6rem;
+    gap: 4px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+  }
+  .loading {
+    padding: var(--ds-space-6);
+    font-size: 0.7rem;
+  }
+}
+
+/* ── Small mobile (≤480px) ────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .hub {
+    padding: 0.4rem;
+  }
+  .title {
+    font-size: var(--ds-text-base);
+  }
+  .pill {
+    font-size: 0.58rem;
+    padding: 2px 6px;
+  }
+  .panel {
+    padding: 0.6rem;
+  }
+  .panelIcon {
+    inline-size: 22px;
+    block-size: 22px;
+  }
+  .panelTitle {
+    font-size: 0.75rem;
+  }
+  .input,
+  .textarea {
+    block-size: 32px;
+    font-size: 0.72rem;
+  }
+  .logoPreviewWrap,
+  .logoEmpty {
+    inline-size: 44px;
+    block-size: 44px;
+  }
 }
 
 /* subtle ambient background — top right corner hairline glow */

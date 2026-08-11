@@ -6,6 +6,7 @@ import { DashboardProviders } from '@/components/Dashboard/DashboardPage/Dashboa
 import UniversalCommandPalette from '@/components/Dashboard/DashboardPage/UniversalCommandPalette';
 import { SiteSettingsProvider } from '@/components/SiteSettingsProvider';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
+import prisma from '@/lib/db';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -17,8 +18,17 @@ export default async function ExchangeLayout({ children }: { children: React.Rea
   const userId = session?.user?.id;
   if (!userId) redirect('/auth?callbackUrl=/exchange');
 
+  // 2FA اجباری برای حساب مالک — بدون فعال‌سازی، داشبورد صرافی باز نمی‌شود
   const { user } = session;
   const role = user.role as string;
+  if (PLATFORM_ADMINS.has(role)) {
+    const twoFaUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { twoFactorEnabled: true },
+    });
+    // بدون 2FA، داشبورد صرافی برای مالک باز نمی‌شود — به صفحهٔ فعال‌سازی برو
+    if (!twoFaUser?.twoFactorEnabled) redirect('/2fa-setup');
+  }
   const settings = await getSystemSettingsData();
   const initialSettings = {
     siteName: settings.siteName,

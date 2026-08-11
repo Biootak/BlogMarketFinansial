@@ -25,11 +25,10 @@ export default async function SettlementsPage() {
         title="تسویه‌حساب صرافی‌ها"
         description="مدیریت و پیگیری تسویه‌حساب‌های صرافی‌ها"
         eyebrow="مالی"
-        icon="banknote"
+        icon="circle-dollar-sign"
         accent="emerald"
       />
       <SettlementClient settlements={settlements} />
     </div>
   );
 }
-

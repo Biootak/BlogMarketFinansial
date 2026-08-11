@@ -29,16 +29,7 @@ export default async function ExchangesPage() {
   const exchanges = await getAllExchanges();
 
   return (
-    <main
-      dir="rtl"
-      style={{
-        maxWidth: '1440px',
-        margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--ds-space-3)',
-      }}
-    >
+    <div className="route-frame" dir="rtl">
       <PageHeader
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'صراف‌ها' }]}
         title="مدیریت صراف‌ها"
@@ -58,6 +49,6 @@ export default async function ExchangesPage() {
         }
       />
       <ExchangesWorkspace initialExchanges={exchanges} />
-    </main>
+    </div>
   );
 }

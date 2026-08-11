@@ -1123,3 +1123,287 @@
   color: var(--ds-status-error-fg);
   border-color: var(--ds-status-error-border);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — Comprehensive overrides
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    order: -1;
+  }
+
+  .roleTabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .roleTab {
+    flex: 1;
+    justify-content: center;
+    padding: 8px var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    gap: var(--ds-space-3);
+  }
+
+  .kpiStrip {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ds-space-2);
+  }
+
+  .kpiCard {
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .kpiIco {
+    width: 28px;
+    height: 28px;
+  }
+
+  .kpiIco svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .kpiVal {
+    font-size: 0.9rem;
+  }
+
+  .kpiLbl {
+    font-size: 0.65rem;
+  }
+
+  .sidebar {
+    padding: var(--ds-space-2);
+  }
+
+  .sideSection {
+    padding-block: var(--ds-space-1-5);
+  }
+
+  .sideLabel {
+    font-size: var(--ds-text-xs);
+  }
+
+  .roleTabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .roleTab {
+    flex: 1;
+    justify-content: center;
+    padding: 6px var(--ds-space-1);
+    font-size: var(--ds-text-xs);
+  }
+
+  .roleTabCount {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+  }
+
+  .toolbar {
+    flex-wrap: wrap;
+    gap: var(--ds-space-1-5);
+  }
+
+  .searchInput {
+    flex: 1;
+    min-width: 0;
+    padding: 7px var(--ds-space-2) 7px 32px;
+    font-size: var(--ds-text-xs);
+  }
+
+  .resultCount {
+    font-size: var(--ds-text-xs);
+    padding: 2px 7px;
+  }
+
+  .addBtn {
+    padding: 6px var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+    min-height: 36px;
+  }
+
+  .tableWrap {
+    border-radius: var(--ds-radius-lg);
+  }
+
+  .emptyWrap {
+    padding: var(--ds-space-6) var(--ds-space-4);
+  }
+
+  .th {
+    padding-block: var(--ds-space-2);
+    padding-inline: var(--ds-space-3);
+    font-size: 0.6rem;
+  }
+
+  .td {
+    padding-block: var(--ds-space-2);
+    padding-inline: var(--ds-space-3);
+  }
+
+  .userCell {
+    min-inline-size: 0;
+    gap: var(--ds-space-2);
+  }
+
+  .avatar,
+  .avatarFallback {
+    inline-size: 28px;
+    block-size: 28px;
+  }
+
+  .avatarFallback {
+    font-size: var(--ds-text-xs);
+  }
+
+  .userName {
+    font-size: var(--ds-text-xs);
+  }
+
+  .userEmail {
+    font-size: 0.6rem;
+  }
+
+  .roleBadge {
+    font-size: 0.6rem;
+    padding: 1px 6px;
+  }
+
+  .statusDot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .actions {
+    gap: var(--ds-space-1);
+  }
+
+  .actionBtn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .actionBtn svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  /* Modal */
+  .modal {
+    max-width: calc(100vw - 32px);
+    margin: var(--ds-space-3);
+  }
+
+  .modalHead {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  .modalTitle {
+    font-size: var(--ds-text-sm);
+  }
+
+  .modalBody {
+    padding: var(--ds-space-4);
+    gap: var(--ds-space-3);
+  }
+
+  .formGroup {
+    gap: var(--ds-space-1);
+  }
+
+  .formLabel {
+    font-size: var(--ds-text-xs);
+  }
+
+  .formInput {
+    padding: 7px var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+  }
+
+  .formSelect {
+    font-size: var(--ds-text-xs);
+  }
+
+  .roleHint {
+    padding: var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+  }
+
+  .submitBtn {
+    padding: 8px var(--ds-space-4);
+    font-size: var(--ds-text-xs);
+    min-height: 44px;
+  }
+
+  .errorMsg {
+    padding: var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+  }
+
+  /* Autocomplete */
+  .autocompleteDropdown {
+    padding: var(--ds-space-1);
+  }
+
+  .autocompleteOption {
+    padding: var(--ds-space-1-5);
+  }
+
+  .optionAvatar,
+  .optionAvatarFallback {
+    inline-size: 24px;
+    block-size: 24px;
+  }
+
+  .optionAvatarFallback {
+    font-size: 0.65rem;
+  }
+
+  .optionName {
+    font-size: var(--ds-text-xs);
+  }
+
+  .optionEmail {
+    font-size: 0.6rem;
+  }
+
+  .selectedChip {
+    padding: var(--ds-space-1-5) var(--ds-space-2);
+  }
+
+  .chipAvatar,
+  .chipAvatarFallback {
+    inline-size: 20px;
+    block-size: 20px;
+  }
+
+  .chipAvatarFallback {
+    font-size: 0.6rem;
+  }
+
+  .chipName {
+    font-size: var(--ds-text-xs);
+  }
+
+  .chipEmail {
+    font-size: 0.55rem;
+  }
+
+  .chipClear {
+    inline-size: 16px;
+    block-size: 16px;
+  }
+}

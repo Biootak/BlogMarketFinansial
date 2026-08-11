@@ -21,7 +21,8 @@ import {
   ConfirmDialog,
   DataTable,
   MillionDollarEmpty,
-  PageHeader,
+  StatCard,
+  StatGrid,
 } from '@/components/Dashboard/primitives';
 import { SearchInput } from '@/components/Dashboard/primitives';
 import {
@@ -33,7 +34,17 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/components/ui/use-toast';
 import { formatFaNumber } from '@/lib/fa-number';
-import { PencilLine, Plus, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
+import {
+  Activity,
+  Building2,
+  Landmark,
+  Layers,
+  PencilLine,
+  Plus,
+  ToggleLeft,
+  ToggleRight,
+  Trash2,
+} from 'lucide-react';
 import { useCallback, useMemo, useState, useTransition } from 'react';
 import ProviderDrawer from './ProviderDrawer';
 import s from './TransferProvidersWorkspace.module.css';
@@ -73,6 +84,7 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
 
   const platformCount = useMemo(() => rows.filter((r) => r.exchangeId === null).length, [rows]);
   const exchangeCount = useMemo(() => rows.filter((r) => r.exchangeId !== null).length, [rows]);
+  const activeCount = useMemo(() => rows.filter((r) => r.active).length, [rows]);
 
   const handleToggle = useCallback((row: TransferProviderRow) => {
     startTransition(async () => {
@@ -210,7 +222,6 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
       width: 88,
       render: (r) =>
         r.exchangeId ? (
-          /* صرافی بیرونی — فقط toggle، بدون ویرایش/حذف */
           <span className={s.readonlyTag}>فقط نمایش</span>
         ) : (
           <div className={s.actions}>
@@ -237,38 +248,33 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
 
   return (
     <div className={s.root}>
-      <PageHeader
-        variant="compact"
-        title="صرافی‌های جدول مقایسه"
-        description="مدیریت provider های نرخ که در صفحه /money-transfer نمایش داده می‌شوند"
-        breadcrumb={[{ label: 'داشبورد' }, { label: 'صرافی‌های مقایسه' }]}
-        actions={
+      {/* ── Hero Status Bar ── */}
+      <div className={s.heroBar}>
+        <div className={s.heroIcon}>
+          <div className={s.pulse} aria-hidden />
+          <Layers size={22} />
+        </div>
+        <div className={s.heroContent}>
+          <h2 className={s.heroTitle}>صرافی‌های جدول مقایسه</h2>
+          <p className={s.heroDesc}>
+            {rows.length} provider ثبت شده — {activeCount} تا فعال در صفحه /money-transfer
+          </p>
+        </div>
+        <div className={s.heroActions}>
           <button type="button" className={s.addBtn} onClick={openAdd}>
             <Plus className={s.addBtnIcon} aria-hidden />
             <span>افزودن provider</span>
           </button>
-        }
-      />
-
-      {/* ── Stats ── */}
-      <div className={s.stats}>
-        <div className={s.statItem}>
-          <span className={s.statValue}>{rows.length}</span>
-          <span className={s.statLabel}>کل</span>
-        </div>
-        <div className={s.statItem}>
-          <span className={s.statValue}>{platformCount}</span>
-          <span className={s.statLabel}>پلتفرم</span>
-        </div>
-        <div className={s.statItem}>
-          <span className={s.statValue}>{exchangeCount}</span>
-          <span className={s.statLabel}>صرافی‌ها</span>
-        </div>
-        <div className={s.statItem}>
-          <span className={s.statValue}>{rows.filter((r) => r.active).length}</span>
-          <span className={s.statLabel}>فعال</span>
         </div>
       </div>
+
+      {/* ── Stats Grid ── */}
+      <StatGrid cols={4}>
+        <StatCard value={rows.length} label="کل" icon={Layers} format="persian" />
+        <StatCard value={platformCount} label="پلتفرم" icon={Building2} format="persian" />
+        <StatCard value={exchangeCount} label="صرافی‌ها" icon={Landmark} format="persian" />
+        <StatCard value={activeCount} label="فعال" icon={Activity} format="persian" />
+      </StatGrid>
 
       {/* ── Toolbar ── */}
       <div className={s.toolbar}>
@@ -307,6 +313,12 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Mobile-only add button (hidden on desktop via heroActions) */}
+        <button type="button" className={`${s.addBtn} ${s.mobileAddBtn}`} onClick={openAdd}>
+          <Plus className={s.addBtnIcon} aria-hidden />
+          <span>افزودن provider</span>
+        </button>
       </div>
 
       {/* ── Content ── */}
@@ -335,14 +347,12 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
           <div className={s.mobileCards}>
             {filtered.map((r) => (
               <div key={r.id} className={`${s.card} ${r.active ? s.cardActive : s.cardInactive}`}>
-                {/* Card top row */}
                 <div className={s.cardRow}>
                   <div className={s.cardLeft}>
                     <span className={s.cardName}>{r.name}</span>
                     <span className={s.cardSlug}>{r.slug}</span>
                   </div>
                   <div className={s.cardRight}>
-                    {/* Toggle */}
                     <button
                       type="button"
                       className={`${s.toggleBtn} ${r.active ? s.toggleBtnOn : ''}`}
@@ -361,7 +371,6 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
                   </div>
                 </div>
 
-                {/* Card meta chips */}
                 <div className={s.cardMeta}>
                   <span className={s.kindBadge} data-kind={r.kind}>
                     {KIND_FA[r.kind] ?? r.kind}
@@ -379,7 +388,6 @@ export default function TransferProvidersWorkspace({ initialRows }: Props) {
                   )}
                 </div>
 
-                {/* Card footer: actions — only for platform providers */}
                 {!r.exchangeId && (
                   <div className={s.cardActions}>
                     <button

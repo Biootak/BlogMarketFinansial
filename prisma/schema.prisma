@@ -414,6 +414,37 @@ model TelegramNotification {
   @@index([createdAt(sort: Desc)])
 }
 
+// ─── High-value transaction queue ─────────────────────────────
+// صف زیرساختی برای تراکنش‌های پرمقدار (confirm انتقال/برداشت، پرداخت تسویه).
+// لایهٔ دفاع دوم بعد از atomic claim داخل خود تراکنش‌ها:
+//   - single-flight: unique (operation, targetId) → دوبار confirm/enqueue نادیده گرفته می‌شود
+//   - FIFO ترتیب‌یافته: claim به ترتیب createdAt با FOR UPDATE SKIP LOCKED
+//   - retry با backoff نمایی + DLQ (dead) بعد از maxAttempts
+//   - visibility timeout: claimهای گیر کرده (کرش کارگر) دوباره آزاد می‌شوند
+// کارگر: processHighValueQueue() — cron هر دقیقه + best-effort بعد از enqueue.
+// status: pending, processing, retry, completed, failed, dead
+model HighValueJob {
+  id            String    @id @default(cuid())
+  operation     String // CONFIRM_TRANSFER | CONFIRM_WITHDRAW | MARK_SETTLEMENT_PAID
+  targetId      String // txnId یا settlementId
+  payload       Json?
+  status        String    @default("pending")
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(4)
+  nextAttemptAt DateTime  @default(now())
+  lastError     String?
+  lockedAt      DateTime? // زمان claim — برای آزادسازی claimهای گیر کرده
+  triggeredBy   String?
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([operation, targetId])
+  @@index([status, nextAttemptAt])
+  @@index([operation, status])
+  @@index([createdAt(sort: Desc)])
+}
+
 // ─── Helpdesk / Tickets models (Tier 1) ────────────────────
 model SupportTicket {
   id              String    @id @default(cuid())

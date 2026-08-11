@@ -1191,3 +1191,478 @@
 .sheetActionRevoke:active {
   transform: scale(0.98);
 }
+
+/* ── Tablet (≤1023px) ──────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .root {
+    gap: var(--ds-space-4);
+    padding-block-end: var(--ds-space-6);
+  }
+  .socLayout {
+    grid-template-columns: 1fr;
+    gap: var(--ds-space-4);
+  }
+  .mainPanel,
+  .sidePanel {
+    gap: var(--ds-space-4);
+  }
+  .mapCard {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+  .mapWrapper {
+    height: 180px;
+  }
+  .toolbar {
+    gap: var(--ds-space-2);
+  }
+  .filterChip {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+  }
+  .searchField {
+    width: 200px;
+  }
+  .deviceGrid {
+    gap: var(--ds-space-3);
+  }
+  .deviceCard {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+  .deviceIco {
+    width: 32px;
+    height: 32px;
+  }
+  .scoreCard {
+    padding: var(--ds-space-4);
+  }
+  .scoreDialWrapper {
+    width: 100px;
+    height: 100px;
+  }
+  .scoreNum {
+    font-size: var(--ds-text-2xl);
+  }
+  .timelineCard {
+    padding: var(--ds-space-4);
+  }
+  .tipsCard {
+    padding: var(--ds-space-4);
+  }
+  .sheetInner {
+    padding: var(--ds-space-4);
+  }
+  .sheetIconWrap {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ── Mobile (≤720px) ──────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .root {
+    gap: 0.5rem;
+    padding-inline: 0.5rem;
+    padding-block-start: 0.5rem;
+    padding-block-end: var(--ds-space-4);
+  }
+  .errorBanner {
+    padding: 0.5rem 0.6rem;
+    gap: 0.4rem;
+    border-radius: var(--ds-radius-md);
+    font-size: 0.72rem;
+  }
+  .socLayout {
+    gap: 0.5rem;
+  }
+  .mainPanel,
+  .sidePanel {
+    gap: 0.5rem;
+  }
+  .mapCard {
+    padding: 0.6rem 0.7rem;
+    gap: 0.4rem;
+    border-radius: var(--ds-radius-lg);
+  }
+  .cardHeadline {
+    gap: 0.3rem;
+  }
+  .cardIndicator {
+    width: 3px;
+    height: 10px;
+  }
+  .cardHeadline h4 {
+    font-size: 0.75rem;
+  }
+  .liveBadge {
+    font-size: 0.55rem;
+    gap: 4px;
+    padding: 2px 6px;
+  }
+  .liveDot {
+    width: 4px;
+    height: 4px;
+  }
+  .mapWrapper {
+    height: 140px;
+    border-radius: var(--ds-radius-md);
+  }
+  .mapLabel {
+    font-size: 7px;
+  }
+  .toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 0.3rem;
+    padding-block-end: 0.1rem;
+  }
+  .toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .filterWrapper {
+    gap: 0.25rem;
+    flex-wrap: nowrap;
+  }
+  .filterChip {
+    padding: 4px 8px;
+    font-size: 0.62rem;
+    gap: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .chipDot {
+    width: 5px;
+    height: 5px;
+  }
+  .chipCount {
+    font-size: 0.5rem;
+  }
+  .searchField {
+    width: 100%;
+    min-width: 140px;
+  }
+  .searchField input {
+    padding-block: 6px;
+    padding-inline: 28px 0.5rem;
+    font-size: 0.7rem;
+  }
+  .searchIcon {
+    inset-inline-start: 0.5rem;
+  }
+  .deviceGrid {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+  .deviceCard {
+    padding: 0.6rem 0.7rem;
+    gap: 0.4rem;
+    border-radius: var(--ds-radius-lg);
+  }
+  .deviceIco {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--ds-radius-sm);
+  }
+  .headText {
+    gap: 1px;
+  }
+  .browserTitle {
+    font-size: 0.75rem;
+    gap: 4px;
+  }
+  .currentTag {
+    font-size: 0.5rem;
+    padding: 1px 4px;
+  }
+  .osTitle {
+    font-size: 0.6rem;
+  }
+  .statusBadge {
+    font-size: 0.55rem;
+    padding: 2px 6px;
+    gap: 3px;
+  }
+  .cardMetadata {
+    gap: 0.4rem;
+  }
+  .metaLabel {
+    font-size: 0.5rem;
+  }
+  .metaValue {
+    font-size: 0.62rem;
+  }
+  .fingerprintBox {
+    padding: 3px 0.4rem;
+    gap: 0.3rem;
+  }
+  .fpCode {
+    font-size: 0.55rem;
+  }
+  .cardActions {
+    gap: 0.3rem;
+    padding-block-start: 0.4rem;
+  }
+  .actionTrust,
+  .actionRevoke,
+  .actionDetails {
+    font-size: 0.62rem;
+    padding: 4px 8px;
+    gap: 3px;
+  }
+  .emptyStateBox {
+    padding: var(--ds-space-6);
+    border-radius: var(--ds-radius-lg);
+  }
+  /* Score card */
+  .scoreCard {
+    padding: 0.7rem;
+    gap: 0.5rem;
+    border-radius: var(--ds-radius-lg);
+  }
+  .scoreDialWrapper {
+    width: 80px;
+    height: 80px;
+  }
+  .dialTrack,
+  .dialProgress {
+    stroke-width: 5;
+  }
+  .scoreNum {
+    font-size: var(--ds-text-xl);
+  }
+  .scorePct {
+    font-size: 0.6rem;
+  }
+  .scoreMeta h5 {
+    font-size: 0.75rem;
+  }
+  .scoreLabelText {
+    font-size: 0.62rem;
+  }
+  .scoreDescText {
+    font-size: 0.6rem;
+  }
+  .emergencyRevokeBtn {
+    padding: 6px 0.5rem;
+    font-size: 0.65rem;
+    gap: 4px;
+    border-radius: var(--ds-radius-md);
+  }
+  /* Timeline */
+  .timelineCard {
+    padding: 0.7rem;
+    gap: 0.5rem;
+    border-radius: var(--ds-radius-lg);
+  }
+  .timelineHead {
+    gap: 0.3rem;
+  }
+  .timelineHead h4 {
+    font-size: 0.75rem;
+  }
+  .emptyTimeline {
+    padding: var(--ds-space-4);
+    gap: 0.3rem;
+    font-size: 0.65rem;
+  }
+  .timelineList {
+    gap: 0.5rem;
+    padding-inline-start: 8px;
+  }
+  .timelineList::before {
+    inset-inline-start: 11px;
+  }
+  .timelineIndicator {
+    width: 6px;
+    height: 6px;
+    margin-block-start: 4px;
+    outline-width: 3px;
+  }
+  .timelineContent {
+    gap: 1px;
+  }
+  .logText {
+    font-size: 0.65rem;
+  }
+  .timelineMeta {
+    font-size: 0.55rem;
+  }
+  /* Tips */
+  .tipsCard {
+    padding: 0.7rem;
+    gap: 0.4rem;
+    border-radius: var(--ds-radius-lg);
+  }
+  .tipTitle {
+    gap: 0.3rem;
+  }
+  .tipTitle h5 {
+    font-size: 0.75rem;
+  }
+  .tipsList {
+    gap: 0.3rem;
+  }
+  .tipsList li {
+    font-size: 0.6rem;
+    padding-inline-start: 10px;
+  }
+  /* Sheet */
+  .sheetInner {
+    padding: 0.7rem;
+    gap: 0.5rem;
+  }
+  .sheetHead {
+    gap: 0.5rem;
+    padding-block-end: 0.5rem;
+  }
+  .sheetIconWrap {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--ds-radius-md);
+  }
+  .sheetTitle {
+    font-size: var(--ds-text-sm);
+    gap: 4px;
+  }
+  .sheetCurrentTag {
+    font-size: 0.5rem;
+    padding: 1px 4px;
+  }
+  .sheetSub {
+    font-size: 0.65rem;
+    gap: 4px;
+  }
+  .sheetSection {
+    gap: 0.3rem;
+    padding-block-end: 0.5rem;
+  }
+  .sheetSecTitle {
+    font-size: 0.62rem;
+  }
+  .sheetRow {
+    font-size: 0.65rem;
+  }
+  .fpLabel {
+    font-size: 0.5rem;
+  }
+  .fpFullBox {
+    padding: 4px 0.4rem;
+    gap: 0.3rem;
+  }
+  .fpFullValue {
+    font-size: 0.55rem;
+  }
+  .uaDataText {
+    font-size: 0.55rem;
+    padding: 0.4rem;
+  }
+  .sheetActionTrust,
+  .sheetActionRevoke {
+    padding: 6px 0.5rem;
+    font-size: 0.65rem;
+    gap: 4px;
+  }
+}
+
+/* ── Small mobile (≤480px) ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .root {
+    gap: 0.4rem;
+    padding-inline: 0.4rem;
+  }
+  .mapCard {
+    padding: 0.5rem 0.6rem;
+  }
+  .mapWrapper {
+    height: 110px;
+  }
+  .cardHeadline h4 {
+    font-size: 0.7rem;
+  }
+  .liveBadge {
+    font-size: 0.5rem;
+  }
+  .filterChip {
+    padding: 3px 6px;
+    font-size: 0.58rem;
+  }
+  .deviceCard {
+    padding: 0.5rem 0.6rem;
+  }
+  .deviceIco {
+    width: 24px;
+    height: 24px;
+  }
+  .browserTitle {
+    font-size: 0.7rem;
+  }
+  .osTitle {
+    font-size: 0.55rem;
+  }
+  .statusBadge {
+    font-size: 0.5rem;
+    padding: 1px 5px;
+  }
+  .metaLabel {
+    font-size: 0.45rem;
+  }
+  .metaValue {
+    font-size: 0.58rem;
+  }
+  .actionTrust,
+  .actionRevoke,
+  .actionDetails {
+    font-size: 0.58rem;
+    padding: 3px 6px;
+  }
+  .scoreDialWrapper {
+    width: 70px;
+    height: 70px;
+  }
+  .scoreNum {
+    font-size: var(--ds-text-lg);
+  }
+  .scoreDescText {
+    font-size: 0.55rem;
+  }
+  .emergencyRevokeBtn {
+    font-size: 0.6rem;
+  }
+  .timelineHead h4 {
+    font-size: 0.7rem;
+  }
+  .logText {
+    font-size: 0.6rem;
+  }
+  .timelineMeta {
+    font-size: 0.5rem;
+  }
+  .tipTitle h5 {
+    font-size: 0.7rem;
+  }
+  .tipsList li {
+    font-size: 0.55rem;
+  }
+  .sheetInner {
+    padding: 0.6rem;
+  }
+  .sheetIconWrap {
+    width: 30px;
+    height: 30px;
+  }
+  .sheetTitle {
+    font-size: 0.8rem;
+  }
+  .sheetSecTitle {
+    font-size: 0.58rem;
+  }
+  .sheetRow {
+    font-size: 0.6rem;
+  }
+  .fpFullValue {
+    font-size: 0.5rem;
+  }
+  .uaDataText {
+    font-size: 0.5rem;
+  }
+}

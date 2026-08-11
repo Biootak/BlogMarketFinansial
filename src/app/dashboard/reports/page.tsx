@@ -4,6 +4,7 @@
  * Server Component wrapper با auth guard.
  * محتوای تعاملی (tab switcher) در ReportsShell (client) است.
  */
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -26,5 +27,17 @@ export default async function ReportsPage() {
     redirect('/forbidden');
   }
 
-  return <ReportsShell />;
+  return (
+    <div className="route-frame">
+      <PageHeader
+        variant="compact"
+        eyebrow="تحلیل"
+        title="گزارش‌ها"
+        description="گزارش‌های سیستمی، فعالیت‌ها و لاگ‌های رویداد"
+        icon="bar-chart-3"
+        accent="emerald"
+      />
+      <ReportsShell />
+    </div>
+  );
 }

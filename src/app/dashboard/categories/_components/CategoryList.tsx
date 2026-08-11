@@ -1,11 +1,11 @@
 'use client';
 
 import { getCategories } from '@/actions/categoryActions';
+import { MillionDollarEmpty } from '@/components/Dashboard/primitives';
 import LoadingMore from '@/components/LoadingMore';
 import { useToast } from '@/components/ui/use-toast';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { TaxonomyType } from '@/types/types';
-import { FolderOpen } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import CategoryItem from './CategoryItem';
 import s from './categories.module.css';
@@ -90,11 +90,12 @@ export function CategoryList({
 
   if (categories.length === 0) {
     return (
-      <div className={s.empty}>
-        <FolderOpen size={20} strokeWidth={1.5} className={s.emptyIcon} aria-hidden />
-        <p className={s.emptyTitle}>دسته‌بندی یافت نشد</p>
-        <p className={s.emptyHint}>هنوز هیچ دسته‌بندی در سیستم ثبت نشده است.</p>
-      </div>
+      <MillionDollarEmpty
+        eyebrow="ساختار"
+        title="دسته‌بندی یافت نشد"
+        description="هنوز هیچ دسته‌بندی در سیستم ثبت نشده است. اولین دسته‌بندی را ایجاد کنید."
+        tone="neutral"
+      />
     );
   }
 

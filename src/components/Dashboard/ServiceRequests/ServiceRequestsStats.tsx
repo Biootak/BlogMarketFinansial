@@ -16,13 +16,13 @@ import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  HiCalendar,
-  HiCheckCircle,
-  HiClock,
-  HiCollection,
-  HiExclamationCircle,
-  HiLightningBolt,
-} from 'react-icons/hi';
+  CalendarDays,
+  CheckCircle,
+  Clock,
+  SquareStack,
+  TriangleAlert,
+  Zap,
+} from 'lucide-react';
 
 interface Stats {
   total: number;
@@ -38,7 +38,7 @@ interface Stats {
 interface CellDef {
   key: keyof Stats;
   label: string;
-  Icon: typeof HiCollection;
+  Icon: typeof SquareStack;
   /** Tone used for the value color + bar fill. */
   tone: 'emerald' | 'amber' | 'rose' | 'info' | 'violet' | 'slate';
   /** Suffix appended after the value, e.g. "مورد" or "٪". */
@@ -53,7 +53,7 @@ const CELLS: CellDef[] = [
   {
     key: 'total',
     label: 'کل درخواست‌ها',
-    Icon: HiCollection,
+    Icon: SquareStack,
     tone: 'info',
     sub: () => 'تا امروز ثبت شده',
     barRatio: () => 1,
@@ -61,7 +61,7 @@ const CELLS: CellDef[] = [
   {
     key: 'pending',
     label: 'در انتظار',
-    Icon: HiClock,
+    Icon: Clock,
     tone: 'amber',
     sub: (s) =>
       s.pendingUrgent > 0
@@ -72,7 +72,7 @@ const CELLS: CellDef[] = [
   {
     key: 'inProgress',
     label: 'در حال انجام',
-    Icon: HiLightningBolt,
+    Icon: Zap,
     tone: 'violet',
     sub: (s) => (s.total > 0 ? `${Math.round((s.inProgress / s.total) * 100)}٪ سهم` : '—'),
     barRatio: (s) => (s.total > 0 ? s.inProgress / s.total : 0),
@@ -80,7 +80,7 @@ const CELLS: CellDef[] = [
   {
     key: 'completed',
     label: 'تکمیل شده',
-    Icon: HiCheckCircle,
+    Icon: CheckCircle,
     tone: 'emerald',
     sub: (s) =>
       s.total - s.cancelled > 0
@@ -91,7 +91,7 @@ const CELLS: CellDef[] = [
   {
     key: 'urgent',
     label: 'فوری',
-    Icon: HiExclamationCircle,
+    Icon: TriangleAlert,
     tone: 'rose',
     sub: (s) =>
       s.pendingUrgent > 0
@@ -102,7 +102,7 @@ const CELLS: CellDef[] = [
   {
     key: 'todayCount',
     label: 'ثبت امروز',
-    Icon: HiCalendar,
+    Icon: CalendarDays,
     tone: 'emerald',
     sub: (s) =>
       s.total > 0 ? `${Math.round((s.todayCount / Math.max(s.total, 1)) * 100)}٪ کل` : '—',

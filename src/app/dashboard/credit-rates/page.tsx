@@ -19,7 +19,7 @@ export default async function CreditRatesPage() {
   const aggregates = aggResult.success ? aggResult.data : null;
 
   return (
-    <main className="max-w-[1440px] mx-auto flex flex-col gap-5">
+    <div className="route-frame">
       <PageHeader
         breadcrumb={[
           { label: 'مرکز فرماندهی', href: '/dashboard' },
@@ -40,6 +40,6 @@ export default async function CreditRatesPage() {
           initialAggregates={aggregates}
         />
       </Section>
-    </main>
+    </div>
   );
 }

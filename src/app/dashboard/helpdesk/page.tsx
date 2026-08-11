@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { getTicketSnapshot } from '@/lib/tickets';
 import { Suspense } from 'react';
 import { HelpdeskHub } from './_components/HelpdeskHub';
@@ -21,13 +22,21 @@ export default async function HelpdeskPage() {
   const tickets = res.success && res.data ? res.data.tickets : [];
 
   return (
-    <main className={s.page} dir="rtl">
+    <div className="route-frame">
+      <PageHeader
+        variant="compact"
+        eyebrow="پشتیبانی"
+        title="مرکز پشتیبانی"
+        description="نمای پروازی تیکت‌ها بر اساس اولویت و وضعیت"
+        icon="headset"
+        accent="amber"
+      />
       <Suspense fallback={<HelpdeskLoading />}>
         {/* Inner Suspense for useSearchParams in HelpdeskHub */}
         <Suspense fallback={null}>
           <HelpdeskHub initialTickets={tickets} />
         </Suspense>
       </Suspense>
-    </main>
+    </div>
   );
 }

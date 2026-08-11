@@ -1,17 +1,22 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { SearchInput } from '@/components/Dashboard/primitives';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-import s from './categories.module.css';
 
-export default function SearchCategories() {
+/**
+ * SearchCategories — جستجوی دسته‌بندی با debounce.
+ *
+ * - از SearchInput canonical primitive استفاده می‌کند
+ * - debounce ۳۰۰ms + useTransition برای navigation نرم
+ */
+export function SearchCategories() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
-  const [isPending, startTransition] = useTransition();
+  const [_isPending, startTransition] = useTransition();
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -38,16 +43,15 @@ export default function SearchCategories() {
   };
 
   return (
-    <div className={s.search}>
-      <input
-        type="text"
-        placeholder="جستجوی دسته‌بندی…"
-        value={searchTerm}
-        onChange={(e) => handleSearch(e.target.value)}
-        aria-label="جستجوی دسته‌بندی"
-      />
-      <Search size={15} className={s.searchIcon} aria-hidden />
-      {isPending && <span className={s.searchPending}>در حال جستجو…</span>}
-    </div>
+    <SearchInput
+      value={searchTerm}
+      onChange={handleSearch}
+      onClear={() => {
+        setSearchTerm('');
+        debouncedSearch('');
+      }}
+      placeholder="جستجوی دسته‌بندی…"
+      ariaLabel="جستجوی دسته‌بندی"
+    />
   );
 }

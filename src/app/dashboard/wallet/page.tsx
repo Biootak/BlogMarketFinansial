@@ -85,4 +85,3 @@ export default async function WalletPage() {
     </div>
   );
 }
-

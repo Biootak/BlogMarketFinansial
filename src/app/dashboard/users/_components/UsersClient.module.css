@@ -14,7 +14,7 @@
 
 /* Ambient signature — subtle radial glow (million-dollar premium) */
 .page::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: -20%;
   inset-inline-end: -10%;
@@ -32,6 +32,263 @@
 .page > * {
   position: relative;
   z-index: 1;
+}
+
+/* ─── Tablet (≤1023px) ──────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .page {
+    gap: var(--ds-space-4);
+  }
+  .kpiStrip {
+    gap: var(--ds-space-2);
+  }
+  .kpiItem {
+    padding: var(--ds-space-3);
+  }
+  .kpiIcon {
+    width: 30px;
+    height: 30px;
+  }
+  .kpiVal {
+    font-size: var(--ds-text-xl);
+  }
+  .filterBar {
+    gap: var(--ds-space-2);
+  }
+  .table thead th {
+    padding: 8px 10px;
+    font-size: 0.65rem;
+  }
+  .row td {
+    padding: 9px 10px;
+  }
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ─── Mobile (≤720px) ───────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .page {
+    gap: 0.5rem;
+  }
+  .page::before {
+    opacity: 0.4;
+  }
+  .addBtn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    gap: 4px;
+    min-block-size: 34px;
+  }
+  .kpiStrip {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.35rem;
+  }
+  .kpiItem {
+    padding: 0.5rem 0.4rem;
+    gap: 0.25rem;
+    border-radius: var(--ds-radius-md);
+  }
+  .kpiIcon {
+    width: 24px;
+    height: 24px;
+    border-radius: var(--ds-radius-sm);
+  }
+  .kpiIcon svg {
+    width: 12px;
+    height: 12px;
+  }
+  .kpiVal {
+    font-size: var(--ds-text-base);
+    letter-spacing: -0.02em;
+  }
+  .kpiLabel {
+    font-size: 0.58rem;
+  }
+  .filterBar {
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-block-end: 0.1rem;
+  }
+  .filterBar::-webkit-scrollbar {
+    display: none;
+  }
+  .filterSelect {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    min-block-size: 32px;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  .tableWrap {
+    border-radius: var(--ds-radius-md);
+  }
+  .table {
+    font-size: 0.8rem;
+  }
+  .table thead th {
+    padding: 7px 8px;
+    font-size: 0.6rem;
+    letter-spacing: 0.03em;
+  }
+  .row td {
+    padding: 8px 8px;
+  }
+  .userCell {
+    gap: 0.4rem;
+  }
+  .avatar {
+    width: 28px;
+    height: 28px;
+  }
+  .avatarInitials {
+    font-size: 0.6rem;
+  }
+  .userName {
+    font-size: 0.75rem;
+  }
+  .userEmail {
+    font-size: 0.62rem;
+  }
+  .badge {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+  }
+  .actions {
+    gap: 0.2rem;
+  }
+  .editBtn,
+  .deleteBtn {
+    padding: 4px 6px;
+    gap: 2px;
+    min-block-size: 26px;
+    font-size: 0.65rem;
+  }
+  .btnLabel {
+    display: none;
+  }
+  .dateCell {
+    font-size: 0.6rem;
+  }
+  .empty {
+    padding: var(--ds-space-6) var(--ds-space-3);
+  }
+  .emptyIco {
+    width: 36px;
+    height: 36px;
+  }
+  .emptyTitle {
+    font-size: var(--ds-text-sm);
+  }
+  .emptySub {
+    font-size: 0.75rem;
+  }
+  .tableFoot {
+    padding: 0.5rem 0.6rem;
+    gap: 0.4rem;
+  }
+  .footCount {
+    font-size: 0.62rem;
+  }
+  .pageBtn {
+    padding: 4px 8px;
+    font-size: 0.65rem;
+    min-block-size: 28px;
+  }
+  .pageInfo {
+    font-size: 0.62rem;
+  }
+  .sheetIcon {
+    width: 32px;
+    height: 32px;
+  }
+  .sheetTitle {
+    font-size: var(--ds-text-sm) !important;
+  }
+  .sheetSub {
+    font-size: 0.7rem;
+  }
+  .form {
+    gap: var(--ds-space-3);
+  }
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: var(--ds-space-2);
+  }
+  .label {
+    font-size: 0.75rem !important;
+    gap: 4px;
+  }
+  .input {
+    font-size: 0.8rem !important;
+    min-block-size: 36px !important;
+  }
+  .formFooter {
+    padding-block-start: var(--ds-space-3);
+  }
+}
+
+/* ─── Small mobile (≤480px) ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .page {
+    gap: 0.4rem;
+  }
+  .kpiStrip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+  .kpiItem {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.5rem;
+  }
+  .kpiIcon {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+  }
+  .kpiVal {
+    font-size: 0.9rem;
+  }
+  .kpiLabel {
+    font-size: 0.55rem;
+  }
+  .table thead th {
+    padding: 6px 6px;
+    font-size: 0.58rem;
+  }
+  .row td {
+    padding: 7px 6px;
+  }
+  .avatar {
+    width: 26px;
+    height: 26px;
+  }
+  .userName {
+    font-size: 0.7rem;
+  }
+  .userEmail {
+    font-size: 0.58rem;
+  }
+  .badge {
+    font-size: 0.55rem;
+    padding: 1px 5px;
+  }
+  .editBtn,
+  .deleteBtn {
+    padding: 3px 5px;
+    min-block-size: 24px;
+  }
+  .filterSelect {
+    font-size: 0.7rem;
+    padding: 5px 6px;
+  }
 }
 
 /* ─── Add Button ──────────────────────────────────────────────────────────── */
@@ -90,10 +347,18 @@
   transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), transform
     var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
-.kpiItem:nth-child(1) { animation-delay: 0ms; }
-.kpiItem:nth-child(2) { animation-delay: 60ms; }
-.kpiItem:nth-child(3) { animation-delay: 120ms; }
-.kpiItem:nth-child(4) { animation-delay: 180ms; }
+.kpiItem:nth-child(1) {
+  animation-delay: 0ms;
+}
+.kpiItem:nth-child(2) {
+  animation-delay: 60ms;
+}
+.kpiItem:nth-child(3) {
+  animation-delay: 120ms;
+}
+.kpiItem:nth-child(4) {
+  animation-delay: 180ms;
+}
 
 .kpiItem:hover {
   box-shadow: var(--ds-shadow-md);
@@ -275,7 +540,7 @@
 }
 /* Row hover glow — accent bar on inline-start (million-dollar premium) */
 .row::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-inline-start: 0;
   inset-block: 0;

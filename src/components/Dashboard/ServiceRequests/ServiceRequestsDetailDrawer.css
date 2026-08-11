@@ -454,3 +454,142 @@
   grid-template-columns: 1fr 1fr;
   gap: 6px;
 }
+
+/* ── Mobile Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .at-srq-drawer__tab {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .at-srq-drawer__tab-badge {
+    min-width: 16px;
+    height: 16px;
+    font-size: 9px;
+  }
+
+  .at-srq-drawer__timeline-item {
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+
+  .at-srq-drawer__timeline-dot {
+    width: 12px;
+    height: 12px;
+  }
+
+  .at-srq-drawer__timeline-status {
+    font-size: 11px;
+  }
+
+  .at-srq-drawer__timeline-by {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__timeline-note {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__timeline-time {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__note-info {
+    padding: 8px 10px;
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__note-compose {
+    padding: 10px;
+  }
+
+  .at-srq-drawer__textarea {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+
+  .at-srq-drawer__note-compose-foot {
+    gap: 6px;
+  }
+
+  .at-srq-drawer__checkbox-label {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__btn-primary {
+    height: 30px;
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+
+  .at-srq-drawer__msg {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__empty-hint {
+    font-size: 11px;
+    padding: 16px 0;
+  }
+
+  .at-srq-drawer__note {
+    padding: 8px 10px;
+  }
+
+  .at-srq-drawer__note-author {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__note-tag {
+    padding: 1px 5px;
+    font-size: 9px;
+  }
+
+  .at-srq-drawer__note-time {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__note-content {
+    font-size: 11px;
+  }
+
+  .at-srq-drawer__upload-area {
+    padding: 10px;
+  }
+
+  .at-srq-drawer__input {
+    height: 30px;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+
+  .at-srq-drawer__upload-hint {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__attachment {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+
+  .at-srq-drawer__attachment-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .at-srq-drawer__attachment-name {
+    font-size: 11px;
+  }
+
+  .at-srq-drawer__attachment-meta {
+    font-size: 10px;
+  }
+
+  .at-srq-drawer__attachment-action {
+    width: 26px;
+    height: 26px;
+  }
+
+  .at-srq-drawer__meta-grid {
+    grid-template-columns: 1fr;
+  }
+}

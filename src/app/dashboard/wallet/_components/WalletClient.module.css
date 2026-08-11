@@ -6,6 +6,30 @@
   flex-direction: column;
   gap: var(--ds-space-5);
   max-inline-size: 720px;
+  position: relative;
+  isolation: isolate;
+}
+
+/* Ambient signature — subtle radial glow (million-dollar premium) */
+.page::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -15%;
+  inset-inline-end: -15%;
+  width: 55%;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in oklch, var(--ds-brand-500) 5%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, oklch(0% 0 0) 30%, transparent 70%);
+}
+.page > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── KYC Banner ──────────────────────────────────────────────────────────── */
@@ -986,5 +1010,420 @@
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Mobile Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 48rem) {
+  .page {
+    gap: var(--ds-space-3);
+  }
+
+  /* KYC Banner */
+  .kycBanner {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .kycBannerText {
+    font-size: var(--ds-text-xs);
+  }
+
+  .kycBannerLink {
+    font-size: var(--ds-text-xs);
+    padding: 3px 8px;
+  }
+
+  /* Hero */
+  .hero {
+    padding: var(--ds-space-4) var(--ds-space-4) var(--ds-space-3);
+    border-radius: var(--ds-radius-xl);
+  }
+
+  .heroEyebrow {
+    font-size: var(--ds-text-xs);
+    margin-bottom: var(--ds-space-1);
+  }
+
+  .heroBalance {
+    font-size: var(--ds-text-2xl);
+  }
+
+  .heroCurrency {
+    font-size: var(--ds-text-base);
+  }
+
+  .heroMeta {
+    margin-top: var(--ds-space-2);
+    gap: var(--ds-space-1-5);
+  }
+
+  .heroBadge {
+    font-size: var(--ds-text-xs);
+    padding: 2px 8px;
+  }
+
+  .heroName {
+    font-size: var(--ds-text-xs);
+  }
+
+  .heroAmbientSvg {
+    width: 200px;
+    height: 200px;
+    top: -30px;
+    inset-inline-end: -20px;
+  }
+
+  .accountTabs {
+    margin-top: var(--ds-space-3);
+  }
+
+  .accountTab {
+    font-size: var(--ds-text-xs);
+    padding: 3px 10px;
+  }
+
+  /* Actions */
+  .actions {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ds-space-2);
+  }
+
+  .actionBtn {
+    padding: var(--ds-space-2) var(--ds-space-1);
+    gap: var(--ds-space-1);
+  }
+
+  .actionIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .actionIcon > * {
+    width: 18px;
+    height: 18px;
+  }
+
+  .actionLabel {
+    font-size: 11px;
+  }
+
+  /* Transactions */
+  .txSection {
+    border-radius: var(--ds-radius-lg);
+  }
+
+  .txHeader {
+    padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-2);
+  }
+
+  .txTitle {
+    font-size: var(--ds-text-sm);
+  }
+
+  .txCount {
+    font-size: var(--ds-text-xs);
+  }
+
+  .txRow {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .txDotCredit,
+  .txDotDebit {
+    width: 28px;
+    height: 28px;
+  }
+
+  .txDotCredit > *,
+  .txDotDebit > * {
+    width: 12px;
+    height: 12px;
+  }
+
+  .txDesc {
+    font-size: var(--ds-text-xs);
+  }
+
+  .txDate {
+    font-size: 10px;
+  }
+
+  .txAmount {
+    font-size: var(--ds-text-xs);
+  }
+
+  .txBalance {
+    font-size: 10px;
+  }
+
+  .txEmpty {
+    padding: var(--ds-space-6) var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .txEmptyIcon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .txEmptyTitle {
+    font-size: var(--ds-text-sm);
+  }
+
+  .txEmptyDesc {
+    font-size: var(--ds-text-xs);
+  }
+
+  .txError {
+    padding: var(--ds-space-4) var(--ds-space-3);
+    font-size: var(--ds-text-xs);
+  }
+
+  .txSkeleton {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .skDot {
+    width: 28px;
+    height: 28px;
+  }
+
+  .skLine {
+    height: 10px;
+  }
+
+  .loadMore {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .loadMoreBtn {
+    font-size: var(--ds-text-xs);
+  }
+
+  /* Modal */
+  .modalOverlay {
+    padding: var(--ds-space-2);
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 90svh;
+    border-radius: var(--ds-radius-xl) var(--ds-radius-xl) 0 0;
+    overflow-y: auto;
+  }
+
+  .modalHead {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  .modalTitle {
+    font-size: var(--ds-text-sm);
+  }
+
+  .modalBody {
+    padding: var(--ds-space-4);
+    gap: var(--ds-space-3);
+  }
+
+  .modalHint {
+    font-size: var(--ds-text-xs);
+  }
+
+  .fieldLabel {
+    font-size: var(--ds-text-xs);
+  }
+
+  .fieldInput {
+    padding: var(--ds-space-2) var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+  }
+
+  .fieldHint {
+    font-size: var(--ds-text-xs);
+  }
+
+  .quickBtns {
+    gap: var(--ds-space-1);
+  }
+
+  .quickBtn {
+    font-size: 11px;
+    padding: var(--ds-space-1) var(--ds-space-2);
+  }
+
+  .primaryBtn {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .outlineBtn {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .successBox {
+    padding: var(--ds-space-3) 0;
+    gap: var(--ds-space-1-5);
+  }
+
+  .successBox > svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .successTitle {
+    font-size: var(--ds-text-sm);
+  }
+
+  .successAmt {
+    font-size: var(--ds-text-lg);
+  }
+
+  .instructionBox {
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-1-5);
+  }
+
+  .instructionLabel {
+    font-size: var(--ds-text-xs);
+  }
+
+  .instructionText {
+    font-size: var(--ds-text-xs);
+  }
+
+  .txnRefBox {
+    font-size: var(--ds-text-xs);
+    padding: var(--ds-space-1-5) var(--ds-space-2);
+  }
+
+  .otpHint {
+    padding: var(--ds-space-2) var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+    gap: var(--ds-space-1-5);
+  }
+
+  .otpHint > svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .inlineError {
+    padding: var(--ds-space-2) var(--ds-space-2);
+    font-size: var(--ds-text-xs);
+  }
+
+  /* No customer */
+  .noCustomer {
+    padding: var(--ds-space-6) var(--ds-space-3);
+    gap: var(--ds-space-3);
+  }
+
+  .noCustomer > svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .noCustomerTitle {
+    font-size: var(--ds-text-base);
+  }
+
+  .noCustomerDesc {
+    font-size: var(--ds-text-xs);
+  }
+
+  .ctaLink {
+    padding: var(--ds-space-2) var(--ds-space-4);
+    font-size: var(--ds-text-xs);
+  }
+
+  /* FX */
+  .fxRow {
+    grid-template-columns: 1fr;
+    gap: var(--ds-space-2);
+  }
+
+  .fxSwapBtn {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+  }
+
+  .fxQuote {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    gap: 4px;
+    font-size: var(--ds-text-xs);
+  }
+
+  .fxQuoteTotalRow {
+    font-size: var(--ds-text-xs);
+  }
+
+  .fxDetailsGrid {
+    font-size: var(--ds-text-xs);
+  }
+}
+
+@media (max-width: 30rem) {
+  .hero {
+    padding: var(--ds-space-3);
+  }
+
+  .heroBalance {
+    font-size: var(--ds-text-xl);
+  }
+
+  .heroCurrency {
+    font-size: var(--ds-text-sm);
+  }
+
+  .heroAmbientSvg {
+    width: 150px;
+    height: 150px;
+    top: -20px;
+    inset-inline-end: -10px;
+  }
+
+  .actions {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--ds-space-1-5);
+  }
+
+  .actionBtn {
+    padding: var(--ds-space-1-5) var(--ds-space-1);
+  }
+
+  .actionIcon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .actionIcon > * {
+    width: 16px;
+    height: 16px;
+  }
+
+  .actionLabel {
+    font-size: 10px;
+  }
+
+  .txRow {
+    padding: var(--ds-space-2);
+  }
+
+  .txDotCredit,
+  .txDotDebit {
+    width: 24px;
+    height: 24px;
+  }
+
+  .noCustomer {
+    padding: var(--ds-space-5) var(--ds-space-2);
+  }
+
+  .noCustomerTitle {
+    font-size: var(--ds-text-sm);
   }
 }

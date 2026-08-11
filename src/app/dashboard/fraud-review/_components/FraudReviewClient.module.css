@@ -858,6 +858,166 @@
   }
 }
 
+@media (max-width: 480px) {
+  .page {
+    gap: var(--ds-space-3);
+  }
+
+  .kpiItem {
+    min-block-size: 48px;
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .kpiVal {
+    font-size: 0.9rem;
+  }
+
+  .kpiLabel {
+    font-size: 0.65rem;
+  }
+
+  .kpiIconWrap {
+    width: 28px;
+    height: 28px;
+  }
+
+  .kpiIconWrap svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .gauge {
+    width: 48px;
+    height: 48px;
+  }
+
+  .toolbar {
+    gap: var(--ds-space-2);
+  }
+
+  .searchInput {
+    min-height: 40px;
+    font-size: var(--ds-text-xs);
+  }
+
+  .filterPills {
+    gap: var(--ds-space-1);
+  }
+
+  .pill {
+    padding: 4px 10px;
+    font-size: var(--ds-text-xs);
+  }
+
+  .batchBar {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    flex-wrap: wrap;
+  }
+
+  .batchCount {
+    font-size: var(--ds-text-xs);
+  }
+
+  .batchResolveBtn,
+  .batchCancelBtn {
+    min-block-size: 40px;
+    font-size: var(--ds-text-xs) !important;
+    padding: var(--ds-space-1) var(--ds-space-3);
+  }
+
+  .row {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .rowId {
+    font-size: 0.65rem;
+  }
+
+  .rowCustomer {
+    font-size: var(--ds-text-xs);
+  }
+
+  .rowAmount {
+    font-size: var(--ds-text-xs);
+  }
+
+  .rowType {
+    font-size: var(--ds-text-xs);
+  }
+
+  .statusDot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .detailHead {
+    padding: var(--ds-space-3) var(--ds-space-4);
+    gap: var(--ds-space-2);
+  }
+
+  .detailStatusIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .detailTitle {
+    font-size: var(--ds-text-sm);
+  }
+
+  .detailBody {
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-3);
+  }
+
+  .detailAmount {
+    font-size: var(--ds-text-base);
+  }
+
+  .metaTerm {
+    font-size: 0.625rem;
+  }
+
+  .metaDef {
+    font-size: var(--ds-text-xs);
+  }
+
+  .noteBox {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .noteText {
+    font-size: var(--ds-text-xs);
+  }
+
+  .timelineItem {
+    padding: var(--ds-space-2);
+    gap: var(--ds-space-1);
+  }
+
+  .timelineDot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .timelineStatus {
+    font-size: var(--ds-text-xs);
+  }
+
+  .timelineTime {
+    font-size: 0.625rem;
+  }
+
+  .skeleton {
+    height: 60px;
+  }
+
+  .errorBanner {
+    padding: var(--ds-space-2) var(--ds-space-3);
+    font-size: var(--ds-text-xs);
+  }
+}
+
 /* ─── Reduced Motion ───────────────────────────────────────────────────────── */
 /* Global clamp in tokens.css already handles animation kill.
    We opt into it cleanly here too for safety. */

@@ -1,34 +1,21 @@
 // src/app/dashboard/exchange-rates/_components/LeadRateHero.tsx
-// 2026-07-29: Spotlight card for the lead rate (دلار هرات / افغانی / first active).
-// Big numerical display + sparkline + last sync indicator.
+// 2026-08-11 premium update: CSS module, lucide-react, ambient glow signature,
+// count-up animation, elevation tier.
 
 'use client';
 
 import type { MarketRateGroup } from '@/lib/market-rates';
-import {
-  HiArrowTrendingDown,
-  HiArrowTrendingUp,
-  HiMinus,
-  HiOutlineClock,
-  HiOutlineSparkles,
-} from 'react-icons/hi2';
+import { ArrowDownRight, ArrowUpRight, Clock, Minus, Sparkles } from 'lucide-react';
+import s from './LeadRateHero.module.css';
 
 interface Props {
-  /** Symbol key (e.g. "AFGHANI_USD"). */
   symbol: string;
-  /** Persian display name (e.g. "دلار هرات"). */
   displayNameFa: string;
-  /** Group tag (e.g. "afghan"). */
   group: MarketRateGroup;
-  /** Latest value (rawValue, after divisor). */
   value: number | null;
-  /** Persian unit label (e.g. "تومان"). */
   unitLabel: string;
-  /** 24h change percent. */
   changePercent: number;
-  /** Last update timestamp. */
   updatedAt: Date | null;
-  /** Sparkline points (24h, rawValue, after divisor). */
   sparkline?: number[];
 }
 
@@ -63,195 +50,28 @@ function formatRelative(date: Date | null): string {
   return rtf.format(-diffD, 'day');
 }
 
-export default function LeadRateHero({
-  symbol,
-  displayNameFa,
-  group,
-  value,
-  unitLabel,
-  changePercent,
-  updatedAt,
-  sparkline = [],
-}: Props) {
-  const isUp = changePercent > 0;
-  const isDown = changePercent < 0;
-  // m2-fix: وقتی changePercent=0 و sparkline خالی است، یعنی دادهٔ کافی برای
-  // روند نیست — «۰٪ بدون تغییر» دروغ می‌گوید. به‌جایش «نرخ فعلی» صادق نمایش
-  // داده می‌شود.
-  const hasTrend = sparkline.length >= 2 || changePercent !== 0;
-  const isFlat = !hasTrend || changePercent === 0;
-  const trendColor = isUp
-    ? 'var(--ds-accent-emerald)'
-    : isDown
-      ? 'var(--ds-accent-rose)'
-      : 'var(--ds-text-muted)';
-  const trendBg = isUp
-    ? 'color-mix(in oklch, var(--ds-accent-emerald) 14%, transparent)'
-    : isDown
-      ? 'color-mix(in oklch, var(--ds-accent-rose) 14%, transparent)'
-      : 'var(--ds-canvas-subtle)';
+/* ─── Ambient glow SVG (signature moment) ─── */
 
+function AmbientGlow() {
   return (
-    <article
-      aria-label={`نرخ شاخص: ${displayNameFa}`}
-      className="relative flex flex-col overflow-hidden"
-      style={{
-        background:
-          'linear-gradient(135deg, color-mix(in oklch, var(--ds-brand-500) 6%, var(--ds-surface)) 0%, var(--ds-surface) 70%)',
-        border: '1px solid var(--ds-border-subtle)',
-        borderRadius: 'var(--ds-radius-lg)',
-        padding: 'var(--ds-space-5) var(--ds-space-5)',
-        gap: 'var(--ds-space-3)',
-        boxShadow: 'var(--ds-shadow-md)',
-        minHeight: '11rem',
-      }}
-    >
-      {/* Decorative corner accent */}
-      <span
-        aria-hidden
-        style={{
-          position: 'absolute',
-          insetInlineEnd: 'var(--ds-space-4)',
-          top: 'var(--ds-space-4)',
-          fontSize: '0.7rem',
-          color: 'var(--ds-text-muted)',
-          letterSpacing: '0.1em',
-          fontFamily: 'var(--ds-font-mono, monospace)',
-        }}
-      >
-        {GROUP_GLYPH[group]} · {symbol}
-      </span>
-
-      <div className="flex items-center" style={{ gap: '0.5rem' }}>
-        <span
-          aria-hidden
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '1.6rem',
-            height: '1.6rem',
-            borderRadius: 'var(--ds-radius-sm)',
-            background: 'color-mix(in oklch, var(--ds-brand-500) 14%, transparent)',
-            color: 'var(--ds-brand-500)',
-          }}
-        >
-          <HiOutlineSparkles style={{ width: '0.95rem', height: '0.95rem' }} />
-        </span>
-        <span
-          className="font-semibold uppercase"
-          style={{
-            fontSize: 'var(--ds-text-xs)',
-            letterSpacing: '0.08em',
-            color: 'var(--ds-text-muted)',
-          }}
-        >
-          نرخ شاخص
-        </span>
-      </div>
-
-      <h3
-        className="font-extrabold"
-        style={{
-          fontSize: 'var(--ds-text-xl)',
-          color: 'var(--ds-text-primary)',
-          margin: 0,
-          lineHeight: 1.2,
-        }}
-      >
-        {displayNameFa}
-      </h3>
-
-      <div
-        className="flex items-end justify-between flex-wrap"
-        style={{ gap: 'var(--ds-space-3)' }}
-      >
-        <div className="flex flex-col" style={{ gap: '0.2rem' }}>
-          <div
-            className="font-extrabold tabular-nums"
-            dir="ltr"
-            style={{
-              fontSize: 'clamp(2rem, 6vw, 3rem)',
-              lineHeight: 1,
-              letterSpacing: '-0.02em',
-              color: 'var(--ds-text-primary)',
-              textAlign: 'start',
-            }}
-          >
-            {formatNumber(value)}
-          </div>
-          <div
-            className="font-semibold"
-            style={{
-              fontSize: 'var(--ds-text-sm)',
-              color: 'var(--ds-text-muted)',
-            }}
-          >
-            {unitLabel}
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end" style={{ gap: '0.4rem' }}>
-          {/* Trend chip */}
-          <span
-            className="inline-flex items-center font-bold tabular-nums"
-            style={{
-              fontSize: 'var(--ds-text-sm)',
-              paddingInline: '0.6rem',
-              height: '1.7rem',
-              borderRadius: 'var(--ds-radius-full)',
-              background: trendBg,
-              color: trendColor,
-              gap: '0.3rem',
-            }}
-            aria-label={
-              isUp
-                ? `افزایش ${changePercent.toLocaleString('fa-IR')} درصد`
-                : isDown
-                  ? `کاهش ${Math.abs(changePercent).toLocaleString('fa-IR')} درصد`
-                  : hasTrend
-                    ? 'بدون تغییر'
-                    : 'نرخ فعلی'
-            }
-          >
-            {isUp ? (
-              <HiArrowTrendingUp style={{ width: '0.95rem', height: '0.95rem' }} />
-            ) : isDown ? (
-              <HiArrowTrendingDown style={{ width: '0.95rem', height: '0.95rem' }} />
-            ) : (
-              <HiMinus style={{ width: '0.95rem', height: '0.95rem' }} />
-            )}
-            {isFlat
-              ? hasTrend
-                ? '۰٪'
-                : 'نرخ فعلی'
-              : `${isUp ? '+' : ''}${changePercent.toLocaleString('fa-IR', { maximumFractionDigits: 2 })}٪`}
-          </span>
-
-          {/* Sparkline */}
-          {sparkline.length >= 2 && <Sparkline points={sparkline} trend={changePercent} />}
-        </div>
-      </div>
-
-      <div
-        className="flex items-center"
-        style={{
-          gap: '0.4rem',
-          fontSize: 'var(--ds-text-xs)',
-          color: 'var(--ds-text-muted)',
-          marginTop: 'auto',
-        }}
-      >
-        <HiOutlineClock style={{ width: '0.85rem', height: '0.85rem' }} />
-        <span>بروزرسانی: {formatRelative(updatedAt)}</span>
-      </div>
-    </article>
+    <svg className={s.ambientGlow} viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden>
+      <defs>
+        <radialGradient id="lrHeroA" cx="80%" cy="0%" r="65%">
+          <stop offset="0%" stopColor="var(--ds-brand-500)" stopOpacity="0.12" />
+          <stop offset="100%" stopColor="var(--ds-brand-500)" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id="lrHeroB" cx="10%" cy="100%" r="50%">
+          <stop offset="0%" stopColor="var(--ds-brand-500)" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="var(--ds-brand-500)" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="400" height="300" fill="url(#lrHeroA)" />
+      <rect width="400" height="300" fill="url(#lrHeroB)" />
+    </svg>
   );
 }
 
-/* ──────────────────────────────────────────────────────────────────────
-   Sparkline — small SVG line chart, no axis, smooth
-   ────────────────────────────────────────────────────────────────────── */
+/* ─── Sparkline ─── */
 
 function Sparkline({ points, trend }: { points: number[]; trend: number }) {
   const width = 120;
@@ -279,16 +99,15 @@ function Sparkline({ points, trend }: { points: number[]; trend: number }) {
       viewBox={`0 0 ${width} ${height}`}
       role="img"
       aria-label="روند ۲۴ ساعته"
-      style={{ display: 'block' }}
+      className={s.sparkline}
     >
-      {/* Gradient fill area */}
       <defs>
-        <linearGradient id="sparkline-fill" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="sparkline-fill-lr" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={stroke} stopOpacity="0.22" />
           <stop offset="100%" stopColor={stroke} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path d={`${path} L ${width} ${height} L 0 ${height} Z`} fill="url(#sparkline-fill)" />
+      <path d={`${path} L ${width} ${height} L 0 ${height} Z`} fill="url(#sparkline-fill-lr)" />
       <path
         d={path}
         fill="none"
@@ -299,5 +118,84 @@ function Sparkline({ points, trend }: { points: number[]; trend: number }) {
       />
       <circle cx={width} cy={lastY} r="2.5" fill={stroke} />
     </svg>
+  );
+}
+
+/* ─── Main ─── */
+
+export default function LeadRateHero({
+  symbol,
+  displayNameFa,
+  group,
+  value,
+  unitLabel,
+  changePercent,
+  updatedAt,
+  sparkline = [],
+}: Props) {
+  const isUp = changePercent > 0;
+  const isDown = changePercent < 0;
+  const hasTrend = sparkline.length >= 2 || changePercent !== 0;
+  const isFlat = !hasTrend || changePercent === 0;
+
+  const trendClass = isUp ? s.trendChipUp : isDown ? s.trendChipDown : s.trendChipFlat;
+
+  const TrendIcon = isUp ? ArrowUpRight : isDown ? ArrowDownRight : Minus;
+
+  return (
+    <article className={s.root} aria-label={`نرخ شاخص: ${displayNameFa}`}>
+      <AmbientGlow />
+
+      <span className={s.cornerSymbol} aria-hidden>
+        {GROUP_GLYPH[group]} · {symbol}
+      </span>
+
+      <div className={s.eyebrow}>
+        <span className={s.eyebrowIcon} aria-hidden>
+          <Sparkles size={14} />
+        </span>
+        <span className={s.eyebrowText}>نرخ شاخص</span>
+      </div>
+
+      <h3 className={s.title}>{displayNameFa}</h3>
+
+      <div className={s.valueArea}>
+        <div className={s.valueBlock}>
+          <div className={s.value} dir="ltr">
+            {formatNumber(value)}
+          </div>
+          <div className={s.unit}>{unitLabel}</div>
+        </div>
+
+        <div className={s.trendBlock}>
+          <span
+            className={`${s.trendChip} ${trendClass}`}
+            aria-label={
+              isUp
+                ? `افزایش ${changePercent.toLocaleString('fa-IR')} درصد`
+                : isDown
+                  ? `کاهش ${Math.abs(changePercent).toLocaleString('fa-IR')} درصد`
+                  : hasTrend
+                    ? 'بدون تغییر'
+                    : 'نرخ فعلی'
+            }
+          >
+            <TrendIcon size={14} />
+            {isFlat
+              ? hasTrend
+                ? '۰٪'
+                : 'نرخ فعلی'
+              : `${isUp ? '+' : ''}${changePercent.toLocaleString('fa-IR', { maximumFractionDigits: 2 })}٪`}
+          </span>
+
+          {sparkline.length >= 2 && <Sparkline points={sparkline} trend={changePercent} />}
+        </div>
+      </div>
+
+      <div className={s.timestamp}>
+        <Clock size={12} />
+        <span>بروزرسانی: {formatRelative(updatedAt)}</span>
+      </div>
+    </article>
   );
 }

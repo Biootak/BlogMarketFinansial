@@ -984,42 +984,362 @@
    RESPONSIVE ADJUSTMENTS
    ══════════════════════════════════════════════════════════════════════════════ */
 
-@media (max-width: 640px) {
+/* ── Tablet (≤1023px) ─────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .root {
+    gap: var(--ds-space-4);
+    padding-block-end: var(--ds-space-6);
+  }
   .kpiStrip {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .toolbar {
-    flex-direction: column;
-    align-items: flex-start;
     gap: var(--ds-space-2);
-    position: static;
   }
-
-  .toolbarEnd {
-    inline-size: 100%;
-    justify-content: flex-end;
-  }
-
-  .item {
+  .kpiCard {
     padding: var(--ds-space-3);
   }
-
-  .itemActions {
-    opacity: 1; /* always visible on mobile */
+  .kpiIcon {
+    inline-size: 28px;
+    block-size: 28px;
   }
-
-  .itemTypeBadge {
-    display: none; /* compact on mobile */
+  .kpiValue {
+    font-size: var(--ds-text-xl);
+  }
+  .toolbar {
+    padding: 6px 10px;
+    gap: var(--ds-space-1);
+  }
+  .tab {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+  }
+  .markAllBtn,
+  .clearBtn {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+  .item {
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+  .itemIcon {
+    inline-size: 34px;
+    block-size: 34px;
+  }
+  .dateGroupLabel {
+    padding-inline: var(--ds-space-3);
+  }
+  .emptyWell {
+    padding: var(--ds-space-8) var(--ds-space-4);
+  }
+  .bulkBar {
+    padding: 8px 12px;
+    gap: var(--ds-space-2);
   }
 }
 
-@media (max-width: 400px) {
-  .kpiStrip {
-    grid-template-columns: 1fr 1fr;
+/* ── Mobile (≤720px) ─────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .root {
+    gap: 0.5rem;
+    padding-block-end: var(--ds-space-4);
   }
-
+  .kpiStrip {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.35rem;
+  }
+  .kpiCard {
+    padding: 0.5rem 0.4rem;
+    gap: 0.1rem;
+    border-radius: var(--ds-radius-md);
+  }
+  .kpiCard::before {
+    block-size: 1.5px;
+  }
+  .kpiIcon {
+    inline-size: 24px;
+    block-size: 24px;
+    border-radius: var(--ds-radius-sm);
+    margin-block-end: 0.15rem;
+  }
+  .kpiIcon svg {
+    width: 12px;
+    height: 12px;
+  }
   .kpiValue {
-    font-size: var(--ds-text-xl);
+    font-size: var(--ds-text-base);
+  }
+  .kpiLabel {
+    font-size: 0.58rem;
+    letter-spacing: 0.03em;
+  }
+  .kpiTrend {
+    font-size: 0.6rem;
+    margin-block-start: 0.1rem;
+  }
+  .toolbar {
+    padding: 0.35rem 0.45rem;
+    gap: 0.25rem;
+    border-radius: var(--ds-radius-md);
+    position: relative;
+    inset-block-start: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .toolbarStart {
+    gap: 0.2rem;
+  }
+  .toolbarEnd {
+    gap: 0.2rem;
+    flex-shrink: 0;
+  }
+  .tabs {
+    padding: 2px;
+    gap: 1px;
+    border-radius: var(--ds-radius-md);
+  }
+  .tab {
+    padding: 3px 7px;
+    font-size: 0.7rem;
+    gap: 3px;
+    border-radius: var(--ds-radius-sm);
+    white-space: nowrap;
+  }
+  .tabBadge {
+    min-inline-size: 15px;
+    block-size: 15px;
+    padding-inline: 3px;
+    font-size: 9px;
+  }
+  .tabCount {
+    min-inline-size: 14px;
+    block-size: 14px;
+    padding-inline: 3px;
+    font-size: 9px;
+  }
+  .markAllBtn,
+  .clearBtn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    gap: 0.15rem;
+    border-radius: var(--ds-radius-sm);
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  .headerActions {
+    gap: 0.2rem;
+  }
+  .dateGroupLabel {
+    padding-block: 0.3rem;
+    padding-inline: 0.5rem;
+    gap: 0.3rem;
+  }
+  .dateGroupLabelText {
+    font-size: 0.6rem;
+    letter-spacing: 0.05em;
+  }
+  .list {
+    gap: 0.3rem;
+  }
+  .listCard {
+    border-radius: var(--ds-radius-md);
+  }
+  .item {
+    padding: 0.55rem 0.5rem;
+    gap: 0.4rem;
+  }
+  .itemIcon {
+    inline-size: 30px;
+    block-size: 30px;
+    border-radius: var(--ds-radius-md);
+  }
+  .itemIcon svg {
+    width: 14px;
+    height: 14px;
+  }
+  .itemContent {
+    gap: 2px;
+  }
+  .itemHeader {
+    gap: 0.3rem;
+  }
+  .itemTypeBadge {
+    padding: 1px 5px;
+    font-size: 9px;
+    gap: 2px;
+  }
+  .itemMsg {
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+  .itemTime {
+    font-size: 0.62rem;
+  }
+  .itemActions {
+    gap: 3px;
+  }
+  .readBtn,
+  .deleteBtn {
+    inline-size: 24px;
+    block-size: 24px;
+    border-radius: var(--ds-radius-sm);
+  }
+  .readBtn svg,
+  .deleteBtn svg {
+    width: 12px;
+    height: 12px;
+  }
+  .unreadDot {
+    inset-inline-start: 10px;
+    inline-size: 5px;
+    block-size: 5px;
+  }
+  .item::before {
+    inline-size: 2px;
+  }
+  .itemCheckbox {
+    inline-size: 15px;
+    block-size: 15px;
+    border-radius: 4px;
+  }
+  .bulkBar {
+    padding: 6px 10px;
+    gap: 0.4rem;
+    border-radius: var(--ds-radius-md);
+    flex-wrap: wrap;
+  }
+  .bulkCount {
+    font-size: 0.72rem;
+  }
+  .bulkActions {
+    gap: 0.2rem;
+  }
+  .bulkBtn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    gap: 3px;
+    border-radius: var(--ds-radius-sm);
+  }
+  .emptyWell {
+    padding: var(--ds-space-6) var(--ds-space-3);
+    gap: 0.5rem;
+    border-radius: var(--ds-radius-md);
+  }
+  .emptyIcon {
+    inline-size: 40px;
+    block-size: 40px;
+    border-radius: var(--ds-radius-md);
+  }
+  .emptyTitle {
+    font-size: var(--ds-text-sm);
+  }
+  .emptyDesc {
+    font-size: 0.72rem;
+    max-inline-size: 240px;
+  }
+  .countStrip {
+    gap: 0.4rem;
+    font-size: 0.62rem;
+  }
+}
+
+/* ── Small mobile (≤480px) ───────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .kpiStrip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.3rem;
+  }
+  .kpiCard {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 0.4rem 0.45rem;
+  }
+  .kpiIcon {
+    inline-size: 22px;
+    block-size: 22px;
+    margin-block-end: 0;
+  }
+  .kpiValue {
+    font-size: 0.9rem;
+  }
+  .kpiLabel {
+    font-size: 0.55rem;
+  }
+  .kpiTrend {
+    display: none;
+  }
+  .toolbar {
+    padding: 0.3rem 0.4rem;
+  }
+  .tab {
+    padding: 2px 6px;
+    font-size: 0.65rem;
+  }
+  .markAllBtn,
+  .clearBtn {
+    padding: 3px 6px;
+    font-size: 0.65rem;
+  }
+  .item {
+    padding: 0.5rem 0.45rem;
+  }
+  .itemIcon {
+    inline-size: 26px;
+    block-size: 26px;
+  }
+  .itemMsg {
+    font-size: 0.7rem;
+  }
+  .itemTime {
+    font-size: 0.58rem;
+  }
+  .itemTypeBadge {
+    display: none;
+  }
+}
+
+/* ── Ultra-small (≤360px) ────────────────────────────────────────────── */
+@media (max-width: 360px) {
+  .root {
+    gap: 0.4rem;
+  }
+  .kpiStrip {
+    gap: 0.25rem;
+  }
+  .kpiCard {
+    padding: 0.35rem 0.4rem;
+  }
+  .kpiIcon {
+    inline-size: 20px;
+    block-size: 20px;
+  }
+  .kpiValue {
+    font-size: 0.8rem;
+  }
+  .kpiLabel {
+    font-size: 0.5rem;
+  }
+  .toolbar {
+    padding: 0.25rem 0.35rem;
+  }
+  .tab {
+    font-size: 0.6rem;
+    padding: 2px 5px;
+  }
+  .item {
+    padding: 0.45rem 0.4rem;
+  }
+  .itemIcon {
+    inline-size: 24px;
+    block-size: 24px;
+  }
+  .itemMsg {
+    font-size: 0.68rem;
+  }
+  .emptyWell {
+    padding: var(--ds-space-5) var(--ds-space-2);
   }
 }

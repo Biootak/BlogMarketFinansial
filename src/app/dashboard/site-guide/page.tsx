@@ -9,5 +9,9 @@ export default async function SiteGuidePage() {
   if (!session?.user) redirect('/auth?callbackUrl=/dashboard/site-guide');
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN'].includes(role)) redirect('/forbidden');
-  return <SiteGuideContent userRole={role as 'OWNER' | 'SUPERADMIN' | 'ADMIN'} />;
+  return (
+    <div className="route-frame">
+      <SiteGuideContent userRole={role as 'OWNER' | 'SUPERADMIN' | 'ADMIN'} />
+    </div>
+  );
 }

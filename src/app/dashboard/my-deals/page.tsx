@@ -30,11 +30,10 @@ export default async function MyDealsPage() {
         title="معاملات ارزی من"
         description="تاریخچه و وضعیت معاملات ارزی شما در پلتفرم"
         eyebrow="مالی"
-        icon="receipt"
+        icon="file-text"
         accent="amber"
       />
       <MyDealsClient />
     </div>
   );
 }
-

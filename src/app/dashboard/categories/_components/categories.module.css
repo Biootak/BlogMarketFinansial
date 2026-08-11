@@ -52,11 +52,19 @@
   grid-template-columns: auto auto minmax(0, 1fr) auto;
   grid-template-areas: "index icon main actions";
   align-items: center;
-  gap: var(--ds-space-3);
-  padding: var(--ds-space-3) var(--ds-space-4);
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
   border-block-end: 1px solid var(--ds-border-subtle);
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
     var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+/* دسکتاپ: فاصله بیشتر */
+@media (min-width: 40rem) {
+  .entry {
+    gap: var(--ds-space-3);
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
 }
 
 .entry:last-child {
@@ -64,22 +72,25 @@
 }
 
 .entry:hover {
-  background: color-mix(
-    in oklch,
-    var(--nova-primary, var(--ds-brand-500)) 4%,
-    var(--ds-surface)
-  );
+  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 4%, var(--ds-surface));
 }
 
 /* شمارهٔ مدخل — شمارنده در CSS است، نه در props (مثل obs) */
 .index {
   grid-area: index;
   flex: none;
-  inline-size: 1.25rem;
+  inline-size: 1rem;
   color: var(--ds-text-muted);
-  font: 500 0.68rem / 1.6 var(--ds-font-mono, ui-monospace, monospace);
+  font: 500 0.6rem / 1.6 var(--ds-font-mono, ui-monospace, monospace);
   letter-spacing: 0.04em;
   text-align: center;
+}
+
+@media (min-width: 40rem) {
+  .index {
+    inline-size: 1.25rem;
+    font-size: 0.68rem;
+  }
 }
 
 .index::before {
@@ -91,8 +102,8 @@
 
 .iconChip {
   grid-area: icon;
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
   display: grid;
   place-items: center;
   border-radius: var(--ds-radius-md);
@@ -104,6 +115,25 @@
   color: var(--nova-primary, var(--ds-brand-600, #4f46e5));
   flex: none;
   transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+@media (min-width: 40rem) {
+  .iconChip {
+    inline-size: 2.25rem;
+    block-size: 2.25rem;
+  }
+}
+
+.iconChip svg {
+  inline-size: 12px;
+  block-size: 12px;
+}
+
+@media (min-width: 40rem) {
+  .iconChip svg {
+    inline-size: 15px;
+    block-size: 15px;
+  }
 }
 
 .entry:hover .iconChip {
@@ -121,19 +151,32 @@
   grid-area: main;
   display: flex;
   align-items: center;
-  gap: var(--ds-space-3);
+  gap: var(--ds-space-2);
   min-inline-size: 0;
   flex-wrap: wrap;
+}
+
+@media (min-width: 40rem) {
+  .main {
+    gap: var(--ds-space-3);
+  }
 }
 
 .name {
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-primary);
-  font-size: var(--ds-text-sm);
+  font-size: 0.75rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-inline-size: 22ch;
+  max-inline-size: 14ch;
+}
+
+@media (min-width: 40rem) {
+  .name {
+    font-size: var(--ds-text-sm);
+    max-inline-size: 22ch;
+  }
 }
 
 .nameChild {
@@ -143,34 +186,57 @@
 
 .slug {
   font-family: var(--ds-font-mono, ui-monospace, monospace);
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   color: var(--ds-text-muted);
   direction: ltr;
   unicode-bidi: isolate;
   background: var(--ds-surface-recessed);
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-sm);
-  padding: 0.15rem 0.5rem;
-  max-inline-size: 24ch;
+  padding: 0.1rem 0.35rem;
+  max-inline-size: 16ch;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (min-width: 40rem) {
+  .slug {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+    max-inline-size: 24ch;
+  }
+}
+
+/* در موبایل slug مخفی — جا نمی‌گیرد */
+@media (max-width: 39.99rem) {
+  .slug {
+    display: none;
+  }
 }
 
 /* شمارندهٔ پست‌ها — پیل کوچک، نه بج عریض */
 .countPill {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.6rem;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
   border-radius: 999px;
   background: var(--ds-surface-recessed);
   border: 1px solid var(--ds-border-subtle);
   color: var(--ds-text-secondary);
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   font-weight: var(--ds-weight-semibold);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+@media (min-width: 40rem) {
+  .countPill {
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.7rem;
+  }
 }
 
 .countPill strong {
@@ -183,8 +249,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  inline-size: 2rem;
-  block-size: 2rem;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
   border-radius: var(--ds-radius-md);
   color: var(--ds-text-muted);
   background: transparent;
@@ -193,6 +259,13 @@
   transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), background-color
     var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
     var(--ds-ease-out-quart);
+}
+
+@media (min-width: 40rem) {
+  .toggle {
+    inline-size: 2rem;
+    block-size: 2rem;
+  }
 }
 
 .toggle:hover {
@@ -218,19 +291,28 @@
 .actionBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  min-block-size: 2.25rem;
-  padding-inline: 0.6rem;
+  gap: 0.25rem;
+  min-block-size: 2rem;
+  padding-inline: 0.4rem;
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-md);
   background: transparent;
   color: var(--ds-text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: var(--ds-weight-medium);
   cursor: pointer;
   transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
     var(--ds-duration-fast) var(--ds-ease-out-quart), background-color var(--ds-duration-fast)
     var(--ds-ease-out-quart);
+}
+
+@media (min-width: 40rem) {
+  .actionBtn {
+    gap: 0.35rem;
+    min-block-size: 2.25rem;
+    padding-inline: 0.6rem;
+    font-size: 0.75rem;
+  }
 }
 
 .actionBtn:hover {

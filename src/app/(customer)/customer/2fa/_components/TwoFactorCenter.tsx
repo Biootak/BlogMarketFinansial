@@ -35,7 +35,9 @@ import {
   Smartphone,
   Sparkles,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import QRCode from 'qrcode';
 import s from './TwoFactorCenter.module.css';
 
 type Initial2FA = {
@@ -48,7 +50,11 @@ type Initial2FA = {
 
 type FlowState = 'IDLE' | 'SETTING_UP' | 'AWAITING_CODE' | 'JUST_ENABLED' | 'ENABLED' | 'DISABLING';
 
-type Props = { initial: Initial2FA };
+type Props = {
+  initial: Initial2FA;
+  /** اگر داده شود، بعد از موفقیت به این مسیر ریدایرکت می‌شود (حساب مالک/مدیر). */
+  redirectTo?: string;
+};
 
 const formatPersianDateTime = (iso: string | null): string => {
   if (!iso) return '—';
@@ -78,7 +84,8 @@ const formatRelativeTime = (iso: string | null): string => {
   }).format(new Date(iso));
 };
 
-export default function TwoFactorCenter({ initial }: Props) {
+export default function TwoFactorCenter({ initial, redirectTo }: Props) {
+  const router = useRouter();
   const [flow, setFlow] = useState<FlowState>(initial.enabled ? 'ENABLED' : 'IDLE');
   const [setup, setSetup] = useState<TwoFASetupData | null>(null);
   const [token, setToken] = useState('');
@@ -88,15 +95,53 @@ export default function TwoFactorCenter({ initial }: Props) {
   const [copied, setCopied] = useState(false);
   const [confirmDisable, setConfirmDisable] = useState(false);
   const tokenInputRef = useRef<HTMLInputElement | null>(null);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(10);
+  const submittingRef = useRef(false);
 
   const [meta, setMeta] = useState(initial);
 
-  // پس از JUST_ENABLED → بعد از ۱۰ ثانیه از نمایش backup codes → ENABLED
+  // QR به‌صورت محلی (بدون سرویس خارجی) ساخته می‌شود — آفلاین و محرمانه کار می‌کند.
   useEffect(() => {
-    if (flow !== 'JUST_ENABLED') return;
+    if (!setup?.otpauthUri) {
+      setQrDataUrl(null);
+      return;
+    }
+    let cancelled = false;
+    QRCode.toDataURL(setup.otpauthUri, {
+      width: 220,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+      color: { dark: '#0f172a', light: '#ffffff' },
+    })
+      .then((url) => {
+        if (!cancelled) setQrDataUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) setQrDataUrl(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [setup?.otpauthUri]);
+
+  // پس از JUST_ENABLED → اگر redirectTo داده شده، شمارش معکوس و ریدایرکت؛
+  // در غیر این صورت (پورتال مشتری) بعد از ۱۲ ثانیه → حالت ENABLED.
+  useEffect(() => {
+    if (flow !== 'JUST_ENABLED' || !redirectTo) return;
+    if (countdown <= 0) {
+      router.replace(redirectTo);
+      return;
+    }
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [flow, countdown, redirectTo, router]);
+
+  useEffect(() => {
+    if (flow !== 'JUST_ENABLED' || redirectTo) return;
     const t = setTimeout(() => setFlow('ENABLED'), 12_000);
     return () => clearTimeout(t);
-  }, [flow]);
+  }, [flow, redirectTo]);
 
   const startSetup = useCallback(() => {
     setError(null);
@@ -113,31 +158,42 @@ export default function TwoFactorCenter({ initial }: Props) {
     });
   }, []);
 
-  const confirm = useCallback(() => {
-    if (!/^\d{6}$/.test(token)) {
-      setError('کد باید ۶ رقم باشد');
-      return;
-    }
-    setError(null);
-    startTransition(async () => {
-      const r = await confirmEnable2FA(token);
-      if (!r.success) {
-        setError(r.error?.message ?? 'کد نامعتبر');
+  const confirm = useCallback(
+    (code?: string) => {
+      const value = (code ?? token).trim();
+      if (!/^\d{6}$/.test(value)) {
+        setError('کد باید ۶ رقم باشد');
         return;
       }
-      setBackupCodes(r.data?.backupCodes ?? []);
-      setMeta({
-        enabled: true,
-        hasBackupCodes: true,
-        verifiedAt: new Date().toISOString(),
-        lastUsedAt: null,
-        channel: 'TOTP',
+      if (submittingRef.current) return;
+      submittingRef.current = true;
+      setError(null);
+      startTransition(async () => {
+        try {
+          const r = await confirmEnable2FA(value);
+          if (!r.success) {
+            setError(r.error?.message ?? 'کد نامعتبر');
+            return;
+          }
+          setBackupCodes(r.data?.backupCodes ?? []);
+          setMeta({
+            enabled: true,
+            hasBackupCodes: true,
+            verifiedAt: new Date().toISOString(),
+            lastUsedAt: null,
+            channel: 'TOTP',
+          });
+          setFlow('JUST_ENABLED');
+          setSetup(null);
+          setToken('');
+          if (redirectTo) setCountdown(10);
+        } finally {
+          submittingRef.current = false;
+        }
       });
-      setFlow('JUST_ENABLED');
-      setSetup(null);
-      setToken('');
-    });
-  }, [token]);
+    },
+    [token, redirectTo],
+  );
 
   const requestDisable = useCallback(() => {
     setError(null);
@@ -199,6 +255,14 @@ export default function TwoFactorCenter({ initial }: Props) {
   return (
     <div className={s.root} dir="rtl">
       <Spotlight tone="emerald" className={s.spotlight} />
+
+      {/* ── Error (visible in every flow state — including IDLE) ────── */}
+      {error && (
+        <div className={s.errorBox} role="alert">
+          <AlertTriangle size={12} aria-hidden />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* ── Hero Status ─────────────────────────────────────────────── */}
       <header className={s.hero} data-enabled={meta.enabled ? 'yes' : 'no'}>
@@ -268,14 +332,21 @@ export default function TwoFactorCenter({ initial }: Props) {
               <h3 className={s.cardTitle}>اسکن QR</h3>
             </header>
             <div className={s.qrWrap} aria-label="QR code برای authenticator">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(setup.otpauthUri)}`}
-                alt="QR Code برای فعال‌سازی 2FA"
-                width={220}
-                height={220}
-                className={s.qrImg}
-              />
+              {qrDataUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={qrDataUrl}
+                  alt="QR Code برای فعال‌سازی 2FA"
+                  width={220}
+                  height={220}
+                  className={s.qrImg}
+                />
+              ) : (
+                <div className={s.qrPlaceholder} role="status">
+                  <Loader2 size={18} className={s.spin} aria-hidden />
+                  در حال ساخت QR…
+                </div>
+              )}
             </div>
             <p className={s.qrHint}>با دوربین یا authenticator اسکن کنید</p>
             <details className={s.secretDetails}>
@@ -306,6 +377,8 @@ export default function TwoFactorCenter({ initial }: Props) {
                   const v = e.target.value.replace(/\D/g, '').slice(0, 6);
                   setToken(v);
                   setError(null);
+                  // کد کامل شد → سابمیت خودکار
+                  if (v.length === 6) confirm(v);
                 }}
                 disabled={pending}
                 className={s.tokenInput}
@@ -314,17 +387,11 @@ export default function TwoFactorCenter({ initial }: Props) {
                 aria-invalid={error ? 'true' : 'false'}
               />
             </FormField>
-            {error && (
-              <div className={s.errorBox} role="alert">
-                <AlertTriangle size={12} aria-hidden />
-                <span>{error}</span>
-              </div>
-            )}
             <div className={s.verifyActions}>
               <button
                 type="button"
                 className={s.primaryCta}
-                onClick={confirm}
+                onClick={() => confirm()}
                 disabled={pending || token.length !== 6}
               >
                 {pending ? (
@@ -382,6 +449,21 @@ export default function TwoFactorCenter({ initial }: Props) {
               {copied ? 'کپی شد' : 'کپی همه'}
             </button>
           </div>
+          {redirectTo && (
+            <div className={s.redirectRow}>
+              <button
+                type="button"
+                className={s.primaryCta}
+                onClick={() => router.replace(redirectTo)}
+              >
+                <ChevronLeft size={14} aria-hidden />
+                ادامه به داشبورد
+              </button>
+              <span className={s.redirectHint} role="status">
+                انتقال خودکار تا {countdown} ثانیه دیگر
+              </span>
+            </div>
+          )}
         </section>
       )}
 

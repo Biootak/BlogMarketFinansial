@@ -71,6 +71,16 @@ export async function confirmEnable2FA(
   // 10 کد پشتیبان — هماهنگ با وعده UI (TwoFactorCenter) و استاندارد صنعتی (Google/Microsoft 10 کد)
   const backupCodes = Array.from({ length: 10 }, () => randomBytes(4).toString('hex').toUpperCase());
   // C2-fix: secret را رمزنگاری‌شده ذخیره کن — plaintext هرگز در DB نباشد
+  // T2-fix: هش bcrypt (cost 12 × 10 کد ≈ ۵+ ثانیه CPU) را BEFORE ترنزکشن انجام بده؛
+  // وگرنه از مهلت ۵ ثانیه‌ای interactive transaction پرایسما رد می‌شود و کل فعال‌سازی
+  // با «Transaction already closed» می‌میرد.
+  const hashedCodes = await Promise.all(
+    backupCodes.map(async (code) => ({
+      id: createId(),
+      userId: auth.user.id,
+      codeHash: await bcrypt.hash(code, 12),
+    })),
+  );
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: auth.user.id },
@@ -81,15 +91,7 @@ export async function confirmEnable2FA(
       },
     });
     await tx.twoFactorBackupCode.deleteMany({ where: { userId: auth.user.id } });
-    await tx.twoFactorBackupCode.createMany({
-      data: await Promise.all(
-        backupCodes.map(async (code) => ({
-          id: createId(),
-          userId: auth.user.id,
-          codeHash: await bcrypt.hash(code, 12),
-        })),
-      ),
-    });
+    await tx.twoFactorBackupCode.createMany({ data: hashedCodes });
     await tx.auditLog.create({
       data: {
         id: createId(),

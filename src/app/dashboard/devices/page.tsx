@@ -2,6 +2,7 @@ import { getMyDevices, getSecurityAuditLogs } from '@/actions/deviceActions';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { DevicesClient } from './_components/DevicesClient';
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default async function DevicesPage() {
         title="دستگاه‌های من"
         description="مدیریت دستگاه‌های متصل به حساب و لاگ‌های امنیتی"
         eyebrow="امنیت"
-        icon="monitor"
+        icon="device-phone-mobile"
         accent="violet"
       />
       <DevicesClient devices={devices} securityLogs={logs} />

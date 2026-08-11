@@ -1,0 +1,468 @@
+/* CurrencyCatalog — Premium catalog (2026) */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: var(
+    --ds-shadow-sm,
+    0 1px 3px color-mix(in oklch, var(--ds-text-primary) 6%, transparent)
+  );
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  padding: var(--ds-space-5) var(--ds-space-5) var(--ds-space-4);
+  gap: var(--ds-space-3);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.headerTop {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.headerIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--ds-radius-md);
+  background: color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
+  color: var(--ds-brand-500);
+}
+
+.headerTitle {
+  font-size: var(--ds-text-lg);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.headerSubtitle {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+/* Coverage meter */
+.coverageMeter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progressBar {
+  width: 6rem;
+  height: 0.4rem;
+  background: var(--ds-canvas-subtle, var(--ds-surface-recessed));
+  border-radius: var(--ds-radius-full);
+  overflow: hidden;
+  border: 1px solid var(--ds-border-subtle);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ds-brand-500), var(--ds-accent-emerald));
+  transition: width 240ms var(--ds-ease-out-expo);
+}
+
+.progressLabel {
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-text-secondary);
+  min-width: 2.5rem;
+  text-align: end;
+}
+
+/* Filter row */
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 14rem;
+  max-width: 20rem;
+}
+
+.searchIcon {
+  position: absolute;
+  inset-inline-start: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.95rem;
+  height: 0.95rem;
+  color: var(--ds-text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 2.25rem;
+  padding-inline-start: 2.25rem;
+  padding-inline-end: 0.75rem;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-primary);
+  background: var(--ds-canvas-subtle, var(--ds-surface-recessed));
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  outline: none;
+  transition: border-color var(--ds-duration-fast);
+}
+
+.searchInput:focus {
+  border-color: var(--ds-brand-500);
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+  padding-inline: 0.75rem;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-subtle);
+  cursor: pointer;
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), color
+    var(--ds-duration-fast);
+  gap: 0.4rem;
+}
+
+.filterChipActive {
+  color: var(--ds-text-inverse);
+  background: var(--ds-brand-500);
+  border-color: var(--ds-brand-500);
+}
+
+.filterChipInactive {
+  color: var(--ds-text-secondary);
+  background: var(--ds-canvas-subtle, var(--ds-surface-recessed));
+}
+
+.filterChipCount {
+  font-size: 0.65rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+/* Body */
+.body {
+  padding: var(--ds-space-4);
+  display: grid;
+  gap: var(--ds-space-3);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+}
+
+/* Catalog card */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  gap: var(--ds-space-2);
+  box-shadow: var(
+    --ds-shadow-sm,
+    0 1px 3px color-mix(in oklch, var(--ds-text-primary) 6%, transparent)
+  );
+  overflow: hidden;
+  transition: border-color var(--ds-duration-fast), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+}
+
+.card:hover {
+  border-color: color-mix(in oklch, var(--ds-brand-500) 20%, var(--ds-border-default));
+  transform: translateY(-1px);
+}
+
+.cardAccent {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  opacity: 0.4;
+}
+
+.cardAccent_afghan {
+  background: var(--ds-brand-500);
+}
+.cardAccent_iran-forex {
+  background: var(--ds-accent-emerald);
+}
+.cardAccent_iran-coin {
+  background: var(--ds-accent-amber);
+}
+.cardAccent_iran-gold {
+  background: color-mix(in oklch, var(--ds-accent-amber) 90%, black);
+}
+.cardAccent_global {
+  background: var(--ds-accent-violet);
+}
+.cardAccent_minor {
+  background: var(--ds-text-muted);
+}
+
+.cardTop {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cardSymbol {
+  font-family: var(--ds-font-mono, monospace);
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  line-height: 1.2;
+  text-align: start;
+}
+
+.cardName {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.cardGroup {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-radius: var(--ds-radius-full);
+  padding: 0.15rem 0.5rem;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.cardGroup_afghan {
+  color: var(--ds-brand-500);
+  background: color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 28%, transparent);
+}
+.cardGroup_iran-forex {
+  color: var(--ds-accent-emerald);
+  background: color-mix(in oklch, var(--ds-accent-emerald) 14%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-emerald) 28%, transparent);
+}
+.cardGroup_iran-coin {
+  color: var(--ds-accent-amber);
+  background: color-mix(in oklch, var(--ds-accent-amber) 14%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-amber) 28%, transparent);
+}
+.cardGroup_iran-gold {
+  color: color-mix(in oklch, var(--ds-accent-amber) 90%, black);
+  background: color-mix(in oklch, var(--ds-accent-amber) 18%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-amber) 32%, transparent);
+}
+.cardGroup_global {
+  color: var(--ds-accent-violet);
+  background: color-mix(in oklch, var(--ds-accent-violet) 14%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-violet) 28%, transparent);
+}
+.cardGroup_minor {
+  color: var(--ds-text-secondary);
+  background: color-mix(in oklch, var(--ds-text-muted) 14%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-text-muted) 28%, transparent);
+}
+
+.cardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.cardMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cardMetaKey {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  max-width: 12rem;
+  color: var(--ds-text-secondary);
+  background: var(--ds-canvas-subtle, var(--ds-surface-recessed));
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  padding: 0.1rem 0.45rem;
+  font-size: 0.65rem;
+  direction: rtl;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-start: auto;
+}
+
+.cardStatus {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  gap: 0.3rem;
+}
+
+.cardStatusActive {
+  color: var(--ds-accent-emerald);
+}
+.cardStatusInactive {
+  color: var(--ds-text-muted);
+}
+.cardStatusMissing {
+  color: var(--ds-text-muted);
+}
+
+.cardAction {
+  display: inline-flex;
+  align-items: center;
+  height: 1.85rem;
+  padding-inline: 0.7rem;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  border-radius: var(--ds-radius-sm);
+  cursor: pointer;
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast);
+  gap: 0.3rem;
+}
+
+.cardActionEdit {
+  color: var(--ds-text-secondary);
+  background: var(--ds-canvas-subtle, var(--ds-surface-recessed));
+  border: 1px solid var(--ds-border-default);
+}
+
+.cardActionAdd {
+  color: var(--ds-text-inverse);
+  background: var(--ds-brand-500);
+  border: 1px solid var(--ds-brand-500);
+}
+
+.cardActionAdd:hover {
+  background: var(--ds-brand-600);
+}
+
+/* Empty state */
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-8) var(--ds-space-6);
+  gap: var(--ds-space-2);
+  background: var(--ds-canvas-subtle, var(--ds-surface-recessed));
+  border: 1px dashed var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+}
+
+.emptyIcon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-brand-500);
+}
+
+.emptyTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.emptyDesc {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin: 0;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-subtle);
+  background: var(--ds-canvas-subtle, var(--ds-surface-recessed));
+}
+
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-brand-500);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--ds-radius-sm);
+  transition: background var(--ds-duration-fast);
+}
+
+.expandBtn:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: var(--ds-space-4);
+  }
+  .body {
+    grid-template-columns: 1fr;
+    padding: var(--ds-space-3);
+  }
+  .filterRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .searchWrap {
+    max-width: none;
+  }
+}

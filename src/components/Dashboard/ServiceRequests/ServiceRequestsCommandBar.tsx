@@ -27,16 +27,19 @@ import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { motion } from '@/lib/motion-shim';
 import { useEffect, useState, useTransition } from 'react';
 import {
-  HiOutlineArrowDownTray,
-  HiOutlineArrowPath,
-  HiOutlineArrowTrendingUp,
-  HiOutlineBolt,
-  HiOutlineCheckCircle,
-  HiOutlineClock,
-  HiOutlineExclamationTriangle,
-  HiOutlineSparkles,
-  HiOutlineXCircle,
-} from 'react-icons/hi2';
+  ArrowDownToLine,
+  ArrowRightLeft,
+  ArrowUpRight,
+  Bolt,
+  CheckCircle,
+  Clock,
+  Download,
+  RefreshCw,
+  Sparkles,
+  TrendingUp,
+  TriangleAlert,
+  XCircle,
+} from 'lucide-react';
 
 interface Stats {
   total: number;
@@ -60,31 +63,31 @@ interface ServiceRequestsCommandBarProps {
 
 const STATUS_META: Record<
   StatusFilter,
-  { label: string; icon: typeof HiOutlineSparkles; getCount: (s: Stats) => number }
+  { label: string; icon: typeof Sparkles; getCount: (s: Stats) => number }
 > = {
   ALL: {
     label: 'همه',
-    icon: HiOutlineSparkles,
+    icon: Sparkles,
     getCount: (s) => s.total,
   },
   PENDING: {
     label: 'در انتظار',
-    icon: HiOutlineClock,
+    icon: Clock,
     getCount: (s) => s.pending,
   },
   IN_PROGRESS: {
     label: 'در حال انجام',
-    icon: HiOutlineBolt,
+    icon: Bolt,
     getCount: (s) => s.inProgress,
   },
   COMPLETED: {
     label: 'تکمیل شده',
-    icon: HiOutlineCheckCircle,
+    icon: CheckCircle,
     getCount: (s) => s.completed,
   },
   CANCELLED: {
     label: 'لغو شده',
-    icon: HiOutlineXCircle,
+    icon: XCircle,
     getCount: (s) => s.cancelled,
   },
 };
@@ -169,13 +172,13 @@ export default function ServiceRequestsCommandBar({
       <header className="at-head at-srq-hero__head">
         <div className="at-head__title">
           <span className="at-head__ico" aria-hidden>
-            <HiOutlineClock className="w-3.5 h-3.5" />
+            <Clock size={14} />
           </span>
           <div className="at-head__text">
             <h2 className="at-head__title-text">
               <span className="at-hero__eyebrow">
                 <span className="at-hero__dot" aria-hidden />
-                <HiOutlineBolt className="w-3 h-3" aria-hidden />
+                <Bolt size={12} aria-hidden />
                 <span>عملیات · {now ? persianLongDate(now) : persianLongDate()}</span>
               </span>
               <span className="at-srq-hero__title">مدیریت درخواست‌ها</span>
@@ -198,7 +201,7 @@ export default function ServiceRequestsCommandBar({
             className="at-head__btn"
             aria-label="به‌روزرسانی"
           >
-            <HiOutlineArrowPath className={`w-3.5 h-3.5 ${isPending ? 'animate-spin' : ''}`} />
+            <RefreshCw size={14} className={isPending ? 'animate-spin' : ''} />
             <span>به‌روزرسانی</span>
           </button>
           <button
@@ -207,7 +210,7 @@ export default function ServiceRequestsCommandBar({
             disabled={isPending}
             className="at-head__btn at-head__btn--primary"
           >
-            <HiOutlineArrowDownTray className="w-3.5 h-3.5" />
+            <Download size={14} />
             <span>خروجی CSV</span>
           </button>
         </div>
@@ -217,7 +220,7 @@ export default function ServiceRequestsCommandBar({
       <div className="at-srq-hero__metric">
         <div className="at-srq-hero__metric-text">
           <span className="at-hero__eyebrow">
-            <HiOutlineClock className="w-3 h-3" aria-hidden />
+            <Clock size={12} aria-hidden />
             <span>درخواست‌های در انتظار پاسخ</span>
           </span>
           <div className="at-srq-hero__value-row">
@@ -238,14 +241,14 @@ export default function ServiceRequestsCommandBar({
                 >
                   {stats.pendingUrgent > 0 ? (
                     <>
-                      <HiOutlineExclamationTriangle className="w-3 h-3" aria-hidden />
+                      <TriangleAlert size={12} aria-hidden />
                       <span className="tabular-nums">
                         {stats.pendingUrgent.toLocaleString('fa-IR')} فوری
                       </span>
                     </>
                   ) : (
                     <>
-                      <HiOutlineCheckCircle className="w-3 h-3" aria-hidden />
+                      <CheckCircle size={12} aria-hidden />
                       <span>بدون فوری</span>
                     </>
                   )}
@@ -271,7 +274,7 @@ export default function ServiceRequestsCommandBar({
             label="نسبت در انتظار به کل درخواست‌ها"
           />
           <span className="at-hero__pulse-cap">
-            <HiOutlineArrowTrendingUp className="w-3 h-3 inline-block" />
+            <ArrowUpRight size={12} className="inline-block" />
             {(pendingRatio * 100).toFixed(1)}٪ صف
           </span>
         </div>
@@ -314,7 +317,7 @@ export default function ServiceRequestsCommandBar({
         </div>
         {stats && (
           <span className="at-srq-hero__conversion tabular-nums" title="نرخ تکمیل">
-            <HiOutlineCheckCircle className="w-3 h-3" />
+            <CheckCircle size={12} />
             نرخ تکمیل {conversionRate}٪
           </span>
         )}

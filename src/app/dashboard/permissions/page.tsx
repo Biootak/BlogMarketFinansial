@@ -26,7 +26,7 @@ export default async function PermissionsPage() {
         title="مجوزها"
         description="مدیریت ماتریس نقش‌ها و مجوزهای سیستم"
         eyebrow="امنیت"
-        icon="shield"
+        icon="shield-check"
         accent="violet"
       />
       <PermissionsClient
@@ -37,4 +37,3 @@ export default async function PermissionsPage() {
     </div>
   );
 }
-

@@ -16231,3 +16231,11 @@
   max-inline-size: 28rem;
   margin-inline: auto;
 }
+
+/* Exchange rates page mobile override */
+@media (max-width: 48rem) {
+  .exchange-rates-page {
+    padding: var(--ds-space-3) var(--ds-space-3) !important;
+    gap: var(--ds-space-4) !important;
+  }
+}

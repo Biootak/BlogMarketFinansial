@@ -81,7 +81,10 @@ export default function AuthFlow() {
   const [step, setStep] = useState<InternalStep>(initialStep);
   const [email, setEmail] = useState(initialEmail);
   const [intent, setIntent] = useState<FlowIntent>(
-    initialIntent === 'login' || initialIntent === 'reverify' || initialIntent === 'recover'
+    initialIntent === 'login' ||
+      initialIntent === 'reverify' ||
+      initialIntent === 'recover' ||
+      initialIntent === '2fa'
       ? initialIntent
       : 'register',
   );

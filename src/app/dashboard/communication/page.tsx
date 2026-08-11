@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { redirect } from 'next/navigation';
 
 import { auth } from '@/auth';
@@ -173,5 +174,17 @@ export default async function CommunicationPage() {
           channelRadar: { channels: [] },
         };
 
-  return <CommunicationHub hub={hub} nexus={nexus} />;
+  return (
+    <div className="route-frame">
+      <PageHeader
+        variant="compact"
+        eyebrow="ارتباطات"
+        title="مرکز ارتباطات"
+        description="مدیریت کمپین‌ها، اعلان‌ها و مخاطبین"
+        icon="megaphone"
+        accent="violet"
+      />
+      <CommunicationHub hub={hub} nexus={nexus} />
+    </div>
+  );
 }

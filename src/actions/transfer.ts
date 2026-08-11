@@ -4,6 +4,12 @@ import { randomBytes } from 'node:crypto';
 import { assertCsrf } from '@/lib/csrf-server';
 import prisma from '@/lib/db';
 import {
+  enqueueHighValueJob,
+  getHighValueJobStatus,
+  mapQueuedJobError,
+  processHighValueQueue,
+} from '@/lib/fintech/high-value-queue';
+import {
   isHighValueTransaction,
   requestTransactionOtp,
   verifyTransactionOtp,
@@ -314,7 +320,7 @@ const ConfirmSchema = z.object({
 
 export async function confirmTransfer(
   raw: unknown,
-): Promise<FintechActionResult<{ txnId: string }>> {
+): Promise<FintechActionResult<{ txnId: string; queued?: boolean }>> {
   try {
     await assertCsrf();
   } catch {
@@ -413,6 +419,117 @@ export async function confirmTransfer(
   const accountId = txn.accountId;
   const customerId = txn.customerId;
 
+  const _xff2 = (await headers()).get('x-forwarded-for') ?? '';
+  const ip =
+    _xff2
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .pop() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
+
+  const isHighValue = isHighValueTransaction({ kind: 'TRANSFER', amountCents: txn.amount });
+
+  // ── مسیر پرمقدار: صف زیرساختی (single-flight + retry + idempotency) ───────
+  // atomic claim داخل executeConfirmTransfer همچنان لایهٔ نهایی دفاع است؛ صف
+  // تضمین می‌کند دوبار confirm هم‌زمان فقط یک job می‌سازد و خطای موقت DB توسط
+  // cron با backoff دوباره تلاش می‌شود (بدون نیاز به تلاش دستی کاربر).
+  if (isHighValue) {
+    const enqueued = await enqueueHighValueJob({
+      operation: 'CONFIRM_TRANSFER',
+      targetId: txn.id,
+      payload: { customerId, actorId: auth.user.id },
+      triggeredBy: auth.user.id,
+    });
+    if (!enqueued.success) {
+      return {
+        success: false,
+        error: { code: 'QUEUE_FAILED', message: 'ثبت در صف پردازش تراکنش ناموفق بود' },
+      };
+    }
+    // اجرای فوری best-effort تا پاسخ هم‌زمان باشد؛ اگر موقتاً خطا داد، cron
+    // در کمتر از یک دقیقه job را برمی‌دارد و تراکنش کامل می‌شود.
+    await processHighValueQueue();
+    const job = await getHighValueJobStatus('CONFIRM_TRANSFER', txn.id);
+    if (job.status === 'completed') return { success: true, data: { txnId } };
+    if (job.status === 'failed' || job.status === 'dead') {
+      return {
+        success: false,
+        error: mapQueuedJobError(job.lastError, 'پردازش تراکنش ناموفق بود'),
+      };
+    }
+    return { success: true, data: { txnId, queued: true } };
+  }
+
+  // ── مسیر عادی (مبلغ کم): اجرای مستقیم ────────────────────────────────────
+  const res = await executeConfirmTransfer({ txnId: txn.id, customerId, actorId: auth.user.id, ip });
+  return mapConfirmTransferCore(res, txn.id);
+}
+
+export type ConfirmTransferCoreResult =
+  | { ok: true; alreadyProcessed?: boolean }
+  | { ok: false; retryable: boolean; code: string; message: string };
+
+/**
+ * executeConfirmTransfer — اجرای خالص تأیید انتقال (atomic claim + debit + credit + ledger + side effects).
+ * هم از مسیر inline (مبلغ کم) و هم از کارگر صف تراکنش‌های پرمقدار صدا زده می‌شود.
+ * idempotent: اگر تراکنش قبلاً COMPLETED شده باشد → { ok: true, alreadyProcessed: true }.
+ * خطاهای موقت DB (timeout / pool) → retryable — صف با backoff دوباره تلاش می‌کند.
+ */
+export async function executeConfirmTransfer(input: {
+  txnId: string;
+  customerId: string;
+  actorId: string;
+  ip?: string;
+}): Promise<ConfirmTransferCoreResult> {
+  const { txnId, customerId, actorId, ip } = input;
+  const txn = await prisma.transaction.findFirst({
+    where: { id: txnId, customerId },
+    select: {
+      id: true,
+      status: true,
+      amount: true,
+      currency: true,
+      accountId: true,
+      meta: true,
+      exchangeId: true,
+      customerId: true,
+    },
+  });
+  if (!txn) {
+    return { ok: false, retryable: false, code: 'NOT_FOUND', message: 'تراکنش یافت نشد' };
+  }
+  if (txn.status !== 'PENDING') {
+    if (txn.status === 'COMPLETED') return { ok: true, alreadyProcessed: true };
+    return {
+      ok: false,
+      retryable: false,
+      code: 'INVALID_STATE',
+      message: 'این تراکنش قابل تأیید نیست',
+    };
+  }
+  const meta = txn.meta as { recipientCustomerId?: string } | null;
+  const recipientCustomerId = meta?.recipientCustomerId;
+  if (!recipientCustomerId) {
+    return {
+      ok: false,
+      retryable: false,
+      code: 'MISSING_RECIPIENT',
+      message: 'اطلاعات گیرنده یافت نشد',
+    };
+  }
+  if (!txn.accountId || !txn.customerId) {
+    return {
+      ok: false,
+      retryable: false,
+      code: 'INVALID_STATE',
+      message: 'اطلاعات حساب تراکنش ناقص است',
+    };
+  }
+  const ownerAccountId = txn.accountId;
+  const ownerCustomerId = txn.customerId;
+
   try {
     await prisma.$transaction(async (tx) => {
       const now = new Date();
@@ -433,21 +550,21 @@ export async function confirmTransfer(
       if (!recipientAccount) throw new Error('RECIPIENT_NO_ACCOUNT');
 
       const debit = await tx.fintechAccount.updateMany({
-        where: { id: accountId, balance: { gte: txn.amount } },
+        where: { id: ownerAccountId, balance: { gte: txn.amount } },
         data: { balance: { decrement: txn.amount }, updatedAt: now },
       });
       if (debit.count === 0) throw new Error('INSUFFICIENT_BALANCE');
 
       const updatedSender = await tx.fintechAccount.findUniqueOrThrow({
-        where: { id: accountId },
+        where: { id: ownerAccountId },
         select: { balance: true },
       });
       await tx.ledgerEntry.create({
         data: {
           id: createId(),
           exchangeId: txn.exchangeId,
-          accountId,
-          customerId,
+          accountId: ownerAccountId,
+          customerId: ownerCustomerId,
           txnId: txn.id,
           direction: 'DEBIT',
           amount: txn.amount,
@@ -482,46 +599,44 @@ export async function confirmTransfer(
     const msg = (err as Error).message;
     if (msg === 'ALREADY_PROCESSED') {
       // confirm هم‌زمان دیگر همین تراکنش را کامل کرده — idempotent success
-      return { success: true, data: { txnId } };
+      return { ok: true, alreadyProcessed: true };
     }
     if (msg === 'INSUFFICIENT_BALANCE') {
       return {
-        success: false,
-        error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' },
+        ok: false,
+        retryable: false,
+        code: 'INSUFFICIENT_BALANCE',
+        message: 'موجودی کافی نیست',
       };
     }
     if (msg === 'RECIPIENT_NO_ACCOUNT') {
       return {
-        success: false,
-        error: {
-          code: 'RECIPIENT_NO_ACCOUNT',
-          message: 'گیرنده دیگر حساب فعالی برای این ارز ندارد. مبلغ برگشت نخورده است.',
-        },
+        ok: false,
+        retryable: false,
+        code: 'RECIPIENT_NO_ACCOUNT',
+        message: 'گیرنده دیگر حساب فعالی برای این ارز ندارد. مبلغ برگشت نخورده است.',
       };
     }
-    throw err;
+    // خطای موقت (timeout / pool) → retryable — صف با backoff دوباره تلاش می‌کند
+    return {
+      ok: false,
+      retryable: true,
+      code: 'INTERNAL_ERROR',
+      message: 'خطای موقت در پردازش تراکنش',
+    };
   }
 
   revalidateTag('wallet');
-  const _xff2 = (await headers()).get('x-forwarded-for') ?? '';
-  const ip =
-    _xff2
-      .split(',')
-      .map((p) => p.trim())
-      .filter(Boolean)
-      .pop() ??
-    (await headers()).get('x-real-ip')?.trim() ??
-    'unknown';
   await prisma.auditLog.create({
     data: {
       id: createId(),
       exchangeId: txn.exchangeId,
-      actorId: auth.user.id,
+      actorId,
       actorRole: 'USER',
       action: 'TRANSFER_COMPLETED',
       entityType: 'Transaction',
       entityId: txn.id,
-      ip,
+      ip: ip ?? 'queue-worker',
     },
   });
 
@@ -534,5 +649,13 @@ export async function confirmTransfer(
     { dedupeKey: `transfer:${txn.id}` },
   );
 
-  return { success: true, data: { txnId } };
+  return { ok: true };
+}
+
+function mapConfirmTransferCore(
+  res: ConfirmTransferCoreResult,
+  txnId: string,
+): FintechActionResult<{ txnId: string; queued?: boolean }> {
+  if (res.ok) return { success: true, data: { txnId } };
+  return { success: false, error: { code: res.code, message: res.message } };
 }

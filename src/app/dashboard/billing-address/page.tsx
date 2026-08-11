@@ -1,8 +1,8 @@
 import { getBillingAddress } from '@/actions/billingAddressActions';
 import { auth } from '@/auth';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { BillingAddressForm } from './_components/BillingAddressForm';
 
 export const metadata: Metadata = {
@@ -24,11 +24,10 @@ export default async function BillingAddressPage() {
         title="آدرس صورتحساب"
         description="مدیریت آدرس دریافت صورتحساب و فاکتورها"
         eyebrow="حساب کاربری"
-        icon="map-pin"
+        icon="key-round"
         accent="indigo"
       />
       <BillingAddressForm initial={initial} />
     </div>
   );
 }
-

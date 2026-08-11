@@ -47,21 +47,23 @@ export default async function KycReviewPage() {
   ]);
 
   return (
-    <KycReviewClient
-      records={records}
-      customerRecords={customerRecords.map((c) => ({
-        id: c.id,
-        customerId: c.customerId,
-        customerName: c.customerName,
-        customerPhone: c.customerPhone,
-        docType: c.docType,
-        docNumber: c.docNumber,
-        fileUrl: c.fileUrl,
-        level: c.level,
-        exchangeId: c.exchangeId,
-        exchangeName: c.exchangeName,
-        createdAt: c.createdAt.toISOString(),
-      }))}
-    />
+    <div className="route-frame">
+      <KycReviewClient
+        records={records}
+        customerRecords={customerRecords.map((c) => ({
+          id: c.id,
+          customerId: c.customerId,
+          customerName: c.customerName,
+          customerPhone: c.customerPhone,
+          docType: c.docType,
+          docNumber: c.docNumber,
+          fileUrl: c.fileUrl,
+          level: c.level,
+          exchangeId: c.exchangeId,
+          exchangeName: c.exchangeName,
+          createdAt: c.createdAt.toISOString(),
+        }))}
+      />
+    </div>
   );
 }

@@ -109,6 +109,9 @@ export function readInitialStep(step: string | null, intent: string | null): Int
     'set-password',
   ];
   if (step && allowed.includes(step as InternalStep)) return step as InternalStep;
+  // C1-fix: بازگشت مستقیم به مرحلهٔ 2FA (چالش TOTP بعد از login) — بعد از
+  // refresh باید همان مرحلهٔ 2FA نمایش داده شود، نه مرحلهٔ ثبت‌نام.
+  if (intent === '2fa') return 'verify';
   if (intent === 'register') return 'register';
   if (intent === 'login') return 'login';
   if (intent === 'recover') return 'recover';

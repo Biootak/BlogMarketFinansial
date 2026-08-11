@@ -22,14 +22,25 @@ vi.mock('@/lib/db', () => ({
     fintechAccount: { update: vi.fn() },
     ledgerEntry: { create: vi.fn() },
     auditLog: { create: vi.fn() },
+    // High-value transaction queue (high-value-queue.ts): در مسیر high-value
+    // confirm، عملیات از صف زیرساختی عبور می‌کند. job با موفقیت پردازش شده
+    // فرض می‌شود (status=completed) تا confirm نتیجهٔ موفق برگرداند.
+    highValueJob: {
+      create: vi.fn().mockResolvedValue({ id: 'job-1' }),
+      updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+      findMany: vi.fn().mockResolvedValue([]),
+      findUnique: vi.fn().mockResolvedValue({ status: 'completed', lastError: null }),
+    },
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) =>
       fn({
+        $queryRaw: vi.fn().mockResolvedValue([]),
         fintechAccount: {
           findFirst: vi.fn().mockResolvedValue({ id: 'acc-recv' }),
           update: vi.fn().mockResolvedValue({ balance: BigInt(0) }),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
           findUniqueOrThrow: vi.fn().mockResolvedValue({ balance: BigInt(950000) }),
         },
+        highValueJob: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
         ledgerEntry: { create: vi.fn() },
         transaction: { update: vi.fn(), updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
       }),
@@ -155,7 +166,7 @@ describe('confirmTransfer — OTP bypass', () => {
     expect(result.success).toBe(false);
   });
 
-  it('تراکنش high-value با OTP درست → COMPLETED', async () => {
+  it('تراکنش high-value با OTP درست → COMPLETED (از صف زیرساختی)', async () => {
     vi.mocked(requireUser).mockResolvedValue(USER_1);
     vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: 'cust-1' } as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValue({
@@ -174,7 +185,15 @@ describe('confirmTransfer — OTP bypass', () => {
 
     const result = await confirmTransfer({ txnId: 'txn-high3', txnRef: 'ref-hv3', otp: '123456' });
     expect(result.success).toBe(true);
-    expect(prisma.$transaction).toHaveBeenCalledOnce();
+    // مسیر پرمقدار باید از صف زیرساختی عبور کند نه اجرای مستقیم
+    expect(prisma.highValueJob.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          operation: 'CONFIRM_TRANSFER',
+          targetId: 'txn-high3',
+        }),
+      }),
+    );
   });
 });
 

@@ -23,7 +23,8 @@ export const metadata: Metadata = {
  */
 export default function ObservabilityOverviewPage() {
   return (
-    <div className={b.tabLayout} data-tab="overview">
+    <div className="route-frame">
+      <div className={b.tabLayout} data-tab="overview">
       <header className={b.tabIntro}>
         <div>
           <span className={b.tabEyebrow}>OPERATIONS / OVERVIEW</span>
@@ -104,6 +105,7 @@ export default function ObservabilityOverviewPage() {
           <LevelDistribution />
         </ObsSection>
       </div>
+    </div>
     </div>
   );
 }

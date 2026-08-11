@@ -1,13 +1,13 @@
 /* ============================================================================
-   BillingAddressForm.module.css — 2026 Million-Dollar Billing Address
-   Stripe-inspired secure form · OKLCH tokens · RTL logical properties
-   زبان طراحی: اعتماد + وضوح + فین‌تک
+   BillingAddress.module.css — 2026 Million-Dollar Billing Address
+   Stripe x Ramp inspired · OKLCH tokens · RTL logical properties
+   زبان طراحی: اعتماد + وضوح + امنیت فین‌تک
    ============================================================================ */
 
 @keyframes pageIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -18,7 +18,7 @@
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.94);
+    transform: scale(0.96);
   }
   to {
     opacity: 1;
@@ -26,33 +26,157 @@
   }
 }
 
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  20% {
-    transform: translateX(-4px);
-  }
-  40% {
-    transform: translateX(4px);
+@keyframes checkPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
   }
   60% {
-    transform: translateX(-3px);
+    transform: scale(1.15);
   }
-  80% {
-    transform: translateX(3px);
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
-/* ── Page ──────────────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+}
+
+/* ── Page Shell ─────────────────────────────────────────────────────────────── */
 .page {
-  max-inline-size: 680px;
+  max-inline-size: 1200px;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
   animation: pageIn var(--ds-duration-base) var(--ds-ease-out-quart) both;
+}
+
+/* ── Status Hero ────────────────────────────────────────────────────────────── */
+.statusHero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-4);
+  padding: var(--ds-space-5) var(--ds-space-6);
+  border-radius: var(--ds-radius-xl);
+  background: var(--nova-surface, var(--ds-surface));
+  border: 1px solid var(--nova-line, var(--ds-border-default));
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.statusHero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--ds-brand-500) 8%, transparent) 0%,
+    transparent 60%
+  );
+  z-index: -1;
+}
+
+.statusIconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 56px;
+  block-size: 56px;
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  color: var(--ds-brand-500);
+  flex-shrink: 0;
+}
+
+.statusIconWrap.hasAddress {
+  background: color-mix(in oklch, var(--ds-status-success-fg) 12%, transparent);
+  color: var(--ds-status-success-fg);
+}
+
+.statusIconWrap .ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  border: 2px solid currentColor;
+  opacity: 0.15;
+  animation: pulseRing 3s ease-in-out infinite;
+}
+
+.statusContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statusTitle {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.statusDesc {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin: 0;
+  line-height: var(--ds-leading-snug);
+}
+
+.statusBadge {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  flex-shrink: 0;
+}
+
+.statusBadge.active {
+  background: color-mix(in oklch, var(--ds-status-success-fg) 10%, transparent);
+  color: var(--ds-status-success-fg);
+  border: 1px solid color-mix(in oklch, var(--ds-status-success-fg) 20%, transparent);
+}
+
+.statusBadge.inactive {
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
+  color: var(--ds-text-muted);
+  border: 1px solid color-mix(in oklch, var(--ds-text-muted) 15%, transparent);
+}
+
+/* ── Two Column Layout ──────────────────────────────────────────────────────── */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--ds-space-5);
+  align-items: start;
 }
 
 /* ── Alert ─────────────────────────────────────────────────────────────────── */
@@ -89,10 +213,11 @@
   margin-block-start: 1px;
 }
 
-/* ── Form Card ─────────────────────────────────────────────────────────────── */
+/* ── Form Card ──────────────────────────────────────────────────────────────── */
 .formCard {
-  background: var(--at-surface, var(--ds-surface));
-  border: 1px solid var(--at-line, var(--ds-border-default));
+  position: relative;
+  background: var(--nova-surface, var(--ds-surface));
+  border: 1px solid var(--nova-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl);
   overflow: hidden;
   box-shadow: var(--ds-shadow-sm);
@@ -103,16 +228,16 @@
   align-items: center;
   gap: var(--ds-space-3);
   padding: var(--ds-space-4) var(--ds-space-5);
-  border-block-end: 1px solid var(--at-line, var(--ds-border-default));
-  background: var(--ds-canvas-subtle);
+  border-block-end: 1px solid var(--nova-line, var(--ds-border-default));
+  background: color-mix(in oklch, var(--ds-brand-500) 3%, var(--ds-canvas-subtle, var(--ds-canvas)));
 }
 
 .formCardHeadIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  inline-size: 36px;
-  block-size: 36px;
+  inline-size: 40px;
+  block-size: 40px;
   border-radius: var(--ds-radius-md);
   background: color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
   color: var(--ds-brand-500);
@@ -128,13 +253,13 @@
 .formCardTitle {
   font-size: var(--ds-text-base);
   font-weight: var(--ds-weight-bold);
-  color: var(--at-fg, var(--ds-text-primary));
+  color: var(--ds-text-primary);
   margin: 0;
 }
 
 .formCardDesc {
   font-size: var(--ds-text-xs);
-  color: var(--at-fg-muted, var(--ds-text-muted));
+  color: var(--ds-text-muted);
   margin: 0;
 }
 
@@ -142,24 +267,39 @@
   padding: var(--ds-space-5);
 }
 
-/* ── Form Grid ─────────────────────────────────────────────────────────────── */
+/* ── Section Divider ───────────────────────────────────────────────────────── */
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding-block: var(--ds-space-2);
+  margin-block-end: var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-brand-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sectionLabel::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--nova-line, var(--ds-border-subtle));
+}
+
+/* ── Form Grid ──────────────────────────────────────────────────────────────── */
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--ds-space-4);
 }
 
-@media (max-width: 560px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .gridFull {
   grid-column: 1 / -1;
 }
 
-/* ── Field ─────────────────────────────────────────────────────────────────── */
+/* ── Field ──────────────────────────────────────────────────────────────────── */
 .field {
   display: flex;
   flex-direction: column;
@@ -172,16 +312,15 @@
   gap: var(--ds-space-1);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
-  color: var(--at-fg, var(--ds-text-primary));
+  color: var(--ds-text-primary);
   cursor: default;
 }
 
 .labelIcon {
   flex-shrink: 0;
-  color: var(--at-fg-muted, var(--ds-text-muted));
+  color: var(--ds-text-muted);
 }
 
-/* رنگ semantic icon‌ها */
 .labelIcon[data-color="emerald"] {
   color: var(--nova-emerald, oklch(55% 0.14 165));
 }
@@ -197,9 +336,9 @@
   block-size: 2.5rem;
   padding-inline: var(--ds-space-3);
   border-radius: var(--ds-radius-md);
-  border: 1px solid var(--at-line, var(--ds-border-default));
-  background: var(--at-surface, var(--ds-surface));
-  color: var(--at-fg, var(--ds-text-primary));
+  border: 1px solid var(--nova-line, var(--ds-border-default));
+  background: var(--nova-surface, var(--ds-surface));
+  color: var(--ds-text-primary);
   font-size: var(--ds-text-sm);
   font-family: inherit;
   transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
@@ -208,7 +347,7 @@
 }
 
 .input::placeholder {
-  color: var(--at-fg-muted, var(--ds-text-muted));
+  color: var(--ds-text-muted);
   opacity: 0.6;
 }
 
@@ -222,46 +361,18 @@
   cursor: not-allowed;
 }
 
-/* Select */
-.select {
-  inline-size: 100%;
-  block-size: 2.5rem;
-  padding-inline: var(--ds-space-3);
-  border-radius: var(--ds-radius-md);
-  border: 1px solid var(--at-line, var(--ds-border-default));
-  background: var(--at-surface, var(--ds-surface));
-  color: var(--at-fg, var(--ds-text-primary));
-  font-size: var(--ds-text-sm);
-  font-family: inherit;
-  cursor: pointer;
-  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
-    var(--ds-duration-fast) var(--ds-ease-out-quart);
-  outline: none;
-  appearance: none;
-  /* arrow custom RTL-aware */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: left 12px center;
-  padding-inline-end: 36px;
-}
-
-.select:focus {
-  border-color: var(--ds-brand-500);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
-}
-
-/* ── Form Footer ───────────────────────────────────────────────────────────── */
+/* ── Form Footer ────────────────────────────────────────────────────────────── */
 .formFooter {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: var(--ds-space-2);
   padding: var(--ds-space-4) var(--ds-space-5);
-  border-block-start: 1px solid var(--at-line, var(--ds-border-default));
-  background: var(--ds-canvas-subtle);
+  border-block-start: 1px solid var(--nova-line, var(--ds-border-default));
+  background: color-mix(in oklch, var(--ds-brand-500) 2%, var(--ds-canvas-subtle, var(--ds-canvas)));
 }
 
-/* ── Buttons ───────────────────────────────────────────────────────────────── */
+/* ── Buttons ────────────────────────────────────────────────────────────────── */
 .btnPrimary {
   display: inline-flex;
   align-items: center;
@@ -304,11 +415,11 @@
   block-size: 2.375rem;
   border-radius: var(--ds-radius-md);
   background: transparent;
-  color: var(--at-fg-muted, var(--ds-text-secondary));
+  color: var(--ds-text-secondary);
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-medium);
   font-family: inherit;
-  border: 1px solid var(--at-line, var(--ds-border-default));
+  border: 1px solid var(--nova-line, var(--ds-border-default));
   cursor: pointer;
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
     var(--ds-duration-fast) var(--ds-ease-spring);
@@ -328,5 +439,228 @@
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* ── Preview Card (Left Column) ─────────────────────────────────────────────── */
+.previewCard {
+  position: sticky;
+  block-start: var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.previewInner {
+  background: var(--nova-surface, var(--ds-surface));
+  border: 1px solid var(--nova-line, var(--ds-border-default));
+  border-radius: var(--ds-radius-xl);
+  overflow: hidden;
+  box-shadow: var(--ds-shadow-sm);
+}
+
+.previewHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: 1px solid var(--nova-line, var(--ds-border-default));
+  background: color-mix(in oklch, var(--ds-brand-500) 3%, var(--ds-canvas-subtle, var(--ds-canvas)));
+}
+
+.previewHeadIcon {
+  color: var(--ds-brand-500);
+  flex-shrink: 0;
+}
+
+.previewHeadTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.previewBody {
+  padding: var(--ds-space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+.previewRow {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.previewLabel {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.previewValue {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-primary);
+  line-height: var(--ds-leading-snug);
+}
+
+.previewValue.empty {
+  color: var(--ds-text-muted);
+  font-style: italic;
+  opacity: 0.5;
+}
+
+/* Shimmer placeholder for empty preview */
+.previewShimmer {
+  height: 1em;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--ds-border-subtle) 50%, transparent) 25%,
+    color-mix(in oklch, var(--ds-border-subtle) 80%, transparent) 50%,
+    color-mix(in oklch, var(--ds-border-subtle) 50%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* ── Tips Card ──────────────────────────────────────────────────────────────── */
+.tipsCard {
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, var(--nova-surface, var(--ds-surface)));
+  border: 1px solid
+    color-mix(in oklch, var(--ds-brand-500) 12%, var(--nova-line, var(--ds-border-default)));
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-4);
+}
+
+.tipsTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold);
+  color: var(--ds-brand-500);
+  margin: 0 0 var(--ds-space-2);
+}
+
+.tipsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+}
+
+.tipsList li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-snug);
+}
+
+.tipsList li::before {
+  content: "";
+  flex-shrink: 0;
+  margin-block-start: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ds-brand-500);
+  opacity: 0.6;
+}
+
+/* ── Success Checkmark ──────────────────────────────────────────────────────── */
+.successCheck {
+  display: inline-flex;
+  animation: checkPop 0.4s var(--ds-ease-spring) both;
+}
+
+/* ── Mobile Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 48rem) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .statusHero {
+    padding: var(--ds-space-3) var(--ds-space-4);
+    gap: var(--ds-space-3);
+  }
+
+  .statusIconWrap {
+    inline-size: 44px;
+    block-size: 44px;
+  }
+
+  .statusTitle {
+    font-size: var(--ds-text-sm);
+  }
+
+  .statusBadge {
+    display: none;
+  }
+
+  .formCardBody {
+    padding: var(--ds-space-3);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: var(--ds-space-3);
+  }
+
+  .formCardHead {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  .formFooter {
+    padding: var(--ds-space-3) var(--ds-space-4);
+    flex-direction: column-reverse;
+  }
+
+  .btnPrimary,
+  .btnGhost {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .previewCard {
+    order: -1;
+    position: static;
+  }
+
+  .previewBody {
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .tipsCard {
+    padding: var(--ds-space-3);
+  }
+}
+
+@media (max-width: 30rem) {
+  .statusHero {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .statusIconWrap {
+    inline-size: 36px;
+    block-size: 36px;
+  }
+
+  .formCardBody {
+    padding: var(--ds-space-2);
+  }
+
+  .formCardHead {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .formFooter {
+    padding: var(--ds-space-2) var(--ds-space-3);
   }
 }
