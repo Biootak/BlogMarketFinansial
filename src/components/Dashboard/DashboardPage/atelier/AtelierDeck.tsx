@@ -37,7 +37,6 @@
  */
 
 import type { TopAuthor } from '@/actions/getTopAuthors';
-import CommandPalette from '@/components/Dashboard/DashboardPage/CommandPalette';
 import MarketRatesTicker from '@/components/MarketRates/MarketRatesTicker';
 import type { MarketRateItem } from '@/lib/market-rates';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
@@ -200,8 +199,6 @@ const AtelierDeck: React.FC<AtelierDeckProps> = (props) => {
           </AtelierTileBoundary>
         </div>
       </main>
-
-      <CommandPalette role={props.userRole} />
     </>
   );
 };

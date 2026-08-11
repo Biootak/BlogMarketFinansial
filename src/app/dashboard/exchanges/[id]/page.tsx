@@ -30,7 +30,9 @@ export default async function ExchangeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await auth();
-  if (!session?.user || !['OWNER', 'ADMIN'].includes(session.user.role as string)) {
+  // SUPERADMIN = OWNER alias (G8-fix) — middleware ADMIN_ROLES already
+  // lets SUPERADMIN through; keep the page check in sync.
+  if (!session?.user || !['OWNER', 'SUPERADMIN', 'ADMIN'].includes(session.user.role as string)) {
     redirect('/dashboard');
   }
 

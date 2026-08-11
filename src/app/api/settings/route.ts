@@ -6,7 +6,9 @@ export async function GET() {
   try {
     const session = await auth();
 
-    if (!session?.user || !['OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
+    // 2026-08-11: settings are owner-only — SUPERADMIN is an elevated ADMIN,
+    // not an OWNER alias, and must not read site settings (secrets, SMTP).
+    if (!session?.user || !['OWNER'].includes(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم را ندارید' } },
         { status: 403 },
@@ -32,7 +34,7 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
 
-    if (!session?.user || !['OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
+    if (!session?.user || !['OWNER'].includes(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم را ندارید' } },
         { status: 403 },

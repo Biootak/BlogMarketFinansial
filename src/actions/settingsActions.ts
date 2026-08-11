@@ -4,7 +4,13 @@ import { createHash, randomBytes } from 'node:crypto';
 import { type BackupConfig, type BackupFileInfo, DEFAULT_BACKUP_CONFIG } from '@/lib/backup';
 import prisma from '@/lib/db';
 import { setMaintenanceMode } from '@/lib/edge-maintenance';
-import { authFailureToActionResult, requireAdmin, requireSuperAdmin } from '@/lib/require-auth';
+import {
+  type AuthResult,
+  authFailureToActionResult,
+  requireAdmin,
+  requirePermission,
+  requireSuperAdmin,
+} from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { revalidateSiteIdentity } from '@/lib/site-identity-revalidate';
 import {
@@ -22,6 +28,20 @@ import {
 
 const ok = <T>(data?: T) => ({ success: true as const, ...(data === undefined ? {} : { data }) });
 const fail = (error: string) => ({ success: false as const, error });
+
+/**
+ * گارد تغییر تنظیمات — OWNER (requireSuperAdmin) + اکشن حساس `settings:manage`.
+ * در حالت پیش‌فرض (بدون override) OWNER همیشه پاس می‌شود؛ اگر روزی گارد نقش
+ * بازتر شد، کلید اکشن جلوی ویرایش بدون مجوز را می‌گیرد.
+ */
+async function requireSettingsManage(): Promise<AuthResult> {
+  const gate = await requireSuperAdmin();
+  if (!gate.success) return gate;
+  const perm = await requirePermission('settings:manage');
+  if (!perm.success) return perm;
+  return gate;
+}
+
 const stripSecret = <T extends Record<string, unknown>>(value: T): Omit<T, 'smtpPassword'> => {
   const { smtpPassword: _removed, ...rest } = value;
   return rest as Omit<T, 'smtpPassword'>;
@@ -63,7 +83,7 @@ export async function getSystemSettings() {
 
 export async function updateGeneralSettings(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const parsed = UpdateGeneralSettingsSchema.safeParse(data);
     if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر');
@@ -105,7 +125,7 @@ export async function updateGeneralSettings(data: unknown) {
 
 export async function updateEmailSettings(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const parsed = UpdateEmailSettingsSchema.safeParse(data);
     if (!parsed.success) return fail(parsed.error.issues[0]?.message ?? 'داده‌های نامعتبر');
@@ -128,7 +148,7 @@ export async function updateEmailSettings(data: unknown) {
 }
 export async function updateSocialSettings(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const p = UpdateSocialSettingsSchema.parse(data);
     const current = await prisma.systemSettings.findFirst();
@@ -143,7 +163,7 @@ export async function updateSocialSettings(data: unknown) {
 }
 export async function updateCacheSettings(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const p = UpdateCacheSettingsSchema.parse(data);
     const current = await prisma.systemSettings.findFirst();
@@ -158,7 +178,7 @@ export async function updateCacheSettings(data: unknown) {
 }
 export async function updateMaintenanceMode(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const p = UpdateMaintenanceModeSchema.parse(data);
     const current = await prisma.systemSettings.findFirst();
@@ -231,7 +251,7 @@ export async function getSecuritySettings() {
 }
 export async function updateSecuritySettings(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const p = UpdateSecuritySettingsSchema.parse(data);
     await prisma.auditLog.create({
@@ -289,7 +309,7 @@ export async function listApiKeys() {
 }
 export async function createApiKey(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const p = CreateApiKeySchema.parse(data);
     const key = `bk_live_${randomBytes(32).toString('hex')}`;
@@ -321,7 +341,7 @@ export async function createApiKey(data: unknown) {
 }
 export async function revokeApiKey(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     if (
       typeof data !== 'object' ||
@@ -380,7 +400,7 @@ export async function getBackupStatus() {
 }
 export async function updateBackupSettings(data: unknown) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const p = UpdateBackupSettingsSchema.parse(data);
     await prisma.backupConfig.upsert({
@@ -399,7 +419,7 @@ export async function updateBackupSettings(data: unknown) {
 }
 export async function triggerBackup(data: unknown = {}) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     const p = TriggerBackupSchema.parse(data);
     const { runBackup } = await import('@/lib/backup');
@@ -410,7 +430,7 @@ export async function triggerBackup(data: unknown = {}) {
 }
 export async function deleteBackup(filename: string) {
   try {
-    const gate = await requireSuperAdmin();
+    const gate = await requireSettingsManage();
     if (!gate.success) return authFailureToActionResult(gate);
     if (!/^[A-Za-z0-9_-]+\.json$/.test(filename)) return fail('نام فایل نامعتبر است');
     const { unlink } = await import('node:fs/promises');

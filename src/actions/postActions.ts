@@ -5,6 +5,7 @@ import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
 import { checkRole } from '@/lib/auth';
 import prisma from '@/lib/db';
+import { authFailureToActionResult, requirePermission } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import { createUniqueSlug } from '@/lib/slugUtils';
@@ -20,7 +21,7 @@ import type {
 import { PostStatus, type Prisma, Role } from '@prisma/client';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
-  const session = await checkRole(['ADMIN', 'AUTHOR']);
+  const session = await checkRole(['ADMIN', 'AUTHOR', 'SUPERADMIN']);
   if (!session) {
     return { success: false, message: 'شما دسترسی لازم برای ایجاد پست را ندارید.' };
   }
@@ -37,6 +38,15 @@ export async function createPost(data: CreatePostInput): Promise<ActionResult<Po
         status: PostStatus.PENDING_REVIEW,
         isFeatured: false,
       };
+    }
+
+    // انتشار یا زمان‌بندی انتشار پست — اکشن حساس `content:publish`
+    if (
+      validatedData.status === PostStatus.PUBLISHED ||
+      validatedData.status === PostStatus.SCHEDULED
+    ) {
+      const perm = await requirePermission('content:publish');
+      if (!perm.success) return authFailureToActionResult(perm);
     }
 
     const id = generateUniqueId();
@@ -178,6 +188,15 @@ export async function updatePost(
       (validatedData as Record<string, unknown>).isFeatured = undefined;
     }
 
+    // انتشار یا زمان‌بندی انتشار پست — اکشن حساس `content:publish`
+    if (
+      validatedData.status === PostStatus.PUBLISHED ||
+      validatedData.status === PostStatus.SCHEDULED
+    ) {
+      const perm = await requirePermission('content:publish');
+      if (!perm.success) return authFailureToActionResult(perm);
+    }
+
     let slug = validatedData.slug;
     if (!slug && validatedData.title) {
       slug = generateSlug(validatedData.title);
@@ -281,7 +300,7 @@ export async function updatePostStatus(
   postId: string,
   newStatus: PostStatus,
 ): Promise<ActionResult<PostWithRelations>> {
-  const session = await checkRole(['ADMIN', 'AUTHOR', 'OWNER']);
+  const session = await checkRole(['ADMIN', 'AUTHOR', 'OWNER', 'SUPERADMIN']);
 
   if (!session || !session.user) {
     return {
@@ -330,6 +349,12 @@ export async function updatePostStatus(
           error: 'شما مجاز به انجام این تغییر وضعیت نیستید.',
         };
       }
+    }
+
+    // انتشار یا زمان‌بندی انتشار پست — اکشن حساس `content:publish`
+    if (newStatus === PostStatus.PUBLISHED || newStatus === PostStatus.SCHEDULED) {
+      const perm = await requirePermission('content:publish');
+      if (!perm.success) return authFailureToActionResult(perm);
     }
 
     // Admins can change to any status
@@ -489,7 +514,7 @@ export async function getPostStatusCounts(): Promise<ActionResult<PostStatusCoun
  */
 export async function duplicatePost(postId: string): Promise<ActionResult<PostWithRelations>> {
   try {
-    const session = await checkRole(['OWNER', 'ADMIN', 'AUTHOR']);
+    const session = await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
     if (!session?.user) {
       return { success: false, message: 'شما باید وارد شوید.' };
     }
@@ -1215,7 +1240,7 @@ export async function likeItem(
   itemId: string,
   itemType: 'post' | 'comment',
 ): Promise<ActionResult> {
-  const session = await checkRole(['USER', 'AUTHOR', 'ADMIN']);
+  const session = await checkRole(['USER', 'AUTHOR', 'ADMIN', 'SUPERADMIN']);
   if (!session) {
     return { success: false, message: 'برای ثبت پسند باید وارد شوید.' };
   }

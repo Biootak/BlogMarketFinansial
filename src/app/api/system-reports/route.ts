@@ -13,9 +13,9 @@ async function ensureReportAccess(): Promise<NextResponse | null> {
       { status: 401 },
     );
   }
-  // M2-fix: SUPERADMIN هم مثل OWNER است — قبلاً 403 می‌گرفت چون نه ADMIN بود
-  // نه OWNER. ADMIN/OWNER/SUPERADMIN همه مجازند.
-  if (!role || !['ADMIN', 'OWNER', 'SUPERADMIN'].includes(role)) {
+  // 2026-08-11: reports are owner-only — SUPERADMIN is an elevated ADMIN,
+  // not an OWNER alias, and must not read financial reports.
+  if (!role || !['OWNER'].includes(role)) {
     return NextResponse.json(
       { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
       { status: 403 },

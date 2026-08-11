@@ -2,8 +2,9 @@
 
 import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
+import { isKnownPermissionKey } from '@/lib/dashboard-sections';
 import prisma from '@/lib/db';
-import { requireAdmin } from '@/lib/require-auth';
+import { requireAdmin, requirePermission, requireSuperAdmin } from '@/lib/require-auth';
 import { revalidatePath } from '@/lib/revalidate';
 import type { ActionResult, UserWithProfile } from '@/types/types';
 import type { Prisma } from '@prisma/client';
@@ -13,16 +14,16 @@ import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
 // 2026-06-23: role hierarchy for ownership/permission checks.
-// OWNER (4) > ADMIN (3) > AUTHOR/SUPPORT (2) > USER (1).
 // A user can mutate another user only if their level is STRICTLY greater.
 //
-// R1/R2-fix (2026-07): SUPERADMIN is kept in the Prisma enum for schema compatibility
-// but is treated identically to OWNER at the platform level (level 4).
+// 2026-08-11: SUPERADMIN is an elevated ADMIN, NOT an OWNER alias — it sits
+// between OWNER (4) and ADMIN (3) at 3.5. So OWNER can grant SUPERADMIN,
+// SUPERADMIN can grant up to ADMIN, and nobody can grant OWNER/their own tier.
 // Fintech-only roles (CUSTOMER, MERCHANT, EXCHANGE, TEST_CUSTOMER) get level 0 so
 // they cannot be managed via the blog/admin dashboard at all.
 const ROLE_HIERARCHY: Record<Role, number> = {
   OWNER: 4,
-  SUPERADMIN: 4, // alias — treated same as OWNER; use OWNER for all new code
+  SUPERADMIN: 3.5,
   ADMIN: 3,
   SUPPORT: 2,
   AUTHOR: 2,
@@ -239,6 +240,17 @@ export async function updateUser(
       return { success: false, message: 'شما مجوز تغییر به این نقش را ندارید' };
     }
 
+    // مسدودسازی/رفع مسدودیت کاربر — اکشن حساس `users:block`. کاربری که در
+    // حالت whitelist فقط `users:view` دارد نباید بتواند کاربری را مسدود کند.
+    if (
+      data.status &&
+      data.status !== targetUser.status &&
+      (data.status === 'Banned' || targetUser.status === 'Banned')
+    ) {
+      const perm = await requirePermission('users:block');
+      if (!perm.success) return { success: false, message: perm.message };
+    }
+
     const updateData: Prisma.UserUpdateInput = {
       name: data.name,
       email: data.email,
@@ -350,6 +362,89 @@ export async function updateUserRole(userId: string, newRole: Role) {
   } catch (error) {
     void error; // server errors handled by Next.js error boundary
     return { success: false, message: 'خطا در به‌روزرسانی نقش کاربر' };
+  }
+}
+
+/**
+ * updateUserPermissions — دسترسی‌های بخشی کاربر را تنظیم می‌کند (grants + denies).
+ *
+ * فقط OWNER. مدل: نقش = مبنای دسترسی؛ `permissions` = grants (خالی = پیش‌فرض
+ * نقش؛ غیرخالی = whitelist)؛ `deniedPermissions` = denials (همیشه کم می‌شود و
+ * اولویت دارد). هر دو در middleware و سایدبار و requirePermission اعمال می‌شوند.
+ * تغییر، tokenVersion را increment می‌کند تا نشست فعال کاربر در درخواست بعدی
+ * مجوزهای تازه را بگیرد. همهٔ تغییرات در AuditLog ثبت می‌شود.
+ */
+export async function updateUserPermissions(
+  userId: string,
+  permissions: string[],
+  deniedPermissions: string[],
+): Promise<ActionResult<{ id: string; permissions: string[]; deniedPermissions: string[] }>> {
+  try {
+    const authCheck = await requireSuperAdmin(); // OWNER only
+    if (!authCheck.success) {
+      return { success: false, message: 'فقط مالک سایت می‌تواند دسترسی‌های بخشی را تغییر دهد' };
+    }
+
+    if (userId === authCheck.user.id) {
+      return { success: false, message: 'نمی‌توانید دسترسی خودتان را تغییر دهید' };
+    }
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, name: true, email: true },
+    });
+    if (!targetUser) {
+      return { success: false, message: 'کاربر یافت نشد' };
+    }
+    if (targetUser.role === 'OWNER') {
+      return { success: false, message: 'دسترسی مالک قابل محدود کردن نیست' };
+    }
+
+    if (!permissions.every((p) => isKnownPermissionKey(p))) {
+      return { success: false, message: 'کلید دسترسی نامعتبر است' };
+    }
+    if (!deniedPermissions.every((p) => isKnownPermissionKey(p))) {
+      return { success: false, message: 'کلید مسدودی نامعتبر است' };
+    }
+
+    const uniqueGrants = [...new Set(permissions)];
+    const uniqueDenies = [...new Set(deniedPermissions)];
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        permissions: uniqueGrants,
+        deniedPermissions: uniqueDenies,
+        tokenVersion: { increment: 1 },
+      },
+      select: { id: true, permissions: true, deniedPermissions: true },
+    });
+
+    await logActivity(
+      'تغییر دسترسی‌های بخشی',
+      `دسترسی‌های بخشی کاربر "${targetUser.name || targetUser.email}" به‌روزرسانی شد`,
+    );
+    await prisma.auditLog.create({
+      data: {
+        id: createId(),
+        exchangeId: null,
+        actorId: authCheck.user.id,
+        actorRole: authCheck.user.role,
+        action: 'USER_PERMISSIONS_CHANGED',
+        entityType: 'User',
+        entityId: userId,
+        meta: { grants: uniqueGrants, denies: uniqueDenies } as Prisma.InputJsonValue,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'دسترسی‌ها با موفقیت به‌روزرسانی شد',
+      data: updated,
+    };
+  } catch (error) {
+    void error;
+    return { success: false, message: 'خطا در به‌روزرسانی دسترسی‌ها' };
   }
 }
 

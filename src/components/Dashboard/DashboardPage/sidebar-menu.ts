@@ -706,7 +706,6 @@ export function getMenu(role: UserRole): NavSection[] {
         },
       ];
     case 'OWNER':
-    case 'SUPERADMIN':
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
@@ -771,6 +770,9 @@ export function getMenu(role: UserRole): NavSection[] {
         },
       ];
     case 'ADMIN':
+    case 'SUPERADMIN':
+      // SUPERADMIN sees the same menu as ADMIN (elevated admin) — owner-only
+      // items (reports, settings) are excluded from this branch.
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
         { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },

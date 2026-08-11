@@ -17,7 +17,7 @@ import { checkRole } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 
 export default async function PostsCalendarPage() {
-  await checkRole(['OWNER', 'ADMIN', 'AUTHOR']);
+  await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
 
   const result = await getScheduledPosts();
 

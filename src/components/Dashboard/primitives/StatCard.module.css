@@ -1,0 +1,126 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   StatCard — premium KPI card with gradient accent + glass depth
+   ▸ Tokens: --ds-* / --nova-* only
+   ▸ No custom @keyframes — uses anim-* from globals
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.card {
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--ds-duration-fast, 180ms)
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)), box-shadow
+    var(--ds-duration-fast, 180ms) ease, border-color var(--ds-duration-fast, 180ms) ease;
+}
+
+/* Subtle gradient accent on top edge */
+.card::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  background: linear-gradient(
+    to inline-size,
+    transparent,
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 50%, transparent),
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 70%, transparent),
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 50%, transparent),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity var(--ds-duration-fast, 180ms) ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--ds-shadow-md, 0 4px 16px -4px oklch(20% 0 0 / 0.1));
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+/* ── Spark slot ─────────────────────────────────────────────────────────── */
+
+.spark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--ds-space-1);
+  margin-inline: calc(-1 * var(--ds-space-4));
+  margin-block-end: var(--ds-space-1);
+}
+
+/* ── Delta badge ────────────────────────────────────────────────────────── */
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px var(--ds-space-2);
+  border-radius: 9999px;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  line-height: 1;
+  transition: transform var(--ds-duration-fast, 180ms)
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.delta:hover {
+  transform: scale(1.05);
+}
+
+.deltaUp {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 12%, transparent);
+  color: var(--nova-up, var(--ds-accent-emerald));
+}
+
+.deltaDown {
+  background: color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 12%, transparent);
+  color: var(--nova-down, var(--ds-accent-rose));
+}
+
+/* ── Icon wrap ──────────────────────────────────────────────────────────── */
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--ds-duration-fast, 180ms)
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.card:hover .iconWrap {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+/* ── Info tooltip ───────────────────────────────────────────────────────── */
+
+.info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-text-muted);
+  transition: color 140ms ease, transform var(--ds-duration-fast, 180ms)
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  cursor: help;
+}
+
+.info:hover {
+  color: var(--ds-text-secondary);
+  transform: scale(1.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .spark {
+    margin-inline: calc(-1 * var(--ds-space-3));
+  }
+}

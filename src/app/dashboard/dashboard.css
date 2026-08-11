@@ -8340,9 +8340,14 @@
     display: inline-block;
     max-width: 100%;
   }
+  /* Mobile: hero metric must stay glanceable — 26px (was 32px) fits
+     alongside the pulse without wrapping on 320-390px phones. */
   @media (max-width: 480px) {
     .at-hero__value {
-      font-size: 32px;
+      font-size: 26px;
+    }
+    .at-hero__unit {
+      font-size: 13px;
     }
   }
   .at-hero__unit {
@@ -8814,6 +8819,13 @@
     line-height: 0.95;
     color: var(--at-fg);
     letter-spacing: -0.025em;
+  }
+  /* Mobile: 48px rhythm numbers dominate a 360px viewport; drop to a
+     compact 26px so the 7-day row reads at a glance. */
+  @media (max-width: 480px) {
+    .at-rhythm__metric-num {
+      font-size: 26px;
+    }
   }
   @media (min-width: 768px) {
     .at-rhythm__metric-num {
@@ -9842,6 +9854,20 @@
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+  /* Mobile: chart KPIs stack 4-deep; 22-26px numbers are heavy on a phone.
+     Scale down to keep the 4 stat rows compact and glanceable. */
+  @media (max-width: 480px) {
+    .at-c-kpi {
+      padding: 12px 14px;
+      gap: 10px;
+    }
+    .at-c-kpi__value {
+      font-size: 17px;
+    }
+    .at-c-kpi.is-lead .at-c-kpi__value {
+      font-size: 20px;
+    }
   }
   .at-c-kpi__sub {
     font-size: 11px;
@@ -11504,6 +11530,13 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+  /* Mobile: 34px floor is heavy on a 360-390px viewport; match the hero
+     metric at 26px so numbers read at a glance. */
+  @media (max-width: 480px) {
+    .at-eng-hero__value {
+      font-size: 26px;
+    }
   }
   .at-eng-hero__sub {
     display: inline-flex;

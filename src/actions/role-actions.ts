@@ -20,9 +20,12 @@ import { z } from 'zod';
 
 // ─── Hierarchy ────────────────────────────────────────────────────────────────
 
+// 2026-08-11: SUPERADMIN is an elevated ADMIN, NOT an OWNER alias — it sits
+// between OWNER (4) and ADMIN (3) at 3.5. OWNER can grant SUPERADMIN;
+// SUPERADMIN/ADMIN can only grant roles strictly below their own tier.
 const ROLE_HIERARCHY: Record<Role, number> = {
   OWNER: 4,
-  SUPERADMIN: 4,
+  SUPERADMIN: 3.5,
   ADMIN: 3,
   SUPPORT: 2,
   AUTHOR: 2,

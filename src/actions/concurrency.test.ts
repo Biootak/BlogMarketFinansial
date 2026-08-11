@@ -39,6 +39,7 @@ vi.mock('@/lib/db', () => ({
 vi.mock('@/lib/require-auth', () => ({
   requireUser: vi.fn(),
   requireAdmin: vi.fn(),
+  requirePermission: vi.fn(),
 }));
 vi.mock('@/lib/csrf-server', () => ({ assertCsrf: vi.fn() }));
 vi.mock('@/lib/rate-limiter', () => ({ checkRateLimit: vi.fn() }));
@@ -60,7 +61,7 @@ import { markSettlementPaid } from '@/actions/settlement';
 import { confirmTransfer } from '@/actions/transfer';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { requireUser } from '@/lib/require-auth';
+import { requirePermission, requireUser } from '@/lib/require-auth';
 
 const USER = { success: true as const, user: { id: 'user-1', role: 'USER' as const } };
 const RL_OK = { success: true as const };
@@ -101,6 +102,10 @@ function mockTxn(getTx: () => unknown) {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(requireUser).mockResolvedValue(USER);
+  vi.mocked(requirePermission).mockResolvedValue({
+    success: true as const,
+    user: { id: 'admin-1', role: 'ADMIN' as const },
+  });
   vi.mocked(checkRateLimit).mockResolvedValue(RL_OK as never);
   vi.mocked(prisma.customer.findFirst).mockResolvedValue({ id: 'cust-1' } as never);
   vi.mocked(prisma.transaction.findFirst).mockResolvedValue(TXN as never);

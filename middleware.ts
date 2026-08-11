@@ -8,7 +8,9 @@ import {
   superAdminRoutes,
   userFintechRoutes,
 } from '@/config/routes';
-import { getToken } from 'next-auth/jwt';
+import { canAccessRoute } from '@/lib/dashboard-sections';
+import prisma from '@/lib/db';
+import { type JWT, encode, getToken } from 'next-auth/jwt';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -111,7 +113,9 @@ const matchesAny = (pathname: string, routes: CompiledRoute[]): boolean =>
 const underPrefix = (pathname: string, prefixes: readonly string[]): boolean =>
   prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
-const SUPER_ROLES = new Set(['OWNER', 'SUPERADMIN']);
+// OWNER-only gate for superAdminRoutes (settings, reports, …). SUPERADMIN is
+// an elevated ADMIN, NOT an OWNER alias — it stays on adminRoutes only.
+const SUPER_ROLES = new Set(['OWNER']);
 const ADMIN_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
 const AUTHOR_ROLES = new Set(['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR']);
 const SUPPORT_ROUTE_PREFIXES = [
@@ -162,41 +166,95 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
   return false;
 };
 
-export async function middleware(req: NextRequest) {
-  const { nextUrl } = req;
-  const pathname = nextUrl.pathname;
-  const search = nextUrl.search;
-  if (isStaticPath(pathname)) return NextResponse.next();
+/**
+ * tokenVersion check — فوریت اعمال تغییرات مجوز/نقش.
+ *
+ * Auth.js (jwt callback در src/auth.ts) توکن را فقط وقتی رفرش می‌کند که
+ * `auth()` صدا زده شود (صفحه/اکشن سرور). ولی middleware اینجا توکن را با
+ * `getToken` خام می‌خواند — بنابراین اولین درخواستِ بعد از تغییر مجوزهای
+ * یک کاربر، هنوز ادعاهای قدیمی (grants/denies/role) را می‌دید و تا وقتی
+ * یک صفحه رندر می‌شد کوکی تازه نمی‌شد.
+ *
+ * راه‌حل: روی مسیرهای محافظت‌شده، tokenVersion ذخیره‌شده در توکن را با
+ * دیتابیس مقایسه کن؛ اگر ناهماهنگ بود ادعاهای تازه را از DB بردار و کوکی
+ * را همان‌جا دوباره رمز کن — یعنی همان کاری که jwt callback در Auth.js
+ * انجام می‌دهد، بدون اینکه کاربر نیاز به رفرش یا logout داشته باشد.
+ * تصمیم این درخواست (allow/deny) هم با دادهٔ تازه گرفته می‌شود.
+ *
+ * شکست (DB پایین و…) هرگز نباید درخواست را خراب کند — best-effort.
+ */
+async function refreshStaleTokenClaims(
+  token: JWT | null,
+  pathname: string,
+  cookieName: string,
+  useSecureCookies: boolean,
+): Promise<{
+  name: string;
+  value: string;
+  httpOnly: boolean;
+  secure: boolean;
+  sameSite: 'lax';
+  path: string;
+  expires: Date;
+} | null> {
+  if (!token?.sub) return null;
+  // فقط مسیرهایی که گارد اینجا نقش/دسترسی را تصمیم می‌گیرد. مسیرهای عمومی
+  // فرقی نمی‌کند — بدون هزینهٔ DB رد می‌شوند.
+  const isGuarded =
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/exchange') ||
+    pathname.startsWith('/customer') ||
+    underPrefix(pathname, ADMIN_API_PREFIXES) ||
+    underPrefix(pathname, DEV_ONLY_API_PREFIXES);
+  if (!isGuarded) return null;
 
-  // ── Maintenance gate (site-wide): if active, ALL routes except cron and
-  //    the maintenance page itself redirect there. The flag is shared via
-  //    Upstash Redis (edge-safe) written by the settings toggle action.
-  //    Graceful degradation: if Redis is down, the site stays up.
-  //    Note: this check runs on EVERY matched route (':path*' matcher below)
-  //    but is a single lightweight Redis GET when maintenance is inactive.
-  if (await isMaintenanceActive()) {
-    if (pathname === '/maintenance' || underPrefix(pathname, ['/api/cron'] as const)) {
-      // Allow the maintenance page and cron webhooks without auth
-      return NextResponse.next();
-    }
-    return NextResponse.redirect(new URL('/maintenance', nextUrl));
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: token.sub },
+      select: { role: true, tokenVersion: true, permissions: true, deniedPermissions: true },
+    });
+    if (!dbUser) return null;
+    const storedVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
+    if (dbUser.tokenVersion === storedVersion) return null;
+
+    // نسخه ناهماهنگ → ادعاهای توکن را با مقدار فعلی DB جایگزین کن.
+    token.role = dbUser.role;
+    token.permissions = dbUser.permissions ?? [];
+    token.deniedPermissions = dbUser.deniedPermissions ?? [];
+    token.tokenVersion = dbUser.tokenVersion;
+
+    // کوکی را با همان salt/secret و maxAge آینهٔ Auth.js (session maxAge = 3 روز)
+    // دوباره رمز کن تا رفرش از همین درخواست، دائمی شود.
+    const value = await encode({
+      token,
+      secret: process.env.AUTH_SECRET as string,
+      salt: cookieName,
+      maxAge: 3 * 24 * 60 * 60,
+    });
+    return {
+      name: cookieName,
+      value,
+      httpOnly: true,
+      secure: useSecureCookies,
+      sameSite: 'lax',
+      path: '/',
+      expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    };
+  } catch {
+    // best-effort — بدون رفرش هم تصمیم بالادست (auth() سمت سرور) تازه است.
+    return null;
   }
-  const isProduction = process.env.NODE_ENV === 'production';
-  const isApi = pathname.startsWith('/api/');
-  // 2026-08-09 fix: Auth.js decides the secure (`__Secure-`) cookie prefix from
-  // the auth base URL protocol (see @auth/core init.js: defaultCookies(
-  // useSecureCookies ?? url.protocol === 'https:')). The middleware used to
-  // decide it from NODE_ENV alone, so with NEXTAUTH_URL=https://… in a dev
-  // server, Auth.js wrote `__Secure-authjs.session-token` while this guard
-  // looked for `authjs.session-token` — every session was rejected and users
-  // bounced back to /auth right after a successful login. Mirror Auth.js here.
-  const authBaseUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? '';
-  const useSecureCookies = isProduction || authBaseUrl.startsWith('https://');
-  const cookieName = useSecureCookies ? SECURE_COOKIE_NAME : DEV_COOKIE_NAME;
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET, cookieName });
-  if (DEBUG_MODE && pathname.startsWith('/dashboard')) {
-    /* no sensitive logging */
-  }
+}
+
+/** تمام منطق گاردِ مسیرها — بعد از خواندن/رفرش توکن اجرا می‌شود. */
+async function runGuards(
+  nextUrl: URL,
+  pathname: string,
+  search: string,
+  token: JWT | null,
+  isProduction: boolean,
+  isApi: boolean,
+): Promise<NextResponse> {
   if (token?.exp && Date.now() / 1000 > token.exp) {
     // مسیر API نباید redirect بگیرد — کلاینت fetch منتظر JSON است و یک
     // ریدایرکت به صفحهٔ HTML ورود باعث خطای parse می‌شود نه پیام روشن.
@@ -244,7 +302,21 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/customer/dashboard', nextUrl));
   }
   if (pathname.startsWith('/dashboard')) {
-    if (checkDashboardAccess(pathname, role)) return NextResponse.next();
+    if (checkDashboardAccess(pathname, role)) {
+      // 2026-08-11: per-user section overrides. grants (whitelist) + denials
+      // (block) set by the owner in the user editor. Denials apply even without
+      // grants; grants make the list the user's effective access. OWNER is
+      // never restricted here.
+      if (role && role !== 'OWNER') {
+        const grants = token?.permissions as string[] | undefined;
+        const denies = token?.deniedPermissions as string[] | undefined;
+        const hasOverride = (grants && grants.length > 0) || (denies && denies.length > 0);
+        if (hasOverride && !canAccessRoute(pathname, grants, denies)) {
+          return NextResponse.redirect(new URL('/dashboard', nextUrl));
+        }
+      }
+      return NextResponse.next();
+    }
     if (role && EXCHANGE_ROLES.has(role))
       return NextResponse.redirect(new URL('/exchange/dashboard', nextUrl));
     if (role && CUSTOMER_PORTAL_ROLES.has(role))
@@ -283,7 +355,62 @@ export async function middleware(req: NextRequest) {
   return NextResponse.next();
 }
 
+export async function middleware(req: NextRequest) {
+  const { nextUrl } = req;
+  const pathname = nextUrl.pathname;
+  const search = nextUrl.search;
+  if (isStaticPath(pathname)) return NextResponse.next();
+
+  // ── Maintenance gate (site-wide): if active, ALL routes except cron and
+  //    the maintenance page itself redirect there. The flag is shared via
+  //    Upstash Redis (edge-safe) written by the settings toggle action.
+  //    Graceful degradation: if Redis is down, the site stays up.
+  //    Note: this check runs on EVERY matched route (':path*' matcher below)
+  //    but is a single lightweight Redis GET when maintenance is inactive.
+  if (await isMaintenanceActive()) {
+    if (pathname === '/maintenance' || underPrefix(pathname, ['/api/cron'] as const)) {
+      // Allow the maintenance page and cron webhooks without auth
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(new URL('/maintenance', nextUrl));
+  }
+  const isProduction = process.env.NODE_ENV === 'production';
+  const isApi = pathname.startsWith('/api/');
+  // 2026-08-09 fix: Auth.js decides the secure (`__Secure-`) cookie prefix from
+  // the auth base URL protocol (see @auth/core init.js: defaultCookies(
+  // useSecureCookies ?? url.protocol === 'https:')). The middleware used to
+  // decide it from NODE_ENV alone, so with NEXTAUTH_URL=https://… in a dev
+  // server, Auth.js wrote `__Secure-authjs.session-token` while this guard
+  // looked for `authjs.session-token` — every session was rejected and users
+  // bounced back to /auth right after a successful login. Mirror Auth.js here.
+  const authBaseUrl = process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? '';
+  const useSecureCookies = isProduction || authBaseUrl.startsWith('https://');
+  const cookieName = useSecureCookies ? SECURE_COOKIE_NAME : DEV_COOKIE_NAME;
+  const token = await getToken({ req, secret: process.env.AUTH_SECRET, cookieName });
+  if (DEBUG_MODE && pathname.startsWith('/dashboard')) {
+    /* no sensitive logging */
+  }
+
+  // اگر tokenVersion توکن با DB ناهماهنگ بود (مجوز/نقش کاربر تغییر کرده)،
+  // ادعاها را تازه کن تا تصمیم همین درخواست و همهٔ درخواست‌های بعدی با
+  // دسترسی جدید گرفته شود — بدون رفرش یا logout.
+  const refreshedCookie = await refreshStaleTokenClaims(
+    token,
+    pathname,
+    cookieName,
+    useSecureCookies,
+  );
+
+  const res = await runGuards(nextUrl, pathname, search, token, isProduction, isApi);
+  if (refreshedCookie) res.cookies.set(refreshedCookie);
+  return res;
+}
+
 export const config = {
+  // Node.js runtime — middleware در این پروژه self-hosted روی Node اجرا
+  // می‌شود (PM2/Docker) و برای چک tokenVersion به Prisma نیاز دارد.
+  // Next.js 15.5+ middleware nodejs runtime را پایدار پشتیبانی می‌کند.
+  runtime: 'nodejs',
   matcher: [
     // `/:path*` برای site-wide maintenance gate (فقط یک Redis GET در حالت
     // عادی). ۲۰۲۶-۰۸-۰۹: قبلاً فقط مسیرهای خاص برای کارایی middleware

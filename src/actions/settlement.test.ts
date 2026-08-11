@@ -50,6 +50,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/require-auth', () => ({
   requireAdmin: vi.fn(),
+  requirePermission: vi.fn(),
 }));
 
 vi.mock('@/lib/exchange-auth', () => ({
@@ -68,7 +69,7 @@ import {
   markSettlementPaid,
 } from '@/actions/settlement';
 import prisma from '@/lib/db';
-import { requireAdmin } from '@/lib/require-auth';
+import { requireAdmin, requirePermission } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -80,6 +81,12 @@ const UNAUTH = {
   code: 'UNAUTHENTICATED' as const,
   message: 'وارد شوید',
 };
+const PERM_OK = { success: true as const, user: { id: 'admin-1', role: 'ADMIN' as const } };
+
+// سطح اکشن `settlements:create` به‌صورت پیش‌فرض مجاز است (تست‌های RBAC خودشان رد می‌کنند)
+beforeEach(() => {
+  vi.mocked(requirePermission).mockResolvedValue(PERM_OK);
+});
 
 const PENDING_SETTLEMENT = {
   id: 'settle-1',

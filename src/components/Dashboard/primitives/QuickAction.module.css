@@ -1,14 +1,19 @@
-/* QuickAction — compact action chips for all dashboards */
+/* ═══════════════════════════════════════════════════════════════════════════
+   QuickAction — premium action chips with spring press + gradient border
+   ▸ Tokens: --ds-* / --nova-* only
+   ▸ No custom @keyframes
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ── Single chip ─────────────────────────────────────────────────── */
 
 .root {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.35rem 0.7rem;
+  padding: 0.4rem 0.8rem;
   border: 1px solid var(--ds-border-subtle, var(--ds-border-default));
-  border-radius: var(--ds-radius-md, 0.75rem);
+  border-radius: var(--ds-radius-lg, 1rem);
   background: var(--ds-surface, var(--ds-canvas));
   color: var(--ds-text-primary);
   text-decoration: none;
@@ -16,14 +21,47 @@
   font-weight: var(--ds-weight-medium, 500);
   white-space: nowrap;
   cursor: pointer;
+  overflow: hidden;
   transition: border-color 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
-    box-shadow 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+    box-shadow 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)), transform 180ms
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+/* Gradient border on hover — via ::before */
+.root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--qa-accent, var(--nova-primary, var(--ds-brand-500))) 60%, transparent),
+    color-mix(in oklch, var(--qa-accent, var(--nova-primary, var(--ds-brand-500))) 20%, transparent)
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  opacity: 0;
+  transition: opacity 200ms ease;
+  pointer-events: none;
+}
+
+.root:hover::before {
+  opacity: 1;
 }
 
 .root:hover {
-  border-color: var(--nova-primary, var(--ds-brand-500));
+  border-color: transparent;
   box-shadow: 0 0 0 2px
-    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 10%, transparent);
+    color-mix(in oklch, var(--qa-accent, var(--nova-primary, var(--ds-brand-500))) 8%, transparent),
+    var(--ds-shadow-sm, 0 1px 3px -1px oklch(20% 0 0 / 0.08));
+  transform: translateY(-1px);
+}
+
+.root:active {
+  transform: scale(0.97) translateY(0);
 }
 
 .icon {
@@ -32,6 +70,11 @@
   justify-content: center;
   color: var(--nova-muted, var(--ds-text-muted));
   flex-shrink: 0;
+  transition: transform 180ms var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.root:hover .icon {
+  transform: scale(1.1) rotate(-3deg);
 }
 
 .label {
@@ -46,26 +89,54 @@
   height: 1.25rem;
   padding: 0 0.3rem;
   border-radius: 9999px;
-  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 12%, transparent);
-  color: var(--nova-primary, var(--ds-brand-500));
+  background: color-mix(
+    in oklch,
+    var(--qa-accent, var(--nova-primary, var(--ds-brand-500))) 14%,
+    transparent
+  );
+  color: var(--qa-accent, var(--nova-primary, var(--ds-brand-500)));
   font-size: 0.65rem;
   font-weight: var(--ds-weight-semibold, 600);
   line-height: 1;
+  transition: transform 180ms var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.root:hover .badge {
+  transform: scale(1.1);
 }
 
 /* ── Tone variants ───────────────────────────────────────────────── */
 
+.tone_emerald {
+  --qa-accent: var(--nova-up, var(--ds-accent-emerald));
+}
 .tone_emerald .icon {
   color: var(--nova-up, var(--ds-accent-emerald));
+}
+
+.tone_amber {
+  --qa-accent: var(--nova-amber, var(--ds-accent-amber));
 }
 .tone_amber .icon {
   color: var(--nova-amber, var(--ds-accent-amber));
 }
+
+.tone_rose {
+  --qa-accent: var(--nova-down, var(--ds-accent-rose));
+}
 .tone_rose .icon {
   color: var(--nova-down, var(--ds-accent-rose));
 }
+
+.tone_violet {
+  --qa-accent: var(--nova-violet, var(--ds-accent-violet));
+}
 .tone_violet .icon {
   color: var(--nova-violet, var(--ds-accent-violet));
+}
+
+.tone_cyan {
+  --qa-accent: var(--nova-cyan, var(--ds-accent-cyan));
 }
 .tone_cyan .icon {
   color: var(--nova-cyan, var(--ds-accent-cyan));
@@ -78,6 +149,10 @@
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 640px) {
   .row {

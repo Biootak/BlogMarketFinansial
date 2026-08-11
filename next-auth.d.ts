@@ -5,6 +5,10 @@ export type ExtendUser = DefaultSession['user'] & {
   role: Role;
   profile?: UserProfile;
   emailVerified?: Date | null;
+  /** 2026-08-11: دسترسی‌های بخشی کاربر (dashboard-section keys = grants) — خالی = پیش‌فرض نقش */
+  permissions?: string[];
+  /** 2026-08-11: بخش‌های مسدودشده برای همین کاربر (denials) */
+  deniedPermissions?: string[];
 };
 
 declare module 'next-auth' {
@@ -16,6 +20,8 @@ declare module 'next-auth' {
     role?: Role;
     profile?: UserProfile;
     emailVerified?: Date | null;
+    permissions?: string[];
+    deniedPermissions?: string[];
   }
 }
 
@@ -24,5 +30,7 @@ declare module 'next-auth/jwt' {
     role: Role;
     profile?: UserProfile;
     emailVerified?: Date | null;
+    permissions?: string[];
+    deniedPermissions?: string[];
   }
 }

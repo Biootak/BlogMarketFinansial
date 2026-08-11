@@ -17,7 +17,7 @@
 import { createHash } from 'node:crypto';
 import prisma from '@/lib/db';
 import { notifyTelegramUser } from '@/lib/notifications/telegram-user';
-import { requireAdmin, requireUser } from '@/lib/require-auth';
+import { requireAdmin, requirePermission, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { getPortalUrl } from '@/lib/telegram';
 import { normalizeDigits } from '@/lib/utils';
@@ -295,6 +295,18 @@ export async function reviewKycRecord(raw: unknown): Promise<FintechActionResult
     return {
       success: false,
       error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0]?.message ?? 'خطا' },
+    };
+  }
+
+  // 2026-08-11: enforce سطح اکشن — تأیید نیاز به `kyc:approve` دارد، رد/بررسی
+  // به `kyc:review`. کاربری که مالک فقط «kyc:approve» داده، تأیید می‌کند ولی
+  // نمی‌تواند رد کند (و برعکس). بدون override، گارد نقش بالادست حاکم است.
+  const permKey = parsed.data.approved ? 'kyc:approve' : 'kyc:review';
+  const perm = await requirePermission(permKey);
+  if (!perm.success) {
+    return {
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم برای این عملیات را ندارید' },
     };
   }
 

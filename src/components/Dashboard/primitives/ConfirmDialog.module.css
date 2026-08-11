@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ConfirmDialog — premium confirmation modal with icon treatment
+   ▸ Tokens: --ds-* / --nova-* only
+   ▸ No custom @keyframes
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root dialog content ─────────────────────────────────────────────────── */
+
+.root {
+  animation: anim-fade-in-up 240ms var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
+}
+
+/* ── Icon treatment ──────────────────────────────────────────────────────── */
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: var(--ds-radius-xl);
+  margin-inline: auto;
+  margin-block-end: var(--ds-space-3);
+  animation: ph-icon-pop 360ms var(--ds-ease-spring) both;
+  animation-delay: 80ms;
+}
+
+@keyframes ph-icon-pop {
+  from {
+    transform: scale(0.6) rotate(-8deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.iconDefault {
+  background: color-mix(in oklch, var(--ds-accent-emerald) 12%, transparent);
+  color: var(--ds-accent-emerald);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-emerald) 20%, transparent);
+}
+
+.iconDanger {
+  background: color-mix(in oklch, var(--ds-accent-rose) 12%, transparent);
+  color: var(--ds-accent-rose);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-rose) 20%, transparent);
+}
+
+/* ── Title ────────────────────────────────────────────────────────────────── */
+
+.title {
+  text-align: start;
+}
+
+.titleDanger {
+  color: var(--ds-accent-rose);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.footer {
+  direction: rtl;
+}
+
+.confirmBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  transition: transform var(--ds-duration-fast, 180ms)
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)), filter var(--ds-duration-fast, 180ms)
+    ease;
+}
+
+.confirmBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.confirmBtn:active:not(:disabled) {
+  transform: scale(0.97);
+}

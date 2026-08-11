@@ -378,14 +378,10 @@
 /* ──────────────────────── KPI strip ──────────────────────── */
 
 .kpiStrip {
-  /* موبایل: ریل افقی قابل‌کشیدن — همهٔ ۵ KPI در یک خط با swipe،
-     به‌جای wrap ناهموار به ردیف بعدی (روش اپ‌های فین‌تک پریمیوم ۲۰۲۶). */
-  display: flex;
+  /* موبایل: grid 2 ردیفی (3+2) — premium fintech apps 2026 */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
   background: var(--ds-surface);
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-xl);
@@ -397,15 +393,15 @@
   );
 }
 
-.kpiStrip::-webkit-scrollbar {
-  display: none;
+@media (min-width: 480px) {
+  .kpiStrip {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
 
 @media (min-width: 720px) {
   .kpiStrip {
-    display: grid;
     grid-template-columns: repeat(5, 1fr);
-    overflow: hidden;
   }
 }
 
@@ -420,18 +416,18 @@
   text-decoration: none;
   color: inherit;
   position: relative;
-  transition: background var(--ds-duration-fast);
+  transition: background var(--ds-duration-fast), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
   min-width: 0;
-  /* موبایل: عرض ثابت برای swipe — روی دسکتاپ grid آن را override می‌کند */
-  flex: 0 0 auto;
-  inline-size: 160px;
-  scroll-snap-align: start;
 }
 
-@media (min-width: 720px) {
-  .kpiCell {
-    flex: none;
-    inline-size: auto;
+/* Mobile: row separator between first row (3) and second row (2) */
+@media (max-width: 479px) {
+  .kpiCell:nth-child(n + 4) {
+    border-block-start: 1px dashed var(--ds-border-subtle);
+  }
+  .kpiCell:nth-child(4) {
+    border-inline-start: 0;
   }
 }
 
@@ -441,6 +437,7 @@
 
 .kpiCell:hover {
   background: color-mix(in oklch, var(--ds-brand-500) 4%, var(--ds-surface));
+  transform: translateY(-1px);
 }
 
 .kpiCell:focus-visible {
@@ -471,6 +468,37 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+}
+
+/* Trend pill inside KPI cells */
+.kpiTrend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+.kpiTrend_up {
+  color: var(--ds-accent-emerald, var(--ds-text-primary));
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-emerald, var(--ds-brand-500)) 12%,
+    var(--ds-surface)
+  );
+}
+.kpiTrend_down {
+  color: var(--ds-accent-rose, var(--ds-text-primary));
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-rose, var(--ds-accent-amber)) 12%,
+    var(--ds-surface)
+  );
 }
 
 .kpiCellLabel {
@@ -886,6 +914,79 @@
   pointer-events: auto;
 }
 
+/* Inline action buttons inside service items */
+.svcItemActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  pointer-events: auto;
+}
+
+.svcActionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-sm);
+  background: var(--ds-surface);
+  color: var(--ds-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), color
+    var(--ds-duration-fast);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.svcActionBtn:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 6%, var(--ds-surface));
+  border-color: color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-default));
+  color: var(--ds-text-primary);
+}
+
+.svcActionBtn:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 1px;
+}
+
+.svcActionBtn_approve {
+  border-color: color-mix(
+    in oklch,
+    var(--ds-accent-emerald, var(--ds-brand-500)) 30%,
+    var(--ds-border-subtle)
+  );
+  color: var(--ds-accent-emerald, var(--ds-brand-600));
+}
+
+.svcActionBtn_approve:hover {
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-emerald, var(--ds-brand-500)) 10%,
+    var(--ds-surface)
+  );
+  border-color: var(--ds-accent-emerald, var(--ds-brand-500));
+}
+
+.svcActionBtn_reject {
+  border-color: color-mix(
+    in oklch,
+    var(--ds-accent-rose, var(--ds-accent-amber)) 30%,
+    var(--ds-border-subtle)
+  );
+  color: var(--ds-accent-rose, var(--ds-accent-amber));
+}
+
+.svcActionBtn_reject:hover {
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-rose, var(--ds-accent-amber)) 10%,
+    var(--ds-surface)
+  );
+  border-color: var(--ds-accent-rose, var(--ds-accent-amber));
+}
+
 .svcItemAmount {
   display: inline-flex;
   align-items: baseline;
@@ -1141,6 +1242,30 @@
   background: color-mix(in oklch, var(--ds-brand-500) 35%, var(--ds-border-subtle));
   border-radius: 2px 2px 0 0;
   transition: background var(--ds-duration-fast);
+  position: relative;
+  cursor: default;
+}
+
+.strip24Bar:hover {
+  background: var(--ds-brand-500);
+}
+
+.strip24Bar[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.2rem 0.5rem;
+  background: var(--ds-text-primary);
+  color: var(--ds-surface);
+  font-size: 0.6rem;
+  font-weight: 600;
+  border-radius: var(--ds-radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  font-variant-numeric: tabular-nums;
 }
 
 .strip24BarPeak {
@@ -1358,8 +1483,8 @@
 /* ──────────────────────── Tablet (600–1023px) ──────────────────────── */
 @media (max-width: 1023px) {
   .root {
-    --fc-gap: clamp(0.6rem, 0.4rem + 0.8vw, 0.9rem);
-    --fc-pad: clamp(0.6rem, 0.3rem + 1vw, 1rem);
+    --fc-gap: clamp(0.65rem, 0.4rem + 0.8vw, 1rem);
+    --fc-pad: clamp(0.75rem, 0.4rem + 1vw, 1.1rem);
   }
   .hero {
     padding: clamp(1rem, 0.6rem + 1.5vw, 1.5rem);
@@ -1373,14 +1498,7 @@
     border-block-start: 1px dashed var(--ds-border-subtle);
     padding-block-start: var(--ds-space-3);
   }
-  .kpiStrip {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    overflow: hidden;
-  }
   .kpiCell {
-    flex: none;
-    inline-size: auto;
     padding: 0.7rem 0.6rem;
   }
   .kpiCellIcon {
@@ -1392,10 +1510,10 @@
     padding: var(--ds-space-3) var(--ds-space-3) var(--ds-space-2);
   }
   .svcList {
-    max-height: 320px;
+    max-height: 35vh;
   }
   .eventList {
-    max-height: 260px;
+    max-height: 30vh;
   }
 }
 
@@ -1416,11 +1534,11 @@
     font-size: clamp(1.2rem, 0.8rem + 2vw, 1.6rem);
   }
   .heroEyebrow {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     gap: 0.35rem;
   }
   .heroLead {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
   .heroVital {
     gap: 0.4rem;
@@ -1431,7 +1549,7 @@
     gap: 0.3rem 0.5rem;
   }
   .heroVitalLabel {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
   .heroVitalValue {
     font-size: clamp(1.2rem, 0.8rem + 1.5vw, 1.6rem);
@@ -1441,7 +1559,7 @@
     gap: 0.5rem;
   }
   .heroVitalMinorLabel {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .heroVitalMinorValue {
     font-size: 0.85rem;
@@ -1449,6 +1567,7 @@
   .heroVitalDivider {
     height: 1.2rem;
   }
+  /* Hero side: collapse on mobile — max 2 zones */
   .heroSide {
     border-inline-start: 0;
     padding-inline-start: 0;
@@ -1457,39 +1576,21 @@
     gap: 0.4rem;
   }
   .heroSideLabel {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
   .heroSideRole {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .ambientGlow {
     opacity: 0.4;
   }
-  /* KPI — horizontal scroll on mobile, compact cells */
+  /* KPI — grid on mobile (no horizontal scroll) */
   .kpiStrip {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
     border-radius: var(--ds-radius-lg);
-    padding: 0;
-  }
-  .kpiStrip::-webkit-scrollbar {
-    display: none;
   }
   .kpiCell {
-    flex: 0 0 auto;
-    inline-size: 140px;
     padding: 0.6rem 0.7rem;
     gap: 0.15rem 0.5rem;
-    scroll-snap-align: start;
-  }
-  .kpiCell:first-child {
-    border-inline-start: 0;
-  }
-  .kpiCell + .kpiCell {
-    border-inline-start: 1px dashed var(--ds-border-subtle);
   }
   .kpiCellIcon {
     width: 1.6rem;
@@ -1501,7 +1602,7 @@
     font-size: 0.95rem;
   }
   .kpiCellLabel {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
   }
   /* Quick actions — 3 column on mobile */
   .quickRow {
@@ -1511,7 +1612,7 @@
   .quickChip {
     padding: 0.45rem 0.5rem;
     gap: 0.4rem;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     border-radius: var(--ds-radius-sm);
   }
   .quickChipIcon {
@@ -1529,13 +1630,13 @@
     gap: 0.5rem;
   }
   .panelEyebrow {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .panelTitle {
     font-size: var(--ds-text-base);
   }
   .panelMore {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     padding: 0.2rem 0.35rem;
   }
   .svcKpis {
@@ -1551,7 +1652,7 @@
     border-block-end: 1px dashed var(--ds-border-subtle);
   }
   .svcKpiLabel {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .svcKpiValue {
     font-size: 0.85rem;
@@ -1574,10 +1675,10 @@
     font-size: 0.8rem;
   }
   .svcItemMeta {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
   .svcItemCode {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
   }
   .svcItemSide {
     position: static;
@@ -1595,17 +1696,17 @@
     font-size: 0.8rem;
   }
   .svcItemCurrency {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .svcStatus {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
     padding: 0.15rem 0.35rem;
   }
   .svcItemTime {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .svcFlag {
-    font-size: 0.55rem;
+    font-size: 0.7rem;
     padding: 0.05rem 0.3rem;
   }
   .svcEmpty {
@@ -1621,15 +1722,23 @@
     flex: 1;
     justify-content: center;
     padding: 0.45rem 0.6rem;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
   .svcFootLink {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
+  }
+  /* Inline actions — mobile */
+  .svcItemActions {
+    gap: 0.3rem;
+  }
+  .svcActionBtn {
+    padding: 0.2rem 0.35rem;
+    font-size: 0.7rem;
   }
   /* Live panel — tighter */
   .healthPill {
     padding: 0.25rem 0.5rem;
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .liveStats {
     grid-template-columns: repeat(3, 1fr);
@@ -1638,7 +1747,7 @@
     padding: 0.5rem 0.6rem;
   }
   .liveStatLabel {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .liveStatValue {
     font-size: 0.85rem;
@@ -1654,16 +1763,16 @@
   .svcLiveItem {
     padding: 0.4rem 0.7rem;
     gap: 0.35rem;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
   .svcLiveName {
     font-size: 0.75rem;
   }
   .svcLiveStatus {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .svcLiveLatency {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
   }
   .eventList {
     padding: 0.3rem 0;
@@ -1672,7 +1781,7 @@
   .eventItem {
     padding: 0.45rem 0.7rem;
     gap: 0.4rem;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
   .eventIcon {
     width: 1.3rem;
@@ -1683,13 +1792,13 @@
     font-size: 0.75rem;
   }
   .eventAction {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
   }
   .eventAmount {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
   }
   .eventBottom {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
   }
   .editorial {
     gap: 0.5rem;
@@ -1699,8 +1808,8 @@
 /* ──────────────────────── Small mobile (≤480px) ──────────────────────── */
 @media (max-width: 480px) {
   .root {
-    --fc-gap: 0.4rem;
-    --fc-pad: 0.4rem;
+    --fc-gap: 0.5rem;
+    --fc-pad: 0.5rem;
   }
   .hero {
     padding: 0.75rem;
@@ -1718,7 +1827,7 @@
     font-size: 1.3rem;
   }
   .heroVitalFlag {
-    font-size: 0.6rem;
+    font-size: 0.75rem;
     padding: 0.2rem 0.4rem;
   }
   .heroVitalMinor {
@@ -1726,36 +1835,35 @@
     gap: 0.4rem;
   }
   .heroVitalMinorLabel {
-    font-size: 0.55rem;
+    font-size: 0.75rem;
   }
   .heroVitalMinorValue {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
   .heroVitalDivider {
     height: 1rem;
   }
   .kpiCell {
-    inline-size: 125px;
-    padding: 0.5rem 0.55rem;
+    padding: 0.55rem 0.5rem;
   }
   .kpiCellValue {
     font-size: 0.85rem;
   }
   .kpiCellLabel {
-    font-size: 0.58rem;
+    font-size: 0.75rem;
   }
   .kpiCellIcon {
-    width: 1.4rem;
-    height: 1.4rem;
-    flex: 0 0 1.4rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: 0 0 1.35rem;
   }
   .quickRow {
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.3rem;
+    gap: 0.35rem;
   }
   .quickChip {
-    padding: 0.4rem 0.4rem;
-    font-size: 0.7rem;
+    padding: 0.45rem 0.35rem;
+    font-size: 0.75rem;
   }
   .quickChipIcon {
     width: 1.2rem;
@@ -1773,40 +1881,73 @@
     height: 28px;
   }
   .panelHeader {
-    padding: 0.6rem 0.6rem 0.4rem;
+    padding: 0.5rem 0.5rem 0.3rem;
   }
   .panelTitle {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   .svcItemLink {
-    padding: 0.5rem 0.6rem;
+    padding: 0.45rem 0.5rem;
   }
   .svcItemName {
     font-size: 0.75rem;
   }
   .svcAvatar {
-    width: 1.65rem;
-    height: 1.65rem;
-    flex: 0 0 1.65rem;
-    font-size: 0.7rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: 0 0 1.5rem;
+    font-size: 0.75rem;
+  }
+  .svcItemMeta {
+    font-size: 0.75rem;
+  }
+  .svcItemAmount {
+    font-size: 0.75rem;
+  }
+  .svcStatus {
+    font-size: 0.75rem;
+  }
+  .liveStatValue {
+    font-size: 0.9rem;
+  }
+  .liveStatLabel {
+    font-size: 0.75rem;
+  }
+  .eventTop {
+    font-size: 0.75rem;
+  }
+  .eventBottom {
+    font-size: 0.75rem;
+  }
+  .editorial {
+    gap: 0.5rem;
   }
 }
 
 /* ──────────────────────── Ultra-small (≤360px) ──────────────────────── */
 @media (max-width: 360px) {
   .root {
-    --fc-gap: 0.35rem;
-    --fc-pad: 0.35rem;
+    --fc-gap: 0.4rem;
+    --fc-pad: 0.4rem;
   }
   .hero {
-    padding: 0.65rem;
+    padding: 0.6rem;
   }
   .heroTitle {
     font-size: 1.05rem;
   }
+  /* KPI: keep 3-col grid (no horizontal scroll) */
+  .kpiStrip {
+    grid-template-columns: repeat(3, 1fr);
+  }
   .kpiCell {
-    inline-size: 115px;
-    padding: 0.45rem 0.5rem;
+    padding: 0.45rem 0.35rem;
+  }
+  .kpiCellValue {
+    font-size: 0.85rem;
+  }
+  .kpiCellLabel {
+    font-size: 0.75rem;
   }
   .quickRow {
     grid-template-columns: repeat(2, 1fr);
@@ -1815,9 +1956,9 @@
     grid-template-columns: repeat(2, 1fr);
   }
   .svcKpi {
-    padding: 0.4rem 0.5rem;
+    padding: 0.35rem 0.4rem;
   }
   .svcItemLink {
-    padding: 0.45rem 0.5rem;
+    padding: 0.4rem 0.4rem;
   }
 }

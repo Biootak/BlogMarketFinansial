@@ -5,7 +5,7 @@
  *   - requireUser: کاربر احراز هویت نشده
  *   - requireRole: نقش‌های مجاز vs غیرمجاز
  *   - requireAdmin: نقش‌های ADMIN / OWNER / SUPERADMIN
- *   - requireSuperAdmin: فقط OWNER / SUPERADMIN
+ *   - requireSuperAdmin: فقط OWNER (SUPERADMIN سطح ادمین است، نه alias مالک)
  *   - requireAuthor: نقش‌های AUTHOR / ADMIN / OWNER
  *   - requirePermission: granular RBAC از جدول Permission
  *   - authFailureToActionResult: تبدیل AuthFailure به ActionResult shape
@@ -172,9 +172,9 @@ describe('requireSuperAdmin', () => {
     expect((await requireSuperAdmin()).success).toBe(true);
   });
 
-  it('SUPERADMIN → موفق', async () => {
+  it('SUPERADMIN → FORBIDDEN (ادمین ارشد، نه مالک سایت)', async () => {
     vi.mocked(auth).mockResolvedValue(makeSession('SUPERADMIN') as never);
-    expect((await requireSuperAdmin()).success).toBe(true);
+    expect((await requireSuperAdmin()).success).toBe(false);
   });
 
   it('ADMIN (غیر-owner) → FORBIDDEN', async () => {
@@ -252,6 +252,58 @@ describe('requirePermission', () => {
     vi.mocked(prisma.rolePermission.findFirst).mockResolvedValue(null);
     const r = await requirePermission('permissions:manage');
     expect(r.success).toBe(false);
+  });
+
+  // ── v2: per-user overrides (grants/denies) ─────────────────────────────
+
+  const sessionWith = (role: string, permissions?: string[], deniedPermissions?: string[]) =>
+    ({
+      user: {
+        id: 'u1',
+        role,
+        permissions,
+        deniedPermissions,
+      },
+    }) as never;
+
+  it('بدون override: نقش پلتفرمی عبور می‌کند، USER/CUSTOMER نه', async () => {
+    vi.mocked(auth).mockResolvedValue(sessionWith('ADMIN'));
+    expect((await requirePermission('kyc:approve')).success).toBe(true);
+    vi.mocked(auth).mockResolvedValue(sessionWith('USER'));
+    expect((await requirePermission('kyc:approve')).success).toBe(false);
+  });
+
+  it('whitelist: «فقط kyc:approve» → تأیید مجاز، بررسی ممنوع', async () => {
+    vi.mocked(auth).mockResolvedValue(sessionWith('ADMIN', ['kyc:approve']));
+    expect((await requirePermission('kyc:approve')).success).toBe(true);
+    expect((await requirePermission('kyc:review')).success).toBe(false);
+    expect((await requirePermission('customers:view')).success).toBe(false);
+  });
+
+  it('whitelist با کلید بخش: `kyc` همهٔ اکشن‌های KYC را می‌دهد', async () => {
+    vi.mocked(auth).mockResolvedValue(sessionWith('ADMIN', ['kyc']));
+    expect((await requirePermission('kyc:approve')).success).toBe(true);
+    expect((await requirePermission('kyc:review')).success).toBe(true);
+  });
+
+  it('deny سطح اکشن: فقط همان اکشن مسدود است', async () => {
+    vi.mocked(auth).mockResolvedValue(sessionWith('ADMIN', undefined, ['kyc:approve']));
+    expect((await requirePermission('kyc:approve')).success).toBe(false);
+    expect((await requirePermission('kyc:review')).success).toBe(true);
+  });
+
+  it('deny سطح بخش: کل بخش مسدود است', async () => {
+    vi.mocked(auth).mockResolvedValue(sessionWith('ADMIN', undefined, ['settlements']));
+    expect((await requirePermission('settlements:create')).success).toBe(false);
+    expect((await requirePermission('exchanges:view')).success).toBe(true);
+  });
+
+  it('deny بر grant اولویت دارد', async () => {
+    vi.mocked(auth).mockResolvedValue(
+      sessionWith('ADMIN', ['kyc:approve', 'kyc:review'], ['kyc:approve']),
+    );
+    expect((await requirePermission('kyc:approve')).success).toBe(false);
+    expect((await requirePermission('kyc:review')).success).toBe(true);
   });
 });
 

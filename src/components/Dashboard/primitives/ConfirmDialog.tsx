@@ -9,7 +9,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import type { ReactNode } from 'react';
+import s from './ConfirmDialog.module.css';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -25,13 +27,11 @@ export interface ConfirmDialogProps {
   body?: ReactNode;
 }
 
-/**
- * ConfirmDialog — Persian copy, two-button confirmation modal.
- *
- * Uses the existing shadcn Dialog primitive. No Radix AlertDialog wrapper
- * is installed in this project, so we render a footer with explicit
- * cancel + confirm buttons inside DialogContent.
- */
+const ICON_MAP: Record<string, ReactNode> = {
+  default: <CheckCircle2 size={20} />,
+  danger: <XCircle size={20} />,
+};
+
 export function ConfirmDialog({
   open,
   onOpenChange,
@@ -48,15 +48,18 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className={cn('max-w-md', s.root)} dir="rtl">
+        {/* Icon treatment */}
+        <div className={cn(s.iconWrap, isDanger ? s.iconDanger : s.iconDefault)} aria-hidden>
+          {ICON_MAP[variant]}
+        </div>
+
         <DialogHeader>
-          <DialogTitle className={cn(isDanger && 'text-rose-600 dark:text-rose-400')}>
-            {title}
-          </DialogTitle>
+          <DialogTitle className={cn(s.title, isDanger && s.titleDanger)}>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         {body}
-        <DialogFooter className="mt-2 gap-2">
+        <DialogFooter className={cn('mt-4 gap-2', s.footer)}>
           <button
             type="button"
             className="ds2-btn ds2-btn--ghost ds2-btn--md"
@@ -67,11 +70,16 @@ export function ConfirmDialog({
           </button>
           <button
             type="button"
-            className={cn('ds2-btn ds2-btn--md', isDanger ? 'ds2-btn--danger' : 'ds2-btn--primary')}
+            className={cn(
+              'ds2-btn ds2-btn--md',
+              isDanger ? 'ds2-btn--danger' : 'ds2-btn--primary',
+              s.confirmBtn,
+            )}
             onClick={onConfirm}
             disabled={loading}
             aria-busy={loading || undefined}
           >
+            {loading && <Loader2 size={14} className="animate-spin" aria-hidden />}
             {loading ? 'در حال پردازش…' : confirmLabel}
           </button>
         </DialogFooter>

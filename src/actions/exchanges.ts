@@ -498,8 +498,8 @@ export async function updateExchangeSelf(
   const auth = await requireUser();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
-  // platform admin هم اجازه دارد
-  if (auth.user.role !== 'OWNER' && auth.user.role !== 'ADMIN') {
+  // platform admin هم اجازه دارد (SUPERADMIN = OWNER alias, G8-fix)
+  if (auth.user.role !== 'OWNER' && auth.user.role !== 'SUPERADMIN' && auth.user.role !== 'ADMIN') {
     const staff = await prisma.exchangeStaff.findFirst({
       where: { exchangeId, userId: auth.user.id, revokedAt: null },
     });

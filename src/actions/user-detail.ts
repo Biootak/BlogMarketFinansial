@@ -14,6 +14,8 @@ export interface UserDetailPayload {
   imageHeight: number | null;
   role: Role;
   status: string;
+  permissions: string[];
+  deniedPermissions: string[];
   phoneNumber: string | null;
   twoFactorEnabled: boolean;
   kycSubmittedAt: Date | null;

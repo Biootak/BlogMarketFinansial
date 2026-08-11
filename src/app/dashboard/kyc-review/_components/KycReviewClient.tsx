@@ -94,7 +94,13 @@ type CustomerKycRow = {
   createdAt: string;
 };
 
-type Props = { records: KycRow[]; customerRecords: CustomerKycRow[] };
+type Props = {
+  records: KycRow[];
+  customerRecords: CustomerKycRow[];
+  /** 2026-08-11: enforce UI — فقط در صورت وجود اکشن فعال است (از سرور می‌آید) */
+  canApprove?: boolean;
+  canReview?: boolean;
+};
 
 type Scope = 'user' | 'customer';
 
@@ -277,7 +283,12 @@ function KpiTile({
 
 // ─── Main ─────────────────────────────────────────────────────────────────
 
-export function KycReviewClient({ records: initial, customerRecords: initialCustomer }: Props) {
+export function KycReviewClient({
+  records: initial,
+  customerRecords: initialCustomer,
+  canApprove = true,
+  canReview = true,
+}: Props) {
   const [rows, setRows] = useState<KycRow[]>(initial);
   const [customerRows, setCustomerRows] = useState<CustomerKycRow[]>(initialCustomer);
   const [scope, setScope] = useState<Scope>('user');
@@ -863,6 +874,8 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                   onApprove={() => handleUserApprove(selectedUser)}
                   onReject={() => handleUserReject(selectedUser)}
                   isPending={isPending}
+                  canApprove={canApprove}
+                  canReview={canReview}
                 />
               ) : scope === 'customer' && selectedCustomer ? (
                 <CustomerReviewPanel
@@ -870,6 +883,8 @@ export function KycReviewClient({ records: initial, customerRecords: initialCust
                   onApprove={() => handleCustomerApprove(selectedCustomer)}
                   onReject={() => handleCustomerReject(selectedCustomer)}
                   isPending={isPending}
+                  canApprove={canApprove}
+                  canReview={canReview}
                 />
               ) : null}
             </div>
@@ -968,11 +983,15 @@ function UserReviewPanel({
   onApprove,
   onReject,
   isPending,
+  canApprove,
+  canReview,
 }: {
   row: KycRow;
   onApprove: () => void;
   onReject: () => void;
   isPending: boolean;
+  canApprove: boolean;
+  canReview: boolean;
 }) {
   const displayName = row.fullName ?? row.user?.name ?? 'بدون نام';
   const hue = nameHue(displayName);
@@ -1050,17 +1069,22 @@ function UserReviewPanel({
         </div>
       )}
 
-      {/* Actions */}
+      {/* Actions — enforce UI: بدون اکشن، دکمه غیرفعال است (سرور هم enforce می‌کند) */}
       <div className={s.reviewActions}>
         <Button
           className={s.btnApprove}
           onClick={onApprove}
-          disabled={isPending || docs.length === 0}
+          disabled={isPending || docs.length === 0 || !canApprove}
         >
           <CheckCircle2 size={15} aria-hidden />
           تأیید هویت
         </Button>
-        <Button variant="outline" className={s.btnReject} onClick={onReject} disabled={isPending}>
+        <Button
+          variant="outline"
+          className={s.btnReject}
+          onClick={onReject}
+          disabled={isPending || !canReview}
+        >
           <XCircle size={15} aria-hidden />
           رد کردن
         </Button>
@@ -1076,11 +1100,15 @@ function CustomerReviewPanel({
   onApprove,
   onReject,
   isPending,
+  canApprove,
+  canReview,
 }: {
   row: CustomerKycRow;
   onApprove: () => void;
   onReject: () => void;
   isPending: boolean;
+  canApprove: boolean;
+  canReview: boolean;
 }) {
   const hue = nameHue(row.customerName);
   const urgent = isUrgent(row.createdAt);
@@ -1153,11 +1181,16 @@ function CustomerReviewPanel({
 
       {/* Actions */}
       <div className={s.reviewActions}>
-        <Button className={s.btnApprove} onClick={onApprove} disabled={isPending}>
+        <Button className={s.btnApprove} onClick={onApprove} disabled={isPending || !canApprove}>
           <CheckCircle2 size={15} aria-hidden />
           تأیید KYC
         </Button>
-        <Button variant="outline" className={s.btnReject} onClick={onReject} disabled={isPending}>
+        <Button
+          variant="outline"
+          className={s.btnReject}
+          onClick={onReject}
+          disabled={isPending || !canReview}
+        >
           <XCircle size={15} aria-hidden />
           رد کردن
         </Button>

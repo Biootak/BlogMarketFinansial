@@ -15,7 +15,9 @@ export const metadata: Metadata = {
 
 export default async function ExchangeStaffPage() {
   const session = await auth();
-  if (!session?.user || !['OWNER', 'ADMIN'].includes(session.user.role as string)) {
+  // SUPERADMIN = OWNER alias (G8-fix) — middleware ADMIN_ROLES already
+  // lets SUPERADMIN through; keep the page check in sync.
+  if (!session?.user || !['OWNER', 'SUPERADMIN', 'ADMIN'].includes(session.user.role as string)) {
     redirect('/dashboard');
   }
 

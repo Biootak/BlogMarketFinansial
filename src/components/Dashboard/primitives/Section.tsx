@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 import React, { type ReactNode } from 'react';
+import s from './Section.module.css';
 
 export interface SectionProps {
   title?: string;
@@ -27,38 +28,42 @@ export function Section({
   className,
   padding = 'default',
 }: SectionProps) {
-  // Handle both LucideIcon component reference and ReactNode element
   const renderIcon = () => {
     if (!icon) return null;
     if (React.isValidElement(icon)) {
-      return <div className="size-5 text-muted-foreground/70">{icon}</div>;
+      return <div className={s.iconWrap}>{icon}</div>;
     }
     const Icon = icon as LucideIcon;
-    return <Icon className="size-5 text-muted-foreground/70" aria-hidden="true" />;
+    return (
+      <div className={s.iconWrap}>
+        <Icon className="size-5" aria-hidden="true" />
+      </div>
+    );
   };
 
   const sub = subtitle ?? description;
   return (
     <section
-      className={cn('dash2-section', padding === 'none' && 'dash2-section--flush', className)}
+      className={cn(
+        s.root,
+        'dash2-section',
+        padding === 'none' && 'dash2-section--flush',
+        className,
+      )}
     >
       {(title || sub || actions) && (
-        <header className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-1 gap-3">
+        <header className={s.header}>
+          <div className={s.titleGroup}>
             {renderIcon()}
-            <div className="min-w-0 flex-1">
-              {title && (
-                <h2 className="text-base font-semibold leading-tight tracking-tight text-foreground">
-                  {title}
-                </h2>
-              )}
-              {sub && <p className="mt-1 text-sm text-muted-foreground">{sub}</p>}
+            <div className={s.titleContent}>
+              {title && <h2 className={s.title}>{title}</h2>}
+              {sub && <p className={s.subtitle}>{sub}</p>}
             </div>
           </div>
-          {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+          {actions && <div className={s.actions}>{actions}</div>}
         </header>
       )}
-      <div className={padding === 'none' ? undefined : 'mt-3'}>{children}</div>
+      <div className={padding === 'none' ? s.contentFlush : s.content}>{children}</div>
     </section>
   );
 }

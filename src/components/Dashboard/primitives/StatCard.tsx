@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { ArrowDownRight, ArrowUpRight, Info, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import React, { type ReactNode, useEffect, useState } from 'react';
+import s from './StatCard.module.css';
 
 export interface StatCardProps {
   label: string;
@@ -23,7 +24,6 @@ export interface StatCardProps {
 /**
  * Format a numeric value using the requested locale + notation.
  */
-// Module-level Intl singletons — created once at module load
 const _faNum = new Intl.NumberFormat('fa-IR');
 const _enNum = new Intl.NumberFormat('en-US');
 const _faCompact = new Intl.NumberFormat('fa-IR', { notation: 'compact' });
@@ -42,9 +42,6 @@ const formatValue = (value: number, format: NonNullable<StatCardProps['format']>
   }
 };
 
-/**
- * Whether the requested format can be driven by the CountUp component
- */
 const isCountUpCompatible = (
   format: NonNullable<StatCardProps['format']>,
 ): format is 'persian' | 'latin' => format === 'persian' || format === 'latin';
@@ -64,23 +61,20 @@ export function StatCard({
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const cardClass = cn(
-    'dash2-statcard group',
-    href && 'cursor-pointer hover:border-[color:var(--ds-color-border-default)]',
-    className,
-  );
+  const cardClass = cn('dash2-statcard', s.card, href && 'cursor-pointer', className);
 
-  // Handle both LucideIcon component reference and ReactNode element
   const renderIcon = () => {
     if (!icon) return null;
     if (React.isValidElement(icon)) {
-      return <div className="size-4 text-muted-foreground">{icon}</div>;
+      return <div className={cn('size-4 text-muted-foreground', s.iconWrap)}>{icon}</div>;
     }
-    // Guard: a raw string (e.g. icon="folder") must never be rendered as a
-    // tag — React would emit <folder> which is unrecognized in the browser.
     if (typeof icon === 'string') return null;
     const Icon = icon as LucideIcon;
-    return <Icon className="size-4 text-muted-foreground" aria-hidden="true" />;
+    return (
+      <div className={cn('size-4 text-muted-foreground', s.iconWrap)}>
+        <Icon className="size-4 text-muted-foreground" aria-hidden="true" />
+      </div>
+    );
   };
 
   const content = (
@@ -92,14 +86,14 @@ export function StatCard({
         <div className="flex items-center gap-1">
           {renderIcon()}
           {info && (
-            <span title={info} aria-label={info} className="text-muted-foreground">
+            <span title={info} aria-label={info} className={s.info}>
               <Info className="size-3.5" aria-hidden="true" />
             </span>
           )}
         </div>
       </div>
 
-      {spark && <div className="dash2-statcard__spark -mx-1">{spark}</div>}
+      {spark && <div className={s.spark}>{spark}</div>}
 
       <div className="dash2-statcard__value text-3xl font-semibold tracking-tight tabular-nums text-foreground">
         {loading ? (
@@ -116,12 +110,7 @@ export function StatCard({
       {delta && (
         <div className="flex items-center justify-between gap-2">
           <span
-            className={cn(
-              'dash2-statcard__delta inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-              delta.trend === 'up'
-                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                : 'bg-rose-500/10 text-rose-700 dark:text-rose-400',
-            )}
+            className={cn(s.delta, delta.trend === 'up' ? s.deltaUp : s.deltaDown)}
             data-trend={delta.trend}
           >
             {delta.trend === 'up' ? (

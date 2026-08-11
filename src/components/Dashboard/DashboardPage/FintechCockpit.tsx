@@ -38,8 +38,9 @@ import {
   AlertCircle,
   ArrowDownRight,
   ArrowLeft,
-  ArrowRight,
   ArrowUpRight,
+  Check,
+  Eye,
   type LucideIcon,
   Plus,
   Radio,
@@ -48,6 +49,7 @@ import {
   TrendingUp,
   Users,
   Wallet,
+  X,
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -176,6 +178,13 @@ const STATUS_LIVE_LABELS: Record<FintechCockpitLiveService['status'], string> = 
   degraded: 'کند',
   down: 'قطع',
   idle: 'بیکار',
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  OWNER: 'مالک',
+  ADMIN: 'مدیر',
+  AUTHOR: 'نویسنده',
+  SUPERADMIN: 'مدیر کل',
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────
@@ -436,7 +445,7 @@ function CockpitHero({
         <div className={s.heroSideLabel}>
           <span>نقش</span>
           <Badge variant="secondary" className={s.heroSideRole}>
-            {userRole}
+            {ROLE_LABELS[userRole as keyof typeof ROLE_LABELS] ?? userRole}
           </Badge>
         </div>
 
@@ -462,7 +471,19 @@ function KpiStrip({
 }: {
   kpi: FintechCockpitProps['kpi'];
 }) {
-  const items = useMemo(
+  type KpiItem = {
+    key: string;
+    label: string;
+    value: number;
+    display: ReactNode;
+    icon: LucideIcon;
+    accent: string;
+    href: string;
+    alert?: boolean;
+    trend?: { direction: 'up' | 'down'; percent: number };
+  };
+
+  const items: KpiItem[] = useMemo(
     () => [
       {
         key: 'pending',
@@ -528,7 +549,19 @@ function KpiStrip({
               <Icon size={16} />
             </span>
             <span className={s.kpiCellValue}>{it.display}</span>
-            <span className={s.kpiCellLabel}>{it.label}</span>
+            <span className={s.kpiCellLabel}>
+              {it.label}
+              {it.trend && (
+                <span className={`${s.kpiTrend} ${s[`kpiTrend_${it.trend.direction}`] ?? ''}`}>
+                  {it.trend.direction === 'up' ? (
+                    <ArrowUpRight size={10} aria-hidden />
+                  ) : (
+                    <ArrowDownRight size={10} aria-hidden />
+                  )}
+                  <span>{formatIntFa(Math.round(it.trend.percent))}٪</span>
+                </span>
+              )}
+            </span>
           </Link>
         );
       })}
@@ -592,9 +625,11 @@ function ServicesPanel({
             const statusLabel = STATUS_LABELS[statusKey] ?? r.status;
             const statusMod = STATUS_CLASS[statusKey] ?? '';
             const typeLabel = SERVICE_TYPE_LABELS[r.serviceType] ?? r.serviceType;
+            const isPending = r.status === 'PENDING';
+            const detailHref = `/track/${encodeURIComponent(r.trackingCode)}`;
             return (
               <li key={r.id} className={s.svcItem}>
-                <Link href="/dashboard/service-requests" className={s.svcItemLink}>
+                <Link href={detailHref} className={s.svcItemLink}>
                   <span className={s.svcAvatar} aria-hidden>
                     {getInitial(r.fullName)}
                   </span>
@@ -626,6 +661,30 @@ function ServicesPanel({
                       <span>{statusLabel}</span>
                     </span>
                     <span className={s.svcItemTime}>{formatRelDate(r.createdAt)}</span>
+                    {isPending && (
+                      <span className={s.svcItemActions}>
+                        <Link
+                          href={`/dashboard/approvals?action=approve&id=${r.id}`}
+                          className={`${s.svcActionBtn} ${s.svcActionBtn_approve}`}
+                          title="تأیید درخواست"
+                        >
+                          <Check size={12} aria-hidden />
+                          <span>تأیید</span>
+                        </Link>
+                        <Link
+                          href={`/dashboard/approvals?action=reject&id=${r.id}`}
+                          className={`${s.svcActionBtn} ${s.svcActionBtn_reject}`}
+                          title="رد درخواست"
+                        >
+                          <X size={12} aria-hidden />
+                          <span>رد</span>
+                        </Link>
+                      </span>
+                    )}
+                    <Link href={detailHref} className={`${s.svcActionBtn}`} title="مشاهده جزئیات">
+                      <Eye size={12} aria-hidden />
+                      <span>جزئیات</span>
+                    </Link>
                   </span>
                 </Link>
               </li>
@@ -719,11 +778,13 @@ function LivePanel({
         {bars.map((v, i) => {
           const isPeak = i === bars.length - 1;
           const h = Math.max(6, Math.min(100, v));
+          const hour = `${String(i).padStart(2, '0')}:00`;
           return (
             <span
               key={i}
               className={`${s.strip24Bar} ${isPeak ? s.strip24BarPeak : ''}`}
               style={{ height: `${h}%` }}
+              data-tooltip={`${hour} — ${formatIntFa(v)} رویداد`}
             />
           );
         })}
@@ -756,7 +817,7 @@ function LivePanel({
             <span>در حال گوش دادن به رویدادها…</span>
           </li>
         ) : (
-          events.slice(0, 4).map((evt) => {
+          events.slice(0, 6).map((evt) => {
             const Icon: LucideIcon =
               evt.type === 'deposit'
                 ? ArrowDownRight
@@ -767,11 +828,30 @@ function LivePanel({
                     : evt.type === 'fraud'
                       ? AlertCircle
                       : Wallet;
+            const eventHref = evt.href ?? undefined;
             return (
               <li key={evt.id} className={s.eventItem}>
-                <span className={`${s.eventIcon} ${s[`eventIcon_${evt.type}`] ?? ''}`} aria-hidden>
-                  <Icon size={12} />
-                </span>
+                {eventHref ? (
+                  <Link
+                    href={eventHref}
+                    className={s.eventIconWrap}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <span
+                      className={`${s.eventIcon} ${s[`eventIcon_${evt.type}`] ?? ''}`}
+                      aria-hidden
+                    >
+                      <Icon size={12} />
+                    </span>
+                  </Link>
+                ) : (
+                  <span
+                    className={`${s.eventIcon} ${s[`eventIcon_${evt.type}`] ?? ''}`}
+                    aria-hidden
+                  >
+                    <Icon size={12} />
+                  </span>
+                )}
                 <span className={s.eventBody}>
                   <span className={s.eventTop}>
                     <strong className={s.eventActor}>{evt.actor}</strong>
@@ -802,7 +882,9 @@ function QuickActionsRow() {
   const items = [
     { href: '/exchanges', icon: <Users size={14} />, label: 'صرافی‌ها' },
     { href: '/exchange-rates', icon: <TrendingUp size={14} />, label: 'نرخ‌های ارز' },
-    { href: '/dashboard/transfer', icon: <ArrowRight size={14} />, label: 'حواله‌ها' },
+    // RTL: forward/action arrows point LEFT. ArrowRight would read as
+    // "back" in a RTL layout.
+    { href: '/dashboard/transfer', icon: <ArrowLeft size={14} />, label: 'حواله‌ها' },
     { href: '/dashboard/reports', icon: <Wallet size={14} />, label: 'گزارش‌ها' },
     { href: '/dashboard/permissions', icon: <ShieldAlert size={14} />, label: 'امنیت' },
     { href: '/dashboard/helpdesk', icon: <Plus size={14} />, label: 'پشتیبانی' },

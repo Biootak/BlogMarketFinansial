@@ -44,6 +44,7 @@ vi.mock('@/lib/db', () => ({
 
 vi.mock('@/lib/require-auth', () => ({
   requireAdmin: vi.fn(),
+  requirePermission: vi.fn(),
 }));
 
 vi.mock('@/lib/exchange-auth', () => ({
@@ -65,7 +66,7 @@ import {
 } from '@/actions/settlement';
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
-import { requireAdmin } from '@/lib/require-auth';
+import { requireAdmin, requirePermission } from '@/lib/require-auth';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -81,6 +82,12 @@ const ACCESS_FAIL = {
   ok: false as const,
   error: { success: false as const, status: 403 as const, code: 'FORBIDDEN', message: 'ممنوع' },
 };
+const PERM_OK = { success: true as const, user: { id: 'admin-1', role: 'ADMIN' as const } };
+
+// سطح اکشن `settlements:create` به‌صورت پیش‌فرض مجاز است (تست‌های RBAC خودشان رد می‌کنند)
+beforeEach(() => {
+  vi.mocked(requirePermission).mockResolvedValue(PERM_OK);
+});
 
 const SETTLEMENT_ROW = {
   id: 'settle-1',
@@ -193,6 +200,25 @@ describe('computePeriodSettlement — RBAC', () => {
     });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('admin بدون مجوز `settlements:create` (محدودشده) → FORBIDDEN', async () => {
+    vi.mocked(requireAdmin).mockResolvedValue(ADMIN);
+    vi.mocked(requirePermission).mockResolvedValue({
+      success: false as const,
+      status: 403 as const,
+      code: 'FORBIDDEN' as const,
+      message: 'شما دسترسی «settlements:create» ندارید.',
+    });
+
+    const result = await computePeriodSettlement({
+      exchangeId: 'exch-1',
+      periodStart: '2026-01-01',
+      periodEnd: '2026-01-31',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.code).toBe('FORBIDDEN');
+    expect(prisma.settlement.findFirst).not.toHaveBeenCalled();
   });
 });
 

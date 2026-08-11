@@ -26,7 +26,14 @@
 }
 
 .ringProgress {
-  transition: stroke-dasharray 600ms var(--ds-ease-out-quart);
+  transition: stroke-dasharray 900ms var(--ds-ease-out-quart);
+  animation: ring-draw 1.2s var(--ds-ease-out-quart) both;
+}
+
+@keyframes ring-draw {
+  from {
+    stroke-dasharray: 0 214;
+  }
 }
 
 .ring_green {

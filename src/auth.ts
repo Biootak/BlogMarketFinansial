@@ -192,9 +192,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // within the next request rather than waiting up to 24 h (updateAge).
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id as string },
-          select: { tokenVersion: true },
+          select: { tokenVersion: true, permissions: true, deniedPermissions: true },
         });
         token.tokenVersion = dbUser?.tokenVersion ?? 0;
+        token.permissions = dbUser?.permissions ?? [];
+        token.deniedPermissions = dbUser?.deniedPermissions ?? [];
       }
 
       // ── Explicit session.update() call (e.g. from useCurrentUser) ───────────
@@ -214,15 +216,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!user && !trigger && token.sub) {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { role: true, tokenVersion: true },
+          select: { role: true, tokenVersion: true, permissions: true, deniedPermissions: true },
         });
         if (dbUser) {
           const storedVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
           if (dbUser.tokenVersion !== storedVersion) {
-            // Version mismatch → role was changed or session was force-invalidated.
-            // Refresh role + version in the token so the session stays alive but
-            // reflects the new permissions immediately.
+            // Version mismatch → role/permissions changed or session was
+            // force-invalidated. Refresh role + permissions + version in the
+            // token so the session stays alive but reflects the new access
+            // immediately (instant revocation without forced sign-out).
             token.role = dbUser.role;
+            token.permissions = dbUser.permissions ?? [];
+            token.deniedPermissions = dbUser.deniedPermissions ?? [];
             token.tokenVersion = dbUser.tokenVersion;
           }
         }
@@ -236,6 +241,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           ...session.user,
           id: token.sub || '',
           role: (token.role as Role) || 'USER',
+          permissions: token.permissions ?? [],
+          deniedPermissions: token.deniedPermissions ?? [],
           emailVerified: token.emailVerified
             ? token.emailVerified instanceof Date
               ? token.emailVerified

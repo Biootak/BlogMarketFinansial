@@ -23,7 +23,9 @@ export default async function ReportsPage() {
     redirect('/auth?callbackUrl=/dashboard/reports');
   }
   const role = session.user.role ?? '';
-  if (!['OWNER', 'SUPERADMIN'].includes(role)) {
+  // 2026-08-11: reports are owner-only — SUPERADMIN is an elevated ADMIN,
+  // not an OWNER alias, and does not see financial reports.
+  if (!['OWNER'].includes(role)) {
     redirect('/forbidden');
   }
 

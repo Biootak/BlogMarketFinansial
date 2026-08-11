@@ -12,10 +12,27 @@
  */
 
 import type { UserDetailPayload } from '@/actions/user-detail';
-import { deleteUser, updateUser, updateUserRole } from '@/actions/userActions';
+import {
+  deleteUser,
+  updateUser,
+  updateUserPermissions,
+  updateUserRole,
+} from '@/actions/userActions';
 import { ConfirmDialog, PageHeader } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import {
+  ACTION_LABELS,
+  DASHBOARD_SECTIONS,
+  type DashboardSectionKey,
+  type SectionActionKey,
+  actionKey,
+  actionsOfSection,
+  isKnownPermissionKey,
+  isKnownSectionKey,
+  routesForSection,
+  sectionOfKey,
+} from '@/lib/dashboard-sections';
 import {
   Activity,
   CalendarDays,
@@ -42,7 +59,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import s from '../user-detail.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
@@ -190,7 +207,7 @@ export default function UserDetail({ user, financials, currentUserId, currentUse
   const statusLabel = STATUS_LABELS[user.status] ?? user.status;
   const avatarSrc = user.profile?.avatar || user.image;
 
-  const handleRoleChange = (newRole: 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN') => {
+  const handleRoleChange = (newRole: 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'SUPERADMIN') => {
     startTransition(async () => {
       const res = await updateUserRole(user.id, newRole);
       if (res.success) {
@@ -319,9 +336,12 @@ export default function UserDetail({ user, financials, currentUserId, currentUse
                   <span>ویرایش</span>
                 </button>
               </Link>
-              {isPrivileged && user.role !== 'OWNER' && user.role !== 'SUPERADMIN' ? (
+              {isPrivileged &&
+              user.role !== 'OWNER' &&
+              (currentUserRole !== 'SUPERADMIN' || user.role !== 'SUPERADMIN') ? (
                 <RoleMenu
                   currentRole={user.role}
+                  currentUserRole={currentUserRole}
                   onChange={handleRoleChange}
                   disabled={isPending}
                 />
@@ -424,7 +444,9 @@ export default function UserDetail({ user, financials, currentUserId, currentUse
       {/* ── Content + Side rail ──────────────────────────────────── */}
       <div className={s.content}>
         <div className="flex flex-col gap-3 min-w-0">
-          {tab === 'overview' ? <OverviewPanel user={user} /> : null}
+          {tab === 'overview' ? (
+            <OverviewPanel user={user} currentUserRole={currentUserRole} />
+          ) : null}
           {tab === 'content' ? <ContentPanel user={user} /> : null}
           {tab === 'activity' ? <ActivityPanel user={user} /> : null}
           {tab === 'kyc' ? <KycPanel user={user} /> : null}
@@ -560,9 +582,466 @@ function TabButton({
   );
 }
 
-function OverviewPanel({ user }: { user: UserDetailPayload }) {
+// ─── Section access editor (OWNER only) ────────────────────────────────────
+// 2026-08-11: whitelist دسترسی‌های بخشی کاربر. فهرست خالی = پیش‌فرض نقش؛
+// غیرخالی = همان بخش‌ها، دسترسیِ مؤثرِ آن کاربر (middleware + sidebar هر دو
+// اعمال می‌کنند). فقط مالک می‌تواند ویرایش کند.
+
+/** وضعیت مؤثر یک بخش با توجه به grants/denies فعلی */
+type SectionAccessState =
+  | 'denied' // deny کامل → کاربر به هیچ‌وجه وارد نمی‌شود
+  | 'full' // همهٔ اکشن‌های بخش grant شده
+  | 'view-only' // فقط `view` grant شده
+  | 'partial' // ترکیبی از اکشن‌ها (نه همه، نه فقط view)
+  | 'closed' // whitelist فعال ولی این بخش grant نشده → بسته
+  | 'default'; // بدون grant/deny → پیش‌فرض نقش (باز)
+
+const SECTION_STATE_LABEL: Record<SectionAccessState, string> = {
+  denied: 'مسدود',
+  full: 'کامل',
+  'view-only': 'فقط مشاهده',
+  partial: 'جزئی',
+  closed: 'بسته',
+  default: 'پیش‌فرض نقش',
+};
+
+const SECTION_STATE_COLOR: Record<SectionAccessState, string> = {
+  denied: 'var(--at-danger)',
+  full: 'var(--nova-emerald)',
+  'view-only': 'var(--at-accent)',
+  partial: 'var(--nova-amber)',
+  closed: 'var(--at-fg-muted)',
+  default: 'var(--at-fg-muted)',
+};
+
+function SectionStateBadge({ state }: { state: SectionAccessState }) {
+  const color = SECTION_STATE_COLOR[state];
+  return (
+    <span
+      style={{
+        fontSize: '9.5px',
+        fontWeight: 700,
+        lineHeight: 1,
+        padding: '3px 6px',
+        borderRadius: '999px',
+        whiteSpace: 'nowrap',
+        color,
+        border: `1px solid color-mix(in oklch, ${color} 45%, transparent)`,
+        background: `color-mix(in oklch, ${color} 12%, transparent)`,
+      }}
+    >
+      {SECTION_STATE_LABEL[state]}
+    </span>
+  );
+}
+
+function SummaryChip({
+  label,
+  text,
+  color,
+  routes,
+}: {
+  label: string;
+  text: string;
+  color: string;
+  routes: readonly string[];
+}) {
+  return (
+    <span
+      title={routes.length > 0 ? routes.join('\n') : undefined}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        fontSize: '11px',
+        fontWeight: 600,
+        color,
+        padding: '4px 9px',
+        borderRadius: '8px',
+        border: `1px solid color-mix(in oklch, ${color} 40%, transparent)`,
+        background: `color-mix(in oklch, ${color} 10%, transparent)`,
+        whiteSpace: 'nowrap',
+        cursor: routes.length > 0 ? 'help' : 'default',
+      }}
+    >
+      <span style={{ opacity: 0.7 }}>{label}:</span>
+      <span>{text}</span>
+    </span>
+  );
+}
+
+function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  // grants: بخش → Set<اکشن>. کلید سطح بخش (مثلاً `kyc`) به همهٔ اکشن‌ها باز می‌شود.
+  const expandGrants = (keys: string[]): Map<DashboardSectionKey, Set<SectionActionKey>> => {
+    const map = new Map<DashboardSectionKey, Set<SectionActionKey>>();
+    for (const key of keys) {
+      if (!isKnownPermissionKey(key)) continue;
+      const section = sectionOfKey(key) as DashboardSectionKey;
+      const hasAction = key.includes(':');
+      if (!hasAction) {
+        map.set(section, new Set(actionsOfSection(section)));
+      } else {
+        const action = key.split(':')[1] as SectionActionKey;
+        const set = new Set(map.get(section) ?? []);
+        set.add(action);
+        map.set(section, set);
+      }
+    }
+    return map;
+  };
+
+  const [grants, setGrants] = useState(() => expandGrants(user.permissions));
+  const [denies, setDenies] = useState<Set<DashboardSectionKey>>(
+    () => new Set(user.deniedPermissions.filter(isKnownSectionKey)),
+  );
+  const hasOverride = [...grants.values()].some((actions) => actions.size > 0) || denies.size > 0;
+
+  // خلاصهٔ زندهٔ تأثیر whitelist/deny فعلی روی بخش‌ها و مسیرهای کاربر.
+  const summary = useMemo(() => {
+    const states = new Map<DashboardSectionKey, SectionAccessState>();
+    const whitelistActive = grants.size > 0;
+    let openSections = 0;
+    let blockedSections = 0;
+    let defaultSections = 0;
+    let closedSections = 0;
+    const openRoutes: string[] = [];
+    const blockedRoutes: string[] = [];
+    for (const section of DASHBOARD_SECTIONS) {
+      const denied = denies.has(section.key);
+      const granted = grants.get(section.key) ?? new Set<SectionActionKey>();
+      let state: SectionAccessState;
+      if (denied) {
+        state = 'denied';
+        blockedSections += 1;
+        blockedRoutes.push(...routesForSection(section.key));
+      } else if (granted.size > 0) {
+        const all = actionsOfSection(section.key).length;
+        state =
+          granted.size === all
+            ? 'full'
+            : granted.size === 1 && granted.has('view')
+              ? 'view-only'
+              : 'partial';
+        openSections += 1;
+        openRoutes.push(...routesForSection(section.key));
+      } else if (whitelistActive) {
+        // whitelist فعال + این بخش grant نشده → deny-by-default
+        state = 'closed';
+        closedSections += 1;
+      } else {
+        state = 'default';
+        defaultSections += 1;
+        openRoutes.push(...routesForSection(section.key));
+      }
+      states.set(section.key, state);
+    }
+    return {
+      states,
+      whitelistActive,
+      openSections,
+      blockedSections,
+      defaultSections,
+      closedSections,
+      openRoutes,
+      blockedRoutes,
+    };
+  }, [grants, denies]);
+
+  const toggleGrant = (section: DashboardSectionKey, action: SectionActionKey) => {
+    setGrants((prev) => {
+      const next = new Map(prev);
+      const set = new Set(next.get(section) ?? []);
+      if (set.has(action)) set.delete(action);
+      else set.add(action);
+      if (set.size === 0) next.delete(section);
+      else next.set(section, set);
+      return next;
+    });
+  };
+
+  const toggleDeny = (section: DashboardSectionKey) => {
+    setDenies((prev) => {
+      const next = new Set(prev);
+      if (next.has(section)) next.delete(section);
+      else next.add(section);
+      return next;
+    });
+  };
+
+  // فقط مشاهده: همهٔ اکشن‌های بخش به `view` کاهش می‌یابد و deny برداشته می‌شود
+  const setViewOnly = (section: DashboardSectionKey) => {
+    setGrants((prev) => {
+      const next = new Map(prev);
+      next.set(section, new Set<SectionActionKey>(['view']));
+      return next;
+    });
+    setDenies((prev) => {
+      const next = new Set(prev);
+      next.delete(section);
+      return next;
+    });
+  };
+
+  // فشرده‌سازی: همهٔ اکشن‌های یک بخش → کلید بخش؛ در غیر این صورت کلیدهای اکشن
+  const flattenGrants = (): string[] => {
+    const out: string[] = [];
+    for (const [section, actions] of grants) {
+      const all = actionsOfSection(section);
+      if (actions.size === all.length) out.push(section);
+      else for (const a of actions) out.push(actionKey(section, a));
+    }
+    return out;
+  };
+
+  const save = (g: string[], d: string[]) => {
+    startTransition(async () => {
+      const res = await updateUserPermissions(user.id, g, d);
+      if (res.success) {
+        toast({ title: 'ذخیره شد', description: res.message });
+        router.refresh();
+      } else {
+        toast({ title: 'خطا', description: res.message, variant: 'destructive' });
+      }
+    });
+  };
+
+  return (
+    <div className={s.panel}>
+      <div className={s.panelHeader}>
+        <h3 className={s.panelTitle}>
+          <Shield className="size-4" aria-hidden />
+          دسترسی‌های بخشی
+        </h3>
+        <span className={`${s.badge} ${hasOverride ? s.badgeOk : s.badgeOff}`}>
+          {hasOverride ? 'سفارشی (اکشن‌ها)' : 'پیش‌فرض نقش'}
+        </span>
+      </div>
+      <div className={s.panelBody}>
+        <p
+          style={{
+            margin: 0,
+            fontSize: '12px',
+            color: 'var(--at-fg-muted)',
+            lineHeight: 1.7,
+          }}
+        >
+          نقش کاربر ({ROLE_LABELS[user.role]}) مبنای دسترسی است. با انتخاب اکشن‌ها در «فقط این
+          بخش‌ها»، دسترسی کاربر به همان اکشن‌ها محدود می‌شود (whitelist) — مثلاً «تأیید KYC» بدون
+          «مشتریان». با «مسدود» بخشی از دسترسی او کم می‌شود حتی اگر نقش اجازه بدهد. deny بر grant
+          اولویت دارد. با «فقط مشاهده» همهٔ اکشن‌های یک بخش در یک کلیک به مشاهده کاهش می‌یابد و مسدودیت
+          برداشته می‌شود. خالی = پیش‌فرض نقش.
+        </p>
+
+        {/* خلاصهٔ زندهٔ تأثیر بر بخش‌ها و مسیرها */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            marginTop: '12px',
+            padding: '10px 12px',
+            borderRadius: '10px',
+            border: '1px solid var(--at-line)',
+            background: 'color-mix(in oklch, var(--at-surface-2) 45%, transparent)',
+          }}
+        >
+          <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--at-fg)' }}>
+            {summary.whitelistActive
+              ? 'حالت whitelist فعال است — دسترسی کاربر فقط به همین بخش‌های انتخاب‌شده است'
+              : 'پیش‌فرض نقش — کاربر به همهٔ بخش‌های غیرمسدود دسترسی دارد'}
+          </span>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <SummaryChip
+              label="باز"
+              text={`${summary.openSections} بخش · ${summary.openRoutes.length} مسیر`}
+              color="var(--nova-emerald)"
+              routes={summary.openRoutes}
+            />
+            <SummaryChip
+              label="مسدود"
+              text={`${summary.blockedSections} بخش · ${summary.blockedRoutes.length} مسیر`}
+              color="var(--at-danger)"
+              routes={summary.blockedRoutes}
+            />
+            {!summary.whitelistActive && summary.defaultSections > 0 ? (
+              <SummaryChip
+                label="پیش‌فرض"
+                text={`${summary.defaultSections} بخش`}
+                color="var(--at-fg-muted)"
+                routes={[]}
+              />
+            ) : null}
+            {summary.whitelistActive && summary.closedSections > 0 ? (
+              <SummaryChip
+                label="بسته"
+                text={`${summary.closedSections} بخش`}
+                color="var(--at-fg-muted)"
+                routes={[]}
+              />
+            ) : null}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            marginTop: '12px',
+          }}
+        >
+          {DASHBOARD_SECTIONS.map((section) => {
+            const denied = denies.has(section.key);
+            const sectionGrants = grants.get(section.key) ?? new Set<SectionActionKey>();
+            return (
+              <div
+                key={section.key}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(150px, 1fr) auto 92px',
+                  gap: '10px',
+                  alignItems: 'center',
+                  padding: '8px 10px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--at-line)',
+                  background: denied
+                    ? 'color-mix(in oklch, var(--at-danger) 6%, transparent)'
+                    : sectionGrants.size > 0
+                      ? 'color-mix(in oklch, var(--at-accent) 4%, transparent)'
+                      : 'transparent',
+                }}
+              >
+                <span
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    minWidth: 0,
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--at-fg)',
+                  }}
+                >
+                  {section.label}
+                  <SectionStateBadge state={summary.states.get(section.key) ?? 'default'} />
+                </span>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {section.actions.map((action) => {
+                    const on = sectionGrants.has(action);
+                    return (
+                      <label
+                        key={action}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '4px 8px',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          border: '1px solid var(--at-line)',
+                          background: on
+                            ? 'color-mix(in oklch, var(--at-accent) 14%, transparent)'
+                            : 'transparent',
+                          fontSize: '11px',
+                          fontWeight: on ? 700 : 500,
+                          color: on ? 'var(--at-fg)' : 'var(--at-fg-muted)',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={on}
+                          onChange={() => toggleGrant(section.key, action)}
+                          disabled={isPending || denied}
+                        />
+                        {ACTION_LABELS[action]}
+                      </label>
+                    );
+                  })}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '5px',
+                    alignItems: 'flex-start',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setViewOnly(section.key)}
+                    disabled={isPending}
+                    title="همهٔ اکشن‌های این بخش فقط به مشاهده کاهش می‌یابد"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '3px 7px',
+                      borderRadius: '8px',
+                      border: '1px solid var(--at-line)',
+                      background: 'transparent',
+                      fontSize: '10.5px',
+                      fontWeight: 600,
+                      color: 'var(--at-fg-muted)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Eye size={11} aria-hidden />
+                    فقط مشاهده
+                  </button>
+                  <label
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      fontWeight: denied ? 700 : 500,
+                      color: denied ? 'var(--at-danger)' : 'var(--at-fg-muted)',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={denied}
+                      onChange={() => toggleDeny(section.key)}
+                      disabled={isPending}
+                    />
+                    مسدود
+                  </label>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
+          <Button size="sm" onClick={() => save(flattenGrants(), [...denies])} disabled={isPending}>
+            ذخیره دسترسی‌ها
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => save([], [])} disabled={isPending}>
+            بازگشت به پیش‌فرض نقش (حذف همه)
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OverviewPanel({
+  user,
+  currentUserRole,
+}: {
+  user: UserDetailPayload;
+  currentUserRole: string;
+}) {
   return (
     <>
+      {currentUserRole === 'OWNER' && user.role !== 'OWNER' ? (
+        <SectionAccessEditor user={user} />
+      ) : null}
       <div className={s.panel}>
         <div className={s.panelHeader}>
           <h3 className={s.panelTitle}>
@@ -1008,19 +1487,28 @@ function SummaryCard({ user }: { user: UserDetailPayload }) {
 
 function RoleMenu({
   currentRole,
+  currentUserRole,
   onChange,
   disabled,
 }: {
   currentRole: string;
-  onChange: (r: 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN') => void;
+  currentUserRole: string;
+  onChange: (r: 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'SUPERADMIN') => void;
   disabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const options: Array<{ value: 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN'; label: string }> = [
+  // SUPERADMIN قابل اعطا فقط توسط OWNER است — سوپرادمین خودش نمی‌تواند
+  // سوپرادمین دیگری بسازد (سرور هم همین را enforce می‌کند).
+  const canGrantSuperAdmin = currentUserRole === 'OWNER';
+  const options: Array<{
+    value: 'USER' | 'AUTHOR' | 'SUPPORT' | 'ADMIN' | 'SUPERADMIN';
+    label: string;
+  }> = [
     { value: 'USER', label: 'کاربر' },
     { value: 'AUTHOR', label: 'نویسنده' },
     { value: 'SUPPORT', label: 'پشتیبانی' },
     { value: 'ADMIN', label: 'مدیر' },
+    ...(canGrantSuperAdmin ? [{ value: 'SUPERADMIN' as const, label: 'سوپرادمین' }] : []),
   ];
 
   return (

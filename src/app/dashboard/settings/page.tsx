@@ -22,11 +22,13 @@ export default async function SettingsPage() {
   if (!session?.user) redirect('/auth?callbackUrl=/dashboard/settings');
   // 2026-08-09 fix: ADMIN was allowed here while the route config
   // (superAdminRoutes), the middleware, the sidebar and the settings
-  // actions (requireSuperAdmin) all treat settings as OWNER/SUPERADMIN
-  // only. Since client-side navigation bypasses middleware, an ADMIN
-  // could open this page (API keys, security, backup) just by
-  // navigating in-app. Keep the guard aligned with the rest: OWNER only.
-  if (role !== 'OWNER' && role !== 'SUPERADMIN') {
+  // actions (requireSuperAdmin) all treat settings as OWNER-only.
+  // Since client-side navigation bypasses middleware, an ADMIN could
+  // open this page (API keys, security, backup) just by navigating
+  // in-app. Keep the guard aligned with the rest: OWNER only.
+  // 2026-08-11: SUPERADMIN is an elevated ADMIN, not an OWNER alias —
+  // settings (API keys, backup, security) stay owner-only.
+  if (role !== 'OWNER') {
     redirect('/dashboard');
   }
 

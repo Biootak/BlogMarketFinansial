@@ -1,0 +1,133 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Section — premium section header with subtle border glow
+   ▸ Tokens: --ds-* / --nova-* only
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.root {
+  position: relative;
+}
+
+/* ── Header ───────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding-block-end: var(--ds-space-3);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  margin-block-end: var(--ds-space-3);
+  position: relative;
+}
+
+/* Subtle gradient glow under header border */
+.header::after {
+  content: "";
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline: 0;
+  block-size: 1px;
+  background: linear-gradient(
+    to inline-size,
+    transparent,
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 30%, transparent) 30%,
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 50%, transparent) 50%,
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 30%, transparent) 70%,
+    transparent
+  );
+  opacity: 0.5;
+}
+
+/* ── Title group ──────────────────────────────────────────────── */
+
+.titleGroup {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  gap: var(--ds-space-3);
+}
+
+/* ── Icon treatment ───────────────────────────────────────────── */
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 8%, transparent);
+  color: var(--nova-primary, var(--ds-brand-500));
+  transition: transform var(--ds-duration-fast, 180ms)
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.root:hover .iconWrap {
+  transform: scale(1.05) rotate(-3deg);
+}
+
+/* ── Title + subtitle ─────────────────────────────────────────── */
+
+.titleContent {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.title {
+  font-size: var(--ds-text-base);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--ds-text-primary);
+}
+
+.subtitle {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-muted);
+  line-height: 1.4;
+}
+
+/* ── Actions ──────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-shrink: 0;
+}
+
+/* ── Content ──────────────────────────────────────────────────── */
+
+.content {
+  padding-block-start: var(--ds-space-3);
+}
+
+.contentFlush {
+  padding-block-start: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    gap: var(--ds-space-2);
+  }
+
+  .actions {
+    align-self: flex-start;
+  }
+
+  .iconWrap {
+    inline-size: 28px;
+    block-size: 28px;
+  }
+}

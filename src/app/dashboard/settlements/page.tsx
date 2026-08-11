@@ -1,6 +1,7 @@
 import { getSettlements } from '@/actions/settlement';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
+import { hasPermission } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { SettlementClient } from './_components/SettlementClient';
@@ -15,7 +16,10 @@ export default async function SettlementsPage() {
     redirect('/dashboard');
   }
 
-  const settlements = await getSettlements({ limit: 100 });
+  const [settlements, canMutate] = await Promise.all([
+    getSettlements({ limit: 100 }),
+    hasPermission('settlements:create'),
+  ]);
 
   return (
     <div className="route-frame" dir="rtl">
@@ -28,7 +32,7 @@ export default async function SettlementsPage() {
         icon="circle-dollar-sign"
         accent="emerald"
       />
-      <SettlementClient settlements={settlements} />
+      <SettlementClient settlements={settlements} canMutate={canMutate} />
     </div>
   );
 }

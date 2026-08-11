@@ -11,9 +11,10 @@ export async function POST(req: NextRequest) {
     }
 
     // 2026-07-08: system reports expose aggregate user/post data — restrict
-    // to ADMIN/OWNER (H9). The download route already enforces this.
+    // to OWNER (H9). 2026-08-11: SUPERADMIN is an elevated ADMIN, not an
+    // OWNER alias — reports stay owner-only.
     const role = (session.user as { role?: string }).role;
-    if (role !== 'ADMIN' && role !== 'OWNER' && role !== 'SUPERADMIN') {
+    if (role !== 'OWNER') {
       return NextResponse.json({ success: false, message: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 

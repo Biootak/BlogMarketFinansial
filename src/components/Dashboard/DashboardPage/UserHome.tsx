@@ -6,12 +6,14 @@ import prisma from '@/lib/db';
 import { formatRelativeTime } from '@/lib/utils';
 import {
   ArrowLeft,
-  ArrowRight,
   Bell,
+  CheckCircle,
   FileText,
+  Headphones,
   Plus,
   Shield,
   Sparkles,
+  TrendingUp,
   Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -28,36 +30,49 @@ interface UserHomeProps {
 }
 
 async function getUserOverview(userId: string) {
-  const [requestsCount, pendingRequests, unreadNotifications, recentRequests, recentNotifications] =
-    await Promise.all([
-      prisma.serviceRequest.count({ where: { userId } }).catch(() => 0),
-      prisma.serviceRequest.count({ where: { userId, status: 'PENDING' } }).catch(() => 0),
-      prisma.notification.count({ where: { userId, isRead: false } }).catch(() => 0),
-      prisma.serviceRequest
-        .findMany({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-          select: {
-            id: true,
-            trackingCode: true,
-            serviceType: true,
-            status: true,
-            amount: true,
-            currency: true,
-            createdAt: true,
-          },
-        })
-        .catch(() => []),
-      prisma.notification
-        .findMany({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-          select: { id: true, message: true, isRead: true, createdAt: true },
-        })
-        .catch(() => []),
-    ]);
+  const [
+    requestsCount,
+    pendingRequests,
+    unreadNotifications,
+    recentRequests,
+    recentNotifications,
+    kycStatus,
+  ] = await Promise.all([
+    prisma.serviceRequest.count({ where: { userId } }).catch(() => 0),
+    prisma.serviceRequest.count({ where: { userId, status: 'PENDING' } }).catch(() => 0),
+    prisma.notification.count({ where: { userId, isRead: false } }).catch(() => 0),
+    prisma.serviceRequest
+      .findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: {
+          id: true,
+          trackingCode: true,
+          serviceType: true,
+          status: true,
+          amount: true,
+          currency: true,
+          createdAt: true,
+        },
+      })
+      .catch(() => []),
+    prisma.notification
+      .findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: { id: true, message: true, isRead: true, createdAt: true },
+      })
+      .catch(() => []),
+    prisma.kycVerification
+      .findFirst({
+        where: { customerId: userId },
+        orderBy: { createdAt: 'desc' },
+        select: { status: true },
+      })
+      .catch(() => null),
+  ]);
 
   return {
     requestsCount,
@@ -65,6 +80,7 @@ async function getUserOverview(userId: string) {
     unreadNotifications,
     recentRequests,
     recentNotifications,
+    kycStatus: kycStatus?.status ?? 'PENDING',
   };
 }
 
@@ -110,6 +126,8 @@ export async function UserHome({
 }: UserHomeProps) {
   const overview = await getUserOverview(userId);
   const showWelcome = accountAgeDays < 7 && (overview.requestsCount === 0 || !emailVerified);
+  const kycCompleted = overview.kycStatus === 'APPROVED';
+  const kycExpired = overview.kycStatus === 'EXPIRED';
 
   return (
     <div className={`${styles.root} dashboard-user-home`} dir="rtl">
@@ -165,19 +183,54 @@ export async function UserHome({
         </section>
       ) : null}
 
-      <section className={styles.kycBanner} aria-label="وضعیت احراز هویت">
-        <div className={styles.kycIcon}>
-          <Shield aria-hidden />
-        </div>
-        <div className={styles.kycText}>
-          <h2 className={styles.kycTitle}>احراز هویت، مسیر خدمات مالی</h2>
-          <p className={styles.kycDesc}>برای دسترسی کامل، احراز هویت را تکمیل کنید.</p>
-        </div>
-        <Link href="/customer/kyc" className={styles.kycCta}>
-          <span>شروع احراز هویت</span>
-          <ArrowLeft aria-hidden />
-        </Link>
-      </section>
+      {kycCompleted ? (
+        <section
+          className={`${styles.kycBanner} ${styles.kycBannerCompleted}`}
+          aria-label="وضعیت احراز هویت"
+        >
+          <div className={`${styles.kycIcon} ${styles.kycIconCompleted}`}>
+            <CheckCircle aria-hidden />
+          </div>
+          <div className={styles.kycText}>
+            <h2 className={styles.kycTitle}>احراز هویت تکمیل شده</h2>
+            <p className={styles.kycDesc}>به تمام خدمات دسترسی دارید.</p>
+          </div>
+          <Badge variant="secondary" className={styles.kycBadge}>
+            تأیید شده
+          </Badge>
+        </section>
+      ) : kycExpired ? (
+        <section
+          className={`${styles.kycBanner} ${styles.kycBannerExpired}`}
+          aria-label="وضعیت احراز هویت"
+        >
+          <div className={`${styles.kycIcon} ${styles.kycIconExpired}`}>
+            <Shield aria-hidden />
+          </div>
+          <div className={styles.kycText}>
+            <h2 className={styles.kycTitle}>احراز هویت منقضی شده</h2>
+            <p className={styles.kycDesc}>برای دسترسی کامل، احراز هویت را تمدید کنید.</p>
+          </div>
+          <Link href="/customer/kyc" className={`${styles.kycCta} ${styles.kycCtaUrgent}`}>
+            <span>تمدید احراز هویت</span>
+            <ArrowLeft aria-hidden />
+          </Link>
+        </section>
+      ) : (
+        <section className={styles.kycBanner} aria-label="وضعیت احراز هویت">
+          <div className={styles.kycIcon}>
+            <Shield aria-hidden />
+          </div>
+          <div className={styles.kycText}>
+            <h2 className={styles.kycTitle}>احراز هویت، مسیر خدمات مالی</h2>
+            <p className={styles.kycDesc}>برای دسترسی کامل، احراز هویت را تکمیل کنید.</p>
+          </div>
+          <Link href="/customer/kyc" className={styles.kycCta}>
+            <span>شروع احراز هویت</span>
+            <ArrowLeft aria-hidden />
+          </Link>
+        </section>
+      )}
 
       <section className={styles.statsGrid} aria-label="خلاصه فعالیت">
         <StatCard
@@ -203,7 +256,7 @@ export async function UserHome({
       <section className={styles.quickActions} aria-label="اقدامات سریع">
         <header className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>دسترسی سریع</h2>
-          <span className={styles.sectionMeta}>۴ میان‌بر</span>
+          <span className={styles.sectionMeta}>۶ میان‌بر</span>
         </header>
         <div className={styles.actionsGrid}>
           <Link href="/dashboard/my-requests" className={styles.actionCard}>
@@ -213,8 +266,10 @@ export async function UserHome({
             <span className={styles.actionLabel}>درخواست جدید</span>
           </Link>
           <Link href="/dashboard/transfer" className={styles.actionCard}>
+            {/* RTL: forward/action arrows point LEFT. ArrowRight would read as
+                "back" in a RTL layout (same fix as FintechCockpit). */}
             <span className={styles.actionIcon}>
-              <ArrowRight aria-hidden />
+              <ArrowLeft aria-hidden />
             </span>
             <span className={styles.actionLabel}>انتقال وجه</span>
           </Link>
@@ -229,6 +284,18 @@ export async function UserHome({
               <Shield aria-hidden />
             </span>
             <span className={styles.actionLabel}>احراز هویت</span>
+          </Link>
+          <Link href="/market-rates" className={styles.actionCard}>
+            <span className={styles.actionIcon}>
+              <TrendingUp aria-hidden />
+            </span>
+            <span className={styles.actionLabel}>نرخ ارز</span>
+          </Link>
+          <Link href="/dashboard/helpdesk" className={styles.actionCard}>
+            <span className={styles.actionIcon}>
+              <Headphones aria-hidden />
+            </span>
+            <span className={styles.actionLabel}>پشتیبانی</span>
           </Link>
         </div>
       </section>

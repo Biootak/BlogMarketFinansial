@@ -42,6 +42,17 @@
 .chip_critical {
   border-color: color-mix(in oklch, oklch(0.55 0.22 25) 40%, transparent);
   background: oklch(0.55 0.22 25 / 0.06);
+  animation: chip-critical-pulse 2s ease-in-out infinite;
+}
+
+@keyframes chip-critical-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.55 0.22 25 / 0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 3px oklch(0.55 0.22 25 / 0.08);
+  }
 }
 
 .chipLabel {

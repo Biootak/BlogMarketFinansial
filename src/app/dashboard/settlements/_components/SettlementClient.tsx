@@ -50,7 +50,11 @@ import s from './SettlementClient.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
 
-type Props = { settlements: SettlementRow[] };
+type Props = {
+  settlements: SettlementRow[];
+  /** 2026-08-11: enforce UI — عملیات تسویه (settlements:create) از سرور می‌آید */
+  canMutate?: boolean;
+};
 
 type TabValue = 'all' | 'PENDING' | 'APPROVED' | 'PAID';
 
@@ -218,7 +222,7 @@ function TimelineStep({
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
-export function SettlementClient({ settlements: initial }: Props) {
+export function SettlementClient({ settlements: initial, canMutate = true }: Props) {
   const [rows, setRows] = useState<SettlementRow[]>(initial);
   const [tab, setTab] = useState<TabValue>('all');
   const [isPending, startTransition] = useTransition();
@@ -261,42 +265,60 @@ export function SettlementClient({ settlements: initial }: Props) {
 
   // ── Actions ───────────────────────────────────────────────────────────────────
 
-  const doApprove = useCallback((id: string) => {
-    startTransition(async () => {
-      setError(null);
-      const res = await approveSettlement(id);
-      if (!res.success) {
-        setError(res.error.message);
+  const doApprove = useCallback(
+    (id: string) => {
+      if (!canMutate) {
+        setError('شما دسترسی لازم برای این عملیات را ندارید');
         return;
       }
-      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'APPROVED' } : r)));
-      setSelectedRows((prev) => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
+      startTransition(async () => {
+        setError(null);
+        const res = await approveSettlement(id);
+        if (!res.success) {
+          setError(res.error.message);
+          return;
+        }
+        setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: 'APPROVED' } : r)));
+        setSelectedRows((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        setDetailRow((prev) => (prev?.id === id ? { ...prev, status: 'APPROVED' } : prev));
       });
-      setDetailRow((prev) => (prev?.id === id ? { ...prev, status: 'APPROVED' } : prev));
-    });
-  }, []);
+    },
+    [canMutate],
+  );
 
-  const doPaid = useCallback((id: string) => {
-    startTransition(async () => {
-      setError(null);
-      const res = await markSettlementPaid(id);
-      if (!res.success) {
-        setError(res.error.message);
+  const doPaid = useCallback(
+    (id: string) => {
+      if (!canMutate) {
+        setError('شما دسترسی لازم برای این عملیات را ندارید');
         return;
       }
-      setRows((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status: 'PAID', paidAt: new Date() } : r)),
-      );
-      setDetailRow((prev) =>
-        prev?.id === id ? { ...prev, status: 'PAID', paidAt: new Date() } : prev,
-      );
-    });
-  }, []);
+      startTransition(async () => {
+        setError(null);
+        const res = await markSettlementPaid(id);
+        if (!res.success) {
+          setError(res.error.message);
+          return;
+        }
+        setRows((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, status: 'PAID', paidAt: new Date() } : r)),
+        );
+        setDetailRow((prev) =>
+          prev?.id === id ? { ...prev, status: 'PAID', paidAt: new Date() } : prev,
+        );
+      });
+    },
+    [canMutate],
+  );
 
   const doBatchApprove = useCallback(() => {
+    if (!canMutate) {
+      setError('شما دسترسی لازم برای این عملیات را ندارید');
+      return;
+    }
     const ids = Array.from(selectedRows);
     startTransition(async () => {
       setError(null);
@@ -310,7 +332,7 @@ export function SettlementClient({ settlements: initial }: Props) {
       }
       setSelectedRows(new Set());
     });
-  }, [selectedRows]);
+  }, [selectedRows, canMutate]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedRows((prev) => {
@@ -458,7 +480,7 @@ export function SettlementClient({ settlements: initial }: Props) {
                 <Button
                   size="sm"
                   onClick={() => setConfirmBatch(true)}
-                  disabled={isPending}
+                  disabled={isPending || !canMutate}
                   className={s.batchApproveBtn}
                 >
                   <ClipboardCheck size={14} aria-hidden />

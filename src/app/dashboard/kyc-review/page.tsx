@@ -1,6 +1,7 @@
 import { listPendingCustomerKyc } from '@/actions/customer-portal';
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
+import { hasPermission } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { KycReviewClient } from './_components/KycReviewClient';
@@ -41,14 +42,18 @@ export default async function KycReviewPage() {
     redirect('/dashboard');
   }
 
-  const [records, customerRecords] = await Promise.all([
+  const [records, customerRecords, canApprove, canReview] = await Promise.all([
     getKycQueue(),
     listPendingCustomerKyc({ limit: 50 }),
+    hasPermission('kyc:approve'),
+    hasPermission('kyc:review'),
   ]);
 
   return (
     <div className="route-frame">
       <KycReviewClient
+        canApprove={canApprove}
+        canReview={canReview}
         records={records}
         customerRecords={customerRecords.map((c) => ({
           id: c.id,

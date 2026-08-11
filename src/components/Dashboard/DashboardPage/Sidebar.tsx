@@ -32,6 +32,7 @@ import { ViewLink } from '@/components/ui/ViewLink';
 import { useToast } from '@/components/ui/use-toast';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { isAlwaysAllowedRoute, isSectionAllowed, sectionForRoute } from '@/lib/dashboard-sections';
 import { cn } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -90,15 +91,31 @@ const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
   );
 
   const rawMenu = useMemo(() => getMenu(userRole), [userRole]);
+  const userPermissions = userInfo?.permissions;
+  const userDenied = userInfo?.deniedPermissions;
+  // 2026-08-11: per-user section overrides. When the owner gave this user an
+  // explicit grant list, hide items outside it (whitelist); denied sections are
+  // hidden even under role default. Mirrors middleware.
+  const hasSectionOverride =
+    (userPermissions && userPermissions.length > 0) || (userDenied && userDenied.length > 0);
+  const filterByPermissions = useCallback(
+    (item: MenuItem): boolean => {
+      if (!hasSectionOverride) return true;
+      const section = sectionForRoute(item.href);
+      if (section) return isSectionAllowed(section, userPermissions, userDenied);
+      return isAlwaysAllowedRoute(item.href);
+    },
+    [hasSectionOverride, userPermissions, userDenied],
+  );
   const menu = useMemo<NavSection[]>(
     () =>
       rawMenu
         .map((section) => ({
           ...section,
-          items: section.items.filter(filterByRole),
+          items: section.items.filter(filterByRole).filter(filterByPermissions),
         }))
         .filter((section) => section.items.length > 0),
-    [rawMenu, filterByRole],
+    [rawMenu, filterByRole, filterByPermissions],
   );
 
   const isActiveRoute = useCallback(

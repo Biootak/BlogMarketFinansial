@@ -13,7 +13,7 @@
 
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
-import { requireAdmin } from '@/lib/require-auth';
+import { requireAdmin, requirePermission } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
@@ -188,6 +188,15 @@ export async function computePeriodSettlement(
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی غیرمجاز' } };
   }
 
+  // 2026-08-11: enforce سطح اکشن — ایجاد تسویه به `settlements:create`
+  const perm = await requirePermission('settlements:create');
+  if (!perm.success) {
+    return {
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم برای این عملیات را ندارید' },
+    };
+  }
+
   const parsed = ComputeSchema.safeParse(raw);
   if (!parsed.success) {
     return {
@@ -331,6 +340,15 @@ export async function approveSettlement(settlementId: string): Promise<FintechAc
     };
   }
 
+  // 2026-08-11: enforce سطح اکشن — عملیات تسویه به `settlements:create`
+  const perm = await requirePermission('settlements:create');
+  if (!perm.success) {
+    return {
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم برای این عملیات را ندارید' },
+    };
+  }
+
   const settlement = await prisma.settlement.findUnique({
     where: { id: settlementId },
     select: { status: true, exchangeId: true },
@@ -384,6 +402,15 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
   const auth = await requireAdmin();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'دسترسی غیرمجاز' } };
+  }
+
+  // 2026-08-11: enforce سطح اکشن — عملیات تسویه به `settlements:create`
+  const perm = await requirePermission('settlements:create');
+  if (!perm.success) {
+    return {
+      success: false,
+      error: { code: 'FORBIDDEN', message: 'شما دسترسی لازم برای این عملیات را ندارید' },
+    };
   }
 
   const settlement = await prisma.settlement.findUnique({

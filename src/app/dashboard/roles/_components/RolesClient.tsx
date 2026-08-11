@@ -48,7 +48,7 @@ const ROLE_DESC: Record<string, string> = {
   SUPPORT: 'تیم پشتیبانی — مشاهده read-only موجودیت‌های حساس.',
   ADMIN: 'مدیر پلتفرم — مدیریت کامل کاربران و محتوا.',
   OWNER: 'مالک سیستم — دسترسی کامل به همه بخش‌ها.',
-  SUPERADMIN: 'سوپرادمین — alias برای OWNER، دسترسی کامل.',
+  SUPERADMIN: 'سوپرادمین — ادمین ارشد، یک پله پایین‌تر از مالک (تنظیمات و گزارش‌ها فقط مالک).',
 };
 
 const ROLE_COLOR: Record<string, string> = {
@@ -62,6 +62,7 @@ const ROLE_COLOR: Record<string, string> = {
 
 const HIERARCHY_LABEL: Record<number, string> = {
   4: 'سطح ۴',
+  3.5: 'سطح ۳.۵',
   3: 'سطح ۳',
   2: 'سطح ۲',
   1: 'سطح ۱',
@@ -70,6 +71,10 @@ const HIERARCHY_LABEL: Record<number, string> = {
 
 // نقش‌هایی که در این UI قابل اعطا هستند (hierarchy < 4)
 const ASSIGNABLE: Role[] = [Role.USER, Role.AUTHOR, Role.SUPPORT, Role.ADMIN];
+
+// SUPERADMIN فقط توسط OWNER قابل اعطاست (سوپرادمین خودش نمی‌تواند)
+const roleOptionsFor = (currentUserRole: string): Role[] =>
+  currentUserRole === 'OWNER' ? [...ASSIGNABLE, Role.SUPERADMIN] : ASSIGNABLE;
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -171,12 +176,13 @@ function UserRow({
 }) {
   const [showPicker, setShowPicker] = useState(false);
 
+  const options = roleOptionsFor(currentUserRole);
   const canChange =
     !isPending &&
     (currentUserRole === 'OWNER' ||
       currentUserRole === 'SUPERADMIN' ||
       currentUserRole === 'ADMIN') &&
-    ASSIGNABLE.some((r) => r !== currentRole);
+    options.some((r) => r !== currentRole);
 
   const initials = (user.name ?? user.email).slice(0, 2).toUpperCase();
   const statusActive = user.status === 'ACTIVE';
@@ -210,22 +216,24 @@ function UserRow({
             </button>
             {showPicker && (
               <div className={s.rolePickerMenu} role="menu">
-                {ASSIGNABLE.filter((r) => r !== currentRole).map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    className={s.rolePickerItem}
-                    style={{ '--rc': ROLE_COLOR[role] } as React.CSSProperties}
-                    onClick={() => {
-                      setShowPicker(false);
-                      onChangeRole(user.id, role);
-                    }}
-                    role="menuitem"
-                  >
-                    <span className={s.rolePickerDot} aria-hidden />
-                    {ROLE_FA[role]}
-                  </button>
-                ))}
+                {options
+                  .filter((r) => r !== currentRole)
+                  .map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      className={s.rolePickerItem}
+                      style={{ '--rc': ROLE_COLOR[role] } as React.CSSProperties}
+                      onClick={() => {
+                        setShowPicker(false);
+                        onChangeRole(user.id, role);
+                      }}
+                      role="menuitem"
+                    >
+                      <span className={s.rolePickerDot} aria-hidden />
+                      {ROLE_FA[role]}
+                    </button>
+                  ))}
               </div>
             )}
           </div>

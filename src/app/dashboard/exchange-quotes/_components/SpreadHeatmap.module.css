@@ -1,0 +1,250 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SpreadHeatmap.module.css — Heatmap grid for exchange spread visualization
+   ▸ Tokens: --ds-* only | RTL logical properties
+   ▸ No custom @keyframes
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root container ─────────────────────────────────────────────────────── */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-2xl);
+  box-shadow: var(--ds-shadow-sm);
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+}
+
+.headerTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  letter-spacing: 0.02em;
+}
+
+/* ── Legend ─────────────────────────────────────────────────────────────── */
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.legendDot {
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: var(--ds-radius-sm);
+}
+
+.legendDot_low {
+  background: color-mix(in oklch, var(--ds-accent-emerald) 30%, transparent);
+}
+
+.legendDot_mid {
+  background: color-mix(in oklch, var(--ds-accent-amber) 30%, transparent);
+}
+
+.legendDot_high {
+  background: color-mix(in oklch, var(--ds-accent-rose) 30%, transparent);
+}
+
+/* ── Grid ───────────────────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  gap: 3px;
+  overflow-x: auto;
+  padding-block-end: var(--ds-space-1);
+  /* Columns set dynamically: 1 (row header) + N currencies */
+  grid-template-columns: 120px repeat(auto-fill, minmax(90px, 1fr));
+  grid-auto-flow: column dense;
+}
+
+/* ── Corner cell (top-left empty) ───────────────────────────────────────── */
+
+.corner {
+  grid-column: 1;
+}
+
+/* ── Column headers (currency codes) ────────────────────────────────────── */
+
+.colHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 6px;
+  font-size: var(--ds-text-xs);
+  font-weight: 800;
+  color: var(--ds-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--ds-border-default);
+}
+
+/* ── Row headers (exchange names) ───────────────────────────────────────── */
+
+.rowHeader {
+  display: flex;
+  align-items: center;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-inline-end: 2px solid var(--ds-border-default);
+}
+
+/* ── Cells ──────────────────────────────────────────────────────────────── */
+
+.cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: var(--ds-space-2) var(--ds-space-1);
+  border-radius: var(--ds-radius-md);
+  min-block-size: 48px;
+  transition: transform var(--ds-duration-fast, 180ms)
+    var(--ds-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)), box-shadow
+    var(--ds-duration-fast, 180ms) ease;
+  cursor: default;
+  position: relative;
+}
+
+.cell:hover {
+  transform: scale(1.05);
+  box-shadow: var(--ds-shadow-sm);
+  z-index: 1;
+}
+
+/* Spread level coloring */
+.cell_low {
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-emerald) calc(10% * var(--intensity, 0.5)),
+    transparent
+  );
+  border: 1px solid
+    color-mix(in oklch, var(--ds-accent-emerald) calc(20% * var(--intensity, 0.5)), transparent);
+}
+
+.cell_low .cellValue {
+  color: color-mix(in oklch, var(--ds-accent-emerald) 80%, var(--ds-text-primary));
+}
+
+.cell_mid {
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-amber) calc(10% * var(--intensity, 0.5)),
+    transparent
+  );
+  border: 1px solid
+    color-mix(in oklch, var(--ds-accent-amber) calc(20% * var(--intensity, 0.5)), transparent);
+}
+
+.cell_mid .cellValue {
+  color: color-mix(in oklch, var(--ds-accent-amber) 80%, var(--ds-text-primary));
+}
+
+.cell_high {
+  background: color-mix(
+    in oklch,
+    var(--ds-accent-rose) calc(12% * var(--intensity, 0.5)),
+    transparent
+  );
+  border: 1px solid
+    color-mix(in oklch, var(--ds-accent-rose) calc(25% * var(--intensity, 0.5)), transparent);
+  animation: anim-ping-soft 3s ease-in-out infinite;
+}
+
+.cell_high .cellValue {
+  color: color-mix(in oklch, var(--ds-accent-rose) 85%, var(--ds-text-primary));
+}
+
+/* Empty cell */
+.cellEmpty {
+  background: color-mix(in oklch, var(--ds-text-muted) 2%, transparent);
+  border: 1px dashed var(--ds-border-default);
+  opacity: 0.4;
+}
+
+.cellValue {
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cellCurrency {
+  font-size: 9px;
+  color: var(--ds-text-muted);
+  opacity: 0.6;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 860px) {
+  .root {
+    padding: var(--ds-space-3);
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--ds-space-2);
+  }
+
+  .grid {
+    grid-template-columns: 100px repeat(auto-fill, minmax(80px, 1fr));
+  }
+
+  .rowHeader {
+    font-size: 10px;
+    padding: var(--ds-space-1);
+  }
+
+  .cell {
+    min-block-size: 40px;
+    padding: var(--ds-space-1);
+  }
+}
+
+@media (max-width: 640px) {
+  .legend {
+    gap: var(--ds-space-2);
+  }
+
+  .legendItem {
+    font-size: 10px;
+  }
+}

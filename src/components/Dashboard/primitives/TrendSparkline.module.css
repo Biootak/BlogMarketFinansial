@@ -1,18 +1,30 @@
-/* TrendSparkline — compact inline sparkline for KPI cells */
+/* ═══════════════════════════════════════════════════════════════════════════
+   TrendSparkline — premium inline sparkline for KPI cells
+   ▸ Gradient fill + glow dot + smooth curves
+   ▸ Tokens: --ds-* / --nova-* only
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 .root {
   display: block;
   overflow: visible;
+  filter: drop-shadow(
+    0 0 2px color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 15%, transparent)
+  );
 }
 
 .line {
-  transition: d 300ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: d 400ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
 }
 
 .area {
-  transition: d 300ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  transition: d 400ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  /* gradient fill via CSS — uses currentColor from parent */
+  opacity: 0.15;
 }
 
 .dot {
-  transition: cy 300ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  transition: cy 400ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  filter: drop-shadow(0 0 3px currentColor);
 }

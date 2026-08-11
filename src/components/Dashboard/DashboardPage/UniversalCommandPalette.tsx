@@ -446,6 +446,20 @@ export default function UniversalCommandPalette({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open]);
 
+  // Programmatic open: the dashboard header's search field and global
+  // keyboard shortcuts dispatch `cmd-palette:open`. Previously the Atelier
+  // deck rendered a second CommandPalette that owned this event; the deck's
+  // copy was removed so the header search must now open THIS palette.
+  useEffect(() => {
+    function onOpen() {
+      setQuery('');
+      setSelectedIndex(0);
+      setOpen(true);
+    }
+    window.addEventListener('cmd-palette:open', onOpen);
+    return () => window.removeEventListener('cmd-palette:open', onOpen);
+  }, []);
+
   // Focus input on open
   useEffect(() => {
     if (open && inputRef.current) {
@@ -489,12 +503,45 @@ export default function UniversalCommandPalette({
     [flatList, selectedIndex, router],
   );
 
-  // Trigger button position
+  // Trigger button position — one fixed corner trigger for ALL dashboards.
+  // On mobile it sits above the bottom-nav zone (bottom nav is centered, so
+  // a corner FAB never collides with it). Styled with design tokens instead
+  // of ad-hoc gray Tailwind classes so it matches the portal accent.
   const triggerStyle: React.CSSProperties = {
     position: 'fixed',
-    bottom: '1rem',
-    left: '1rem',
+    bottom: 'max(1rem, env(safe-area-inset-bottom, 0px) + 0.5rem)',
+    left: 'max(1rem, env(safe-area-inset-left, 0px))',
     zIndex: 9999,
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.5rem 0.85rem',
+    borderRadius: '999px',
+    fontSize: '12px',
+    fontWeight: 600,
+    color: 'var(--ds-text-secondary, #55657a)',
+    background: 'color-mix(in oklch, var(--ds-canvas, #fff) 84%, transparent)',
+    border: '1px solid var(--ds-border-default, rgba(0,0,0,0.12))',
+    boxShadow: '0 10px 30px -10px color-mix(in oklch, var(--ds-text-primary) 30%, transparent)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    cursor: 'pointer',
+    transition:
+      'border-color 150ms var(--ds-ease-out-quart, ease), transform 150ms var(--ds-ease-out-quart, ease)',
+  };
+
+  const triggerKbdStyle: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '1.4rem',
+    padding: '0.1rem 0.3rem',
+    borderRadius: '6px',
+    fontSize: '10px',
+    fontFamily: 'ui-monospace, monospace',
+    color: 'var(--ds-text-muted, #7a8a9a)',
+    background: 'color-mix(in oklch, var(--ds-text-primary) 6%, transparent)',
+    border: '1px solid var(--ds-border-subtle, rgba(0,0,0,0.08))',
   };
 
   return (
@@ -508,24 +555,21 @@ export default function UniversalCommandPalette({
           setSelectedIndex(0);
         }}
         style={triggerStyle}
-        className={cn(
-          'flex items-center gap-2 rounded-full border px-3 py-2 text-xs shadow-lg backdrop-blur-sm',
-          'bg-white/80 border-gray-200 text-gray-500 hover:text-gray-700',
-          'dark:bg-gray-900/80 dark:border-gray-700 dark:text-gray-400 dark:hover:text-gray-200',
-        )}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = 'var(--ds-brand-500, #0d9488)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = 'var(--ds-border-default, rgba(0,0,0,0.12))';
+        }}
         aria-label="جستجوی سریع"
         title="جستجوی سریع (Ctrl+K)"
       >
-        <HiOutlineMagnifyingGlass className="w-3.5 h-3.5" />
+        <HiOutlineMagnifyingGlass
+          className="w-3.5 h-3.5"
+          style={{ color: 'var(--ds-brand-600, #0f766e)' }}
+        />
         <span className="hidden sm:inline">جستجو...</span>
-        <kbd
-          className={cn(
-            'inline-flex items-center gap-0.5 rounded border px-1.5 py-0.5 text-[10px] font-mono',
-            'border-gray-300 text-gray-400 dark:border-gray-600 dark:text-gray-500',
-          )}
-        >
-          ⌘K
-        </kbd>
+        <kbd style={triggerKbdStyle}>⌘K</kbd>
       </button>
 
       {/* Portal overlay */}

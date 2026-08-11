@@ -232,9 +232,9 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
     return () => window.clearInterval(t);
   }, []);
 
-  // Quick search — only dispatches cmd-palette:open in the admin portal where
-  // CommandPalette is actually mounted (AtelierDeck). In customer/exchange
-  // portals, the search field is a no-op visual hint (no palette listener exists).
+  // Quick search — dispatches cmd-palette:open in the admin portal, where
+  // UniversalCommandPalette (rendered by the dashboard layout) listens and
+  // opens. In customer/exchange portals the field is a visual hint only.
   const [query, setQuery] = useState('');
   const openCommandPalette = () => {
     if (portal !== 'admin') return;

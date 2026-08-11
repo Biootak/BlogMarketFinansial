@@ -101,9 +101,10 @@ export async function checkReportAccess() {
     throw new Error('احراز هویت الزامی است');
   }
 
-  // G5-fix: SUPERADMIN هم باید دسترسی داشته باشد (مطابق requireAdmin در require-auth.ts)
+  // 2026-08-11: reports are owner-only — SUPERADMIN is an elevated ADMIN,
+  // not an OWNER alias, and must not read financial reports.
   const role = session.user.role as string | undefined;
-  if (!role || !['OWNER', 'ADMIN', 'SUPERADMIN'].includes(role)) {
+  if (!role || !['OWNER'].includes(role)) {
     throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
   }
 }

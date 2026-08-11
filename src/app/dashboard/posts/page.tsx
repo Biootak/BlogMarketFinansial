@@ -9,7 +9,7 @@ export default async function DashboardPosts({
 }: {
   searchParams: Promise<{ page?: string; search?: string; filter?: 'همه' | PostStatus }>;
 }) {
-  await checkRole(['OWNER', 'ADMIN', 'AUTHOR']);
+  await checkRole(['OWNER', 'ADMIN', 'AUTHOR', 'SUPERADMIN']);
   const searchParamsData = await searchParams;
 
   // شمارنده‌های KPI برای نوار بالای صفحه (موازی با لیست).

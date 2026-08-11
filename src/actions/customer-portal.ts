@@ -20,7 +20,7 @@ import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { computeKycProgression } from '@/lib/kyc-progression';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { requireUser } from '@/lib/require-auth';
+import { requirePermission, requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import { consumeOtpToken } from '@/lib/tokens';
@@ -787,6 +787,16 @@ export async function reviewCustomerKycRecord(raw: unknown): Promise<{
     return { success: false, error: parsed.error.errors[0]?.message ?? 'داده نامعتبر' };
   }
   const { recordId, approved, rejectedReason, level, expiryMonths } = parsed.data;
+
+  // 2026-08-11: enforce سطح اکشن فقط برای ادمین پلتفرم (استثناهای کاربری مالک
+  // روی staff پلتفرم اعمال می‌شود). دسترسی صرافی tenant-scoped است و از این
+  // گارد عبور نمی‌کند.
+  if (isPlatformAdmin) {
+    const perm = await requirePermission(approved ? 'kyc:approve' : 'kyc:review');
+    if (!perm.success) {
+      return { success: false, error: 'شما دسترسی لازم برای این عملیات را ندارید' };
+    }
+  }
 
   if (!approved && !rejectedReason) {
     return { success: false, error: 'دلیل رد باید ذکر شود' };

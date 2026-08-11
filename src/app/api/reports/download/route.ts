@@ -11,7 +11,9 @@ export async function POST(req: Request) {
     if (!session?.user)
       return NextResponse.json({ error: 'احراز هویت الزامی است' }, { status: 401 });
     const userRole = session.user.role ?? '';
-    if (!['ADMIN', 'OWNER', 'SUPERADMIN'].includes(userRole)) {
+    // 2026-08-11: reports are owner-only — SUPERADMIN is an elevated ADMIN,
+    // not an OWNER alias.
+    if (!['OWNER'].includes(userRole)) {
       return NextResponse.json({ error: 'دسترسی غیرمجاز' }, { status: 403 });
     }
 

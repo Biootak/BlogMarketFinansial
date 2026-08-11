@@ -9,8 +9,9 @@ export async function checkRole(allowedRoles: string[]) {
     redirect('/auth');
   }
 
-  // OWNER and SUPERADMIN have access to everything.
-  if (session.user.role === 'OWNER' || session.user.role === 'SUPERADMIN') {
+  // OWNER has access to everything. SUPERADMIN is an elevated ADMIN and must
+  // be listed explicitly where it is allowed (it is NOT an OWNER alias).
+  if (session.user.role === 'OWNER') {
     return session;
   }
 
@@ -29,8 +30,8 @@ export async function checkSuperAdmin() {
     redirect('/auth');
   }
 
-  // G8-fix: SUPERADMIN alias برای OWNER — مطابق require-auth.ts و RBAC matrix
-  if (session.user.role !== 'OWNER' && session.user.role !== 'SUPERADMIN') {
+  // OWNER only — SUPERADMIN is an elevated ADMIN, not an OWNER alias.
+  if (session.user.role !== 'OWNER') {
     redirect('/');
   }
 
