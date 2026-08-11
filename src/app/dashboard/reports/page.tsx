@@ -1,3 +1,4 @@
+import { auth } from '@/auth';
 /**
  * /dashboard/reports — گزارش‌های مدیریتی
  *
@@ -5,7 +6,6 @@
  * محتوای تعاملی (tab switcher) در ReportsShell (client) است.
  */
 import { PageHeader } from '@/components/Dashboard/primitives';
-import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import ReportsShell from './_components/ReportsShell';

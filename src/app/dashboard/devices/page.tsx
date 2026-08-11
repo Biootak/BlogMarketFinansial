@@ -1,8 +1,8 @@
 import { getMyDevices, getSecurityAuditLogs } from '@/actions/deviceActions';
 import { auth } from '@/auth';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { DevicesClient } from './_components/DevicesClient';
 
 export const metadata: Metadata = {

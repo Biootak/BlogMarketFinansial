@@ -1,8 +1,8 @@
 import { getSettlements } from '@/actions/settlement';
 import { auth } from '@/auth';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { SettlementClient } from './_components/SettlementClient';
 
 export const metadata: Metadata = {

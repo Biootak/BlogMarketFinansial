@@ -414,60 +414,60 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
   let paidSettlement: PaidPayload;
   try {
     paidSettlement = await prisma.$transaction(async (tx): Promise<PaidPayload> => {
-    // ── Atomic claim: فقط یک پرداخت هم‌زمان می‌تواند APPROVED→PAID را اجرا کند.
-    // بدون این قفل، دو ادمین هم‌زمان هر دو ledger ثبت می‌کردند → دوبار پرداخت.
-    const claim = await tx.settlement.updateMany({
-      where: { id: settlementId, status: 'APPROVED' },
-      data: { status: 'PAID', paidAt: new Date() },
-    });
-    if (claim.count === 0) throw new Error('ALREADY_PAID');
+      // ── Atomic claim: فقط یک پرداخت هم‌زمان می‌تواند APPROVED→PAID را اجرا کند.
+      // بدون این قفل، دو ادمین هم‌زمان هر دو ledger ثبت می‌کردند → دوبار پرداخت.
+      const claim = await tx.settlement.updateMany({
+        where: { id: settlementId, status: 'APPROVED' },
+        data: { status: 'PAID', paidAt: new Date() },
+      });
+      if (claim.count === 0) throw new Error('ALREADY_PAID');
 
-    const updated = await tx.settlement.findUniqueOrThrow({
-      where: { id: settlementId },
-      select: {
-        exchangeId: true,
-        platformFee: true,
-        exchangeNet: true,
-        currency: true,
-        totalVolume: true,
-        dealCount: true,
-      },
-    });
+      const updated = await tx.settlement.findUniqueOrThrow({
+        where: { id: settlementId },
+        select: {
+          exchangeId: true,
+          platformFee: true,
+          exchangeNet: true,
+          currency: true,
+          totalVolume: true,
+          dealCount: true,
+        },
+      });
 
-    // ثبت کارمزد پلتفرم در LedgerEntry — double-entry: DEBIT از صرافی (پلتفرم fee می‌گیرد)
-    // مثال: platformFee=5000 AFN → LedgerEntry DEBIT 5000 از صرافی
-    // مثال: exchangeNet=45000 AFN → LedgerEntry CREDIT 45000 به صرافی
-    await tx.ledgerEntry.create({
-      data: {
-        id: createId(),
-        exchangeId: updated.exchangeId,
-        txnId: null,
-        accountId: null, // settlement-level — مختص حساب مشتری نیست
-        customerId: null, // settlement-level
-        direction: 'DEBIT',
-        amount: updated.platformFee,
-        currency: updated.currency,
-        runningBalance: BigInt(0), // platform running-balance در این schema track نمی‌شود
-        description: `کارمزد پلتفرم — تسویه ${settlementId.slice(-8)}`,
-        createdById: auth.user.id,
-      },
-    });
+      // ثبت کارمزد پلتفرم در LedgerEntry — double-entry: DEBIT از صرافی (پلتفرم fee می‌گیرد)
+      // مثال: platformFee=5000 AFN → LedgerEntry DEBIT 5000 از صرافی
+      // مثال: exchangeNet=45000 AFN → LedgerEntry CREDIT 45000 به صرافی
+      await tx.ledgerEntry.create({
+        data: {
+          id: createId(),
+          exchangeId: updated.exchangeId,
+          txnId: null,
+          accountId: null, // settlement-level — مختص حساب مشتری نیست
+          customerId: null, // settlement-level
+          direction: 'DEBIT',
+          amount: updated.platformFee,
+          currency: updated.currency,
+          runningBalance: BigInt(0), // platform running-balance در این schema track نمی‌شود
+          description: `کارمزد پلتفرم — تسویه ${settlementId.slice(-8)}`,
+          createdById: auth.user.id,
+        },
+      });
 
-    await tx.ledgerEntry.create({
-      data: {
-        id: createId(),
-        exchangeId: updated.exchangeId,
-        txnId: null,
-        accountId: null,
-        customerId: null,
-        direction: 'CREDIT',
-        amount: updated.exchangeNet,
-        currency: updated.currency,
-        runningBalance: BigInt(0),
-        description: `خالص قابل پرداخت صرافی — تسویه ${settlementId.slice(-8)}`,
-        createdById: auth.user.id,
-      },
-    });
+      await tx.ledgerEntry.create({
+        data: {
+          id: createId(),
+          exchangeId: updated.exchangeId,
+          txnId: null,
+          accountId: null,
+          customerId: null,
+          direction: 'CREDIT',
+          amount: updated.exchangeNet,
+          currency: updated.currency,
+          runningBalance: BigInt(0),
+          description: `خالص قابل پرداخت صرافی — تسویه ${settlementId.slice(-8)}`,
+          createdById: auth.user.id,
+        },
+      });
 
       return updated;
     });
@@ -506,7 +506,6 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
 // markSettlementPaid از updateMany شرطی (claim) استفاده می‌کند تا دو درخواست
 // هم‌زمان فقط یکی موفق شود. ALREADY_PAID از داخل transaction پرتاب می‌شود و
 // اینجا به حالت idempotent تبدیل می‌شود (اگر قبلاً PAID شده، success).
-
 
 // ─── CSV EXPORT (dead-button fix 2026-08-01) ────────────────────────────────
 // دکمهٔ «خروجی CSV» در SettlementCockpit بدون onClick بود — dead button.

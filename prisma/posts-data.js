@@ -100,7 +100,7 @@ module.exports = [
     featured: false,
     type: 'STANDARD',
     image:
-      'https://images.unsplash.com/photo-1581375321224-79eebc46a40e?w=1600&q=80&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop',
     blocks: [
       { t: 'h2', id: 'a', x: 'هم‌بستگی تاریخی' },
       {

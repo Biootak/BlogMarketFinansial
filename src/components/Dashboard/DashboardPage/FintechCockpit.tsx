@@ -254,12 +254,7 @@ const getInitial = (name: string): string => {
 
 function AmbientGlow() {
   return (
-    <svg
-      className={s.ambientGlow}
-      viewBox="0 0 1440 400"
-      preserveAspectRatio="none"
-      aria-hidden
-    >
+    <svg className={s.ambientGlow} viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden>
       <defs>
         <radialGradient id="ambientA" cx="80%" cy="0%" r="60%">
           <stop offset="0%" stopColor="var(--ds-brand-500)" stopOpacity="0.15" />

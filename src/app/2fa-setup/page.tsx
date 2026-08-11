@@ -8,14 +8,14 @@
  * می‌کند (layout.tsx همین پوشه) تا ظاهر «میلیون‌دلاری» حفظ شود.
  */
 
+import TwoFactorCenter from '@/app/(customer)/customer/2fa/_components/TwoFactorCenter';
 import { auth } from '@/auth';
 import { PageHeader, Spotlight } from '@/components/Dashboard/primitives';
 import prisma from '@/lib/db';
+import { Role } from '@prisma/client';
 import { ShieldCheck } from 'lucide-react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { Role } from '@prisma/client';
-import TwoFactorCenter from '@/app/(customer)/customer/2fa/_components/TwoFactorCenter';
 import s from './2fa-setup.module.css';
 
 export const metadata: Metadata = {
@@ -43,7 +43,13 @@ async function load2FAState(userId: string): Promise<Initial2FA> {
     },
   });
   if (!user) {
-    return { enabled: false, hasBackupCodes: false, verifiedAt: null, lastUsedAt: null, channel: null };
+    return {
+      enabled: false,
+      hasBackupCodes: false,
+      verifiedAt: null,
+      lastUsedAt: null,
+      channel: null,
+    };
   }
   return {
     enabled: user.twoFactorEnabled,
@@ -95,8 +101,8 @@ export default async function Dashboard2FAPage() {
               <ShieldCheck size={22} />
             </span>
             <div>
-            <h2 className={s.sealTitle}>درگاه امنیتی {label}</h2>
-            <p className={s.sealSub}>رمز دومِ ورود — حفاظت دائمی در برابر دسترسی غیرمجاز</p>
+              <h2 className={s.sealTitle}>درگاه امنیتی {label}</h2>
+              <p className={s.sealSub}>رمز دومِ ورود — حفاظت دائمی در برابر دسترسی غیرمجاز</p>
             </div>
             <span className={s.badge}>اجباری · TOTP</span>
           </div>

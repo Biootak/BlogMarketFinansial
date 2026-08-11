@@ -16,8 +16,8 @@ import {
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
-import { computeKycProgression } from '@/lib/kyc-progression';
 import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
+import { computeKycProgression } from '@/lib/kyc-progression';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';

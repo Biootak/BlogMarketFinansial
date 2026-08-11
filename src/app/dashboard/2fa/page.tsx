@@ -6,12 +6,12 @@
  * این صفحه نقطه‌ی فعال‌سازی اجباری است؛ برای همین زیر gate نیست.
  */
 
+import TwoFactorCenter from '@/app/(customer)/customer/2fa/_components/TwoFactorCenter';
 import { auth } from '@/auth';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import TwoFactorCenter from '@/app/(customer)/customer/2fa/_components/TwoFactorCenter';
 
 export const metadata: Metadata = {
   title: 'احراز هویت دو مرحله‌ای | داشبورد',
@@ -38,7 +38,13 @@ async function load2FAState(userId: string): Promise<Initial2FA> {
     },
   });
   if (!user) {
-    return { enabled: false, hasBackupCodes: false, verifiedAt: null, lastUsedAt: null, channel: null };
+    return {
+      enabled: false,
+      hasBackupCodes: false,
+      verifiedAt: null,
+      lastUsedAt: null,
+      channel: null,
+    };
   }
   return {
     enabled: user.twoFactorEnabled,
@@ -63,7 +69,11 @@ export default async function Dashboard2FAPage() {
         eyebrow="امنیت حساب مالک"
         title="احراز هویت دو مرحله‌ای (2FA)"
         description="برای حساب مالک، 2FA اجباری است. با فعال‌سازی، در هر ورود یک کد ۶ رقمی از اپلیکیشن authenticator لازم است."
-        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'امنیت' }, { label: '۲ مرحله‌ای' }]}
+        breadcrumb={[
+          { label: 'داشبورد', href: '/dashboard' },
+          { label: 'امنیت' },
+          { label: '۲ مرحله‌ای' },
+        ]}
         icon="key-round"
         accent="emerald"
       />

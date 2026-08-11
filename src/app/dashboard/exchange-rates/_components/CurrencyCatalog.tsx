@@ -8,8 +8,8 @@ import type { MarketRateGroup } from '@/lib/market-rates';
 import { SYMBOL_REGISTRY } from '@/lib/market-rates/registry';
 import { CheckCircle, Download, Plus, Search, Sparkles, SquareStack } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import type { RateRowData } from './ExchangeRateRow';
 import s from './CurrencyCatalog.module.css';
+import type { RateRowData } from './ExchangeRateRow';
 
 /* ──────────────────────────────────────────────────────────────────────
    Types

@@ -291,9 +291,9 @@ describe('markSettlementPaid', () => {
       },
       ledgerEntry: { create: vi.fn() },
     };
-    vi.mocked(prisma.$transaction).mockImplementationOnce(
-      ((fn: (tx: unknown) => Promise<unknown>) => Promise.resolve(fn(loseTx))) as never,
-    );
+    vi.mocked(prisma.$transaction).mockImplementationOnce(((
+      fn: (tx: unknown) => Promise<unknown>,
+    ) => Promise.resolve(fn(loseTx))) as never);
 
     const result = await markSettlementPaid('settle-1');
     expect(result.success).toBe(true); // idempotent — نه خطا

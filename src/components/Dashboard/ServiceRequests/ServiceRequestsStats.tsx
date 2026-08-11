@@ -14,15 +14,8 @@
 
 import { getServiceRequestStats } from '@/actions/serviceRequestActions';
 import CountUp from '@/components/Dashboard/primitives/CountUp';
+import { CalendarDays, CheckCircle, Clock, SquareStack, TriangleAlert, Zap } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  CalendarDays,
-  CheckCircle,
-  Clock,
-  SquareStack,
-  TriangleAlert,
-  Zap,
-} from 'lucide-react';
 
 interface Stats {
   total: number;

@@ -133,7 +133,7 @@ export function TransferWizard() {
     });
   }, [identifier]);
 
-  const handleQuickContact = useCallback((phone: string, name: string) => {
+  const handleQuickContact = useCallback((phone: string, _name: string) => {
     setIdentifier(phone);
     // Simulate finding the recipient
     startTransition(async () => {
@@ -251,7 +251,7 @@ export function TransferWizard() {
                   />
                 )}
                 <div
-                  className={`${s.stepDot} ${s['stepDot_' + state]}`}
+                  className={`${s.stepDot} ${s[`stepDot_${state}`]}`}
                   aria-current={state === 'active' ? 'step' : undefined}
                 >
                   {state === 'done' ? (
@@ -260,7 +260,7 @@ export function TransferWizard() {
                     <StepIcon size={14} aria-hidden />
                   )}
                 </div>
-                <span className={`${s.stepLabel} ${s['stepLabel_' + state]}`}>{st.label}</span>
+                <span className={`${s.stepLabel} ${s[`stepLabel_${state}`]}`}>{st.label}</span>
               </div>
             );
           })}

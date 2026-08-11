@@ -2,9 +2,7 @@
 
 import BannerADS from '@/components/BannerADS/BannerADS';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
-import LoadingMore from '@/components/LoadingMore';
 import SubmitButton from '@/components/SubmitButton';
-import { CustomSwitch } from '@/components/ui/CustomSwitch';
 import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
 import {
   Form,
@@ -23,10 +21,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn, toPersianNumber } from '@/lib/utils';
-import type { Advertisement, CustomAdDimensions } from '@/types/types';
-import type { UseFormReturn } from 'react-hook-form';
-import { HiOutlineComputerDesktop, HiOutlineDevicePhoneMobile, HiOutlineMegaphone, HiOutlineRectangleStack, HiOutlineWindow } from 'react-icons/hi2';
+import type { Advertisement } from '@/types/types';
 import { useState } from 'react';
+import type { UseFormReturn } from 'react-hook-form';
+import {
+  HiOutlineComputerDesktop,
+  HiOutlineDevicePhoneMobile,
+  HiOutlineMegaphone,
+  HiOutlineRectangleStack,
+  HiOutlineWindow,
+} from 'react-icons/hi2';
 
 export interface AdvertisementFormProps {
   form: UseFormReturn<AdvertisementFormData>;

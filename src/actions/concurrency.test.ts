@@ -55,9 +55,9 @@ vi.mock('@/lib/notifications/telegram-user', () => ({
   notifyTelegramCustomer: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { confirmTransfer } from '@/actions/transfer';
 import { confirmWithdraw } from '@/actions/fintech-account';
 import { markSettlementPaid } from '@/actions/settlement';
+import { confirmTransfer } from '@/actions/transfer';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
@@ -94,9 +94,8 @@ function txClient(claimCount: number) {
 // بدنه تراکنش (fn) را با آبجکت tx شبیه‌سازی‌شده صدا می‌زند و نتیجه را
 // در Promise می‌پیچد تا با امضای $transaction سازگار باشد.
 function mockTxn(getTx: () => unknown) {
-  vi.mocked(prisma.$transaction).mockImplementation(
-    ((fn: (tx: unknown) => Promise<unknown>) => Promise.resolve(fn(getTx()))) as never,
-  );
+  vi.mocked(prisma.$transaction).mockImplementation(((fn: (tx: unknown) => Promise<unknown>) =>
+    Promise.resolve(fn(getTx()))) as never);
 }
 
 beforeEach(() => {

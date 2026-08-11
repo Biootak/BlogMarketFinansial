@@ -1,8 +1,8 @@
 import { auth } from '@/auth';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { FraudReviewClient } from './_components/FraudReviewClient';
 
 export const metadata: Metadata = {

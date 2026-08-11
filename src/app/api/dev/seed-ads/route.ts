@@ -36,7 +36,7 @@ const ADS = [
   {
     title: 'اپلیکیشن تریدر هوشمند',
     description: 'معامله‌گری با هوش مصنوعی در کف دستت',
-    imageUrl: 'https://images.unsplash.com/photo-1642790551116-18e4f32a6c2b?w=600&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=600&q=80',
     linkUrl: 'https://example.com/app',
     order: 4,
   },

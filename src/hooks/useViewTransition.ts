@@ -60,6 +60,7 @@ export function useViewTransition(): (href: string) => void {
       // خطای Next تبدیل می‌شود.
       transition.finished.catch((err: unknown) => {
         if ((err as DOMException | undefined)?.name !== 'AbortError') {
+          // biome-ignore lint/suspicious/noConsole: غیر از skip عمدی مرورگر، خطای واقعی باید در لاگ دیده شود
           console.error('[view-transition] navigation failed:', err);
         }
       });

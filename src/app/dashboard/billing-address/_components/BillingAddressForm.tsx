@@ -240,7 +240,7 @@ export function BillingAddressForm({ initial }: Props) {
               {/* Location Section */}
               <div className={s.sectionLabel}>موقعیت جغرافیایی</div>
               <div className={s.grid}>
-                <label className={s.field}>
+                <label className={s.field} htmlFor="ba-country">
                   <span className={s.label}>
                     <MapPin size={14} className={s.labelIcon} data-color="emerald" aria-hidden />
                     کشور
@@ -249,7 +249,7 @@ export function BillingAddressForm({ initial }: Props) {
                     value={form.country ?? 'af'}
                     onValueChange={handleSelectChange('country')}
                   >
-                    <SelectTrigger className={s.input}>
+                    <SelectTrigger id="ba-country" className={s.input}>
                       <SelectValue placeholder="انتخاب کشور" />
                     </SelectTrigger>
                     <SelectContent>
@@ -263,7 +263,7 @@ export function BillingAddressForm({ initial }: Props) {
                 </label>
 
                 {form.country === 'af' && (
-                  <label className={s.field}>
+                  <label className={s.field} htmlFor="ba-province">
                     <span className={s.label}>
                       <Building2 size={14} className={s.labelIcon} data-color="blue" aria-hidden />
                       ولایت
@@ -272,7 +272,7 @@ export function BillingAddressForm({ initial }: Props) {
                       value={form.province ?? ''}
                       onValueChange={handleSelectChange('province')}
                     >
-                      <SelectTrigger className={s.input}>
+                      <SelectTrigger id="ba-province" className={s.input}>
                         <SelectValue placeholder="انتخاب ولایت" />
                       </SelectTrigger>
                       <SelectContent>

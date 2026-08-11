@@ -416,7 +416,6 @@ export async function confirmTransfer(
       error: { code: 'INVALID_STATE', message: 'اطلاعات حساب تراکنش ناقص است' },
     };
   }
-  const accountId = txn.accountId;
   const customerId = txn.customerId;
 
   const _xff2 = (await headers()).get('x-forwarded-for') ?? '';
@@ -463,7 +462,12 @@ export async function confirmTransfer(
   }
 
   // ── مسیر عادی (مبلغ کم): اجرای مستقیم ────────────────────────────────────
-  const res = await executeConfirmTransfer({ txnId: txn.id, customerId, actorId: auth.user.id, ip });
+  const res = await executeConfirmTransfer({
+    txnId: txn.id,
+    customerId,
+    actorId: auth.user.id,
+    ip,
+  });
   return mapConfirmTransferCore(res, txn.id);
 }
 

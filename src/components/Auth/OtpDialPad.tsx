@@ -99,7 +99,10 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
 
   const handleChange = (raw: string) => {
     const next = isBackup
-      ? raw.replace(/[^a-fA-F0-9]/g, '').toUpperCase().slice(0, BACKUP_CELLS)
+      ? raw
+          .replace(/[^a-fA-F0-9]/g, '')
+          .toUpperCase()
+          .slice(0, BACKUP_CELLS)
       : raw.replace(/\D/g, '').slice(0, CELLS);
     if (!valid.test(next)) return;
     setValue(next);
@@ -133,9 +136,7 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
   return (
     <div
       className={`auth-otp-shell${isBackup ? ' auth-otp-shell--backup' : ''}`}
-      aria-label={
-        isBackup ? 'کد پشتیبان ۸ کاراکتری را وارد کنید' : 'کد ۶ رقمی را وارد کنید'
-      }
+      aria-label={isBackup ? 'کد پشتیبان ۸ کاراکتری را وارد کنید' : 'کد ۶ رقمی را وارد کنید'}
     >
       <div
         className={`auth-otp-grid${isBackup ? ' auth-otp-grid--backup' : ''}`}

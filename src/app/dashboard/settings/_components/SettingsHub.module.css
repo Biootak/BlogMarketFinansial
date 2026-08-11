@@ -5,7 +5,7 @@
  *  تمام spacing با logical properties (RTL-safe).
  *  رنگ‌ها از توکن‌های واقعی tokens.css: --ds-* و --nova-*
  */
-  .hub {
+.hub {
   position: relative;
   display: flex;
   flex-direction: column;

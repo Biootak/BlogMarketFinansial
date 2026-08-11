@@ -2,7 +2,12 @@
 
 import { toPersianNumber } from '@/lib/utils';
 import type { Advertisement } from '@/types/types';
-import { HiOutlineChartBar, HiOutlineCheckCircle, HiOutlineMegaphone, HiOutlineRectangleStack } from 'react-icons/hi2';
+import {
+  HiOutlineChartBar,
+  HiOutlineCheckCircle,
+  HiOutlineMegaphone,
+  HiOutlineRectangleStack,
+} from 'react-icons/hi2';
 
 interface AdvertisementsStatsProps {
   ads: Advertisement[];

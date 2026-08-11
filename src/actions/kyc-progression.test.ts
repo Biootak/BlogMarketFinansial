@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { computeKycProgression } from '@/lib/kyc-progression';
+import { describe, expect, it } from 'vitest';
 
 type Rec = { level: string; docType: string; status: string };
 const r = (level: string, docType: string, status: string): Rec => ({ level, docType, status });
@@ -7,7 +7,6 @@ const r = (level: string, docType: string, status: string): Rec => ({ level, doc
 const PHONE_OK = r('LEVEL_1', 'PHONE', 'APPROVED');
 const PHONE_PENDING = r('LEVEL_1', 'PHONE', 'PENDING');
 const DOC_OK = r('LEVEL_2', 'NATIONAL_ID', 'APPROVED');
-const DOC_REJ = r('LEVEL_2', 'NATIONAL_ID', 'REJECTED');
 const DOC_PENDING = r('LEVEL_2', 'NATIONAL_ID', 'PENDING');
 const SELFIE_OK = r('LEVEL_2', 'SELFIE', 'APPROVED');
 const SELFIE_REJ = r('LEVEL_2', 'SELFIE', 'REJECTED');
@@ -55,17 +54,19 @@ describe('computeKycProgression', () => {
   });
 
   it('re-submission after partial rejection: new doc+selfie pending → LEVEL_1 pending', () => {
-    const p = computeKycProgression([PHONE_OK, DOC_OK, SELFIE_REJ, DOC_PENDING, r('LEVEL_2', 'SELFIE', 'PENDING')]);
+    const p = computeKycProgression([
+      PHONE_OK,
+      DOC_OK,
+      SELFIE_REJ,
+      DOC_PENDING,
+      r('LEVEL_2', 'SELFIE', 'PENDING'),
+    ]);
     expect(p.finalLevel).toBe('LEVEL_1');
     expect(p.pendingAtNext).toBe(true);
   });
 
   it('PASSPORT counts as identity doc for LEVEL_2', () => {
-    const p = computeKycProgression([
-      PHONE_OK,
-      r('LEVEL_2', 'PASSPORT', 'APPROVED'),
-      SELFIE_OK,
-    ]);
+    const p = computeKycProgression([PHONE_OK, r('LEVEL_2', 'PASSPORT', 'APPROVED'), SELFIE_OK]);
     expect(p.finalLevel).toBe('LEVEL_2');
   });
 

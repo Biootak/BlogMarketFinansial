@@ -36,8 +36,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import QRCode from 'qrcode';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import s from './TwoFactorCenter.module.css';
 
 type Initial2FA = {

@@ -1,7 +1,7 @@
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { requireUser } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import MyRequestsClient from './_components/MyRequestsClient';
 
 export const metadata: Metadata = {
@@ -29,4 +29,3 @@ export default async function MyRequestsPage() {
     </div>
   );
 }
-

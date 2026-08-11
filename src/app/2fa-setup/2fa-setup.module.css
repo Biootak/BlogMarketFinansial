@@ -11,10 +11,16 @@
   display: flex;
   justify-content: center;
   padding: clamp(1.25rem, 4vw, 3.5rem) clamp(1rem, 3vw, 2rem) clamp(2rem, 5vw, 4rem);
-  background:
-    radial-gradient(1100px 520px at 85% -10%, color-mix(in oklch, var(--ds-brand-300, #5eead4) 14%, transparent), transparent 60%),
-    radial-gradient(900px 480px at -10% 18%, color-mix(in oklch, var(--ds-accent-violet, #a78bfa) 12%, transparent), transparent 55%),
-    var(--ds-canvas);
+  background: radial-gradient(
+      1100px 520px at 85% -10%,
+      color-mix(in oklch, var(--ds-brand-300, #5eead4) 14%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 480px at -10% 18%,
+      color-mix(in oklch, var(--ds-accent-violet, #a78bfa) 12%, transparent),
+      transparent 55%
+    ), var(--ds-canvas);
 }
 
 /* ── اورب‌های شناور (depth بدون عکس) ─────────────────────────── */
@@ -51,25 +57,37 @@
   inset-block-start: -14%;
   inline-size: clamp(180px, 26vw, 320px);
   block-size: clamp(180px, 26vw, 320px);
-  background: radial-gradient(circle at 50% 40%, color-mix(in oklch, var(--nova-emerald, #34d399) 45%, transparent), transparent 70%);
+  background: radial-gradient(
+    circle at 50% 40%,
+    color-mix(in oklch, var(--nova-emerald, #34d399) 45%, transparent),
+    transparent 70%
+  );
   opacity: 0.35;
   animation: drift-c 38s var(--ds-ease-in-out-quart, ease-in-out) infinite alternate;
 }
 
 @keyframes drift-a {
-  to { transform: translate3d(6%, 8%, 0) scale(1.08); }
+  to {
+    transform: translate3d(6%, 8%, 0) scale(1.08);
+  }
 }
 
 @keyframes drift-b {
-  to { transform: translate3d(-7%, -6%, 0) scale(1.1); }
+  to {
+    transform: translate3d(-7%, -6%, 0) scale(1.1);
+  }
 }
 
 @keyframes drift-c {
-  to { transform: translate3d(-4%, 10%, 0) scale(1.06); }
+  to {
+    transform: translate3d(-4%, 10%, 0) scale(1.06);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .orb { animation: none; }
+  .orb {
+    animation: none;
+  }
 }
 
 /* ── قاب ─────────────────────────────────────────────────────── */
@@ -89,15 +107,14 @@
   border-radius: var(--ds-radius-2xl);
   border: 1px solid var(--ds-border-default);
   background: linear-gradient(180deg, var(--ds-surface-elevated), var(--ds-surface));
-  box-shadow:
-    0 40px 90px -40px oklch(20% 0.05 240 / 0.4),
-    0 8px 24px -14px oklch(20% 0.05 240 / 0.18);
+  box-shadow: 0 40px 90px -40px oklch(20% 0.05 240 / 0.4), 0 8px 24px -14px
+    oklch(20% 0.05 240 / 0.18);
   backdrop-filter: blur(18px);
 }
 
 /* نوار گرادیانی بالای پنل — امضای «میلیون‌دلاری» */
 .panel::before {
-  content: '';
+  content: "";
   position: absolute;
   inset-block-start: 0;
   inset-inline: 0;
@@ -113,11 +130,15 @@
 
 /* درخشش نرم بالای پنل */
 .panel::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(600px 200px at 50% -20px, color-mix(in oklch, var(--ds-brand-200, #99f6e4) 55%, transparent), transparent 70%);
+  background: radial-gradient(
+    600px 200px at 50% -20px,
+    color-mix(in oklch, var(--ds-brand-200, #99f6e4) 55%, transparent),
+    transparent 70%
+  );
   z-index: 0;
 }
 
@@ -146,7 +167,11 @@
   block-size: 46px;
   border-radius: 14px;
   color: var(--ds-brand-600, #0d9488);
-  background: linear-gradient(145deg, var(--ds-brand-100, #ccfbf1), color-mix(in oklch, var(--ds-brand-100, #ccfbf1) 55%, white));
+  background: linear-gradient(
+    145deg,
+    var(--ds-brand-100, #ccfbf1),
+    color-mix(in oklch, var(--ds-brand-100, #ccfbf1) 55%, white)
+  );
   border: 1px solid var(--ds-brand-200, #99f6e4);
   box-shadow: 0 6px 16px -8px var(--ds-brand-500, #14b8a6);
 }
@@ -199,8 +224,16 @@
 
 /* ── موبایل ───────────────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .page { padding-block: 1.25rem 2rem; }
-  .panelBody { padding: 1rem; }
-  .panelHead { padding: 1rem 1rem var(--ds-space-3); }
-  .badge { display: none; }
+  .page {
+    padding-block: 1.25rem 2rem;
+  }
+  .panelBody {
+    padding: 1rem;
+  }
+  .panelHead {
+    padding: 1rem 1rem var(--ds-space-3);
+  }
+  .badge {
+    display: none;
+  }
 }

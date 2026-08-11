@@ -4,9 +4,9 @@
 import { getAllStaff } from '@/actions/exchange-staff';
 import { getAllExchanges } from '@/actions/exchanges';
 import { auth } from '@/auth';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import ExchangeStaffClient from './_components/ExchangeStaffClient';
 
 export const metadata: Metadata = {

@@ -76,6 +76,9 @@ export function StatCard({
     if (React.isValidElement(icon)) {
       return <div className="size-4 text-muted-foreground">{icon}</div>;
     }
+    // Guard: a raw string (e.g. icon="folder") must never be rendered as a
+    // tag — React would emit <folder> which is unrecognized in the browser.
+    if (typeof icon === 'string') return null;
     const Icon = icon as LucideIcon;
     return <Icon className="size-4 text-muted-foreground" aria-hidden="true" />;
   };

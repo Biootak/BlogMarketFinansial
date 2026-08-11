@@ -1,8 +1,8 @@
 import { getPermissions } from '@/actions/permission-actions';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { requireAdmin } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import PermissionsClient from './_components/PermissionsClient';
 
 export const metadata: Metadata = {

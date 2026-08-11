@@ -45,16 +45,10 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import type { Role, UserWithProfile } from '@/types/types';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
 import {
   BadgeCheck,
   Clock,
   Eye,
-  KeyRound,
   LockKeyhole,
   Mail,
   Pencil,
@@ -66,6 +60,11 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
 import s from './UsersClient.module.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────────

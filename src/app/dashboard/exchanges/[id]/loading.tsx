@@ -16,7 +16,13 @@ export default function ExchangeDetailLoading() {
       </div>
 
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--ds-space-3)' }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 'var(--ds-space-3)',
+        }}
+      >
         {Array.from({ length: 4 }).map((_, i) => (
           <SkeletonBase key={i} className="h-20 rounded-xl" />
         ))}

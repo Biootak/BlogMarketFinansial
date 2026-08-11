@@ -5,10 +5,10 @@
  * pagination از getMyDeals (Server Action) دریافت می‌شوند.
  */
 
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { requireUser } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/Dashboard/primitives';
 import MyDealsClient from './_components/MyDealsClient';
 
 export const metadata: Metadata = {

@@ -69,7 +69,9 @@ export async function confirmEnable2FA(
   if (!(await verifyTotp(secret, token)))
     return { success: false, error: { code: 'INVALID_TOKEN', message: 'کد وارد شده نادرست است' } };
   // 10 کد پشتیبان — هماهنگ با وعده UI (TwoFactorCenter) و استاندارد صنعتی (Google/Microsoft 10 کد)
-  const backupCodes = Array.from({ length: 10 }, () => randomBytes(4).toString('hex').toUpperCase());
+  const backupCodes = Array.from({ length: 10 }, () =>
+    randomBytes(4).toString('hex').toUpperCase(),
+  );
   // C2-fix: secret را رمزنگاری‌شده ذخیره کن — plaintext هرگز در DB نباشد
   // T2-fix: هش bcrypt (cost 12 × 10 کد ≈ ۵+ ثانیه CPU) را BEFORE ترنزکشن انجام بده؛
   // وگرنه از مهلت ۵ ثانیه‌ای interactive transaction پرایسما رد می‌شود و کل فعال‌سازی

@@ -107,13 +107,13 @@ export default function HeaderAdsClient({
   const { toast } = useToast();
   const router = useRouter();
 
-  const refresh = async () => {
+  const refresh = useCallback(async () => {
     if (onRefresh) {
       await onRefresh();
     } else {
       router.refresh();
     }
-  };
+  }, [onRefresh, router]);
 
   const handleSubmit = async (formData: FormData) => {
     const payload = {
@@ -172,7 +172,7 @@ export default function HeaderAdsClient({
     } else {
       toast({ title: 'خطا', description: result.message, variant: 'destructive' });
     }
-  }, [deleteTarget, toast, router]);
+  }, [deleteTarget, toast, refresh]);
 
   const openDelete = useCallback((ad: HeaderAdData) => {
     setDeleteTarget({ id: ad.id, text: ad.text });
@@ -384,7 +384,9 @@ export default function HeaderAdsClient({
 
       <ConfirmDialog
         open={!!deleteTarget}
-        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        onOpenChange={(o) => {
+          if (!o) setDeleteTarget(null);
+        }}
         title="حذف تبلیغ"
         description={`آیا مطمئن هستید که می‌خواهید تبلیغ «${deleteTarget?.text}» را حذف کنید؟ این عملیات برگشت‌پذیر نیست.`}
         confirmLabel="بله، حذف کن"

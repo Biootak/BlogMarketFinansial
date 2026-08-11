@@ -33,7 +33,8 @@ export function computeKycProgression(
   const approved = records.filter((r) => r.status === 'APPROVED');
   const hasPhone = approved.some((r) => r.level === 'LEVEL_1' && r.docType === KYC_LEVEL1_DOC);
   const hasIdentity = approved.some(
-    (r) => r.level === 'LEVEL_2' && (KYC_IDENTITY_DOC_TYPES as readonly string[]).includes(r.docType),
+    (r) =>
+      r.level === 'LEVEL_2' && (KYC_IDENTITY_DOC_TYPES as readonly string[]).includes(r.docType),
   );
   const hasSelfie = approved.some((r) => r.level === 'LEVEL_2' && r.docType === KYC_SELFIE_DOC);
   const hasAddress = approved.some((r) => r.level === 'LEVEL_3' && r.docType === 'ADDRESS_PROOF');

@@ -25,10 +25,7 @@ import AtelierPulse from '@/components/Dashboard/DashboardPage/atelier/tiles/Ate
 import { persianLongDate } from '@/components/Dashboard/DashboardPage/atelier/utils';
 import CountUp from '@/components/Dashboard/primitives/CountUp';
 import { motion } from '@/lib/motion-shim';
-import { useEffect, useState, useTransition } from 'react';
 import {
-  ArrowDownToLine,
-  ArrowRightLeft,
   ArrowUpRight,
   Bolt,
   CheckCircle,
@@ -36,10 +33,10 @@ import {
   Download,
   RefreshCw,
   Sparkles,
-  TrendingUp,
   TriangleAlert,
   XCircle,
 } from 'lucide-react';
+import { useEffect, useState, useTransition } from 'react';
 
 interface Stats {
   total: number;

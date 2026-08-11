@@ -269,7 +269,14 @@ export async function getCreditRateAggregates(): Promise<FintechActionResult<Cre
   try {
     const allRates = await prisma.creditRate.findMany({
       where: { status: 'ACTIVE', bank: { status: 'ACTIVE', isVisible: true } },
-      select: { type: true, annualRate: true, title: true, bankId: true, currency: true },
+      select: {
+        type: true,
+        annualRate: true,
+        title: true,
+        bankId: true,
+        currency: true,
+        bank: { select: { id: true, slug: true, name: true, displayName: true, logoUrl: true } },
+      },
     });
 
     const byTypeMap = new Map<
@@ -334,14 +341,40 @@ export async function getCreditRateAggregates(): Promise<FintechActionResult<Cre
           })
         : null;
 
+    const toRow = (r: (typeof allRates)[number]): CreditRateRow => ({
+      id: '',
+      description: null,
+      minAmountCents: 0,
+      maxAmountCents: 0,
+      maxTermMonths: 0,
+      depositRatio: null,
+      status: 'ACTIVE',
+      effectiveFrom: null,
+      effectiveTo: null,
+      source: null,
+      sortOrder: 0,
+      internalNote: null,
+      createdAt: '',
+      updatedAt: '',
+      type: r.type,
+      title: r.title,
+      bankId: r.bankId,
+      currency: r.currency,
+      bank: r.bank,
+      annualRate:
+        typeof r.annualRate === 'number'
+          ? r.annualRate
+          : (r.annualRate as { toNumber: () => number }).toNumber(),
+    });
+
     return {
       success: true,
       data: {
         byType,
         bankCount: bankIds.size,
         rateCount: allRates.length,
-        bestDeposit: bestDeposit ? (bestDeposit as unknown as CreditRateRow) : null,
-        cheapestLoan: cheapestLoan ? (cheapestLoan as unknown as CreditRateRow) : null,
+        bestDeposit: bestDeposit ? toRow(bestDeposit) : null,
+        cheapestLoan: cheapestLoan ? toRow(cheapestLoan) : null,
       },
     };
   } catch {

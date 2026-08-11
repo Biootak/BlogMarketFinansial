@@ -1,14 +1,10 @@
 import { getAllParentCategories, getCategories } from '@/actions/categoryActions';
-import {
-  PageHeader,
-  Section,
-  StatGrid,
-} from '@/components/Dashboard/primitives';
+import { PageHeader, Section } from '@/components/Dashboard/primitives';
 import { unstable_noStore as noStore } from 'next/cache';
 import { Suspense } from 'react';
+import { CategoriesStats } from './_components/CategoriesStats';
 import { CategoryForm } from './_components/CategoryForm';
 import { CategoryList } from './_components/CategoryList';
-import { CategoriesStats } from './_components/CategoriesStats';
 import { SearchCategories } from './_components/SearchCategories';
 
 export default async function CategoriesPage({
@@ -50,10 +46,7 @@ export default async function CategoriesPage({
         }
       />
 
-      <CategoriesStats
-        totalCount={categories.totalCount}
-        parentCount={parentCategories.length}
-      />
+      <CategoriesStats totalCount={categories.totalCount} parentCount={parentCategories.length} />
 
       <Section
         title="سالنامهٔ دسته‌بندی‌ها"

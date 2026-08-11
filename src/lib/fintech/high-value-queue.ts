@@ -128,7 +128,11 @@ export async function enqueueHighValueJob(
       if (!existing) {
         return { success: false, message: 'خطا در ثبت صف پردازش تراکنش' };
       }
-      if (existing.status === 'pending' || existing.status === 'processing' || existing.status === 'retry') {
+      if (
+        existing.status === 'pending' ||
+        existing.status === 'processing' ||
+        existing.status === 'retry'
+      ) {
         // single-flight: همان عملیات هنوز در صف است — نادیده بگیر (idempotent)
         return { success: true, id: existing.id, deduped: true };
       }
@@ -195,7 +199,12 @@ export function formatJobError(code: string | undefined, message: string): strin
   return `${code ?? 'ERROR'}::${message}`;
 }
 
-async function markJobRetry(jobId: string, attempts: number, maxAttempts: number, error: string): Promise<void> {
+async function markJobRetry(
+  jobId: string,
+  attempts: number,
+  maxAttempts: number,
+  error: string,
+): Promise<void> {
   if (attempts >= maxAttempts) {
     await prisma.highValueJob.update({
       where: { id: jobId },
@@ -305,7 +314,12 @@ export async function processHighValueQueue(): Promise<{ processed: number; fail
           });
         } else {
           result.failed += 1;
-          await markJobRetry(job.id, job.attempts + 1, job.maxAttempts, formatJobError(res.code, res.message));
+          await markJobRetry(
+            job.id,
+            job.attempts + 1,
+            job.maxAttempts,
+            formatJobError(res.code, res.message),
+          );
         }
       } catch (err) {
         // استثنای غیرمنتظره → همان مسیر retry (خطای موقت فرض می‌شود)

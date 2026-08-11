@@ -130,11 +130,13 @@ const MobileBottomNavSortableLazy = dynamic<MobileBottomNavSortableProps>(
 
 const MobileBottomNav: FC = () => {
   const { status } = useSession();
-  // SSR always renders logged-out template (status === 'loading' on server).
-  // Client updates to logged-in items only after session resolves (post-hydration).
-  // This prevents hydration mismatch when useSession resolves synchronously
-  // from a cached cookie on the client but not on the server.
-  const isLoggedIn = status === 'authenticated';
+  // SSR always renders the logged-out template. The client must ALSO render
+  // the logged-out template during hydration (useSession can resolve
+  // 'authenticated' synchronously from a cached cookie, which would mismatch
+  // the SSR HTML). Only after mount does the nav flip to the logged-in items.
+  const [sessionReady, setSessionReady] = useState(false);
+  useEffect(() => setSessionReady(true), []);
+  const isLoggedIn = sessionReady && status === 'authenticated';
   const pathname = usePathname();
   const router = useRouter();
   const navRef = useRef<HTMLElement | null>(null);

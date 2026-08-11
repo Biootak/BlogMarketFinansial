@@ -1,4 +1,3 @@
-import { PageHeader } from '@/components/Dashboard/primitives';
 import { auth } from '@/auth';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 import { redirect } from 'next/navigation';
