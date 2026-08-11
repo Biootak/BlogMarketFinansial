@@ -1,6 +1,6 @@
-export default function WalletLoading() {
+﻿export default function WalletLoading() {
   return (
-    <div className="at-page" dir="rtl" aria-busy="true" aria-label="در حال بارگذاری کیف پول…">
+    <div className="route-frame" dir="rtl" aria-busy="true" aria-label="در حال بارگذاری کیف پول…">
       {/* Hero card skeleton */}
       <div
         className="animate-pulse"
@@ -116,3 +116,4 @@ export default function WalletLoading() {
     </div>
   );
 }
+

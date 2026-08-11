@@ -1,6 +1,7 @@
 import { requireUser } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import MyRequestsClient from './_components/MyRequestsClient';
 
 export const metadata: Metadata = {
@@ -14,8 +15,18 @@ export default async function MyRequestsPage() {
   }
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'درخواست‌های من' }]}
+        title="درخواست‌های من"
+        description="پیگیری وضعیت درخواست‌های خدمات شما"
+        eyebrow="پشتیبانی"
+        icon="ticket"
+        accent="cyan"
+      />
       <MyRequestsClient />
     </div>
   );
 }
+

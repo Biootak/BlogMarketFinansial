@@ -1,4 +1,4 @@
-import { auth } from '@/auth';
+﻿import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { TransferWizard } from './_components/TransferWizard';
@@ -18,8 +18,9 @@ export default async function TransferPage() {
   }
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <TransferWizard />
     </div>
   );
 }
+

@@ -2,6 +2,7 @@ import { getPermissions } from '@/actions/permission-actions';
 import { requireAdmin } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import PermissionsClient from './_components/PermissionsClient';
 
 export const metadata: Metadata = {
@@ -18,7 +19,16 @@ export default async function PermissionsPage() {
   const data = result.success && result.data ? result.data : { permissions: [], matrix: [] };
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'مجوزها' }]}
+        title="مجوزها"
+        description="مدیریت ماتریس نقش‌ها و مجوزهای سیستم"
+        eyebrow="امنیت"
+        icon="shield"
+        accent="violet"
+      />
       <PermissionsClient
         permissions={data.permissions}
         matrix={data.matrix}
@@ -27,3 +37,4 @@ export default async function PermissionsPage() {
     </div>
   );
 }
+

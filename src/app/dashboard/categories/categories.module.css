@@ -66,7 +66,7 @@
 .entry:hover {
   background: color-mix(
     in oklch,
-    var(--nova-primary, var(--ds-brand-500, #6366f1)) 4%,
+    var(--nova-primary, var(--ds-brand-500)) 4%,
     var(--ds-surface)
   );
 }
@@ -174,7 +174,7 @@
 }
 
 .countPill strong {
-  color: var(--nova-primary, var(--ds-brand-600, #4f46e5));
+  color: var(--nova-primary, var(--ds-brand-600));
   font-weight: var(--ds-weight-bold);
 }
 
@@ -202,7 +202,7 @@
 }
 
 .toggle:focus-visible {
-  outline: 2px solid var(--nova-primary, var(--ds-brand-500, #6366f1));
+  outline: 2px solid var(--nova-primary, var(--ds-brand-500));
   outline-offset: 2px;
 }
 
@@ -234,19 +234,19 @@
 }
 
 .actionBtn:hover {
-  border-color: var(--nova-primary, var(--ds-brand-500, #6366f1));
-  color: var(--nova-primary, var(--ds-brand-600, #4f46e5));
-  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500, #6366f1)) 6%, transparent);
+  border-color: var(--nova-primary, var(--ds-brand-500));
+  color: var(--nova-primary, var(--ds-brand-600));
+  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 6%, transparent);
 }
 
 .actionBtnDanger:hover {
-  border-color: var(--nova-down, #dc2626);
-  color: var(--nova-down, #dc2626);
-  background: color-mix(in oklch, var(--nova-down, #dc2626) 6%, transparent);
+  border-color: var(--nova-down);
+  color: var(--nova-down);
+  background: color-mix(in oklch, var(--nova-down) 6%, transparent);
 }
 
 .actionBtn:focus-visible {
-  outline: 2px solid var(--nova-primary, var(--ds-brand-500, #6366f1));
+  outline: 2px solid var(--nova-primary, var(--ds-brand-500));
   outline-offset: 2px;
 }
 
@@ -327,7 +327,7 @@
   inline-size: 5px;
   block-size: 5px;
   border-radius: 50%;
-  background: var(--nova-primary, var(--ds-brand-500, #6366f1));
+  background: var(--nova-primary, var(--ds-brand-500));
   opacity: 0.7;
   animation: cat-breathe 2.4s ease-in-out infinite;
 }
@@ -410,7 +410,7 @@
 }
 
 .formLabelIco {
-  color: var(--nova-primary, var(--ds-brand-600, #4f46e5));
+  color: var(--nova-primary, var(--ds-brand-600));
 }
 
 .formHint {
@@ -461,8 +461,8 @@
 }
 
 .pillClose:hover {
-  background: color-mix(in oklch, var(--nova-down, #dc2626) 12%, transparent);
-  color: var(--nova-down, #dc2626);
+  background: color-mix(in oklch, var(--nova-down) 12%, transparent);
+  color: var(--nova-down);
 }
 
 .dialogTitle {
@@ -505,9 +505,9 @@
 
 .search input:focus {
   outline: none;
-  border-color: var(--nova-primary, var(--ds-brand-500, #6366f1));
+  border-color: var(--nova-primary, var(--ds-brand-500));
   box-shadow: 0 0 0 3px
-    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500, #6366f1)) 12%, transparent);
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 12%, transparent);
 }
 
 .searchIcon {

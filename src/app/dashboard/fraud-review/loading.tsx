@@ -1,8 +1,8 @@
-import { Skeleton } from '@/components/Dashboard/primitives';
+﻿import { Skeleton } from '@/components/Dashboard/primitives';
 
 export default function FraudReviewLoading() {
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <div className="space-y-5">
         {/* PageHeader skeleton */}
         <div
@@ -31,3 +31,4 @@ export default function FraudReviewLoading() {
     </div>
   );
 }
+

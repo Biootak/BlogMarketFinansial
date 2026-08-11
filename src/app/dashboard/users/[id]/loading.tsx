@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/Dashboard/primitives';
 
 export default function UserDetailLoading() {
   return (
-    <div className="at-page flex flex-col gap-5" dir="rtl">
+    <div className="route-frame flex flex-col gap-5" dir="rtl">
       {/* PageHeader skeleton */}
       <div className="flex flex-col gap-2">
         <Skeleton className="h-4 w-32 rounded-md" />

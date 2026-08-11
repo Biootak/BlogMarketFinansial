@@ -17,7 +17,7 @@ export default async function DashboardPosts({
   const counts = countsResult.success && countsResult.data ? countsResult.data : null;
 
   return (
-    <div className="dash2-page">
+    <div className="route-frame dash-scope" dir="rtl">
       <PostsPageHeader searchParams={searchParamsData} counts={counts} />
       <AdminPostListView searchParams={searchParamsData} />
     </div>

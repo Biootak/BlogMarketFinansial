@@ -8,6 +8,7 @@
 import { requireUser } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import MyDealsClient from './_components/MyDealsClient';
 
 export const metadata: Metadata = {
@@ -22,8 +23,18 @@ export default async function MyDealsPage() {
   }
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'معاملات من' }]}
+        title="معاملات ارزی من"
+        description="تاریخچه و وضعیت معاملات ارزی شما در پلتفرم"
+        eyebrow="مالی"
+        icon="receipt"
+        accent="amber"
+      />
       <MyDealsClient />
     </div>
   );
 }
+

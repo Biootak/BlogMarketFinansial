@@ -1,4 +1,4 @@
-import { getAllParentCategories, getCategories } from '@/actions/categoryActions';
+﻿import { getAllParentCategories, getCategories } from '@/actions/categoryActions';
 import { PageHeader } from '@/components/Dashboard/primitives';
 import { unstable_noStore as noStore } from 'next/cache';
 import { Suspense } from 'react';
@@ -30,7 +30,7 @@ export default async function CategoriesPage({
   const parentCategories = parentCategoriesResult.data || [];
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <PageHeader
         variant="compact"
         eyebrow="ساختار"
@@ -67,3 +67,5 @@ export default async function CategoriesPage({
     </div>
   );
 }
+
+

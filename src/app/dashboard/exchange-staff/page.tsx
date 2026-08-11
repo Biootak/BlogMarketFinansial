@@ -6,6 +6,7 @@ import { getAllExchanges } from '@/actions/exchanges';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import ExchangeStaffClient from './_components/ExchangeStaffClient';
 
 export const metadata: Metadata = {
@@ -21,14 +22,17 @@ export default async function ExchangeStaffPage() {
   const [staff, exchanges] = await Promise.all([getAllStaff(), getAllExchanges()]);
 
   return (
-    <main
-      style={{
-        maxWidth: '1280px',
-        margin: '0 auto',
-        padding: 'var(--ds-space-6) var(--ds-space-5)',
-      }}
-    >
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'کارکنان صراف‌ها' }]}
+        title="کارکنان صراف‌ها"
+        description="مدیریت دسترسی کارکنان صرافی‌های ثبت‌شده"
+        eyebrow="مدیریت"
+        icon="users"
+        accent="cyan"
+      />
       <ExchangeStaffClient staff={staff} exchanges={exchanges} />
-    </main>
+    </div>
   );
 }

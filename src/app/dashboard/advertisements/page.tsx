@@ -9,7 +9,7 @@ import {
 import { getAllHeaderAds } from '@/actions/headerAdActions';
 import HeaderAdsClient, { type HeaderAdData } from '@/app/dashboard/header-ad/HeaderAdsClient';
 import BannerADS from '@/components/BannerADS/BannerADS';
-import { PageHeader } from '@/components/Dashboard/primitives';
+import { ConfirmDialog, PageHeader } from '@/components/Dashboard/primitives';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import LoadingMore from '@/components/LoadingMore';
 import { AdvertisementsSkeleton } from '@/components/Skeletons';
@@ -110,6 +110,8 @@ function AdvertisementsInner() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [editingAd, setEditingAd] = useState<Advertisement | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [isDeleting, startDeleteTransition] = useTransition();
   const { toast } = useToast();
   const [page, setPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(true);
@@ -280,10 +282,16 @@ function AdvertisementsInner() {
     });
   };
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('آیا مطمئن هستید که می‌خواهید این تبلیغ را حذف کنید؟')) {
+  const openDelete = useCallback((ad: Advertisement) => {
+    setDeleteTarget({ id: ad.id, title: ad.title });
+  }, []);
+
+  const handleDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+    startDeleteTransition(async () => {
       try {
-        const result = await deleteAdvertisement(id);
+        const result = await deleteAdvertisement(deleteTarget.id);
+        setDeleteTarget(null);
         if (result.success) {
           fetchAds(1, debouncedSearchTerm);
           toast({ title: 'موفقیت', description: result.message, variant: 'success' });
@@ -293,8 +301,8 @@ function AdvertisementsInner() {
       } catch (_error) {
         toast({ title: 'خطا', description: 'حذف تبلیغ با خطا مواجه شد', variant: 'destructive' });
       }
-    }
-  };
+    });
+  }, [deleteTarget, fetchAds, debouncedSearchTerm, toast]);
 
   const openNewAdDialog = () => {
     setEditingAd(null);
@@ -309,7 +317,7 @@ function AdvertisementsInner() {
   };
 
   return (
-    <div className="at-page dash-scope" dir="rtl">
+    <div className="route-frame dash-scope" dir="rtl">
       <PageHeader
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'تبلیغات' }]}
         eyebrow="محتوا"
@@ -598,7 +606,7 @@ function AdvertisementsInner() {
                               <HiOutlinePencil className="size-4" />
                             </button>
                             <button
-                              onClick={() => handleDelete(ad.id)}
+                              onClick={() => openDelete(ad)}
                               className="size-8 rounded-lg flex items-center justify-center text-neutral-500 hover:bg-rose-500/10 hover:text-rose-500 transition-all"
                             >
                               <HiOutlineTrash className="size-4" />
@@ -673,7 +681,7 @@ function AdvertisementsInner() {
                           <HiOutlinePencil className="size-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(ad.id)}
+                          onClick={() => openDelete(ad)}
                           className="size-9 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center"
                         >
                           <HiOutlineTrash className="size-4" />
@@ -697,6 +705,18 @@ function AdvertisementsInner() {
         ) : (
           <HeaderAdsClient initialAds={headerAds} onRefresh={fetchHeaderAds} />
         ))}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        title="حذف تبلیغ"
+        description={`آیا مطمئن هستید که می‌خواهید تبلیغ «${deleteTarget?.title}» را حذف کنید؟ این عملیات برگشت‌پذیر نیست.`}
+        confirmLabel="بله، حذف کن"
+        cancelLabel="انصراف"
+        variant="danger"
+        onConfirm={handleDelete}
+        loading={isDeleting}
+      />
     </div>
   );
 }
@@ -1126,3 +1146,4 @@ function AdvertisementForm({
     </Form>
   );
 }
+

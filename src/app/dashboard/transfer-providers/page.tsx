@@ -10,6 +10,7 @@ import { auth } from '@/auth';
 import { requireAdmin } from '@/lib/require-auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import TransferProvidersWorkspace from './_components/TransferProvidersWorkspace';
 
 export const metadata: Metadata = { title: 'مدیریت صرافی‌های مقایسه' };
@@ -23,5 +24,18 @@ export default async function TransferProvidersPage() {
 
   const rows = await getTransferProviders();
 
-  return <TransferProvidersWorkspace initialRows={rows} />;
+  return (
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'صرافی‌های مقایسه' }]}
+        title="صرافی‌های مقایسه نرخ"
+        description="مدیریت صرافی‌های جدول مقایسه نرخ و فعال‌سازی provider ها"
+        eyebrow="مدیریت"
+        icon="table"
+        accent="indigo"
+      />
+      <TransferProvidersWorkspace initialRows={rows} />
+    </div>
+  );
 }

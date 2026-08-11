@@ -33,7 +33,7 @@ export default async function UserEditPage({ params }: Props) {
   const user = detail.data;
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
         <PageHeader
           variant="strip"

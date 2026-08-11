@@ -1,4 +1,4 @@
-import { auth } from '@/auth';
+﻿import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
@@ -128,7 +128,7 @@ export default async function AuditLogPage({
   });
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <Suspense
         fallback={
           <div style={{ padding: '2rem', color: 'var(--ds-text-muted)' }}>در حال بارگذاری...</div>
@@ -150,3 +150,4 @@ export default async function AuditLogPage({
     </div>
   );
 }
+

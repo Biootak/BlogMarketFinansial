@@ -2,6 +2,7 @@ import { getSettlements } from '@/actions/settlement';
 import { auth } from '@/auth';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { SettlementClient } from './_components/SettlementClient';
 
 export const metadata: Metadata = {
@@ -17,8 +18,18 @@ export default async function SettlementsPage() {
   const settlements = await getSettlements({ limit: 100 });
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'تسویه‌حساب' }]}
+        title="تسویه‌حساب صرافی‌ها"
+        description="مدیریت و پیگیری تسویه‌حساب‌های صرافی‌ها"
+        eyebrow="مالی"
+        icon="banknote"
+        accent="emerald"
+      />
       <SettlementClient settlements={settlements} />
     </div>
   );
 }
+

@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/require-auth';
 import { Role } from '@prisma/client';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 
 export const metadata: Metadata = {
   title: 'مدیریت درخواست‌های خدمات | داشبورد',
@@ -14,8 +15,18 @@ export default async function ServiceRequestsPage() {
   if (!auth.success) redirect('/dashboard');
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'درخواست‌های خدمات' }]}
+        title="درخواست‌های خدمات"
+        description="مدیریت و پیگیری درخواست‌های خدمات کاربران"
+        eyebrow="پشتیبانی"
+        icon="ticket"
+        accent="cyan"
+      />
       <ServiceRequestsClient />
     </div>
   );
 }
+

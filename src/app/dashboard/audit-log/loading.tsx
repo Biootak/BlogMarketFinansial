@@ -1,8 +1,8 @@
-import { Skeleton } from '@/components/Dashboard/primitives';
+﻿import { Skeleton } from '@/components/Dashboard/primitives';
 
 export default function AuditLogLoading() {
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-4)' }}>
         {/* PageHeader skeleton */}
         <div
@@ -140,3 +140,4 @@ export default function AuditLogLoading() {
     </div>
   );
 }
+

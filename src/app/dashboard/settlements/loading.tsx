@@ -1,10 +1,10 @@
-/**
+﻿/**
  * SettlementsLoading — skeleton that matches the new 2026 redesign layout:
  * PageHeader + 5-column KPI grid + frosted toolbar strip + table rows
  */
 export default function SettlementsLoading() {
   return (
-    <div className="at-page" dir="rtl" aria-busy="true" aria-label="در حال بارگذاری…">
+    <div className="route-frame" dir="rtl" aria-busy="true" aria-label="در حال بارگذاری…">
       {/* ── PageHeader skeleton ── */}
       <div
         style={{
@@ -106,3 +106,4 @@ export default function SettlementsLoading() {
     </div>
   );
 }
+

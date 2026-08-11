@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { FraudReviewClient } from './_components/FraudReviewClient';
 
 export const metadata: Metadata = {
@@ -42,8 +43,18 @@ export default async function FraudReviewPage() {
   const reviews = await getFraudQueue();
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'بررسی تقلب' }]}
+        title="صف بررسی تقلب"
+        description="بررسی و تصمیم‌گیری روی تراکنش‌های مشکوک"
+        eyebrow="امنیت"
+        icon="shield-alert"
+        accent="rose"
+      />
       <FraudReviewClient reviews={reviews} />
     </div>
   );
 }
+

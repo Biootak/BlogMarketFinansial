@@ -8,6 +8,30 @@
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-5);
+  position: relative;
+  isolation: isolate;
+}
+
+/* Ambient signature — subtle radial glow (million-dollar premium) */
+.page::before {
+  content: '';
+  position: absolute;
+  inset-block-start: -20%;
+  inset-inline-end: -10%;
+  width: 60%;
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle at center,
+    color-mix(in oklch, var(--ds-brand-500) 6%, transparent) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, oklch(0% 0 0) 30%, transparent 70%);
+}
+.page > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ─── Add Button ──────────────────────────────────────────────────────────── */
@@ -66,6 +90,11 @@
   transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), transform
     var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
+.kpiItem:nth-child(1) { animation-delay: 0ms; }
+.kpiItem:nth-child(2) { animation-delay: 60ms; }
+.kpiItem:nth-child(3) { animation-delay: 120ms; }
+.kpiItem:nth-child(4) { animation-delay: 180ms; }
+
 .kpiItem:hover {
   box-shadow: var(--ds-shadow-md);
   transform: translateY(-1px);
@@ -236,12 +265,27 @@
   border-block-end: 1px solid var(--ds-border-subtle);
   animation: slideIn var(--ds-duration-base) var(--ds-ease-out-quart) both;
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+  position: relative;
 }
 .row:last-child {
   border-block-end: none;
 }
 .row:hover {
   background: var(--ds-canvas-subtle);
+}
+/* Row hover glow — accent bar on inline-start (million-dollar premium) */
+.row::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block: 0;
+  width: 2px;
+  background: var(--ds-brand-500);
+  opacity: 0;
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+.row:hover::before {
+  opacity: 1;
 }
 
 @keyframes slideIn {

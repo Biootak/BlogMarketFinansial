@@ -20,5 +20,18 @@ export default async function DevicesPage() {
   const devices = devicesResult.success ? devicesResult.data : [];
   const logs = logsResult.success ? logsResult.data : [];
 
-  return <DevicesClient devices={devices} securityLogs={logs} />;
+  return (
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'دستگاه‌های من' }]}
+        title="دستگاه‌های من"
+        description="مدیریت دستگاه‌های متصل به حساب و لاگ‌های امنیتی"
+        eyebrow="امنیت"
+        icon="monitor"
+        accent="violet"
+      />
+      <DevicesClient devices={devices} securityLogs={logs} />
+    </div>
+  );
 }

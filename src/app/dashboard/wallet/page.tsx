@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
+import { PageHeader } from '@/components/Dashboard/primitives';
 import { WalletClient } from './_components/WalletClient';
 
 export const metadata: Metadata = {
@@ -70,8 +71,18 @@ export default async function WalletPage() {
   const walletData = await getWalletData(session.user.id ?? '');
 
   return (
-    <div className="at-page" dir="rtl">
+    <div className="route-frame" dir="rtl">
+      <PageHeader
+        variant="compact"
+        breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'کیف پول' }]}
+        title="کیف پول"
+        description="موجودی و تاریخچه تراکنش‌های کیف پول شما"
+        eyebrow="مالی"
+        icon="wallet"
+        accent="emerald"
+      />
       <WalletClient walletData={walletData} userRole={role} />
     </div>
   );
 }
+

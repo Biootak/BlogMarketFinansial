@@ -70,7 +70,7 @@ html[dir="rtl"] .searchInput {
 
 .searchInput:focus {
   outline: none;
-  border-color: var(--ds-brand-500, #6366f1);
+  border-color: var(--ds-brand-500);
 }
 
 .searchClear {
@@ -133,9 +133,9 @@ html[dir="rtl"] .searchClear {
   gap: 0.4rem;
   padding: 0.55rem 0.95rem;
   border-radius: var(--ds-radius-md, 0.75rem);
-  background: var(--ds-brand-500, #6366f1);
-  color: #fff;
-  border: 1px solid var(--ds-brand-500, #6366f1);
+  background: var(--ds-brand-500);
+  color: var(--ds-text-on-primary);
+  border: 1px solid var(--ds-brand-500);
   font-size: var(--ds-fs-sm, 0.875rem);
   font-weight: 500;
   font-family: inherit;
@@ -145,8 +145,8 @@ html[dir="rtl"] .searchClear {
 }
 
 .createBtn:hover {
-  background: var(--ds-brand-600, #4f46e5);
-  border-color: var(--ds-brand-600, #4f46e5);
+  background: var(--ds-brand-600);
+  border-color: var(--ds-brand-600);
   transform: translateY(-1px);
 }
 
@@ -189,19 +189,19 @@ html[dir="rtl"] .searchClear {
 }
 
 .kpiCard[data-tone="amber"] {
-  color: var(--ds-accent-amber, #f59e0b);
+  color: var(--ds-accent-amber);
 }
 .kpiCard[data-tone="cyan"] {
-  color: var(--ds-accent-cyan, #06b6d4);
+  color: var(--ds-accent-cyan);
 }
 .kpiCard[data-tone="emerald"] {
-  color: var(--ds-accent-emerald, #10b981);
+  color: var(--ds-accent-emerald);
 }
 .kpiCard[data-tone="rose"] {
-  color: var(--ds-accent-rose, #f43f5e);
+  color: var(--ds-accent-rose);
 }
 .kpiCard[data-tone="indigo"] {
-  color: var(--ds-brand-500, #6366f1);
+  color: var(--ds-brand-500);
 }
 
 .kpiIconBox {
@@ -285,16 +285,16 @@ html[dir="rtl"] .searchClear {
 }
 
 .filterBtn[data-tone="amber"][data-active="true"] {
-  color: var(--ds-accent-amber, #f59e0b);
+  color: var(--ds-accent-amber);
 }
 .filterBtn[data-tone="cyan"][data-active="true"] {
-  color: var(--ds-accent-cyan, #06b6d4);
+  color: var(--ds-accent-cyan);
 }
 .filterBtn[data-tone="emerald"][data-active="true"] {
-  color: var(--ds-accent-emerald, #10b981);
+  color: var(--ds-accent-emerald);
 }
 .filterBtn[data-tone="rose"][data-active="true"] {
-  color: var(--ds-accent-rose, #f43f5e);
+  color: var(--ds-accent-rose);
 }
 
 .filterCount {
@@ -402,12 +402,12 @@ html[dir="rtl"] .searchClear {
 }
 
 .requestItem[data-active="true"] {
-  background: color-mix(in srgb, var(--ds-brand-500, #6366f1) 8%, transparent);
-  border-color: color-mix(in srgb, var(--ds-brand-500, #6366f1) 30%, transparent);
+  background: color-mix(in srgb, var(--ds-brand-500) 8%, transparent);
+  border-color: color-mix(in srgb, var(--ds-brand-500) 30%, transparent);
 }
 
 .requestItem[data-mine="true"] {
-  border-inline-start: 2px solid var(--ds-accent-amber, #f59e0b);
+  border-inline-start: 2px solid var(--ds-accent-amber);
 }
 
 .mineFlag {
@@ -417,8 +417,8 @@ html[dir="rtl"] .searchClear {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--ds-accent-amber, #f59e0b);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent-amber, #f59e0b) 25%, transparent);
+  background: var(--ds-accent-amber);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent-amber) 25%, transparent);
 }
 
 .requestHead {
@@ -464,8 +464,8 @@ html[dir="rtl"] .searchClear {
   height: 100%;
   background: linear-gradient(
     to inline-end,
-    var(--ds-accent-emerald, #10b981),
-    color-mix(in srgb, var(--ds-accent-emerald, #10b981) 60%, transparent)
+    var(--ds-accent-emerald),
+    color-mix(in srgb, var(--ds-accent-emerald) 60%, transparent)
   );
   transition: width 420ms var(--ds-ease-out-quart, ease);
 }
@@ -586,24 +586,24 @@ html[dir="rtl"] .searchClear {
 }
 
 .typeChip[data-tone="indigo"] {
-  color: var(--ds-brand-500, #6366f1);
-  background: color-mix(in srgb, var(--ds-brand-500, #6366f1) 8%, transparent);
+  color: var(--ds-brand-500);
+  background: color-mix(in srgb, var(--ds-brand-500) 8%, transparent);
 }
 .typeChip[data-tone="cyan"] {
-  color: var(--ds-accent-cyan, #06b6d4);
-  background: color-mix(in srgb, var(--ds-accent-cyan, #06b6d4) 8%, transparent);
+  color: var(--ds-accent-cyan);
+  background: color-mix(in srgb, var(--ds-accent-cyan) 8%, transparent);
 }
 .typeChip[data-tone="amber"] {
-  color: var(--ds-accent-amber, #f59e0b);
-  background: color-mix(in srgb, var(--ds-accent-amber, #f59e0b) 8%, transparent);
+  color: var(--ds-accent-amber);
+  background: color-mix(in srgb, var(--ds-accent-amber) 8%, transparent);
 }
 .typeChip[data-tone="rose"] {
-  color: var(--ds-accent-rose, #f43f5e);
-  background: color-mix(in srgb, var(--ds-accent-rose, #f43f5e) 8%, transparent);
+  color: var(--ds-accent-rose);
+  background: color-mix(in srgb, var(--ds-accent-rose) 8%, transparent);
 }
 .typeChip[data-tone="violet"] {
-  color: #a78bfa;
-  background: color-mix(in srgb, #a78bfa 8%, transparent);
+  color: var(--nova-violet);
+  background: color-mix(in srgb, var(--nova-violet) 8%, transparent);
 }
 
 .statusPill {
@@ -617,16 +617,16 @@ html[dir="rtl"] .searchClear {
 }
 
 .statusPill[data-tone="cyan"] {
-  color: var(--ds-accent-cyan, #06b6d4);
-  background: color-mix(in srgb, var(--ds-accent-cyan, #06b6d4) 8%, transparent);
+  color: var(--ds-accent-cyan);
+  background: color-mix(in srgb, var(--ds-accent-cyan) 8%, transparent);
 }
 .statusPill[data-tone="emerald"] {
-  color: var(--ds-accent-emerald, #10b981);
-  background: color-mix(in srgb, var(--ds-accent-emerald, #10b981) 8%, transparent);
+  color: var(--ds-accent-emerald);
+  background: color-mix(in srgb, var(--ds-accent-emerald) 8%, transparent);
 }
 .statusPill[data-tone="rose"] {
-  color: var(--ds-accent-rose, #f43f5e);
-  background: color-mix(in srgb, var(--ds-accent-rose, #f43f5e) 8%, transparent);
+  color: var(--ds-accent-rose);
+  background: color-mix(in srgb, var(--ds-accent-rose) 8%, transparent);
 }
 .statusPill[data-tone="neutral"] {
   color: var(--ds-text-muted, rgba(255, 255, 255, 0.5));
@@ -686,15 +686,15 @@ html[dir="rtl"] .searchClear {
 }
 
 .timelineDot[data-status="approved"] {
-  background: color-mix(in srgb, var(--ds-accent-emerald, #10b981) 15%, transparent);
-  border-color: var(--ds-accent-emerald, #10b981);
-  color: var(--ds-accent-emerald, #10b981);
+  background: color-mix(in srgb, var(--ds-accent-emerald) 15%, transparent);
+  border-color: var(--ds-accent-emerald);
+  color: var(--ds-accent-emerald);
 }
 
 .timelineDot[data-status="rejected"] {
-  background: color-mix(in srgb, var(--ds-accent-rose, #f43f5e) 15%, transparent);
-  border-color: var(--ds-accent-rose, #f43f5e);
-  color: var(--ds-accent-rose, #f43f5e);
+  background: color-mix(in srgb, var(--ds-accent-rose) 15%, transparent);
+  border-color: var(--ds-accent-rose);
+  color: var(--ds-accent-rose);
 }
 
 .timelineDot[data-status="skipped"] {
@@ -702,19 +702,19 @@ html[dir="rtl"] .searchClear {
 }
 
 .timelineDot[data-current="true"] {
-  border-color: var(--ds-accent-amber, #f59e0b);
-  color: var(--ds-accent-amber, #f59e0b);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-accent-amber, #f59e0b) 12%, transparent);
+  border-color: var(--ds-accent-amber);
+  color: var(--ds-accent-amber);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-accent-amber) 12%, transparent);
   animation: ahDotPulse 2s ease-in-out infinite;
 }
 
 @keyframes ahDotPulse {
   0%,
   100% {
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-accent-amber, #f59e0b) 12%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-accent-amber) 12%, transparent);
   }
   50% {
-    box-shadow: 0 0 0 8px color-mix(in srgb, var(--ds-accent-amber, #f59e0b) 4%, transparent);
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--ds-accent-amber) 4%, transparent);
   }
 }
 
@@ -921,30 +921,30 @@ html[dir="rtl"] .searchClear {
 }
 
 .cancelBtn:hover {
-  color: var(--ds-accent-rose, #f43f5e);
-  border-color: var(--ds-accent-rose, #f43f5e);
+  color: var(--ds-accent-rose);
+  border-color: var(--ds-accent-rose);
 }
 
 .rejectBtn {
-  background: color-mix(in srgb, var(--ds-accent-rose, #f43f5e) 12%, transparent);
-  color: var(--ds-accent-rose, #f43f5e);
-  border: 1px solid color-mix(in srgb, var(--ds-accent-rose, #f43f5e) 35%, transparent);
+  background: color-mix(in srgb, var(--ds-accent-rose) 12%, transparent);
+  color: var(--ds-accent-rose);
+  border: 1px solid color-mix(in srgb, var(--ds-accent-rose) 35%, transparent);
 }
 
 .rejectBtn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--ds-accent-rose, #f43f5e) 22%, transparent);
+  background: color-mix(in srgb, var(--ds-accent-rose) 22%, transparent);
   transform: translateY(-1px);
 }
 
 .approveBtn {
-  background: var(--ds-brand-500, #6366f1);
-  color: #fff;
-  border: 1px solid var(--ds-brand-500, #6366f1);
+  background: var(--ds-brand-500);
+  color: var(--ds-text-on-primary);
+  border: 1px solid var(--ds-brand-500);
 }
 
 .approveBtn:hover:not(:disabled) {
-  background: var(--ds-brand-600, #4f46e5);
-  border-color: var(--ds-brand-600, #4f46e5);
+  background: var(--ds-brand-600);
+  border-color: var(--ds-brand-600);
   transform: translateY(-1px);
 }
 

@@ -44,7 +44,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useCallback, useState, useTransition } from 'react';
 import { HiOutlinePencil, HiOutlinePlus, HiOutlineSparkles, HiOutlineTrash } from 'react-icons/hi2';
 
 type Theme = 'PRIMARY' | 'ACCENT' | 'NEUTRAL' | 'DARK' | 'GRADIENT';
@@ -102,6 +102,8 @@ export default function HeaderAdsClient({
   const [editing, setEditing] = useState<HeaderAdData | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; text: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -158,16 +160,23 @@ export default function HeaderAdsClient({
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm('آیا از حذف این تبلیغ مطمئن هستید؟')) return;
-    const result = await deleteHeaderAd(id);
+  const handleDelete = useCallback(async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    const result = await deleteHeaderAd(deleteTarget.id);
+    setIsDeleting(false);
+    setDeleteTarget(null);
     if (result.success) {
       toast({ title: 'موفقیت', description: result.message, variant: 'success' });
       await refresh();
     } else {
       toast({ title: 'خطا', description: result.message, variant: 'destructive' });
     }
-  };
+  }, [deleteTarget, toast, router]);
+
+  const openDelete = useCallback((ad: HeaderAdData) => {
+    setDeleteTarget({ id: ad.id, text: ad.text });
+  }, []);
 
   const openCreate = () => {
     setEditing(null);
@@ -372,6 +381,18 @@ export default function HeaderAdsClient({
           </DashboardTable>
         </DashboardTableContainer>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        title="حذف تبلیغ"
+        description={`آیا مطمئن هستید که می‌خواهید تبلیغ «${deleteTarget?.text}» را حذف کنید؟ این عملیات برگشت‌پذیر نیست.`}
+        confirmLabel="بله، حذف کن"
+        cancelLabel="انصراف"
+        variant="danger"
+        onConfirm={handleDelete}
+        loading={isDeleting}
+      />
     </div>
   );
 }
