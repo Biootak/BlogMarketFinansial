@@ -9,6 +9,7 @@ import {
   HiOutlineArrowsRightLeft,
   HiOutlineBanknotes,
   HiOutlineBell,
+  HiOutlineBookOpen,
   HiOutlineBuildingStorefront,
   HiOutlineChartBarSquare,
   HiOutlineChatBubbleLeftRight,
@@ -20,6 +21,7 @@ import {
   HiOutlineCreditCard,
   HiOutlineCurrencyDollar,
   HiOutlineDevicePhoneMobile,
+  HiOutlineDocumentMagnifyingGlass,
   HiOutlineDocumentText,
   HiOutlineExclamationTriangle,
   HiOutlineFingerPrint,
@@ -32,7 +34,9 @@ import {
   HiOutlineNewspaper,
   HiOutlineRadio,
   HiOutlineReceiptPercent,
+  HiOutlineScale,
   HiOutlineShieldCheck,
+  HiOutlineShieldExclamation,
   HiOutlineSparkles,
   HiOutlineSquares2X2,
   HiOutlineTag,
@@ -614,6 +618,50 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineHome({ className: ICON_CLASS }),
     label: 'داشبورد',
   };
+  // 2026-08-12: کارتابل معاملات ارزی — تأیید/تکمیل/رسید از CurrencyDeal
+  const exchangeDeals: MenuItem = {
+    id: 'exchangeDeals',
+    href: '/exchange/deals',
+    icon: HiOutlineScale({ className: ICON_CLASS }),
+    label: 'معاملات ارزی',
+    title: 'تأیید، تکمیل و پیگیری معاملات ارزی صرافی',
+  };
+  // 2026-08-12: دفتر کل صرافی — ماندهٔ حساب‌ها و گردش از LedgerEntry
+  const exchangeLedger: MenuItem = {
+    id: 'exchangeLedger',
+    href: '/exchange/ledger',
+    icon: HiOutlineBookOpen({ className: ICON_CLASS }),
+    label: 'دفتر کل',
+    title: 'موجودی صندوق و گردش حساب‌های صرافی',
+    roles: ['OWNER', 'MANAGER'],
+  };
+  // 2026-08-12: درخواست‌های مشتری — رسیدگی از CustomerRequest
+  const exchangeRequests: MenuItem = {
+    id: 'exchangeRequests',
+    href: '/exchange/requests',
+    icon: HiOutlineDocumentMagnifyingGlass({ className: ICON_CLASS }),
+    label: 'درخواست‌های مشتری',
+    title: 'رسیدگی به درخواست‌های حساب، رفع مسدودی و سقف',
+    roles: ['OWNER', 'MANAGER', 'STAFF'],
+  };
+  // 2026-08-12: بررسی تقلب — صف تراکنش‌های پرریسک از FraudReview
+  const exchangeFraud: MenuItem = {
+    id: 'exchangeFraud',
+    href: '/exchange/fraud',
+    icon: HiOutlineShieldExclamation({ className: ICON_CLASS }),
+    label: 'بررسی تقلب',
+    title: 'صف تراکنش‌های پرریسک این صرافی',
+    roles: ['OWNER', 'MANAGER'],
+  };
+  // 2026-08-12: سوابق عملیات — لاگ ممیزی از AuditLog
+  const exchangeAudit: MenuItem = {
+    id: 'exchangeAudit',
+    href: '/exchange/audit',
+    icon: HiOutlineClipboardDocumentList({ className: ICON_CLASS }),
+    label: 'سوابق عملیات',
+    title: 'لاگ ممیزی اقدامات کارکنان صرافی',
+    roles: ['OWNER', 'MANAGER'],
+  };
   const exchangeQuotesPanel: MenuItem = {
     id: 'exchangeQuotesPanel',
     href: '/exchange/quotes',
@@ -734,17 +782,37 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'trading',
           index: '۰۲',
           label: 'معاملات',
-          items: [exchangeQuotesPanel, exchangeCustomers, exchangeTransactions, exchangeRatesPanel],
+          items: [
+            exchangeDeals,
+            exchangeQuotesPanel,
+            exchangeCustomers,
+            exchangeTransactions,
+            exchangeRatesPanel,
+          ],
         },
         {
           id: 'ops',
           index: '۰۳',
           label: 'عملیات',
-          items: [exchangeStaffPanel, exchangeKycReview, exchangeReports, exchangeSettlement],
+          items: [
+            exchangeStaffPanel,
+            exchangeKycReview,
+            exchangeRequests,
+            exchangeFraud,
+            exchangeAudit,
+            exchangeReports,
+            exchangeSettlement,
+          ],
+        },
+        {
+          id: 'finance',
+          index: '۰۴',
+          label: 'مالی',
+          items: [exchangeLedger],
         },
         {
           id: 'account',
-          index: '۰۴',
+          index: '۰۵',
           label: 'تنظیمات',
           items: [exchangeProfilePanel, exchangeServicesPanel, exchangeSettingsPanel],
         },

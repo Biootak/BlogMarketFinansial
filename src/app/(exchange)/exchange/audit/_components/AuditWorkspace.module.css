@@ -1,0 +1,19 @@
+/* ============================================================================
+ * AuditWorkspace — سوابق عملیات صرافی
+ * ========================================================================== */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+.feedPanel {
+  background: var(--ds-surface);
+  backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  box-shadow: 0 18px 50px rgba(28, 36, 52, 0.07);
+  overflow: hidden;
+  padding: var(--ds-space-3) 0;
+}
