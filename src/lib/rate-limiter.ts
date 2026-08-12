@@ -107,6 +107,13 @@ const LIMITS: Record<string, { max: number; windowMs: number }> = {
   'transfer-find': { max: 10, windowMs: 60 * 1000 },
 };
 
+// 2026-08-12: سقف انتظار برای فراخوانی Upstash. روی شبکه‌های پر-latency
+// (مثلاً افغانستان → Upstash اروپا) هر pipeline ۰.۵ تا ۵+ ثانیه طول می‌کشد و
+// بدون این بودجه، اکشن‌های auth/صرافی/صفحه‌بینی به‌طور نامحدود آویزان می‌ماندند.
+// در timeout رفتار دقیقاً مثل خطای Upstash است: auth فیل-کلوز (رد)، بقیه به
+// in-memory fallback می‌شوند — هیچ تغییری در تصمیم‌گیری امنیتی نیست.
+const UPSTASH_TIMEOUT_MS = 1500;
+
 export async function checkRateLimit(
   identifier: string,
   type: keyof typeof rateLimiters = 'api',
@@ -116,12 +123,19 @@ export async function checkRateLimit(
   // اگه Redis داریم، از Upstash استفاده کن
   if (limiter) {
     try {
-      const result = await limiter.limit(identifier);
-      return {
-        success: result.success,
-        remaining: result.remaining,
-        reset: result.reset,
-      };
+      const result = await Promise.race([
+        limiter.limit(identifier),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), UPSTASH_TIMEOUT_MS)),
+      ]);
+      if (result) {
+        return {
+          success: result.success,
+          remaining: result.remaining,
+          reset: result.reset,
+        };
+      }
+      // timeout → مثل خطا رفتار کن (بلاک زیر)
+      throw new Error('Upstash rate-limit timed out');
     } catch {
       // For security-critical limiters (auth) we must fail CLOSED: when Upstash
       // is unreachable we deny the request rather than silently letting an

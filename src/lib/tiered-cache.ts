@@ -93,22 +93,40 @@ export function tieredCache<TArgs extends unknown[], T>(
     async (...args: TArgs): Promise<T> => {
       const fullKey = makeKey(baseKey, args);
 
-      // L2 check (Redis)
+      // L2 check (Redis) — با بودجهٔ زمانی کوتاه.
+      // 2026-08-12: قبلاً `await redisGetSwr` بدون سقف بود؛ روی شبکه‌های
+      // پر-latency (مثلاً افغانستان → Upstash اروپا) هر فراخوانی ۰.۵ تا ۵
+      // ثانیه طول می‌کشید و مسیر رندر صفحه را روی L1-miss کامل مسدود می‌کرد
+      // (گرفت سراسری سایت). حالا L2 فقط اگر در L2_READ_TIMEOUT_MS جواب داد
+      // استفاده می‌شود؛ وگرنه از منبع اصلی (fn/DB) می‌آید و L2 بعداً در
+      // پس‌زمینه populate می‌شود — ارزش L2 (کش مشترک بین instanceها) حفظ
+      // می‌شود ولی دیگر در مسیر بحرانی رندر نیست.
       if (isRedisAvailable()) {
-        const [l2Value, isStale] = await redisGetSwr<T>(fullKey);
+        const l2Read = redisGetSwr<T>(fullKey).then(
+          ([v, stale]) => ({ v, stale }) as const,
+          () => ({ v: null, stale: false }) as const,
+        );
+        const budget = new Promise<{ timedOut: true }>((resolve) => {
+          setTimeout(() => resolve({ timedOut: true }), L2_READ_TIMEOUT_MS);
+        });
 
-        if (l2Value !== null && !isStale) {
-          // L2 hit (fresh) → L1 را populate کن و برگردان
-          // safeCache خودش این مقدار را cache می‌کند چون از داخل fn برگردونده شده
-          return l2Value;
-        }
+        const l2Result = await Promise.race([l2Read, budget]);
 
-        if (swr && l2Value !== null && isStale) {
-          // L2 stale → L1 را با stale populate کن (برای SWR بعدی)
-          // و refresh را در پس‌زمینه اجرا کن
-          safeSet(fullKey, l2Value, l1Ttl);
-          scheduleL2Refresh(fn, args as unknown as TArgs, fullKey, l2Ttl, tags, l2Value);
-          return l2Value;
+        if (!('timedOut' in l2Result)) {
+          const { v: l2Value, stale: isStale } = l2Result;
+          if (l2Value !== null && !isStale) {
+            // L2 hit (fresh) → L1 را populate کن و برگردان
+            // safeCache خودش این مقدار را cache می‌کند چون از داخل fn برگردونده شده
+            return l2Value;
+          }
+
+          if (swr && l2Value !== null && isStale) {
+            // L2 stale → L1 را با stale populate کن (برای SWR بعدی)
+            // و refresh را در پس‌زمینه اجرا کن
+            safeSet(fullKey, l2Value, l1Ttl);
+            scheduleL2Refresh(fn, args as unknown as TArgs, fullKey, l2Ttl, tags, l2Value);
+            return l2Value;
+          }
         }
       }
       const value = await fn(...args);
@@ -132,6 +150,11 @@ export function tieredCache<TArgs extends unknown[], T>(
     return l1Cached(...args);
   };
 }
+
+// 2026-08-12: سقف انتظار برای خواندن L2. کوتاه نگه داشته شده تا در شبکه‌های
+// پر-latency مسیر رندر بلاک نشود؛ در منطقه‌ای که Upstash سریع است (مثلاً هم‌منطقه
+// با دیتاسنتر Upstash) پاسخ در چند ms می‌رسد و این بودجه تقریباً هرگز مصرف نمی‌شود.
+const L2_READ_TIMEOUT_MS = 200;
 
 // --------------- Helpers ---------------
 
