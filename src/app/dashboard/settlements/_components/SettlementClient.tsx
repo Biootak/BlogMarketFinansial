@@ -15,7 +15,13 @@
  */
 
 import { type SettlementRow, approveSettlement, markSettlementPaid } from '@/actions/settlement';
-import { ConfirmDialog, MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import {
+  ConfirmDialog,
+  DensityToggle,
+  MillionDollarEmpty,
+  PageHeader,
+  useTableDensity,
+} from '@/components/Dashboard/primitives';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -226,6 +232,7 @@ export function SettlementClient({ settlements: initial, canMutate = true }: Pro
   const [rows, setRows] = useState<SettlementRow[]>(initial);
   const [tab, setTab] = useState<TabValue>('all');
   const [isPending, startTransition] = useTransition();
+  const { density } = useTableDensity();
   const [error, setError] = useState<string | null>(null);
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [detailRow, setDetailRow] = useState<SettlementRow | null>(null);
@@ -514,7 +521,10 @@ export function SettlementClient({ settlements: initial, canMutate = true }: Pro
           />
         ) : (
           <div className={s.tableWrap}>
-            <table className={s.table} aria-label="تسویه‌حساب صرافی‌ها">
+            <div className="dash2-table__densitybar">
+              <DensityToggle />
+            </div>
+            <table className={s.table} data-density={density} aria-label="تسویه‌حساب صرافی‌ها">
               <thead className={s.thead}>
                 <tr>
                   {tab === 'PENDING' && (

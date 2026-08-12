@@ -1,5 +1,6 @@
 'use client';
 
+import { DensityToggle, useTableDensity } from '@/components/Dashboard/primitives';
 import LoadingMore from '@/components/LoadingMore';
 import { Switch } from '@/components/ui/switch';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
@@ -34,12 +35,16 @@ export function AdvertisementsList({
   onToggle,
 }: AdvertisementsListProps) {
   const infiniteScrollRef = useInfiniteScroll(onLoadMore, hasNextPage, isLoading);
+  const { density } = useTableDensity();
 
   return (
     <div className={s.listWrapper}>
       {/* Desktop Table View */}
       <div className={s.desktopTable}>
-        <table className={s.table}>
+        <div className="dash2-table__densitybar">
+          <DensityToggle />
+        </div>
+        <table className={s.table} data-density={density}>
           <thead>
             <tr className={s.tableHeadRow}>
               <th className={s.tableHeadCell}>محتوا</th>
@@ -94,7 +99,6 @@ function AdRowDesktop({
   onDelete: (ad: Advertisement) => void;
   onToggle: (id: string, checked: boolean) => void;
 }) {
-
   return (
     <tr className={s.tableRow}>
       <td className={s.tableCell}>
@@ -160,7 +164,6 @@ function AdCardMobile({
   onDelete: (ad: Advertisement) => void;
   onToggle: (id: string, checked: boolean) => void;
 }) {
-
   return (
     <div className={s.mobileCard}>
       <div className={s.mobileCardTop}>

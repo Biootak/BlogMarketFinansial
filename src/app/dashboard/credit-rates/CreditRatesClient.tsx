@@ -11,7 +11,14 @@ import {
   updateBank,
   updateCreditRate,
 } from '@/actions/credit-rates';
-import { ConfirmDialog, PageHeader, Section, StatCard } from '@/components/Dashboard/primitives';
+import {
+  ConfirmDialog,
+  DensityToggle,
+  PageHeader,
+  Section,
+  StatCard,
+  useTableDensity,
+} from '@/components/Dashboard/primitives';
 import { TYPE_FA } from '@/lib/credit-rate-constants';
 import type { CreditRateType } from '@prisma/client';
 import {
@@ -48,6 +55,7 @@ export default function CreditRatesClient({
   const [activeTab, setActiveTab] = useState<'rates' | 'banks'>('rates');
 
   const [isPending, startTransition] = useTransition();
+  const { density } = useTableDensity();
 
   const [bankModal, setBankModal] = useState<{
     open: boolean;
@@ -346,7 +354,10 @@ export default function CreditRatesClient({
 
           {/* Table */}
           <div className={s.tableWrap}>
-            <table className={s.table}>
+            <div className="dash2-table__densitybar">
+              <DensityToggle />
+            </div>
+            <table className={s.table} data-density={density}>
               <thead className={s.thead}>
                 <tr>
                   <th className={s.th}>بانک</th>

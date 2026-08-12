@@ -15,7 +15,13 @@
  */
 
 import { createUser, deleteUser, updateUser } from '@/actions/userActions';
-import { ConfirmDialog, PageHeader, SearchInput } from '@/components/Dashboard/primitives';
+import {
+  ConfirmDialog,
+  DensityToggle,
+  PageHeader,
+  SearchInput,
+  useTableDensity,
+} from '@/components/Dashboard/primitives';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import SubmitButton from '@/components/SubmitButton';
 import { Button } from '@/components/ui/button';
@@ -149,6 +155,7 @@ export function UsersClient({
   const pathname = usePathname();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const { density } = useTableDensity();
 
   // Sheet state
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -382,7 +389,10 @@ export function UsersClient({
           </div>
         ) : (
           <div className={s.tableScroll}>
-            <table className={s.table}>
+            <div className="dash2-table__densitybar">
+              <DensityToggle />
+            </div>
+            <table className={s.table} data-density={density}>
               <thead>
                 <tr>
                   <th>کاربر</th>

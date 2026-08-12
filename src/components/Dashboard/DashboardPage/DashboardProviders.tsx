@@ -7,6 +7,7 @@ import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
 import Sidebar from '@/components/Dashboard/DashboardPage/Sidebar';
 import SidebarInitializer from '@/components/Dashboard/DashboardPage/SidebarInitializer';
 import SidebarToggle from '@/components/Dashboard/DashboardPage/SidebarToggle';
+import { DensityProvider } from '@/components/Dashboard/primitives';
 import { Toaster } from '@/components/ui/toaster';
 import { DirectionProvider } from '@radix-ui/react-direction';
 import type { ReactNode } from 'react';
@@ -62,19 +63,21 @@ export function DashboardProviders({
 
   return (
     <DirectionProvider dir="rtl">
-      <div className="dash-root" data-portal={portal} dir="rtl">
-        <SidebarInitializer />
-        <KeyboardShortcuts portal={portal} />
-        <Sidebar userRole={sidebarRole} staffRole={staffRole} />
-        <SidebarToggle />
-        <BreadcrumbProvider>
-          <div className="dashboard-shell__viewport">
-            <Header portal={portal} />
-            <MainContent>{children}</MainContent>
-          </div>
-        </BreadcrumbProvider>
-        <Toaster />
-      </div>
+      <DensityProvider>
+        <div className="dash-root" data-portal={portal} dir="rtl">
+          <SidebarInitializer />
+          <KeyboardShortcuts portal={portal} />
+          <Sidebar userRole={sidebarRole} staffRole={staffRole} />
+          <SidebarToggle />
+          <BreadcrumbProvider>
+            <div className="dashboard-shell__viewport">
+              <Header portal={portal} />
+              <MainContent>{children}</MainContent>
+            </div>
+          </BreadcrumbProvider>
+          <Toaster />
+        </div>
+      </DensityProvider>
     </DirectionProvider>
   );
 }

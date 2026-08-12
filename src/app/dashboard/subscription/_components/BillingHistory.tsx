@@ -9,6 +9,7 @@
  *   - responsive (در موبایل به list تبدیل می‌شود)
  */
 
+import { DensityToggle, useTableDensity } from '@/components/Dashboard/primitives';
 import { Calendar, ChevronLeft, FileText, Hash, Receipt } from 'lucide-react';
 import { useState } from 'react';
 import s from './BillingHistory.module.css';
@@ -89,6 +90,7 @@ function fmtDate(iso: string): string {
 
 export default function BillingHistory({ events }: { events: Event[] }) {
   const [filter, setFilter] = useState<'all' | 'paid' | 'pending'>('all');
+  const { density } = useTableDensity();
 
   const filtered = events.filter((e) => {
     if (filter === 'paid') return e.status === 'PAID';
@@ -139,7 +141,10 @@ export default function BillingHistory({ events }: { events: Event[] }) {
         <>
           {/* Desktop table */}
           <div className={s.tableWrap}>
-            <table className={s.table}>
+            <div className="dash2-table__densitybar">
+              <DensityToggle />
+            </div>
+            <table className={s.table} data-density={density}>
               <thead>
                 <tr>
                   <th scope="col">نوع</th>

@@ -15,14 +15,21 @@
  *  - EmptyState برای هر سناریو
  */
 
-import { type CustomerRow, createCustomer, setCustomerStatus } from '@/actions/exchange-customers';
+import {
+  type CustomerRow,
+  type CustomerStats,
+  createCustomer,
+  setCustomerStatus,
+} from '@/actions/exchange-customers';
 import type { ExchangeRow } from '@/actions/exchanges';
 import {
   ConfirmDialog,
+  DensityToggle,
   FormField,
   MillionDollarEmpty,
   PageHeader,
   SearchInput,
+  useTableDensity,
 } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -75,6 +82,8 @@ interface Props {
   currentPage: number;
   pageSize: number;
   currentUserRole: string;
+  /** آمار کل مشتریان صرافی (سرور-محور — برای KPIهای دقیق فراتر از صفحهٔ فعلی) */
+  customerStats: CustomerStats;
 }
 
 // ─── Label Maps ────────────────────────────────────────────────────────────────
@@ -278,11 +287,13 @@ export default function CustomersClient({
   currentPage,
   pageSize,
   currentUserRole: _currentUserRole,
+  customerStats,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
+  const { density } = useTableDensity();
 
   const noExchange = exchanges.length === 0;
 
@@ -447,10 +458,10 @@ export default function CustomersClient({
     [pageInput, totalPages, navigate],
   );
 
-  // ── KPI values ────────────────────────────────────────────────────────────
-  const kpiActive = customers.filter((c) => c.status === 'ACTIVE').length;
-  const kpiFrozen = customers.filter((c) => c.status === 'FROZEN').length;
-  const kpiKyc = customers.filter((c) => c.kycStatus === 'PENDING').length;
+  // ── KPI values (سرور-محور — کل مشتریان صرافی، نه فقط صفحهٔ فعلی) ───────
+  const kpiActive = customerStats.active;
+  const kpiFrozen = customerStats.frozen;
+  const kpiKyc = customerStats.kycPending;
 
   // ── Toolbar filter/search slots ───────────────────────────────────────────
   const toolbarFilters = (
@@ -680,7 +691,10 @@ export default function CustomersClient({
               />
             ) : (
               <div className={s.tableWrap}>
-                <table className={s.table} aria-label="جدول مشتریان">
+                <div className="dash2-table__densitybar">
+                  <DensityToggle />
+                </div>
+                <table className={s.table} data-density={density} aria-label="جدول مشتریان">
                   <thead>
                     <tr>
                       <th scope="col">مشتری</th>

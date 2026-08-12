@@ -18,7 +18,7 @@ export type { StatGridProps } from './StatGrid';
 export { DataTable } from './DataTable';
 export type { DataTableProps, Column } from './DataTable';
 
-export { TableToolbar, useTableDensity } from './TableToolbar';
+export { TableToolbar, useTableDensity, DensityProvider, DensityToggle } from './TableToolbar';
 export type { TableToolbarProps, TableDensity } from './TableToolbar';
 
 export { Section } from './Section';
@@ -52,7 +52,7 @@ export { Spotlight } from './Spotlight';
 export type { SpotlightProps, SpotlightTone } from './Spotlight';
 
 export { ConfirmDialog } from './ConfirmDialog';
-export type { ConfirmDialogProps } from './ConfirmDialog';
+export type { ConfirmDialogProps, ConfirmDialogVariant } from './ConfirmDialog';
 
 export { FormField } from './FormField';
 export type { FormFieldProps } from './FormField';

@@ -2,9 +2,16 @@
 
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
-import { type CSSProperties, type ReactNode, useCallback, useMemo, useState } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { EmptyState } from './EmptyState';
-import { useTableDensity } from './TableToolbar';
+import { DensityToggle, useTableDensity } from './TableToolbar';
 
 export interface Column<T> {
   key: string;
@@ -32,6 +39,18 @@ export interface DataTableProps<T> {
 const toWidth = (w: number | string | undefined): string | undefined =>
   w === undefined ? undefined : typeof w === 'number' ? `${w}px` : w;
 
+/* Selection checkbox column — pinned to the checkbox width.
+   Must be an inline style (NOT Tailwind basis-* utilities): dashboard.css
+   defines `.dash2-table__cell { flex: 1 }` inside `@layer utilities` and loads
+   after the Tailwind utilities, so its `flex: 1` shorthand silently overrides
+   `shrink-0 grow-0 basis-10`. Inline style wins over every stylesheet rule,
+   same mechanism as the col.width columns below. */
+const CHECK_CELL_STYLE: CSSProperties = {
+  flexBasis: '2.5rem',
+  flexGrow: 0,
+  flexShrink: 0,
+};
+
 export function DataTable<T>({
   columns,
   rows,
@@ -44,10 +63,31 @@ export function DataTable<T>({
   className,
   ariaLabel,
 }: DataTableProps<T>) {
-  const { density, hydrated } = useTableDensity();
+  const { density, hydrated, toggleRendered } = useTableDensity();
   const [internalSelected, setInternalSelected] = useState<string[]>([]);
   const isControlled = selectedKeys !== undefined;
   const currentSelected = isControlled ? (selectedKeys ?? []) : internalSelected;
+
+  // Inject stagger animation keyframes once
+  useEffect(() => {
+    if (typeof document !== 'undefined' && !document.getElementById('data-table-stagger-anim')) {
+      const style = document.createElement('style');
+      style.id = 'data-table-stagger-anim';
+      style.textContent = `
+        @keyframes rowFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
 
   const keys = useMemo(() => {
     return rows.map((row, i) => {
@@ -117,7 +157,7 @@ export function DataTable<T>({
   };
 
   const selectHead = selectable ? (
-    <div role="columnheader" className="dash2-table__cell shrink-0 grow-0 basis-10">
+    <div role="columnheader" className="dash2-table__cell" style={CHECK_CELL_STYLE}>
       <Checkbox
         checked={allSelected}
         indeterminate={someSelected}
@@ -134,9 +174,12 @@ export function DataTable<T>({
       className={cn('dash2-table__row', selected && 'bg-[color:var(--ds-color-surface-2)]')}
       data-density={hydrated ? density : 'compact'}
       aria-selected={selectable ? selected : undefined}
+      style={{
+        animation: `rowFadeIn 280ms cubic-bezier(0.22, 1, 0.36, 1) ${idx * 40}ms both`,
+      }}
     >
       {selectable && (
-        <div role="cell" className="dash2-table__cell shrink-0 grow-0 basis-10">
+        <div role="cell" className="dash2-table__cell" style={CHECK_CELL_STYLE}>
           <Checkbox
             checked={selected}
             onChange={() => toggleOne(key)}
@@ -157,7 +200,7 @@ export function DataTable<T>({
       aria-hidden
     >
       {selectable && (
-        <div role="cell" className="dash2-table__cell shrink-0 grow-0 basis-10">
+        <div role="cell" className="dash2-table__cell" style={CHECK_CELL_STYLE}>
           <span className="dash2-skeleton block size-4 rounded" />
         </div>
       )}
@@ -199,6 +242,13 @@ export function DataTable<T>({
       aria-label={ariaLabel ?? 'جدول'}
       aria-busy={loading || undefined}
     >
+      {/* Density toggle — shown when the page doesn't already render one in
+          a TableToolbar above (avoids duplicating the control). */}
+      {!toggleRendered && (
+        <div className="dash2-table__densitybar" role="toolbar" aria-label="چگالی جدول">
+          <DensityToggle />
+        </div>
+      )}
       <div className="dash2-table__head" role="row">
         {selectHead}
         {columns.map((col) => renderHeadCell(col))}
