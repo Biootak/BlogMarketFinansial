@@ -10,9 +10,11 @@
 
 import { cn } from '@/lib/utils';
 import { Search, X } from 'lucide-react';
-import { useRef } from 'react';
+import { type Ref, useRef } from 'react';
 
 export interface SearchInputProps {
+  /** ref برای دسترسی به input داخلی (React 19 — ref به‌صورت prop) */
+  ref?: Ref<HTMLInputElement>;
   value: string;
   onChange: (value: string) => void;
   onClear?: () => void;
@@ -23,6 +25,7 @@ export interface SearchInputProps {
 }
 
 export function SearchInput({
+  ref,
   value,
   onChange,
   onClear,
@@ -31,6 +34,15 @@ export function SearchInput({
   ariaLabel = 'جست‌وجو',
 }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const setRefs = (node: HTMLInputElement | null) => {
+    inputRef.current = node;
+    if (typeof ref === 'function') {
+      ref(node);
+    } else if (ref) {
+      ref.current = node;
+    }
+  };
 
   const handleClear = () => {
     onChange('');
@@ -51,7 +63,7 @@ export function SearchInput({
       </span>
 
       <input
-        ref={inputRef}
+        ref={setRefs}
         type="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
