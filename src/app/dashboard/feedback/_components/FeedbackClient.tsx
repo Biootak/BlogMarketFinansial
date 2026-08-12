@@ -147,9 +147,7 @@ export default function FeedbackClient({ initial }: Props) {
     (ids: string[], status: FeedbackStatus) => {
       startTransition(async () => {
         // وضعیت قبلی ردیف‌ها برای بازگشت در صورت شکست
-        const prev = items
-          .filter((i) => ids.includes(i.id))
-          .map((i) => [i.id, i.status] as const);
+        const prev = items.filter((i) => ids.includes(i.id)).map((i) => [i.id, i.status] as const);
         setItems((prevItems) =>
           prevItems.map((item) => (ids.includes(item.id) ? { ...item, status } : item)),
         );
@@ -426,26 +424,27 @@ export default function FeedbackClient({ initial }: Props) {
                   />
                 ) : undefined
               }
-            />
-
-            <DataTable
-              columns={columns}
-              rows={displayed}
-              rowKey={(row) => row.id}
-              selectable
-              selectedKeys={selectedKeys}
-              onSelectionChange={setSelectedKeys}
-              empty={
-                <MillionDollarEmpty
-                  variant="inbox"
-                  eyebrow="صندوق پیام"
-                  title={search ? 'پیامی یافت نشد' : 'هنوز پیامی نیست'}
-                  description={
-                    search
-                      ? 'جستجوی خود را تغییر دهید'
-                      : 'وقتی کاربران پیام بفرستند، اینجا نمایش داده می‌شود'
+              content={
+                <DataTable
+                  columns={columns}
+                  rows={displayed}
+                  rowKey={(row) => row.id}
+                  selectable
+                  selectedKeys={selectedKeys}
+                  onSelectionChange={setSelectedKeys}
+                  empty={
+                    <MillionDollarEmpty
+                      variant="inbox"
+                      eyebrow="صندوق پیام"
+                      title={search ? 'پیامی یافت نشد' : 'هنوز پیامی نیست'}
+                      description={
+                        search
+                          ? 'جستجوی خود را تغییر دهید'
+                          : 'وقتی کاربران پیام بفرستند، اینجا نمایش داده می‌شود'
+                      }
+                      tone="primary"
+                    />
                   }
-                  tone="primary"
                 />
               }
             />

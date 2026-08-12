@@ -42,7 +42,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0.3rem
       color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 18%, transparent);
   }
@@ -138,11 +139,7 @@
   inline-size: 0.55rem;
   block-size: 0.55rem;
   border-radius: 0.15rem;
-  background: color-mix(
-    in oklch,
-    var(--nova-up, var(--ds-accent-emerald)) 70%,
-    transparent
-  );
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 70%, transparent);
 }
 
 .scaleDown {
@@ -156,11 +153,7 @@
   inline-size: 0.55rem;
   block-size: 0.55rem;
   border-radius: 0.15rem;
-  background: color-mix(
-    in oklch,
-    var(--nova-down, var(--ds-accent-rose)) 70%,
-    transparent
-  );
+  background: color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 70%, transparent);
 }
 
 /* ── Dark mode ── */

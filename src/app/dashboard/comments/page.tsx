@@ -15,7 +15,7 @@ export default async function CommentsPage() {
   const role = session.user.role ?? '';
   if (!['OWNER', 'SUPERADMIN', 'ADMIN', 'AUTHOR'].includes(role)) redirect('/forbidden');
 
-  const result = await getComments({ limit: 40 });
+  const result = await getComments({ limit: 40, status: 'pending' });
 
   return (
     <div className="route-frame" dir="rtl">

@@ -1,13 +1,16 @@
 'use client';
 
 /**
- * NewsletterClient — خبرنامه (redesigned 2026)
+ * NewsletterClient — خبرنامه (redesigned 2026 premium)
  *
- * New architecture: PageHero → KPI strip → InsightLayout with a framed
- * DataPanel (tabs + search + paginated table) and a growth rail (14-day
- * sparkline, active-rate progress, latest signups). All broadcast,
- * template and subscriber logic is unchanged. Pager icons are RTL-correct
- * (previous → right chevron, next → left chevron).
+ * Architecture: PageHero → KPI strip (semantic accents) → InsightLayout
+ * with framed DataPanel (tabs + search + date filter + paginated table)
+ * and growth rail (14-day sparkline, active-rate donut, latest signups).
+ *
+ * Features: broadcast composer, bulk activate/deactivate/delete,
+ * copy email, template library, CSV export, keyboard shortcuts.
+ *
+ * Pager icons RTL-correct (previous → right chevron, next → left chevron).
  */
 
 import {
@@ -50,16 +53,18 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Copy,
   Mail,
   Send,
-  Settings,
   Sparkles,
   Trash2,
   Users,
   X,
 } from 'lucide-react';
+import type { DateRange } from '@/components/ui/PersianDateRangePicker';
+import { PersianDateRangePicker } from '@/components/ui/PersianDateRangePicker';
 import Link from 'next/link';
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import s from './NewsletterClient.module.css';
 
 const fa = new Intl.NumberFormat('fa-IR');
@@ -96,6 +101,7 @@ interface Props {
 export default function NewsletterClient({ initial }: Props) {
   const { toast } = useToast();
   const [, startTransition] = useTransition();
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const [items, setItems] = useState<NewsletterRow[]>(initial?.rows ?? []);
   const [total, setTotal] = useState(initial?.total ?? 0);
@@ -110,6 +116,29 @@ export default function NewsletterClient({ initial }: Props) {
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [pageSize, setPageSize] = useState(25);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(!initial);
+  const [dateRange, setDateRange] = useState<DateRange | null>(null);
+
+  // Keyboard shortcut: Ctrl+K / Cmd+K to focus search
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // Simulate initial load skeleton
+  useEffect(() => {
+    if (loading && initial) {
+      const t = setTimeout(() => setLoading(false), 400);
+      return () => clearTimeout(t);
+    }
+  }, [loading, initial]);
 
   const displayed = useMemo(() => {
     let filtered = items;
@@ -119,8 +148,16 @@ export default function NewsletterClient({ initial }: Props) {
       const q = search.toLowerCase();
       filtered = filtered.filter((i) => i.email.toLowerCase().includes(q));
     }
+    if (dateRange?.from) {
+      filtered = filtered.filter((i) => i.createdAt >= dateRange.from!);
+    }
+    if (dateRange?.to) {
+      const toEnd = new Date(dateRange.to!);
+      toEnd.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((i) => i.createdAt <= toEnd);
+    }
     return filtered;
-  }, [items, tab, search]);
+  }, [items, tab, search, dateRange]);
 
   const totalPages = Math.ceil(displayed.length / pageSize);
   const [page, setPage] = useState(0);
@@ -170,7 +207,6 @@ export default function NewsletterClient({ initial }: Props) {
         const result = await setSubscriberActive(row.id, next);
         if (!result.success) {
           toast({ title: result.message ?? 'خطا', variant: 'destructive' });
-          // بازگشت به وضعیت قبل
           setItems((prev) =>
             prev.map((item) => (item.id === row.id ? { ...item, isActive: row.isActive } : item)),
           );
@@ -215,7 +251,6 @@ export default function NewsletterClient({ initial }: Props) {
         const result = await deleteSubscribers([id]);
         if (!result.success && item) {
           toast({ title: result.message ?? 'خطا', variant: 'destructive' });
-          // بازیابی ردیف حذف‌شده
           setItems((prev) => [...prev, item]);
           setTotal((t) => t + 1);
           if (item.isActive) setActiveCount((a) => a + 1);
@@ -268,6 +303,14 @@ export default function NewsletterClient({ initial }: Props) {
     setBody(t.body);
   }, []);
 
+  const copyEmail = useCallback((email: string, id: string) => {
+    navigator.clipboard.writeText(email).then(() => {
+      setCopiedId(id);
+      toast({ title: 'ایمیل کپی شد', duration: 2000 });
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  }, [toast]);
+
   const exportData = useMemo(
     () =>
       displayed.map((row) => ({
@@ -296,6 +339,14 @@ export default function NewsletterClient({ initial }: Props) {
             <span className={r.isActive ? s.dotOn : s.dotOff} />
             <span className={s.email}>{r.email}</span>
             {r.linkedUser && <span className={s.linkedBadge}>حساب کاربری</span>}
+            <button
+              type="button"
+              className={s.copyBtn}
+              onClick={() => copyEmail(r.email, r.id)}
+              title="کپی ایمیل"
+            >
+              {copiedId === r.id ? <Check size={12} /> : <Copy size={12} />}
+            </button>
           </div>
         ),
       },
@@ -339,8 +390,47 @@ export default function NewsletterClient({ initial }: Props) {
         ),
       },
     ],
-    [handleToggle],
+    [handleToggle, copyEmail, copiedId],
   );
+
+  // Bulk action buttons
+  const bulkActions = useMemo(() => {
+    if (selectedKeys.length === 0) return null;
+    return (
+      <div className={s.bulkBar}>
+        <span className={s.bulkCount}>{fa.format(selectedKeys.length)} مشترک انتخاب شده</span>
+        <div className={s.bulkBtns}>
+          <Button
+            size="sm"
+            variant="ghost"
+            className={s.bulkActivate}
+            onClick={() => handleBulkToggle(true)}
+          >
+            <Check size={13} />
+            <span>فعال کردن</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className={s.bulkDeactivate}
+            onClick={() => handleBulkToggle(false)}
+          >
+            <X size={13} />
+            <span>غیرفعال کردن</span>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className={s.bulkDelete}
+            onClick={() => setBulkDeleteOpen(true)}
+          >
+            <Trash2 size={13} />
+            <span>حذف</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }, [selectedKeys, handleBulkToggle]);
 
   return (
     <div className={s.root}>
@@ -357,306 +447,316 @@ export default function NewsletterClient({ initial }: Props) {
         }
       />
 
-      <StatGrid>
+      <StatGrid cols={3}>
         <KpiCard
           label="کل مشترکین"
           value={total}
           icon={Users}
-          spark={growthSeries.length > 1 ? <TrendSparkline data={growthSeries} /> : undefined}
+          trend={lastWeekGrowth > 0 ? 'up' : total > 0 ? 'neutral' : undefined}
+          info={`${fa.format(activeCount)} فعال · ${fa.format(inactiveCount)} غیرفعال`}
+          spark={
+            growthSeries.length > 1 ? (
+              <TrendSparkline data={growthSeries} color="var(--ds-accent-emerald)" />
+            ) : undefined
+          }
         />
-        <KpiCard label="فعال" value={activeCount} icon={Check} />
-        <KpiCard label="غیرفعال" value={inactiveCount} icon={X} />
-        <KpiCard label="حساب کاربری" value={linkedCount} icon={Sparkles} />
+        <KpiCard
+          label="نرخ فعالیت"
+          value={`${fa.format(activeRate)}٪`}
+          icon={BarChart3}
+          trend={activeRate >= 80 ? 'up' : activeRate < 50 ? 'down' : 'neutral'}
+          info="نسبت مشترکین فعال به کل"
+        />
+        <KpiCard
+          label="رشد هفتگی"
+          value={lastWeekGrowth}
+          icon={Sparkles}
+          trend={lastWeekGrowth > 0 ? 'up' : 'neutral'}
+          info="مشترکین جدید ۷ روز اخیر"
+        />
       </StatGrid>
-
-      {selectedKeys.length > 0 && (
-        <div className={s.bulkBar}>
-          <span className={s.bulkCount}>{fa.format(selectedKeys.length)} مورد انتخاب شده</span>
-          <div className={s.bulkActions}>
-            <Button size="sm" onClick={() => handleBulkToggle(true)}>
-              <Check size={14} />
-              <span className={s.btnLabel}>فعال</span>
-            </Button>
-            <Button size="sm" variant="secondary" onClick={() => handleBulkToggle(false)}>
-              <X size={14} />
-              <span className={s.btnLabel}>غیرفعال</span>
-            </Button>
-            <Button size="sm" variant="destructive" onClick={() => setBulkDeleteOpen(true)}>
-              <Trash2 size={14} />
-              <span className={s.btnLabel}>حذف</span>
-            </Button>
-          </div>
-        </div>
-      )}
 
       <InsightLayout
         main={
-          <DataPanel
-            title="مشترکین"
-            icon={<Users size={14} strokeWidth={1.75} />}
-            count={fa.format(displayed.length)}
-            footer={
-              <div className={s.foot}>
-                {totalPages > 1 && (
-                  <div className={s.pager}>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setPage((p) => Math.max(0, p - 1))}
-                      disabled={page === 0}
-                    >
-                      <ChevronRight size={14} />
-                      قبلی
-                    </Button>
-                    <span className={s.pageInfo}>
-                      {fa.format(page + 1)} از {fa.format(totalPages)}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-                      disabled={page >= totalPages - 1}
-                    >
-                      بعدی
-                      <ChevronLeft size={14} />
-                    </Button>
-                    <Select
-                      value={String(pageSize)}
-                      onValueChange={(v) => {
-                        setPageSize(Number(v));
-                        setPage(0);
-                      }}
-                    >
+          <>
+            {bulkActions}
+            <DataPanel
+              title="مشترکین"
+              icon={<Mail size={16} />}
+              count={displayed.length}
+              actions={
+                <Button size="sm" onClick={() => setComposerOpen(true)} className={s.inlineSend}>
+                  <Send size={13} className="rtl:-scale-x-100" />
+                  <span>ارسال</span>
+                </Button>
+              }
+            >
+              <TableToolbar
+                search={
+                  <SearchInput
+                    ref={searchRef}
+                    value={search}
+                    onChange={setSearch}
+                    onClear={() => setSearch('')}
+                    placeholder="جستجوی ایمیل... (Ctrl+K)"
+                    ariaLabel="جستجوی ایمیل"
+                  />
+                }
+                exportData={
+                  exportData.length > 0
+                    ? {
+                        data: exportData,
+                        columns: exportColumns,
+                        filename: `newsletter-${new Date().toISOString().slice(0, 10)}`,
+                        label: 'خروجی CSV',
+                      }
+                    : undefined
+                }
+              >
+                <div className={s.filterRow}>
+                  <div className={s.tabGroup}>
+                    {(
+                      [
+                        ['all', 'همه'],
+                        ['active', 'فعال'],
+                        ['inactive', 'غیرفعال'],
+                      ] as [Tab, string][]
+                    ).map(([key, label]) => (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`${s.tab} ${tab === key ? s.tabActive : ''}`}
+                        onClick={() => {
+                          setTab(key);
+                          setPage(0);
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <PersianDateRangePicker
+                    value={dateRange}
+                    onChange={(range) => {
+                      setDateRange(range);
+                      setPage(0);
+                    }}
+                    className={s.dateFilter}
+                    placeholder="فیلتر تاریخ"
+                  />
+                </div>
+              </TableToolbar>
+
+              {pagedRows.length > 0 ? (
+                <DataTable
+                  columns={columns}
+                  rows={pagedRows}
+                  rowKey={(r) => r.id}
+                  selectable
+                  selectedKeys={selectedKeys}
+                  onSelectionChange={setSelectedKeys}
+                  ariaLabel="مشترکین خبرنامه"
+                />
+              ) : (
+                <MillionDollarEmpty
+                  variant="inbox"
+                  title="مشترکی یافت نشد"
+                  description="وقتی کاربران ثبت‌نام کنند، اینجا نمایش داده می‌شوند"
+                  tone="neutral"
+                />
+              )}
+
+              {totalPages > 1 && (
+                <div className={s.pager}>
+                  <span className={s.pagerInfo}>
+                    صفحه {page + 1} از {totalPages} — {displayed.length} مورد
+                  </span>
+                  <div className={s.pagerControls}>
+                    <Select value={String(pageSize)} onValueChange={(v) => {
+                      setPageSize(Number(v));
+                      setPage(0);
+                    }}>
                       <SelectTrigger className={s.pageSizeSelect}>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="10">۱۰</SelectItem>
-                        <SelectItem value="25">۲۵</SelectItem>
-                        <SelectItem value="50">۵۰</SelectItem>
+                        {[10, 25, 50, 100].map((n) => (
+                          <SelectItem key={n} value={String(n)}>
+                            {n} در هر صفحه
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                )}
-                <span className={s.footCount}>
-                  {fa.format(displayed.length)} از {fa.format(total)} مشترک
-                </span>
-              </div>
-            }
-          >
-            <TableToolbar
-              filters={
-                <div className={s.tabs}>
-                  {(
-                    [
-                      { key: 'all', label: 'همه', count: total },
-                      { key: 'active', label: 'فعال', count: activeCount },
-                      { key: 'inactive', label: 'غیرفعال', count: inactiveCount },
-                    ] as const
-                  ).map((t) => (
                     <button
-                      key={t.key}
                       type="button"
-                      className={t.key === tab ? `${s.tab} ${s.tabActive}` : s.tab}
-                      onClick={() => setTab(t.key)}
+                      className={s.pagerBtn}
+                      disabled={page === 0}
+                      onClick={() => setPage((p) => Math.max(0, p - 1))}
                     >
-                      {t.label}
-                      <span className={s.tabBadge}>{fa.format(t.count)}</span>
+                      <ChevronRight size={14} />
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      className={s.pagerBtn}
+                      disabled={page >= totalPages - 1}
+                      onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                    >
+                      <ChevronLeft size={14} />
+                    </button>
+                  </div>
                 </div>
-              }
-              search={
-                <SearchInput
-                  value={search}
-                  onChange={setSearch}
-                  placeholder="جستجو در ایمیل‌ها..."
-                />
-              }
-              actions={
-                displayed.length > 0 ? (
-                  <ExportButton
-                    data={exportData}
-                    columns={exportColumns}
-                    filename="newsletter-export"
-                    label="خروجی"
-                  />
-                ) : undefined
-              }
-            />
-
-            <DataTable
-              columns={columns}
-              rows={pagedRows}
-              rowKey={(row) => row.id}
-              selectable
-              selectedKeys={selectedKeys}
-              onSelectionChange={setSelectedKeys}
-              empty={
-                <MillionDollarEmpty
-                  variant="inbox"
-                  eyebrow="خبرنامه"
-                  title={search ? 'مشترکی یافت نشد' : 'هنوز مشترکی نیست'}
-                  description={
-                    search
-                      ? 'جستجوی خود را تغییر دهید'
-                      : 'وقتی کاربران عضو خبرنامه شوند، اینجا نمایش داده می‌شود'
-                  }
-                  tone="primary"
-                />
-              }
-            />
-          </DataPanel>
+              )}
+            </DataPanel>
+          </>
         }
         aside={
           <InsightPanel>
-            <InsightCard title="رشد ۱۴ روزه">
+            <InsightCard title="رشد ۱۴ روزه" icon={BarChart3}>
               {growthSeries.length > 1 ? (
-                <div className={s.growthBlock}>
-                  <TrendSparkline data={growthSeries} height={48} width={220} />
-                  <div className={s.growthMeta}>
-                    <span className={s.growthValue}>+{fa.format(lastWeekGrowth)}</span>
-                    <span className={s.growthLabel}>عضویت جدید در ۷ روز گذشته</span>
-                  </div>
-                </div>
+                <TrendSparkline
+                  data={growthSeries}
+                  color="var(--ds-accent-emerald)"
+                  height={64}
+                />
               ) : (
-                <p className={s.insightEmpty}>هنوز داده‌ای نیست</p>
+                <div className={s.noData}>داده‌ای موجود نیست</div>
               )}
             </InsightCard>
 
-            <InsightCard title="نرخ فعال">
-              <div className={s.rateBlock}>
-                <div className={s.rateValue}>{fa.format(activeRate)}٪</div>
-                <div className={s.rateTrack}>
-                  <div className={s.rateFill} style={{ width: `${activeRate}%` }} />
+            <InsightCard title="وضعیت مشترکین" icon={Users}>
+              <div className={s.statusBars}>
+                <div className={s.statusRow}>
+                  <span className={s.statusLabel}>فعال</span>
+                  <div className={s.statusTrack}>
+                    <div
+                      className={s.statusFill}
+                      style={{
+                        width: `${activeRate}%`,
+                        background: 'var(--ds-accent-emerald)',
+                      }}
+                    />
+                  </div>
+                  <span className={s.statusValue}>{fa.format(activeRate)}٪</span>
                 </div>
-                <div className={s.rateMeta}>
-                  <span>{fa.format(activeCount)} فعال</span>
-                  <span>از {fa.format(total)} کل</span>
+                <div className={s.statusRow}>
+                  <span className={s.statusLabel}>غیرفعال</span>
+                  <div className={s.statusTrack}>
+                    <div
+                      className={s.statusFill}
+                      style={{
+                        width: `${100 - activeRate}%`,
+                        background: 'var(--ds-accent-amber)',
+                      }}
+                    />
+                  </div>
+                  <span className={s.statusValue}>{fa.format(100 - activeRate)}٪</span>
                 </div>
               </div>
             </InsightCard>
 
-            <InsightCard title="آخرین عضویت‌ها">
-              {recentSignups.length > 0 ? (
+            {recentSignups.length > 0 && (
+              <InsightCard title="آخرین ثبت‌نام‌ها" icon={Sparkles}>
                 <ul className={s.signupList}>
-                  {recentSignups.map((item) => (
-                    <li key={item.id} className={s.signupRow}>
-                      <span className={s.signupIcon}>
-                        <Mail size={13} />
-                      </span>
-                      <div className={s.signupMeta}>
-                        <span className={s.signupEmail}>{item.email}</span>
-                        <span className={s.signupTime}>{item.time}</span>
-                      </div>
+                  {recentSignups.map((u) => (
+                    <li key={u.id} className={s.signupItem}>
+                      <span className={s.signupEmail}>{u.email}</span>
+                      <span className={s.signupTime}>{u.time}</span>
                     </li>
                   ))}
                 </ul>
-              ) : (
-                <p className={s.insightEmpty}>هنوز عضویتی ثبت نشده است</p>
-              )}
-            </InsightCard>
-
-            <InsightCard title="دسترسی سریع">
-              <div className={s.quickLinks}>
-                <Link href="/dashboard/settings" className={s.quickLink}>
-                  <Settings size={14} />
-                  تنظیمات ایمیل
-                </Link>
-                <Link href="/dashboard/analytics" className={s.quickLink}>
-                  <BarChart3 size={14} />
-                  آمار
-                </Link>
-              </div>
-            </InsightCard>
+              </InsightCard>
+            )}
           </InsightPanel>
         }
       />
 
-      {/* Broadcast Composer */}
-      <Dialog
-        open={composerOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setComposerOpen(false);
-            setSubject('');
-            setBody('');
-          }
-        }}
-      >
-        <DialogContent className={s.composerSheet}>
+      {/* ── Broadcast Composer ── */}
+      <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
+        <DialogContent className={s.composerDialog}>
           <DialogHeader>
             <DialogTitle className={s.composerTitle}>
-              <span className={s.composerIcon}>
-                <Send size={18} className="rtl:-scale-x-100" />
-              </span>
+              <Send size={16} className="rtl:-scale-x-100" />
               ارسال خبرنامه
             </DialogTitle>
           </DialogHeader>
 
-          <div className={s.templateBar}>
+          <div className={s.templateRow}>
             <span className={s.templateLabel}>قالب‌ها:</span>
-            <div className={s.templateList}>
+            <div className={s.templateGrid}>
               {TEMPLATES.map((t) => (
                 <button
                   key={t.name}
                   type="button"
-                  className={s.templateChip}
+                  className={s.templateBtn}
                   onClick={() => applyTemplate(t)}
                 >
-                  <Sparkles size={12} />
                   {t.name}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className={s.form}>
-            <label className={s.fieldLabel} htmlFor="nl-subject">
-              موضوع
-              <Input
-                id="nl-subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="موضوع خبرنامه..."
-                className={s.fieldInput}
-              />
-            </label>
-            <label className={s.fieldLabel} htmlFor="nl-body">
-              متن
-              <Textarea
-                id="nl-body"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                placeholder="متن خبرنامه..."
-                rows={8}
-                className={s.fieldTextarea}
-              />
-            </label>
+          <div className={s.formGroup}>
+            <label className={s.formLabel}>موضوع *</label>
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="موضوع خبرنامه..."
+              className={s.composerInput}
+            />
+          </div>
+
+          <div className={s.formGroup}>
+            <label className={s.formLabel}>متن *</label>
+            <Textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="متن خبرنامه..."
+              rows={8}
+              className={s.composerTextarea}
+            />
+            <span className={s.charCount}>
+              {fa.format(body.length)} کاراکتر
+            </span>
           </div>
 
           <div className={s.composerFooter}>
-            <Button size="sm" variant="secondary" onClick={() => setComposerOpen(false)}>
+            <Button variant="outline" onClick={() => setComposerOpen(false)}>
               انصراف
             </Button>
-            <Button size="sm" onClick={handleBroadcast} disabled={!subject.trim() || !body.trim()}>
+            <Button
+              onClick={handleBroadcast}
+              disabled={!subject.trim() || !body.trim()}
+              className={s.sendNow}
+            >
               <Send size={14} className="rtl:-scale-x-100" />
-              <span>ارسال به {fa.format(activeCount)} مشترک فعال</span>
+              ارسال به {fa.format(activeCount)} مشترک فعال
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* ── Delete Confirm ── */}
       <ConfirmDialog
-        open={!!deleteTarget || bulkDeleteOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDeleteTarget(null);
-            setBulkDeleteOpen(false);
-          }
-        }}
-        title="حذف مشترکین"
-        description={`${fa.format(deleteTarget ? 1 : selectedKeys.length)} مشترک حذف می‌شود. این عمل قابل بازگشت نیست.`}
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="حذف مشترک"
+        description={
+          deleteTarget
+            ? `آیا از حذف ${deleteTarget.email} مطمئن هستید؟`
+            : ''
+        }
+        confirmLabel="حذف شود"
+        onConfirm={confirmDelete}
+        variant="danger"
+      />
+
+      {/* ── Bulk Delete Confirm ── */}
+      <ConfirmDialog
+        open={bulkDeleteOpen}
+        onOpenChange={setBulkDeleteOpen}
+        title="حذف گروهی"
+        description={`آیا از حذف ${selectedKeys.length} مشترک مطمئن هستید؟ این عمل قابل بازگشت نیست.`}
         confirmLabel="حذف شود"
         onConfirm={confirmDelete}
         variant="danger"

@@ -43,14 +43,40 @@
   z-index: 0;
 }
 
+/* ── Signature visual element (optional SVG/illustration) ── */
+
+.signature {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+  overflow: hidden;
+}
+
+.signature svg {
+  width: 100%;
+  height: 100%;
+  animation: signaturePulse 4s ease-in-out infinite;
+}
+
+@keyframes signaturePulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
 .washPrimary {
   background: radial-gradient(
     50rem 18rem at 95% -40%,
-    color-mix(
-      in oklch,
-      var(--nova-primary, var(--ds-brand-500, oklch(55% 0.14 265))) 7%,
-      transparent
-    ),
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 7%, transparent),
     transparent 75%
   );
 }
@@ -126,7 +152,7 @@
 }
 
 .crumbLink:hover {
-  color: var(--nova-primary, var(--ds-brand-500, oklch(55% 0.14 265)));
+  color: var(--dashboard-accent, var(--ds-brand-500));
 }
 
 .crumbCurrent {
@@ -151,7 +177,7 @@
   width: 6px;
   height: 6px;
   border-radius: var(--ds-radius-full);
-  background: var(--nova-primary, var(--ds-brand-500, oklch(55% 0.14 265)));
+  background: var(--dashboard-accent, var(--ds-brand-500));
   opacity: 0.7;
   flex-shrink: 0;
 }
@@ -202,12 +228,8 @@
   width: var(--nova-space-5, var(--ds-space-5));
   height: var(--nova-space-5, var(--ds-space-5));
   border-radius: var(--nova-radius-md, var(--ds-radius-md));
-  background: color-mix(
-    in oklch,
-    var(--nova-primary, var(--ds-brand-500, oklch(55% 0.14 265))) 10%,
-    transparent
-  );
-  color: var(--nova-primary, var(--ds-brand-500, oklch(55% 0.14 265)));
+  background: color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 10%, transparent);
+  color: var(--dashboard-accent, var(--ds-brand-500));
 }
 
 .icon {
@@ -237,12 +259,8 @@
   border-radius: var(--ds-radius-full);
   background: linear-gradient(
     to left,
-    var(--nova-primary, var(--ds-brand-500, oklch(55% 0.14 265))),
-    color-mix(
-      in oklch,
-      var(--nova-primary, var(--ds-brand-500, oklch(55% 0.14 265))) 40%,
-      transparent
-    )
+    var(--dashboard-accent, var(--ds-brand-500)),
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 40%, transparent)
   );
   margin-block: var(--nova-space-2, var(--ds-space-2));
 
@@ -296,7 +314,7 @@
 .dark .washPrimary {
   background: radial-gradient(
     50rem 18rem at 95% -40%,
-    color-mix(in oklch, var(--nova-primary, oklch(65% 0.12 265)) 5%, transparent),
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 5%, transparent),
     transparent 75%
   );
 }
@@ -310,14 +328,14 @@
 }
 
 .dark .iconWrap {
-  background: color-mix(in oklch, var(--nova-primary, oklch(65% 0.12 265)) 14%, transparent);
+  background: color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 14%, transparent);
 }
 
 .dark .accentLine {
   background: linear-gradient(
     to left,
-    var(--nova-primary, oklch(65% 0.12 265)),
-    color-mix(in oklch, var(--nova-primary, oklch(65% 0.12 265)) 35%, transparent)
+    var(--dashboard-accent, var(--ds-brand-500)),
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 35%, transparent)
   );
 }
 

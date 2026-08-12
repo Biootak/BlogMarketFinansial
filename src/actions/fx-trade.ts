@@ -75,11 +75,27 @@ async function loadRate(
   const item = items.find(
     (candidate) => candidate.symbol === pair || candidate.symbol === inversePair,
   );
-  if (!item || !Number.isFinite(item.value) || item.value <= 0) return null;
-  return {
-    rate: item.symbol === pair ? item.value : 1 / item.value,
-    updatedAt: new Date(item.updatedAt),
-  };
+  if (item && Number.isFinite(item.value) && item.value > 0) {
+    return {
+      rate: item.symbol === pair ? item.value : 1 / item.value,
+      updatedAt: new Date(item.updatedAt),
+    };
+  }
+  // assembler فقط symbol تک‌ارزی تولید می‌کند (IRAN_USD، AFGHANI_AFN و …) نه
+  // جفت‌ارز — بنابراین fallback بالا تقریباً هرگز match نمی‌شود. نرخ جهانی FX
+  // (exchangerate-api، بر پایه USD) آخرین راه است: هر دو ارز را از map می‌خوانیم
+  // و cross-rate محاسبه می‌کنیم. rate(from→to) = fx[to] / fx[from]
+  const { getGlobalFxRates } = await import('@/lib/market-rates/fx');
+  const fx = await getGlobalFxRates();
+  const fromRate = fx?.[from];
+  const toRate = fx?.[to];
+  if (fromRate && toRate && Number.isFinite(fromRate) && Number.isFinite(toRate) && fromRate > 0) {
+    return {
+      rate: toRate / fromRate,
+      updatedAt: new Date(),
+    };
+  }
+  return null;
 }
 
 export async function getFxQuote(raw: { fromCurrency: Currency; toCurrency: Currency }): Promise<

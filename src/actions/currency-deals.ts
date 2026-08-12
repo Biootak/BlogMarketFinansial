@@ -234,10 +234,23 @@ export async function getExchangeDeals(
 export type MyDealsPage = {
   deals: DealRow[];
   pagination: { page: number; limit: number; total: number; totalPages: number };
+  /** شمارندهٔ وضعیت‌ها روی کل معاملات کاربر (نه فقط صفحهٔ فعلی) */
+  statusCounts: Record<string, number>;
 };
 
 export async function getMyDeals(
-  opts: { page?: number; limit?: number } = {},
+  opts: {
+    page?: number;
+    limit?: number;
+    status?:
+      | 'PENDING'
+      | 'CONFIRMED'
+      | 'PROCESSING'
+      | 'COMPLETED'
+      | 'CANCELLED'
+      | 'DISPUTED'
+      | 'REFUNDED';
+  } = {},
 ): Promise<FintechActionResult<MyDealsPage>> {
   const auth = await requireUser();
   if (!auth.success) {
@@ -247,17 +260,32 @@ export async function getMyDeals(
   const page = Math.max(1, opts.page ?? 1);
   const limit = Math.min(50, Math.max(1, opts.limit ?? 10));
   const skip = (page - 1) * limit;
+  // F8-fix: فیلتر وضعیت سرور-محور — قبلاً فقط صفحهٔ فعلی فیلتر می‌شد و
+  // معامله‌ای که در صفحهٔ بعد بود با وجود شمارندهٔ درست، «پیدا نمی‌شد».
+  const where = { userId: auth.user.id, ...(opts.status ? { status: opts.status } : {}) };
 
-  const [rows, total] = await Promise.all([
+  const [rows, total, statusGroup] = await Promise.all([
     prisma.currencyDeal.findMany({
-      where: { userId: auth.user.id },
+      where,
       include: { Exchange: { select: { name: true, displayName: true, city: true } } },
       orderBy: { createdAt: 'desc' },
       skip,
       take: limit,
     }),
-    prisma.currencyDeal.count({ where: { userId: auth.user.id } }),
+    prisma.currencyDeal.count({ where }),
+    // F7-fix: شمارندهٔ وضعیت سرور-محور — قبلاً از صفحهٔ فعلی حساب می‌شد و
+    // با بیش از limit معامله، KPIها و شمارندهٔ تب‌ها غلط نشان می‌داد.
+    prisma.currencyDeal.groupBy({
+      by: ['status'],
+      where: { userId: auth.user.id },
+      _count: { _all: true },
+    }),
   ]);
+
+  const statusCounts: Record<string, number> = {};
+  for (const g of statusGroup) {
+    statusCounts[g.status] = g._count._all;
+  }
 
   return {
     success: true,
@@ -273,6 +301,7 @@ export async function getMyDeals(
         total,
         totalPages: Math.max(1, Math.ceil(total / limit)),
       },
+      statusCounts,
     },
   };
 }

@@ -79,7 +79,10 @@ export async function assertCsrf(): Promise<void> {
 
   let host: string;
   try {
-    host = new URL(origin).host;
+    // hostname (نه host) — چون host شامل پورت می‌شود (مثل localhost:3000) و لیست
+    // مجاز فقط hostname خالی است. با host، تأیید انتقال در dev و هر استقرار روی
+    // پورت غیراستاندارد همیشه CSRF_FAILED می‌گرفت.
+    host = new URL(origin).hostname;
   } catch {
     throw new CsrfError('invalid origin url');
   }

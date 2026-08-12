@@ -22,6 +22,8 @@ export interface TrendSparklineProps {
   width?: number;
   /** Force direction: 'up' | 'down' | 'flat' (auto-detected from data by default) */
   direction?: 'up' | 'down' | 'flat';
+  /** Force a specific CSS color value (e.g. `var(--ds-accent-emerald)`) — overrides auto direction color */
+  color?: string;
   /** Show area fill under the line */
   fill?: boolean;
   /** Show dot at the last point */
@@ -67,27 +69,22 @@ export function TrendSparkline({
   height = 28,
   width = 80,
   direction,
+  color,
   fill = true,
   dot = true,
 }: TrendSparklineProps) {
-  const { path, area, colorVar, gradientId } = useMemo(() => {
+  const { path, area, lineColor, gradientId } = useMemo(() => {
     if (data.length === 0) {
       return {
         path: '',
         area: '',
-        dir: 'flat' as const,
-        colorVar: '--ds-text-muted',
+        lineColor: '--ds-text-muted',
         gradientId: '',
       };
     }
 
     const dir = direction ?? detectDirection(data);
-    const colorVar =
-      dir === 'up'
-        ? 'var(--nova-up, var(--ds-accent-emerald))'
-        : dir === 'down'
-          ? 'var(--nova-down, var(--ds-accent-rose))'
-          : 'var(--ds-text-muted)';
+    const lineColor = color ?? (dir === 'up' ? 'var(--nova-up, var(--ds-accent-emerald))' : dir === 'down' ? 'var(--nova-down, var(--ds-accent-rose))' : 'var(--ds-text-muted)');
 
     const min = Math.min(...data);
     const max = Math.max(...data);
@@ -109,8 +106,8 @@ export function TrendSparkline({
 
     const gradientId = `spark-grad-${Math.random().toString(36).slice(2, 8)}`;
 
-    return { path: linePath, area: areaPath, dir, colorVar, gradientId };
-  }, [data, direction, fill, width, height]);
+    return { path: linePath, area: areaPath, lineColor, gradientId };
+  }, [data, direction, color, width, height]);
 
   // Compute last point position for the dot
   const lastPoint = useMemo(() => {
@@ -148,13 +145,13 @@ export function TrendSparkline({
           d={area}
           fill={`url(#${gradientId})`}
           className={s.area}
-          style={{ color: 'var(--nova-up, var(--ds-accent-emerald))' }}
+          style={{ color: lineColor }}
         />
       )}
       <path
         d={path}
         fill="none"
-        stroke={colorVar}
+        stroke={lineColor}
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -166,11 +163,11 @@ export function TrendSparkline({
             cx={lastPoint.x}
             cy={lastPoint.y}
             r="4"
-            fill={colorVar}
+            fill={lineColor}
             opacity="0.2"
             className={s.dot}
           />
-          <circle cx={lastPoint.x} cy={lastPoint.y} r="2" fill={colorVar} className={s.dot} />
+          <circle cx={lastPoint.x} cy={lastPoint.y} r="2" fill={lineColor} className={s.dot} />
         </>
       )}
     </svg>

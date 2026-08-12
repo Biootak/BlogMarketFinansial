@@ -3,11 +3,10 @@
 /**
  * comments-actions — مدیریت نظرات مقالات (ادمین).
  *
- * پیش از این نظرات در دیتابیس ثبت می‌شدند (مدل Comment) اما هیچ صفحه‌ای برای
- * تأیید/حذف آن‌ها وجود نداشت. این ماژول CRUD ادمین را فراهم می‌کند:
- *   - لیست با فیلتر وضعیت (در انتظار / تأییدشده / همه)
- *   - تأیید / لغو تأیید تکی و گروهی
- *   - حذف تکی و گروهی
+ * وضعیت‌های ممکن هر نظر:
+ *   pending  = approved:false  AND rejectedAt:null   (هنوز بررسی نشده)
+ *   approved = approved:true   AND rejectedAt:null   (تأیید شده)
+ *   rejected = approved:false  AND rejectedAt:!null  (رد شده)
  */
 
 import prisma from '@/lib/db';
@@ -19,6 +18,8 @@ export type CommentRow = {
   id: string;
   content: string;
   approved: boolean;
+  rejectedAt: Date | null;
+  status: 'pending' | 'approved' | 'rejected';
   createdAt: Date;
   time: string;
   postId: string;
@@ -34,14 +35,19 @@ export type CommentsListResult = ActionResult<{
   total: number;
   pending: number;
   approved: number;
+  rejected: number;
 }>;
 
-export type CommentsStatus = 'all' | 'pending' | 'approved';
+export type CommentsStatus = 'all' | 'pending' | 'approved' | 'rejected';
+
+function toStatus(approved: boolean, rejectedAt: Date | null): 'pending' | 'approved' | 'rejected' {
+  if (approved) return 'approved';
+  if (rejectedAt) return 'rejected';
+  return 'pending';
+}
 
 /**
- * لیست نظرات — آخرین‌ها اول؛ تا ۳۰۰ رکورد.
- * فیلتر وضعیت روی سرور اعمال می‌شود تا تب‌ها همیشه کل مجموعه را نشان دهند،
- * نه فقط پنجرهٔ بارگذاری‌شدهٔ صفحهٔ اول.
+ * لیست نظرات — آخرین‌ها اول.
  */
 export async function getComments(
   options: { limit?: number; offset?: number; status?: CommentsStatus } = {},
@@ -52,14 +58,31 @@ export async function getComments(
 
     const limit = Math.min(options.limit ?? 200, 300);
     const offset = options.offset ?? 0;
-    const where =
-      options.status === 'pending'
-        ? { approved: false }
-        : options.status === 'approved'
-          ? { approved: true }
-          : {};
 
-    const [rows, total, pending, approved] = await Promise.all([
+    // تشخیص وجود column rejectedAt — اگه Prisma client قدیمی بود graceful fallback
+    type ColRow = { column_name: string }[];
+    const colCheck = await prisma.$queryRaw<ColRow>`
+      SELECT column_name FROM information_schema.columns
+      WHERE table_name = 'Comment' AND column_name = 'rejectedAt'
+      LIMIT 1
+    `.catch(() => [] as ColRow);
+    const hasRejectedAt = colCheck.length > 0;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const buildWhere = (status?: typeof options.status): any => {
+      if (status === 'approved') return { approved: true };
+      if (status === 'pending')
+        return hasRejectedAt ? { approved: false, rejectedAt: null } : { approved: false };
+      if (status === 'rejected')
+        return hasRejectedAt
+          ? { approved: false, rejectedAt: { not: null } }
+          : { id: '__no_results__' };
+      return {};
+    };
+
+    const where = buildWhere(options.status);
+
+    const [rows, total, pending, approved, rejected] = await Promise.all([
       prisma.comment.findMany({
         where,
         orderBy: { createdAt: 'desc' },
@@ -72,8 +95,9 @@ export async function getComments(
         },
       }),
       prisma.comment.count(),
-      prisma.comment.count({ where: { approved: false } }),
+      prisma.comment.count({ where: buildWhere('pending') }),
       prisma.comment.count({ where: { approved: true } }),
+      prisma.comment.count({ where: buildWhere('rejected') }),
     ]);
 
     return {
@@ -84,6 +108,10 @@ export async function getComments(
           id: c.id,
           content: c.content,
           approved: c.approved,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          rejectedAt: (c as any).rejectedAt ?? null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          status: toStatus(c.approved, (c as any).rejectedAt ?? null),
           createdAt: c.createdAt,
           time: c.createdAt.toLocaleString('fa-IR'),
           postId: c.postId,
@@ -96,6 +124,7 @@ export async function getComments(
         total,
         pending,
         approved,
+        rejected,
       },
     };
   } catch {
@@ -104,53 +133,93 @@ export async function getComments(
 }
 
 /**
- * تأیید یا لغو تأیید یک نظر.
+ * تأیید یک نظر.
  */
-export async function setCommentApproval(
-  id: string,
-  approved: boolean,
-): Promise<ActionResult<{ id: string; approved: boolean }>> {
+export async function approveComment(id: string): Promise<ActionResult<{ id: string }>> {
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
 
     await prisma.comment.update({
       where: { id },
-      data: { approved },
+      data: { approved: true, rejectedAt: null },
     });
 
     revalidateTag('comments');
-    return {
-      success: true,
-      message: approved ? 'نظر تأیید شد' : 'تأیید نظر لغو شد',
-      data: { id, approved },
-    };
+    return { success: true, message: 'نظر تأیید شد', data: { id } };
   } catch {
-    return { success: false, message: 'خطا در به‌روزرسانی نظر' };
+    return { success: false, message: 'خطا در تأیید نظر' };
   }
 }
 
 /**
- * تأیید گروهی نظرات (bulk approve).
+ * رد یک نظر (rejected).
  */
-export async function bulkApproveComments(
-  ids: string[],
-): Promise<ActionResult<{ updated: number }>> {
+export async function rejectComment(id: string): Promise<ActionResult<{ id: string }>> {
   try {
     const authCheck = await requireAdmin();
     if (!authCheck.success) return authFailureToActionResult(authCheck);
-    if (ids.length === 0) return { success: false, message: 'نظری انتخاب نشده است' };
 
-    const result = await prisma.comment.updateMany({
-      where: { id: { in: ids }, approved: false },
-      data: { approved: true },
+    await prisma.comment.update({
+      where: { id },
+      data: { approved: false, rejectedAt: new Date() },
     });
 
     revalidateTag('comments');
-    return { success: true, message: 'نظرات تأیید شدند', data: { updated: result.count } };
+    return { success: true, message: 'نظر رد شد', data: { id } };
   } catch {
-    return { success: false, message: 'خطا در تأیید گروهی نظرات' };
+    return { success: false, message: 'خطا در رد نظر' };
   }
+}
+
+/**
+ * لغو تأیید نظر (برگشت به pending).
+ */
+export async function unapproveComment(id: string): Promise<ActionResult<{ id: string }>> {
+  try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    await prisma.comment.update({
+      where: { id },
+      data: { approved: false, rejectedAt: null },
+    });
+
+    revalidateTag('comments');
+    return { success: true, message: 'تأیید نظر لغو شد', data: { id } };
+  } catch {
+    return { success: false, message: 'خطا در لغو تأیید نظر' };
+  }
+}
+
+/**
+ * برگرداندن نظر رد‌شده به pending.
+ */
+export async function restoreComment(id: string): Promise<ActionResult<{ id: string }>> {
+  try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+
+    await prisma.comment.update({
+      where: { id },
+      data: { approved: false, rejectedAt: null },
+    });
+
+    revalidateTag('comments');
+    return { success: true, message: 'نظر به صف انتظار برگشت', data: { id } };
+  } catch {
+    return { success: false, message: 'خطا در بازیابی نظر' };
+  }
+}
+
+/** @deprecated از approveComment / rejectComment / unapproveComment استفاده کنید */
+export async function setCommentApproval(
+  id: string,
+  approved: boolean,
+): Promise<ActionResult<{ id: string; approved: boolean }>> {
+  const result = approved ? await approveComment(id) : await unapproveComment(id);
+  if (!result.success) return { success: false, message: result.message ?? 'خطا' };
+  return { success: true, message: result.message, data: { id, approved } };
 }
 
 /**
@@ -167,6 +236,52 @@ export async function deleteComment(id: string): Promise<ActionResult<{ id: stri
     return { success: true, message: 'نظر حذف شد', data: { id } };
   } catch {
     return { success: false, message: 'خطا در حذف نظر' };
+  }
+}
+
+/**
+ * تأیید گروهی نظرات.
+ */
+export async function bulkApproveComments(
+  ids: string[],
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+    if (ids.length === 0) return { success: false, message: 'نظری انتخاب نشده است' };
+
+    const result = await prisma.comment.updateMany({
+      where: { id: { in: ids } },
+      data: { approved: true, rejectedAt: null },
+    });
+
+    revalidateTag('comments');
+    return { success: true, message: 'نظرات تأیید شدند', data: { updated: result.count } };
+  } catch {
+    return { success: false, message: 'خطا در تأیید گروهی نظرات' };
+  }
+}
+
+/**
+ * رد گروهی نظرات.
+ */
+export async function bulkRejectComments(
+  ids: string[],
+): Promise<ActionResult<{ updated: number }>> {
+  try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+    if (ids.length === 0) return { success: false, message: 'نظری انتخاب نشده است' };
+
+    const result = await prisma.comment.updateMany({
+      where: { id: { in: ids } },
+      data: { approved: false, rejectedAt: new Date() },
+    });
+
+    revalidateTag('comments');
+    return { success: true, message: 'نظرات رد شدند', data: { updated: result.count } };
+  } catch {
+    return { success: false, message: 'خطا در رد گروهی نظرات' };
   }
 }
 
@@ -189,28 +304,5 @@ export async function bulkDeleteComments(
     return { success: true, message: 'نظرات حذف شدند', data: { deleted: result.count } };
   } catch {
     return { success: false, message: 'خطا در حذف گروهی نظرات' };
-  }
-}
-
-/**
- * رد گروهی نظرات.
- */
-export async function bulkRejectComments(
-  ids: string[],
-): Promise<ActionResult<{ updated: number }>> {
-  try {
-    const authCheck = await requireAdmin();
-    if (!authCheck.success) return authFailureToActionResult(authCheck);
-    if (ids.length === 0) return { success: false, message: 'نظری انتخاب نشده است' };
-
-    const result = await prisma.comment.updateMany({
-      where: { id: { in: ids } },
-      data: { approved: false },
-    });
-
-    revalidateTag('comments');
-    return { success: true, message: 'نظرات رد شدند', data: { updated: result.count } };
-  } catch {
-    return { success: false, message: 'خطا در رد گروهی نظرات' };
   }
 }

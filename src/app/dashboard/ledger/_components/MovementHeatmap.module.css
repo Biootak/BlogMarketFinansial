@@ -155,7 +155,8 @@
   aspect-ratio: 1;
   border-radius: 0.18rem;
   background: var(--nova-surface-recessed, var(--ds-surface-recessed));
-  border: 1px solid color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 70%, transparent);
+  border: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 70%, transparent);
   display: block;
   transition: transform var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
 }
@@ -172,33 +173,54 @@
 /* ── Intensity levels (mixed against brand emerald hue) ── */
 
 .l0 {
-  background: color-mix(in oklch, var(--nova-surface-recessed, var(--ds-surface-recessed)) 70%, var(--nova-canvas, var(--ds-canvas)));
+  background: color-mix(
+    in oklch,
+    var(--nova-surface-recessed, var(--ds-surface-recessed)) 70%,
+    var(--nova-canvas, var(--ds-canvas))
+  );
 }
 
 .l1 {
-  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 18%, var(--nova-surface, var(--ds-surface)));
+  background: color-mix(
+    in oklch,
+    var(--nova-up, var(--ds-accent-emerald)) 18%,
+    var(--nova-surface, var(--ds-surface))
+  );
   border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 25%, transparent);
 }
 
 .l2 {
-  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 35%, var(--nova-surface, var(--ds-surface)));
+  background: color-mix(
+    in oklch,
+    var(--nova-up, var(--ds-accent-emerald)) 35%,
+    var(--nova-surface, var(--ds-surface))
+  );
   border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 35%, transparent);
 }
 
 .l3 {
-  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 55%, var(--nova-surface, var(--ds-surface)));
+  background: color-mix(
+    in oklch,
+    var(--nova-up, var(--ds-accent-emerald)) 55%,
+    var(--nova-surface, var(--ds-surface))
+  );
   border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 50%, transparent);
 }
 
 .l4 {
-  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 78%, var(--nova-surface, var(--ds-surface)));
+  background: color-mix(
+    in oklch,
+    var(--nova-up, var(--ds-accent-emerald)) 78%,
+    var(--nova-surface, var(--ds-surface))
+  );
   border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 65%, transparent);
 }
 
 .l5 {
   background: var(--nova-up, var(--ds-accent-emerald));
   border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 80%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 30%, transparent);
+  box-shadow: 0 0 0 1px
+    color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 30%, transparent);
 }
 
 .dark .l5 {

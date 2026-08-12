@@ -37,11 +37,10 @@
   background: var(--nova-surface, var(--ds-surface));
   box-shadow: var(--nova-shadow-sm, var(--ds-shadow-sm));
   backdrop-filter: blur(8px) saturate(120%);
-  -webkit-backdrop-filter: blur(8px) saturate(120%);
   overflow: hidden;
   isolation: isolate;
-  transition: border-color var(--ds-duration-base, 280ms) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-base, 280ms) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-base, 280ms) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-base, 280ms) var(--ds-ease-out-quart);
 }
 
 .signatureCard::before {
@@ -50,10 +49,10 @@
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-      60rem 24rem at 100% 0%,
-      color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 4%, transparent),
-      transparent 60%
-    );
+    60rem 24rem at 100% 0%,
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 4%, transparent),
+    transparent 60%
+  );
   z-index: 0;
 }
 
@@ -143,14 +142,9 @@
   inline-size: 1.4rem;
   block-size: 1.4rem;
   border-radius: var(--ds-radius-sm);
-  background: color-mix(
-    in oklch,
-    var(--nova-primary, var(--ds-brand-500)) 8%,
-    transparent
-  );
+  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 8%, transparent);
   color: var(--nova-primary, var(--ds-brand-500));
-  border: 1px solid
-    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 15%, transparent);
+  border: 1px solid color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 15%, transparent);
   flex-shrink: 0;
 }
 
@@ -450,8 +444,7 @@
   align-items: center;
   gap: var(--ds-space-2);
   padding: var(--ds-space-1) 0;
-  border-block-end: 1px solid
-    color-mix(in oklch, var(--ds-border-subtle) 35%, transparent);
+  border-block-end: 1px solid color-mix(in oklch, var(--ds-border-subtle) 35%, transparent);
 }
 
 .moverRow:last-child {
@@ -464,7 +457,11 @@
   inline-size: 1.3rem;
   block-size: 1.3rem;
   border-radius: var(--ds-radius-sm);
-  background: color-mix(in oklch, var(--nova-surface-recessed, var(--ds-surface-recessed)) 70%, transparent);
+  background: color-mix(
+    in oklch,
+    var(--nova-surface-recessed, var(--ds-surface-recessed)) 70%,
+    transparent
+  );
   color: var(--nova-muted, var(--ds-text-muted));
   flex-shrink: 0;
 }
@@ -540,8 +537,7 @@
 .asideFooter {
   margin-block-start: var(--ds-space-1);
   padding-block-start: var(--ds-space-1);
-  border-block-start: 1px dashed
-    color-mix(in oklch, var(--ds-border-subtle) 60%, transparent);
+  border-block-start: 1px dashed color-mix(in oklch, var(--ds-border-subtle) 60%, transparent);
 }
 
 .asideLink {
@@ -556,7 +552,11 @@
 }
 
 .asideLink:hover {
-  color: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 70%, var(--nova-ink, var(--ds-text-primary)));
+  color: color-mix(
+    in oklch,
+    var(--nova-primary, var(--ds-brand-500)) 70%,
+    var(--nova-ink, var(--ds-text-primary))
+  );
 }
 
 /* ═════════════════════════════════════════════════════════════

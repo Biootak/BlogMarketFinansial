@@ -16,7 +16,12 @@
  * - بدون hex — فقط DS tokens + at-* tokens
  */
 
-import { MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import {
+  DensityToggle,
+  MillionDollarEmpty,
+  PageHeader,
+  useTableDensity,
+} from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -241,6 +246,7 @@ export function AuditLogClient({
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { density } = useTableDensity();
   const [isPending, startTransition] = useTransition();
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [searchInput, setSearchInput] = useState(currentSearch);
@@ -550,183 +556,192 @@ export function AuditLogClient({
               }
             />
           ) : (
-            <table className={s.table} aria-label="جدول رویدادهای ممیزی">
-              <thead className={s.thead}>
-                <tr>
-                  <th className={s.th} scope="col">
-                    زمان
-                  </th>
-                  <th className={s.th} scope="col">
-                    کنشگر
-                  </th>
-                  <th className={s.th} scope="col">
-                    اقدام
-                  </th>
-                  <th className={s.th} scope="col">
-                    موجودیت
-                  </th>
-                  <th className={`${s.th} ${s.thIp}`} scope="col">
-                    IP
-                  </th>
-                  <th className={`${s.th} ${s.thAction}`} scope="col">
-                    <span className="sr-only">جزئیات</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.map((log, idx) => (
-                  <tr
-                    key={log.id}
-                    className={`${s.tr} ${getCategory(log.action) === 'security' ? s.trSecurity : ''}`}
-                    onClick={() => setSelectedLog(log)}
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') setSelectedLog(log);
-                    }}
-                    aria-label={`رویداد: ${log.action}`}
-                    style={{ '--row-index': idx } as React.CSSProperties}
-                  >
-                    {/* Time */}
-                    <td className={s.td}>
-                      <div className={s.timeCell}>
-                        <span className={s.timeMain}>{formatDate(log.createdAt)}</span>
-                        {isToday(log.createdAt) && <span className={s.timeBadgeToday}>امروز</span>}
-                      </div>
-                    </td>
+            <>
+              <div className="dash2-table__densitybar">
+                <DensityToggle />
+              </div>
+              <table className={s.table} data-density={density} aria-label="جدول رویدادهای ممیزی">
+                <thead className={s.thead}>
+                  <tr>
+                    <th className={s.th} scope="col">
+                      زمان
+                    </th>
+                    <th className={s.th} scope="col">
+                      کنشگر
+                    </th>
+                    <th className={s.th} scope="col">
+                      اقدام
+                    </th>
+                    <th className={s.th} scope="col">
+                      موجودیت
+                    </th>
+                    <th className={`${s.th} ${s.thIp}`} scope="col">
+                      IP
+                    </th>
+                    <th className={`${s.th} ${s.thAction}`} scope="col">
+                      <span className="sr-only">جزئیات</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredLogs.map((log, idx) => (
+                    <tr
+                      key={log.id}
+                      className={`${s.tr} ${getCategory(log.action) === 'security' ? s.trSecurity : ''}`}
+                      onClick={() => setSelectedLog(log)}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') setSelectedLog(log);
+                      }}
+                      aria-label={`رویداد: ${log.action}`}
+                      style={{ '--row-index': idx } as React.CSSProperties}
+                    >
+                      {/* Time */}
+                      <td className={s.td}>
+                        <div className={s.timeCell}>
+                          <span className={s.timeMain}>{formatDate(log.createdAt)}</span>
+                          {isToday(log.createdAt) && (
+                            <span className={s.timeBadgeToday}>امروز</span>
+                          )}
+                        </div>
+                      </td>
 
-                    {/* Actor */}
-                    <td className={s.td}>
-                      <div className={s.actorCell}>
+                      {/* Actor */}
+                      <td className={s.td}>
+                        <div className={s.actorCell}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className={s.actorId} dir="ltr">
+                                {log.actorId ? `${log.actorId.slice(0, 8)}…` : '—'}
+                              </span>
+                            </TooltipTrigger>
+                            {log.actorId && (
+                              <TooltipContent side="bottom" className={s.tooltip}>
+                                <span dir="ltr">{log.actorId}</span>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                          {log.actorRole && <span className={s.actorRole}>{log.actorRole}</span>}
+                        </div>
+                      </td>
+
+                      {/* Action */}
+                      <td className={s.td}>
+                        <div className={s.actionCell}>
+                          <span
+                            className={`${s.actionDot} ${getActionDot(log.action)}`}
+                            aria-hidden
+                          />
+                          <Badge className={`${s.actionBadge} ${getActionVariant(log.action)}`}>
+                            {log.action}
+                          </Badge>
+                        </div>
+                      </td>
+
+                      {/* Entity */}
+                      <td className={s.td}>
+                        {log.entityType ? (
+                          <span className={s.entity}>{log.entityType}</span>
+                        ) : (
+                          <span className={s.emptyCell}>—</span>
+                        )}
+                      </td>
+
+                      {/* IP */}
+                      <td className={`${s.td} ${s.tdIp}`} dir="ltr">
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <span className={s.actorId} dir="ltr">
-                              {log.actorId ? `${log.actorId.slice(0, 8)}…` : '—'}
-                            </span>
+                            <span className={s.ip}>{log.ip ?? '—'}</span>
                           </TooltipTrigger>
-                          {log.actorId && (
+                          {log.ip && (
                             <TooltipContent side="bottom" className={s.tooltip}>
-                              <span dir="ltr">{log.actorId}</span>
+                              {log.ip}
                             </TooltipContent>
                           )}
                         </Tooltip>
-                        {log.actorRole && <span className={s.actorRole}>{log.actorRole}</span>}
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Action */}
-                    <td className={s.td}>
-                      <div className={s.actionCell}>
-                        <span
-                          className={`${s.actionDot} ${getActionDot(log.action)}`}
-                          aria-hidden
-                        />
-                        <Badge className={`${s.actionBadge} ${getActionVariant(log.action)}`}>
-                          {log.action}
-                        </Badge>
-                      </div>
-                    </td>
-
-                    {/* Entity */}
-                    <td className={s.td}>
-                      {log.entityType ? (
-                        <span className={s.entity}>{log.entityType}</span>
-                      ) : (
-                        <span className={s.emptyCell}>—</span>
-                      )}
-                    </td>
-
-                    {/* IP */}
-                    <td className={`${s.td} ${s.tdIp}`} dir="ltr">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className={s.ip}>{log.ip ?? '—'}</span>
-                        </TooltipTrigger>
-                        {log.ip && (
-                          <TooltipContent side="bottom" className={s.tooltip}>
-                            {log.ip}
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </td>
-
-                    {/* Row dropdown */}
-                    <td className={`${s.td} ${s.tdAction}`} onClick={(e) => e.stopPropagation()}>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            type="button"
-                            className={s.rowBtn}
-                            aria-label={`اقدامات ردیف ${log.action}`}
-                            tabIndex={-1}
+                      {/* Row dropdown */}
+                      <td className={`${s.td} ${s.tdAction}`} onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              type="button"
+                              className={s.rowBtn}
+                              aria-label={`اقدامات ردیف ${log.action}`}
+                              tabIndex={-1}
+                            >
+                              <MoreHorizontal size={15} aria-hidden />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            side="bottom"
+                            className={s.dropdownContent}
                           >
-                            <MoreHorizontal size={15} aria-hidden />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          side="bottom"
-                          className={s.dropdownContent}
-                        >
-                          <DropdownMenuLabel className={s.dropdownLabel}>اقدامات</DropdownMenuLabel>
-                          <DropdownMenuSeparator className={s.dropdownSep} />
+                            <DropdownMenuLabel className={s.dropdownLabel}>
+                              اقدامات
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator className={s.dropdownSep} />
 
-                          {/* View detail */}
-                          <DropdownMenuItem
-                            className={s.dropdownItem}
-                            onSelect={() => setSelectedLog(log)}
-                          >
-                            <Eye size={14} className={s.dropdownIcon} aria-hidden />
-                            مشاهده جزئیات
-                          </DropdownMenuItem>
-
-                          {/* Copy action */}
-                          <DropdownMenuItem
-                            className={s.dropdownItem}
-                            onSelect={() => copy(log.action, `action-${log.id}`)}
-                          >
-                            <ClipboardCopy size={14} className={s.dropdownIcon} aria-hidden />
-                            کپی اقدام
-                          </DropdownMenuItem>
-
-                          {/* Copy actor */}
-                          {log.actorId && (
+                            {/* View detail */}
                             <DropdownMenuItem
                               className={s.dropdownItem}
-                              onSelect={() => copy(log.actorId!, `actor-${log.id}`)}
+                              onSelect={() => setSelectedLog(log)}
                             >
-                              <ClipboardCopy size={14} className={s.dropdownIcon} aria-hidden />
-                              کپی شناسه کنشگر
+                              <Eye size={14} className={s.dropdownIcon} aria-hidden />
+                              مشاهده جزئیات
                             </DropdownMenuItem>
-                          )}
 
-                          {/* Copy IP */}
-                          {log.ip && (
+                            {/* Copy action */}
                             <DropdownMenuItem
                               className={s.dropdownItem}
-                              onSelect={() => copy(log.ip!, `ip-${log.id}`)}
+                              onSelect={() => copy(log.action, `action-${log.id}`)}
                             >
                               <ClipboardCopy size={14} className={s.dropdownIcon} aria-hidden />
-                              کپی آدرس IP
+                              کپی اقدام
                             </DropdownMenuItem>
-                          )}
 
-                          <DropdownMenuSeparator className={s.dropdownSep} />
+                            {/* Copy actor */}
+                            {log.actorId && (
+                              <DropdownMenuItem
+                                className={s.dropdownItem}
+                                onSelect={() => copy(log.actorId!, `actor-${log.id}`)}
+                              >
+                                <ClipboardCopy size={14} className={s.dropdownIcon} aria-hidden />
+                                کپی شناسه کنشگر
+                              </DropdownMenuItem>
+                            )}
 
-                          {/* Filter by this category */}
-                          <DropdownMenuItem
-                            className={s.dropdownItem}
-                            onSelect={() => setTab(getCategory(log.action))}
-                          >
-                            <Filter size={14} className={s.dropdownIcon} aria-hidden />
-                            فیلتر این دسته
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                            {/* Copy IP */}
+                            {log.ip && (
+                              <DropdownMenuItem
+                                className={s.dropdownItem}
+                                onSelect={() => copy(log.ip!, `ip-${log.id}`)}
+                              >
+                                <ClipboardCopy size={14} className={s.dropdownIcon} aria-hidden />
+                                کپی آدرس IP
+                              </DropdownMenuItem>
+                            )}
+
+                            <DropdownMenuSeparator className={s.dropdownSep} />
+
+                            {/* Filter by this category */}
+                            <DropdownMenuItem
+                              className={s.dropdownItem}
+                              onSelect={() => setTab(getCategory(log.action))}
+                            >
+                              <Filter size={14} className={s.dropdownIcon} aria-hidden />
+                              فیلتر این دسته
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
 

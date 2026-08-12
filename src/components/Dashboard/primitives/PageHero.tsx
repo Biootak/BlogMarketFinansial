@@ -27,6 +27,8 @@ export interface PageHeroProps {
   icon?: ComponentType<{ className?: string }>;
   iconAs?: ElementType;
   className?: string;
+  /** Optional signature visual element (SVG, illustration, etc.) */
+  signature?: ReactNode;
 }
 
 export function PageHero({
@@ -38,6 +40,7 @@ export function PageHero({
   icon: IconComp,
   iconAs: IconAs = 'div',
   className,
+  signature,
 }: PageHeroProps) {
   const crumbs = breadcrumb ?? [];
   const hasCrumbs = crumbs.length > 0 || !!eyebrow;
@@ -47,6 +50,9 @@ export function PageHero({
       {/* Gradient wash layers */}
       <span className={s.washPrimary} aria-hidden />
       <span className={s.washSecondary} aria-hidden />
+
+      {/* Signature visual element */}
+      {signature && <div className={s.signature}>{signature}</div>}
 
       <div className={s.inner}>
         {/* ── Breadcrumb rail ── */}

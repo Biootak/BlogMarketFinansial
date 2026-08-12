@@ -256,43 +256,50 @@ export default function MyDealsClient() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [detailDeal, setDetailDeal] = useState<DealRow | null>(null);
   const pageRef = useRef(page);
   pageRef.current = page;
 
-  const fetchDeals = useCallback(async (p: number) => {
-    setLoading(true);
-    setError(null);
-    const result = await getMyDeals({ page: p, limit: PAGE_LIMIT });
-    if (result.success && result.data) {
-      setDeals(result.data.deals);
-      setTotalPages(result.data.pagination.totalPages);
-      setTotal(result.data.pagination.total);
-    } else {
-      setError(!result.success && result.error?.message ? result.error.message : 'خطایی رخ داد.');
-    }
-    setLoading(false);
-  }, []);
+  const fetchDeals = useCallback(
+    async (p: number) => {
+      setLoading(true);
+      setError(null);
+      const result = await getMyDeals({
+        page: p,
+        limit: PAGE_LIMIT,
+        status: statusFilter === 'ALL' ? undefined : statusFilter,
+      });
+      if (result.success && result.data) {
+        setDeals(result.data.deals);
+        setTotalPages(result.data.pagination.totalPages);
+        setTotal(result.data.pagination.total);
+        setStatusCounts(result.data.statusCounts);
+      } else {
+        setError(!result.success && result.error?.message ? result.error.message : 'خطایی رخ داد.');
+      }
+      setLoading(false);
+    },
+    [statusFilter],
+  );
 
   useEffect(() => {
     fetchDeals(page);
-  }, [fetchDeals, page]);
+  }, [fetchDeals, page, statusFilter]);
 
-  // ── KPI calculations ──────────────────────────────────────────────────────
+  // ── KPI calculations — سرور-محور (کل معاملات، نه فقط صفحهٔ فعلی) ───────────
   const kpi = useMemo(() => {
-    const pending = deals.filter((d) => d.status === 'PENDING').length;
-    const completed = deals.filter((d) => d.status === 'COMPLETED').length;
-    const cancelled = deals.filter((d) => d.status === 'CANCELLED').length;
-    const completionPct = deals.length > 0 ? (completed / deals.length) * 100 : 0;
+    const pending = statusCounts.PENDING ?? 0;
+    const completed = statusCounts.COMPLETED ?? 0;
+    const cancelled = statusCounts.CANCELLED ?? 0;
+    const completionPct = total > 0 ? (completed / total) * 100 : 0;
     return { pending, completed, cancelled, completionPct };
-  }, [deals]);
+  }, [statusCounts, total]);
 
-  // ── Client-side status filter ──────────────────────────────────────────────
-  const filtered = useMemo(() => {
-    if (statusFilter === 'ALL') return deals;
-    return deals.filter((d) => d.status === statusFilter);
-  }, [deals, statusFilter]);
+  // فیلتر سمت سرور انجام می‌شود (getMyDeals با status) — فقط صفحهٔ جاری را
+  // نمی‌فیلتر می‌کند؛ `deals` همیشه همهٔ ردیف‌های مطابق وضعیت را دارد.
+  const filtered = deals;
 
   return (
     <div className={s.page} dir="rtl">
@@ -317,7 +324,7 @@ export default function MyDealsClient() {
       />
 
       {/* ── KPI strip ── */}
-      {!loading && deals.length > 0 && (
+      {!loading && total > 0 && (
         <div className={s.kpiStrip} aria-label="خلاصه معاملات">
           <div className={s.kpiCard}>
             <div className={s.kpiIconWrap} data-color="brand" aria-hidden>
@@ -364,10 +371,10 @@ export default function MyDealsClient() {
       )}
 
       {/* ── Filter tabs ── */}
-      {!loading && deals.length > 0 && (
+      {!loading && total > 0 && (
         <nav className={s.filterNav} role="tablist" aria-label="فیلتر وضعیت">
           {STATUS_FILTERS.map((f) => {
-            const count = f === 'ALL' ? deals.length : deals.filter((d) => d.status === f).length;
+            const count = f === 'ALL' ? total : (statusCounts[f] ?? 0);
             return (
               <button
                 key={f}
@@ -375,7 +382,10 @@ export default function MyDealsClient() {
                 role="tab"
                 aria-selected={statusFilter === f}
                 className={`${s.filterBtn} ${statusFilter === f ? s.filterBtnActive : ''}`}
-                onClick={() => setStatusFilter(f)}
+                onClick={() => {
+                  setPage(1);
+                  setStatusFilter(f);
+                }}
               >
                 {f === 'ALL' ? 'همه' : (STATUS_META[f]?.label ?? f)}
                 {count > 0 && <span className={s.filterCount}>{_faNum.format(count)}</span>}
@@ -411,8 +421,8 @@ export default function MyDealsClient() {
         </div>
       )}
 
-      {/* ── Empty ── */}
-      {!loading && !error && deals.length === 0 && (
+      {/* ── Empty (بدون هیچ معامله‌ای) ── */}
+      {!loading && !error && total === 0 && (
         <MillionDollarEmpty
           variant="chart"
           tone="primary"
@@ -485,8 +495,8 @@ export default function MyDealsClient() {
         </ul>
       )}
 
-      {/* ── Filtered empty ── */}
-      {!loading && !error && deals.length > 0 && filtered.length === 0 && (
+      {/* ── Filtered empty (فیلتر نتیجه‌ای ندارد) ── */}
+      {!loading && !error && total > 0 && deals.length === 0 && (
         <div className={s.filteredEmpty}>
           <span>هیچ معامله‌ای با این وضعیت یافت نشد</span>
           <button type="button" className={s.clearFilter} onClick={() => setStatusFilter('ALL')}>

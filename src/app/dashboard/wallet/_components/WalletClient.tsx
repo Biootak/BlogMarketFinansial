@@ -369,8 +369,21 @@ function WithdrawModal({
         return;
       }
       setResult(res.data);
-      if (res.data.needsOtp) setStep(2);
-      else setStep(3);
+      if (res.data.needsOtp) {
+        setStep(2);
+        return;
+      }
+      // مبالغ زیر آستانه OTP هم باید تأیید نهایی شوند — در غیر این صورت تراکنش
+      // برای همیشه PENDING می‌ماند (هیچ مسیر ادمینی برای تکمیل آن وجود ندارد).
+      const confirmRes = await confirmWithdraw({
+        txnId: res.data.txnId,
+        txnRef: res.data.txnRef,
+      });
+      if (!confirmRes.success) {
+        setError(confirmRes.error.message);
+        return;
+      }
+      setStep(3);
     });
   }, [amountCents, currency, dest, maxCents]);
 
@@ -528,7 +541,7 @@ function WithdrawModal({
               <p className={s.successTitle}>درخواست برداشت ثبت شد</p>
               <p className={s.successAmt}>{fmtAFN(String(amountCents))}</p>
             </div>
-            <p className={s.modalHint}>مبلغ پس از بررسی توسط صرافی واریز می‌شود.</p>
+            <p className={s.modalHint}>برداشت شما با موفقیت ثبت و از حساب کسر شد.</p>
             <button type="button" className={s.outlineBtn} onClick={onClose}>
               بستن
             </button>
@@ -836,7 +849,27 @@ export function WalletClient({ walletData, userRole }: Props) {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [activeAccountIdx, setActiveAccountIdx] = useState(0);
+  // موجودی‌ها در state محلی — بعد از واریز/برداشت/تبدیل از API رفرش می‌شوند
+  // تا hero بدون رفرش کامل صفحه آپدیت شود.
+  const [accounts, setAccounts] = useState<Account[]>(walletData?.accounts ?? []);
   const abortRef = useRef<AbortController | null>(null);
+
+  const refreshAccounts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/customer/wallet', { cache: 'no-store' });
+      if (!res.ok) return;
+      const json = (await res.json()) as {
+        success: boolean;
+        data?: { accounts?: Account[] };
+      };
+      if (!json.success || !json.data?.accounts) return;
+      setAccounts(json.data.accounts);
+      const idx = Math.min(activeAccountIdx, json.data.accounts.length - 1);
+      if (idx >= 0 && idx !== activeAccountIdx) setActiveAccountIdx(idx);
+    } catch {
+      // رفرش موجودی خطای خاموش — داده‌ی قبلی همچنان معتبر است
+    }
+  }, [activeAccountIdx]);
 
   const fetchEntries = useCallback(async (cursor?: string) => {
     const isMore = !!cursor;
@@ -875,13 +908,16 @@ export function WalletClient({ walletData, userRole }: Props) {
     return () => abortRef.current?.abort();
   }, [fetchEntries]);
 
-  // refresh ledger after modal close
+  // refresh ledger + balances after modal close
   const handleModalClose = useCallback(
     (refreshNeeded = false) => {
       setActiveModal(null);
-      if (refreshNeeded) fetchEntries();
+      if (refreshNeeded) {
+        fetchEntries();
+        refreshAccounts();
+      }
     },
-    [fetchEntries],
+    [fetchEntries, refreshAccounts],
   );
 
   if (!walletData) {
@@ -899,7 +935,7 @@ export function WalletClient({ walletData, userRole }: Props) {
     );
   }
 
-  const primaryAccount = walletData.accounts[activeAccountIdx] ?? walletData.accounts[0];
+  const primaryAccount = accounts[activeAccountIdx] ?? accounts[0];
   const kycApproved = walletData.kycStatus === 'APPROVED';
   const maxCents = primaryAccount ? Number(primaryAccount.balance) : 0;
 
@@ -960,9 +996,9 @@ export function WalletClient({ walletData, userRole }: Props) {
         </div>
 
         {/* Account switcher */}
-        {walletData.accounts.length > 1 && (
+        {accounts.length > 1 && (
           <div className={s.accountTabs} role="tablist" aria-label="انتخاب حساب">
-            {walletData.accounts.map((a, i) => (
+            {accounts.map((a, i) => (
               <button
                 key={a.id}
                 type="button"
@@ -1150,7 +1186,7 @@ export function WalletClient({ walletData, userRole }: Props) {
       )}
       {activeModal === 'fx' && (
         <FxTradeModal
-          accounts={walletData.accounts}
+          accounts={accounts}
           defaultFrom={primaryAccount?.currency ?? 'AFN'}
           onClose={() => handleModalClose(true)}
         />

@@ -1,30 +1,32 @@
 'use client';
 
 /**
- * CommentsClient — مدیریت نظرات (redesigned 2026)
+ * CommentsClient — مدیریت نظرات (2026)
  *
- * New architecture: PageHero → KPI strip → InsightLayout with a framed
- * DataPanel (tabs + search + table) and a moderation rail (status donut,
- * top commenters, quick-approve pending queue). All moderation logic is
- * unchanged; the rail adds quick actions without extra API calls.
+ * تب‌ها: همه | در انتظار | تأییدشده | ردشده
+ * سناریوها:
+ *   pending  → تأیید: مستقیم
+ *   pending  → رد: confirm dialog (ساده — فقط رد/انصراف)
+ *   approved → لغو تأیید: مستقیم (بدون dialog)
+ *   rejected → تأیید: مستقیم
+ *   rejected → بازگشت به انتظار: مستقیم
+ *   هر نظر  → حذف: confirm dialog با warning
  */
 
 import {
   type CommentRow,
-  bulkApproveComments,
-  bulkDeleteComments,
-  bulkRejectComments,
+  approveComment,
   deleteComment,
   getComments,
-  setCommentApproval,
+  rejectComment,
+  restoreComment,
+  unapproveComment,
 } from '@/actions/comments-actions';
 import {
   BarList,
-  type Column,
   ConfirmDialog,
-  DataPanel,
-  DataTable,
-  ExportButton,
+  Donut,
+  type DonutSegment,
   InsightCard,
   InsightLayout,
   InsightPanel,
@@ -32,86 +34,103 @@ import {
   MillionDollarEmpty,
   PageHero,
   SearchInput,
-  SplitBar,
-  type SplitBarSegment,
   StatGrid,
-  TableToolbar,
 } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import {
+  ArrowRight,
+  Ban,
   CheckCheck,
   FileText,
   Inbox,
   MessageSquare,
   MessagesSquare,
-  Trash2,
+  Plus,
   Users,
-  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import s from './CommentsClient.module.css';
+import { ModerationCard } from './ModerationCard';
 
 const fa = new Intl.NumberFormat('fa-IR');
 const PAGE_SIZE = 40;
-type Tab = 'all' | 'pending' | 'approved';
+type Tab = 'all' | 'pending' | 'approved' | 'rejected';
+
+const TAB_CONFIG: Record<Tab, { label: string; icon: typeof Inbox }> = {
+  all: { label: 'همه', icon: MessagesSquare },
+  pending: { label: 'در انتظار', icon: Inbox },
+  approved: { label: 'تأییدشده', icon: CheckCheck },
+  rejected: { label: 'ردشده', icon: Ban },
+};
 
 interface Props {
-  initial: { rows: CommentRow[]; total: number; pending: number; approved: number } | null;
+  initial: {
+    rows: CommentRow[];
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+  } | null;
 }
 
 export default function CommentsClient({ initial }: Props) {
   const { toast } = useToast();
-  const [, startTransition] = useTransition();
-  // آیتم‌های اولیه بر اساس تب پیش‌فرض («در انتظار») فیلتر می‌شوند تا اولین paint با تب هماهنگ باشد.
+  const [isPending, startTransition] = useTransition();
+
+  // شروع با تب pending — items بر اساس تب اولیه
+  // fallback: اگه status هنوز از server نیومده، بر اساس approved محاسبه میشه
   const [items, setItems] = useState<CommentRow[]>(() =>
-    (initial?.rows ?? []).filter((r) => !r.approved),
+    (initial?.rows ?? []).filter((r) => (r.status ?? (r.approved ? 'approved' : 'pending')) === 'pending'),
   );
   const [total, setTotal] = useState(initial?.total ?? 0);
   const [pendingCount, setPendingCount] = useState(initial?.pending ?? 0);
   const [approvedCount, setApprovedCount] = useState(initial?.approved ?? 0);
+  const [rejectedCount, setRejectedCount] = useState(initial?.rejected ?? 0);
   const [tab, setTab] = useState<Tab>('pending');
   const [search, setSearch] = useState('');
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [hasMore, setHasMore] = useState(
-    (initial?.rows ?? []).filter((r) => !r.approved).length >= PAGE_SIZE,
+    (initial?.rows ?? []).filter((r) => (r.status ?? (r.approved ? 'approved' : 'pending')) === 'pending').length >= PAGE_SIZE,
   );
   const [loading, setLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CommentRow | null>(null);
-  const [bulkDeleteCount, setBulkDeleteCount] = useState(0);
+  const [rejectTarget, setRejectTarget] = useState<CommentRow | null>(null);
 
-  // تعداد کل تب جاری (سرور-محور) — badge و footer همیشه با محتوای تب هم‌خوان هستند.
-  const tabTotal = useMemo(
-    () => (tab === 'all' ? total : tab === 'pending' ? pendingCount : approvedCount),
-    [tab, total, pendingCount, approvedCount],
-  );
+  const tabTotal = useMemo(() => {
+    if (tab === 'all') return total;
+    if (tab === 'pending') return pendingCount;
+    if (tab === 'approved') return approvedCount;
+    return rejectedCount;
+  }, [tab, total, pendingCount, approvedCount, rejectedCount]);
 
   const itemsLengthRef = useRef(items.length);
   itemsLengthRef.current = items.length;
-  // با تعویض سریع تب چند درخواست هم‌زمان ممکن است — فقط پاسخ آخرین‌شان اعمال می‌شود.
   const requestSeq = useRef(0);
 
   const fetchPage = useCallback(
     (append = false) => {
-      setLoading(true);
       const offset = append ? itemsLengthRef.current : 0;
       const seq = ++requestSeq.current;
+      setLoading(true);
       startTransition(async () => {
         try {
           const result = await getComments({ limit: PAGE_SIZE, offset, status: tab });
-          if (seq !== requestSeq.current) return; // پاسخ قدیمی — نادیده بگیر
+          if (seq !== requestSeq.current) return;
           if (result.success && result.data) {
             const d = result.data;
+            // همه state ها با هم set میشن — بدون race با loading
             setItems((prev) => (append ? [...prev, ...d.rows] : d.rows));
             setTotal(d.total);
             setPendingCount(d.pending);
             setApprovedCount(d.approved);
+            setRejectedCount(d.rejected);
             setHasMore(d.rows.length >= PAGE_SIZE);
+            setLoading(false);
+          } else {
+            setLoading(false);
           }
         } catch {
-          // خطای شبکه/سرور — حالت لودینگ را قفل نکن
-        } finally {
           if (seq === requestSeq.current) setLoading(false);
         }
       });
@@ -119,135 +138,154 @@ export default function CommentsClient({ initial }: Props) {
     [tab],
   );
 
-  // با هر تغییر تب (و اولین mount) دادهٔ سرور-محورِ همان تب واکشی می‌شود.
   useEffect(() => {
     fetchPage(false);
   }, [fetchPage]);
 
-  const switchTab = useCallback((next: Tab) => {
-    setTab(next);
-    setSelectedKeys([]);
-  }, []);
-
   const displayed = useMemo(() => {
-    let filtered = items; // تب روی سرور فیلتر شده — اینجا فقط جستجو می‌ماند
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      filtered = filtered.filter(
-        (i) =>
-          i.content.toLowerCase().includes(q) ||
-          i.authorName.toLowerCase().includes(q) ||
-          i.authorEmail.toLowerCase().includes(q) ||
-          i.postTitle.toLowerCase().includes(q),
-      );
-    }
-    return filtered;
-  }, [items, tab, search]);
+    if (!search.trim()) return items;
+    const q = search.toLowerCase();
+    return items.filter(
+      (i) =>
+        i.content.toLowerCase().includes(q) ||
+        i.authorName.toLowerCase().includes(q) ||
+        i.authorEmail.toLowerCase().includes(q) ||
+        i.postTitle.toLowerCase().includes(q),
+    );
+  }, [items, search]);
 
-  const handleApproval = useCallback(
-    (id: string, approved: boolean) => {
-      startTransition(async () => {
-        // آیتمی که دیگر با تب جاری نمی‌خواند (مثلاً تأییدشده در تب «در انتظار») از لیست خارج می‌شود.
-        setItems((prev) =>
-          prev.flatMap((item) => {
-            if (item.id !== id) return [item];
-            if ((tab === 'pending' && approved) || (tab === 'approved' && !approved)) return [];
-            return [{ ...item, approved }];
-          }),
-        );
-        setPendingCount((p) => Math.max(0, p + (approved ? -1 : 1)));
-        setApprovedCount((a) => Math.max(0, a + (approved ? 1 : -1)));
-        const result = await setCommentApproval(id, approved);
-        if (!result.success) fetchPage(false);
-      });
+  /* ── حذف item از لیست و آپدیت counter ── */
+  const removeItem = useCallback(
+    (id: string, prevStatus: 'pending' | 'approved' | 'rejected') => {
+      setItems((prev) => prev.filter((i) => i.id !== id));
+      if (prevStatus === 'pending') setPendingCount((p) => Math.max(0, p - 1));
+      else if (prevStatus === 'approved') setApprovedCount((a) => Math.max(0, a - 1));
+      else setRejectedCount((r) => Math.max(0, r - 1));
     },
-    [tab, fetchPage],
+    [],
   );
 
-  const handleBulkApprove = useCallback(() => {
+  /* ── سناریو: تأیید نظر ── */
+  const handleApprove = useCallback(
+    (id: string) => {
+      const item = items.find((i) => i.id === id);
+      if (!item) return;
+      const prevStatus = item.status;
+
+      // optimistic: حذف از تب فعلی اگر تب approved نیست
+      if (tab !== 'approved') removeItem(id, prevStatus);
+      else setItems((prev) => prev.map((i) => (i.id === id ? { ...i, approved: true, status: 'approved' as const, rejectedAt: null } : i)));
+
+      setPendingCount((p) => (prevStatus === 'pending' ? Math.max(0, p - 1) : p));
+      setRejectedCount((r) => (prevStatus === 'rejected' ? Math.max(0, r - 1) : r));
+      setApprovedCount((a) => (prevStatus !== 'approved' ? a + 1 : a));
+
+      startTransition(async () => {
+        const result = await approveComment(id);
+        if (!result.success) {
+          toast({ title: 'خطا در تأیید', description: result.message, variant: 'destructive' });
+          fetchPage(false);
+        } else {
+          toast({ title: 'نظر تأیید شد' });
+        }
+      });
+    },
+    [items, tab, removeItem, fetchPage, toast],
+  );
+
+  /* ── سناریو: رد نظر (از pending) ── */
+  const confirmReject = useCallback(() => {
+    if (!rejectTarget) return;
+    const id = rejectTarget.id;
+    setRejectTarget(null);
+
+    // optimistic: حذف از تب pending
+    if (tab !== 'rejected') removeItem(id, 'pending');
+    setPendingCount((p) => Math.max(0, p - 1));
+    setRejectedCount((r) => r + 1);
+
     startTransition(async () => {
-      const ids = selectedKeys;
-      const affected = items.filter((i) => ids.includes(i.id) && !i.approved).length;
-      setItems((prev) =>
-        prev.flatMap((item) => {
-          if (!ids.includes(item.id)) return [item];
-          if (tab === 'pending') return []; // تأییدشده → از صف «در انتظار» خارج می‌شود
-          return [{ ...item, approved: true }];
-        }),
-      );
-      setPendingCount((p) => Math.max(0, p - affected));
-      setApprovedCount((a) => a + affected);
-      setSelectedKeys([]);
-      const result = await bulkApproveComments(ids);
-      if (result.success) toast({ title: 'نظرات تأیید شدند' });
-      else fetchPage(false);
+      const result = await rejectComment(id);
+      if (!result.success) {
+        toast({ title: 'خطا در رد نظر', description: result.message, variant: 'destructive' });
+        fetchPage(false);
+      } else {
+        toast({ title: 'نظر رد شد' });
+      }
     });
-  }, [selectedKeys, tab, items, fetchPage, toast]);
+  }, [rejectTarget, tab, removeItem, fetchPage, toast]);
 
-  const handleBulkReject = useCallback(() => {
-    startTransition(async () => {
-      const ids = selectedKeys;
-      const affected = items.filter((i) => ids.includes(i.id) && i.approved).length;
-      setItems((prev) =>
-        prev.flatMap((item) => {
-          if (!ids.includes(item.id)) return [item];
-          if (tab === 'approved') return []; // ردشده → از تب «تأییدشده» خارج می‌شود
-          return [{ ...item, approved: false }];
-        }),
-      );
-      setApprovedCount((a) => Math.max(0, a - affected));
-      setPendingCount((p) => p + affected);
-      setSelectedKeys([]);
-      const result = await bulkRejectComments(ids);
-      if (result.success) toast({ title: 'نظرات رد شدند' });
-      else fetchPage(false);
-    });
-  }, [selectedKeys, tab, items, fetchPage, toast]);
+  /* ── سناریو: لغو تأیید (approved → pending) ── */
+  const handleUnapprove = useCallback(
+    (id: string) => {
+      // optimistic: حذف از تب approved
+      if (tab === 'approved') removeItem(id, 'approved');
+      setApprovedCount((a) => Math.max(0, a - 1));
+      setPendingCount((p) => p + 1);
 
-  const handleBulkDelete = useCallback(() => {
-    setBulkDeleteCount(selectedKeys.length);
-  }, [selectedKeys]);
+      startTransition(async () => {
+        const result = await unapproveComment(id);
+        if (!result.success) {
+          toast({ title: 'خطا در لغو تأیید', description: result.message, variant: 'destructive' });
+          fetchPage(false);
+        } else {
+          toast({ title: 'تأیید نظر لغو شد — به صف انتظار برگشت' });
+        }
+      });
+    },
+    [tab, removeItem, fetchPage, toast],
+  );
 
-  const confirmBulkDelete = useCallback(() => {
-    startTransition(async () => {
-      const ids = selectedKeys;
-      const affectedApproved = items.filter((i) => ids.includes(i.id) && i.approved).length;
-      const affectedPending = items.filter((i) => ids.includes(i.id) && !i.approved).length;
-      setItems((prev) => prev.filter((item) => !ids.includes(item.id)));
-      setTotal((t) => Math.max(0, t - ids.length));
-      setApprovedCount((a) => Math.max(0, a - affectedApproved));
-      setPendingCount((p) => Math.max(0, p - affectedPending));
-      setSelectedKeys([]);
-      setBulkDeleteCount(0);
-      const result = await bulkDeleteComments(ids);
-      if (result.success) toast({ title: 'نظرات حذف شدند' });
-    });
-  }, [selectedKeys, items, toast]);
+  /* ── سناریو: بازگرداندن rejected → pending ── */
+  const handleRestore = useCallback(
+    (id: string) => {
+      if (tab === 'rejected') removeItem(id, 'rejected');
+      setRejectedCount((r) => Math.max(0, r - 1));
+      setPendingCount((p) => p + 1);
 
-  const confirmSingleDelete = useCallback(() => {
+      startTransition(async () => {
+        const result = await restoreComment(id);
+        if (!result.success) {
+          toast({ title: 'خطا', description: result.message, variant: 'destructive' });
+          fetchPage(false);
+        } else {
+          toast({ title: 'نظر به صف انتظار برگشت' });
+        }
+      });
+    },
+    [tab, removeItem, fetchPage, toast],
+  );
+
+  /* ── سناریو: حذف ── */
+  const confirmDelete = useCallback(() => {
     if (!deleteTarget) return;
+    const item = deleteTarget;
+    setDeleteTarget(null);
+
+    removeItem(item.id, item.status);
+    setTotal((t) => Math.max(0, t - 1));
+
     startTransition(async () => {
-      const item = deleteTarget;
-      setItems((prev) => prev.filter((i) => i.id !== item.id));
-      setTotal((t) => Math.max(0, t - 1));
-      if (item.approved) setApprovedCount((a) => Math.max(0, a - 1));
-      else setPendingCount((p) => Math.max(0, p - 1));
-      setDeleteTarget(null);
       const result = await deleteComment(item.id);
-      if (result.success) toast({ title: 'نظر حذف شد' });
+      if (!result.success) {
+        toast({ title: 'خطا در حذف', description: result.message, variant: 'destructive' });
+        fetchPage(false);
+      } else {
+        toast({ title: 'نظر حذف شد' });
+      }
     });
-  }, [deleteTarget, toast]);
+  }, [deleteTarget, removeItem, fetchPage, toast]);
 
   const loadMore = useCallback(() => fetchPage(true), [fetchPage]);
 
   /* ── Insights ── */
-
-  const statusSplit = useMemo<SplitBarSegment[]>(
+  const donutData: DonutSegment[] = useMemo(
     () => [
       { label: 'تأییدشده', value: approvedCount, color: 'emerald' },
       { label: 'در انتظار', value: pendingCount, color: 'amber' },
+      { label: 'ردشده', value: rejectedCount, color: 'rose' },
     ],
-    [approvedCount, pendingCount],
+    [approvedCount, pendingCount, rejectedCount],
   );
 
   const topAuthors = useMemo(() => {
@@ -258,251 +296,165 @@ export default function CommentsClient({ initial }: Props) {
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
-      .map(([name, count]) => ({
-        label: name,
-        value: count,
-        color: 'indigo' as const,
-      }));
+      .map(([name, count]) => ({ label: name, value: count, color: 'indigo' as const }));
   }, [items]);
 
-  const pendingPreview = useMemo(() => items.filter((i) => !i.approved).slice(0, 3), [items]);
-
-  const exportData = useMemo(
-    () =>
-      displayed.map((row) => ({
-        author: row.authorName,
-        email: row.authorEmail,
-        post: row.postTitle,
-        content: row.content,
-        status: row.approved ? 'تأییدشده' : 'در انتظار',
-        time: row.time,
-      })),
-    [displayed],
+  const pendingPreview = useMemo(
+    () => items.filter((i) => (i.status ?? (i.approved ? 'approved' : 'pending')) === 'pending').slice(0, 3),
+    [items],
   );
 
-  const exportColumns = [
-    { key: 'author', header: 'نویسنده' },
-    { key: 'email', header: 'ایمیل' },
-    { key: 'post', header: 'مقاله' },
-    { key: 'content', header: 'متن' },
-    { key: 'status', header: 'وضعیت' },
-    { key: 'time', header: 'تاریخ' },
-  ];
-
-  const columns: Column<CommentRow>[] = useMemo(
-    () => [
-      {
-        key: 'author',
-        header: 'نویسنده',
-        render: (item) => (
-          <div className={s.userCell}>
-            <div className={s.avatar}>{item.authorName.charAt(0)}</div>
-            <div className={s.userInfo}>
-              <span className={s.userName}>{item.authorName}</span>
-              <span className={s.userEmail}>{item.authorEmail}</span>
-            </div>
-          </div>
-        ),
-      },
-      {
-        key: 'post',
-        header: 'مقاله',
-        collapse: true,
-        render: (item) => (
-          <a href={`/dashboard/posts/edit/${item.postId}`} className={s.postLink}>
-            {item.postTitle}
-          </a>
-        ),
-      },
-      {
-        key: 'content',
-        header: 'متن',
-        render: (item) => (
-          <div className={s.contentCell}>
-            <span className={s.content}>{item.content}</span>
-            {item.replyCount > 0 && (
-              <span className={s.replyBadge}>{fa.format(item.replyCount)} پاسخ</span>
-            )}
-          </div>
-        ),
-      },
-      {
-        key: 'status',
-        header: 'وضعیت',
-        render: (item) => (
-          <span className={`${s.pill} ${item.approved ? s.pillOk : s.pillWarn}`}>
-            {item.approved ? 'تأییدشده' : 'در انتظار'}
-          </span>
-        ),
-      },
-      {
-        key: 'time',
-        header: 'تاریخ',
-        collapse: true,
-        render: (item) => <span className={s.time}>{item.time}</span>,
-      },
-      {
-        key: 'actions',
-        header: '',
-        render: (item) => (
-          <div className={s.rowActions}>
-            <button
-              type="button"
-              className={`${s.iconBtn} ${item.approved ? s.iconAmber : s.iconGreen}`}
-              onClick={() => handleApproval(item.id, !item.approved)}
-              title={item.approved ? 'لغو تأیید' : 'تأیید'}
-            >
-              {item.approved ? <X size={16} /> : <CheckCheck size={16} />}
-            </button>
-            <button
-              type="button"
-              className={`${s.iconBtn} ${s.iconDanger}`}
-              onClick={() => setDeleteTarget(item)}
-              title="حذف"
-            >
-              <Trash2 size={13} />
-            </button>
-          </div>
-        ),
-      },
-    ],
-    [handleApproval],
-  );
+  const isEmpty = !loading && !isPending && displayed.length === 0;
 
   return (
     <div className={s.root}>
+      {/* ── Hero ── */}
       <PageHero
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'نظرات' }]}
         eyebrow="محتوا"
         title="مدیریت نظرات"
-        description="بررسی، تأیید و مدیریت نظرات کاربران مقالات"
+        description="بررسی، تأیید و مدیریت نظرات کاربران روی مقالات"
+        icon={MessageSquare}
         actions={
           pendingCount > 0 ? (
             <button type="button" className={s.headerChip} onClick={() => setTab('pending')}>
-              <Inbox size={13} />
+              <Inbox size={13} strokeWidth={1.75} />
               {fa.format(pendingCount)} در انتظار
             </button>
           ) : undefined
         }
       />
 
-      <StatGrid cols={3}>
-        <KpiCard label="کل نظرات" value={total} icon={MessageSquare} />
+      {/* ── KPI Strip ── */}
+      <StatGrid cols={4}>
+        <KpiCard label="کل نظرات" value={total} icon={MessagesSquare} />
         <KpiCard label="در انتظار" value={pendingCount} icon={Inbox} />
         <KpiCard label="تأییدشده" value={approvedCount} icon={CheckCheck} />
+        <KpiCard label="ردشده" value={rejectedCount} icon={Ban} />
       </StatGrid>
 
-      {selectedKeys.length > 0 && (
-        <div className={s.bulkBar}>
-          <span className={s.bulkCount}>{fa.format(selectedKeys.length)} مورد انتخاب شده</span>
-          <div className={s.bulkActions}>
-            <Button size="sm" onClick={handleBulkApprove}>
-              <CheckCheck size={14} />
-              <span className={s.btnLabel}>تأیید</span>
-            </Button>
-            <Button size="sm" variant="secondary" onClick={handleBulkReject}>
-              <X size={14} />
-              <span className={s.btnLabel}>رد</span>
-            </Button>
-            <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
-              <Trash2 size={14} />
-              <span className={s.btnLabel}>حذف</span>
-            </Button>
-          </div>
-        </div>
-      )}
-
+      {/* ── Main + Aside ── */}
       <InsightLayout
         main={
-          <DataPanel
-            title="نظرات"
-            icon={<MessagesSquare size={14} strokeWidth={1.75} />}
-            count={fa.format(tabTotal)}
-            footer={
-              <div className={s.foot}>
-                {hasMore && !loading ? (
-                  <Button size="sm" variant="outline" onClick={loadMore} className={s.loadMore}>
-                    بارگذاری بیشتر
-                  </Button>
-                ) : null}
-                <span className={s.footCount}>
-                  نمایش {fa.format(displayed.length)} از {fa.format(tabTotal)} نظر
-                </span>
-              </div>
-            }
-          >
-            <TableToolbar
-              filters={
-                <div className={s.tabs}>
-                  {(
-                    [
-                      { key: 'all', label: 'همه', count: total },
-                      { key: 'pending', label: 'در انتظار', count: pendingCount },
-                      { key: 'approved', label: 'تأییدشده', count: approvedCount },
-                    ] as const
-                  ).map((t) => (
+          <div className={s.mainPanel}>
+            {/* Tab bar + Search */}
+            <div className={s.toolbar}>
+              <div className={s.tabs}>
+                {(Object.keys(TAB_CONFIG) as Tab[]).map((key) => {
+                  const cfg = TAB_CONFIG[key];
+                  const isActive = tab === key;
+                  const count =
+                    key === 'all'
+                      ? total
+                      : key === 'pending'
+                        ? pendingCount
+                        : key === 'approved'
+                          ? approvedCount
+                          : rejectedCount;
+                  return (
                     <button
-                      key={t.key}
+                      key={key}
                       type="button"
-                      className={t.key === tab ? `${s.tab} ${s.tabActive}` : s.tab}
-                      onClick={() => switchTab(t.key)}
+                      className={`${s.tab} ${isActive ? s.tabActive : ''} ${key === 'rejected' ? s.tabRejected : ''}`}
+                      onClick={() => setTab(key)}
                     >
-                      {t.label}
-                      <span className={s.tabBadge}>{fa.format(t.count)}</span>
+                      <cfg.icon size={14} strokeWidth={1.75} />
+                      <span className={s.tabLabel}>{cfg.label}</span>
+                      <span className={`${s.tabBadge} ${key === 'rejected' && count > 0 ? s.tabBadgeRejected : ''}`}>
+                        {fa.format(count)}
+                      </span>
                     </button>
-                  ))}
-                </div>
-              }
-              search={
-                <SearchInput value={search} onChange={setSearch} placeholder="جستجو در نظرات..." />
-              }
-              actions={
-                displayed.length > 0 ? (
-                  <ExportButton
-                    data={exportData}
-                    columns={exportColumns}
-                    filename="comments-export"
-                    label="خروجی"
-                  />
-                ) : undefined
-              }
-            />
+                  );
+                })}
+              </div>
+              <SearchInput value={search} onChange={setSearch} placeholder="جستجو در نظرات..." />
+            </div>
 
-            <DataTable
-              columns={columns}
-              rows={displayed}
-              rowKey={(row) => row.id}
-              selectable
-              selectedKeys={selectedKeys}
-              onSelectionChange={setSelectedKeys}
-              loading={loading}
-              empty={
-                <MillionDollarEmpty
-                  variant="inbox"
-                  eyebrow="مدیریت نظرات"
-                  title={search ? 'نظری یافت نشد' : 'هنوز نظری نیست'}
-                  description={
-                    search
-                      ? 'جستجوی خود را تغییر دهید'
-                      : 'وقتی کاربران نظر بدهند، اینجا نمایش داده می‌شود'
-                  }
-                  tone="primary"
-                />
-              }
-            />
-          </DataPanel>
+            {/* ── Moderation Feed ── */}
+            {isEmpty ? (
+              <MillionDollarEmpty
+                variant="inbox"
+                eyebrow="نظرات"
+                title={
+                  tab === 'pending'
+                    ? 'هیچ نظری در انتظار نیست'
+                    : tab === 'approved'
+                      ? 'هیچ نظر تأییدشده‌ای وجود ندارد'
+                      : tab === 'rejected'
+                        ? 'هیچ نظر ردشده‌ای وجود ندارد'
+                        : 'هنوز نظری ثبت نشده است'
+                }
+                description={
+                  tab === 'pending'
+                    ? 'وقتی نظرات جدید ارسال شوند، اینجا نمایش داده می‌شوند'
+                    : tab === 'rejected'
+                      ? 'نظراتی که رد می‌شوند اینجا نمایش داده می‌شوند'
+                      : 'وقتی نظرات ثبت و مدیریت شوند، اینجا نمایش داده می‌شوند'
+                }
+                tone={tab === 'pending' ? 'amber' : tab === 'rejected' ? 'rose' : 'neutral'}
+              />
+            ) : (
+              <div className={s.feed}>
+                {loading && items.length === 0 ? (
+                  <div className={s.skeletonFeed}>
+                    <div className={s.skeletonCard} />
+                    <div className={s.skeletonCard} />
+                    <div className={s.skeletonCard} />
+                  </div>
+                ) : (
+                  <>
+                    {displayed.map((comment) => (
+                      <ModerationCard
+                        key={comment.id}
+                        comment={comment}
+                        onApprove={handleApprove}
+                        onRejectRequest={(id) => {
+                          const item = displayed.find((c) => c.id === id);
+                          if (item) setRejectTarget(item);
+                        }}
+                        onUnapprove={handleUnapprove}
+                        onRestore={handleRestore}
+                        onDelete={(id) => {
+                          const item = displayed.find((c) => c.id === id);
+                          if (item) setDeleteTarget(item);
+                        }}
+                      />
+                    ))}
+                    {hasMore && !loading && (
+                      <div className={s.loadMoreContainer}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={loadMore}
+                          className={s.loadMoreBtn}
+                        >
+                          <Plus size={14} strokeWidth={2} />
+                          بارگذاری بیشتر
+                        </Button>
+                        <span className={s.footCount}>
+                          نمایش {fa.format(displayed.length)} از {fa.format(tabTotal)} نظر
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         }
         aside={
           <InsightPanel>
-            <InsightCard title="وضعیت نظرات">
+            {/* Status Donut */}
+            <InsightCard title="وضعیت نظرات" icon={MessageSquare}>
               {total > 0 ? (
-                <SplitBar data={statusSplit} format={(v) => fa.format(v)} />
+                <Donut data={donutData} centerLabel="مجموع" centerValue={fa.format(total)} />
               ) : (
                 <p className={s.insightEmpty}>هنوز نظری ثبت نشده است</p>
               )}
             </InsightCard>
 
-            <InsightCard title="نویسندگان پرنظرات">
+            {/* Top Commenters */}
+            <InsightCard title="نویسندگان پرنظرات" icon={Users}>
               {topAuthors.length > 0 ? (
                 <BarList data={topAuthors} showShare />
               ) : (
@@ -510,7 +462,8 @@ export default function CommentsClient({ initial }: Props) {
               )}
             </InsightCard>
 
-            <InsightCard title="صف تأیید سریع">
+            {/* Quick Approve Queue */}
+            <InsightCard title="صف تأیید سریع" icon={CheckCheck}>
               {pendingPreview.length > 0 ? (
                 <ul className={s.pendingList}>
                   {pendingPreview.map((item) => (
@@ -522,27 +475,28 @@ export default function CommentsClient({ initial }: Props) {
                       <button
                         type="button"
                         className={`${s.iconBtn} ${s.iconGreen}`}
-                        onClick={() => handleApproval(item.id, true)}
+                        onClick={() => handleApprove(item.id)}
                         title="تأیید سریع"
                       >
-                        <CheckCheck size={15} />
+                        <CheckCheck size={15} strokeWidth={1.75} />
                       </button>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className={s.insightEmpty}>صف انتظار خالی است — همه تأیید شده‌اند</p>
+                <p className={s.insightEmpty}>صف انتظار خالی است</p>
               )}
             </InsightCard>
 
-            <InsightCard title="دسترسی سریع">
+            {/* Quick Links */}
+            <InsightCard title="دسترسی سریع" icon={ArrowRight}>
               <div className={s.quickLinks}>
                 <Link href="/dashboard/posts" className={s.quickLink}>
-                  <FileText size={14} />
+                  <FileText size={14} strokeWidth={1.75} />
                   مقالات
                 </Link>
                 <Link href="/dashboard/users" className={s.quickLink}>
-                  <Users size={14} />
+                  <Users size={14} strokeWidth={1.75} />
                   کاربران
                 </Link>
               </div>
@@ -551,24 +505,27 @@ export default function CommentsClient({ initial }: Props) {
         }
       />
 
+      {/* ── Delete Confirm ── */}
       <ConfirmDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title="حذف نظر"
-        description="این نظر حذف می‌شود. این عمل قابل بازگشت نیست."
+        description="این نظر حذف می‌شود."
+        warning="این عمل قابل بازگشت نیست — نظر و تمام پاسخ‌های آن برای همیشه از بین می‌رود."
         confirmLabel="حذف شود"
-        onConfirm={confirmSingleDelete}
+        onConfirm={confirmDelete}
         variant="danger"
       />
 
+      {/* ── Reject Confirm (ساده — فقط رد/انصراف) ── */}
       <ConfirmDialog
-        open={bulkDeleteCount > 0}
-        onOpenChange={(open) => !open && setBulkDeleteCount(0)}
-        title="حذف گروهی"
-        description={`${fa.format(bulkDeleteCount)} نظر حذف می‌شود. این عمل قابل بازگشت نیست.`}
-        confirmLabel="حذف شود"
-        onConfirm={confirmBulkDelete}
-        variant="danger"
+        open={!!rejectTarget}
+        onOpenChange={(open) => !open && setRejectTarget(null)}
+        title="رد نظر"
+        description="این نظر رد می‌شود و در لیست ردشده‌ها قرار می‌گیرد."
+        confirmLabel="رد شود"
+        onConfirm={confirmReject}
+        variant="caution"
       />
     </div>
   );

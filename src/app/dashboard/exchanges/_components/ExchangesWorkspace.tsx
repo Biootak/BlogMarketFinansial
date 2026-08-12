@@ -325,10 +325,7 @@ interface Props {
   initialStatusFilter?: SwitchboardId;
 }
 
-export default function ExchangesWorkspace({
-  initialExchanges,
-  initialStatusFilter,
-}: Props) {
+export default function ExchangesWorkspace({ initialExchanges, initialStatusFilter }: Props) {
   const router = useRouter();
   const [rows, setRows] = useState(initialExchanges);
   const [query, setQuery] = useState('');
@@ -581,9 +578,8 @@ export default function ExchangesWorkspace({
   const mosaic = useMemo(() => {
     const lead =
       filtered.length > 0
-        ? [...filtered].sort(
-            (a, b) => (b._count?.Customer ?? 0) - (a._count?.Customer ?? 0),
-          )[0] ?? null
+        ? ([...filtered].sort((a, b) => (b._count?.Customer ?? 0) - (a._count?.Customer ?? 0))[0] ??
+          null)
         : null;
     const rest = filtered.filter((r) => !lead || r.id !== lead.id);
     // wide ها: ۲ صرافی بعدی که بیشترین مشتری دارند

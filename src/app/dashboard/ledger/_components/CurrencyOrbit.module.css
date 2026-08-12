@@ -138,8 +138,7 @@
   block-size: 0.55rem;
   border-radius: var(--ds-radius-full);
   flex-shrink: 0;
-  box-shadow: 0 0 0 2px
-    color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 80%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 80%, transparent);
 }
 
 .legendCode {

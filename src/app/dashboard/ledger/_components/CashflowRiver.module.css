@@ -100,7 +100,9 @@
 
 .terminalDot {
   fill: var(--nova-up, var(--ds-accent-emerald));
-  filter: drop-shadow(0 0 0.3rem color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 60%, transparent));
+  filter: drop-shadow(
+    0 0 0.3rem color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 60%, transparent)
+  );
 }
 
 .terminalHalo {
@@ -109,7 +111,8 @@
 }
 
 @keyframes terminalPulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.7;
   }
@@ -144,11 +147,7 @@
 }
 
 .scaleLineLow {
-  background: linear-gradient(
-    to left,
-    transparent,
-    var(--nova-border, var(--ds-border-subtle))
-  );
+  background: linear-gradient(to left, transparent, var(--nova-border, var(--ds-border-subtle)));
 }
 
 /* ── Dark ── */

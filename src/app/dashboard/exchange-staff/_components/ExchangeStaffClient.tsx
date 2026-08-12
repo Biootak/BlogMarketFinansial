@@ -20,9 +20,11 @@ import {
 import type { ExchangeRow } from '@/actions/exchanges';
 import {
   ConfirmDialog,
+  DensityToggle,
   MillionDollarEmpty,
   PageHeader,
   SearchInput,
+  useTableDensity,
 } from '@/components/Dashboard/primitives';
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import {
@@ -143,6 +145,7 @@ function UserAvatar({ name, image }: { name: string | null; image: string | null
 export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: Props) {
   const router = useRouter();
   const { toast } = useToast();
+  const { density } = useTableDensity();
   const [rows, setRows] = useState(initialStaff);
   const [query, setQuery] = useState('');
   const [exchangeFilter, setExchangeFilter] = useState('all');
@@ -547,100 +550,105 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
                 }
               />
             ) : (
-              <table className={s.table} aria-label="لیست کارکنان صراف‌ها">
-                <thead>
-                  <tr>
-                    <th className={s.th}>کارمند</th>
-                    <th className={s.th}>صرافی</th>
-                    <th className={s.th}>نقش</th>
-                    <th className={s.th}>عنوان</th>
-                    <th className={s.th}>وضعیت</th>
-                    <th className={s.th}>تاریخ عضویت</th>
-                    <th className={s.th}>
-                      <span className="sr-only">اقدامات</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((row, idx) => (
-                    <tr
-                      key={row.id}
-                      className={[
-                        s.tr,
-                        ROW_CLASS[row.role] ?? s.rowStaff,
-                        row.revokedAt ? s.trRevoked : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')}
-                      style={{ '--ri': idx } as React.CSSProperties}
-                    >
-                      <td className={s.td}>
-                        <div className={s.userCell}>
-                          <UserAvatar name={row.userName} image={row.userImage} />
-                          <div className={s.userInfo}>
-                            <p className={s.userName}>{row.userName ?? '—'}</p>
-                            {row.userEmail && <p className={s.userEmail}>{row.userEmail}</p>}
+              <>
+                <div className="dash2-table__densitybar">
+                  <DensityToggle />
+                </div>
+                <table className={s.table} data-density={density} aria-label="لیست کارکنان صراف‌ها">
+                  <thead>
+                    <tr>
+                      <th className={s.th}>کارمند</th>
+                      <th className={s.th}>صرافی</th>
+                      <th className={s.th}>نقش</th>
+                      <th className={s.th}>عنوان</th>
+                      <th className={s.th}>وضعیت</th>
+                      <th className={s.th}>تاریخ عضویت</th>
+                      <th className={s.th}>
+                        <span className="sr-only">اقدامات</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((row, idx) => (
+                      <tr
+                        key={row.id}
+                        className={[
+                          s.tr,
+                          ROW_CLASS[row.role] ?? s.rowStaff,
+                          row.revokedAt ? s.trRevoked : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        style={{ '--ri': idx } as React.CSSProperties}
+                      >
+                        <td className={s.td}>
+                          <div className={s.userCell}>
+                            <UserAvatar name={row.userName} image={row.userImage} />
+                            <div className={s.userInfo}>
+                              <p className={s.userName}>{row.userName ?? '—'}</p>
+                              {row.userEmail && <p className={s.userEmail}>{row.userEmail}</p>}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className={s.td}>
-                        <span className={s.exchangeCell}>
-                          <Building2 size={12} aria-hidden />
-                          {row.exchangeName}
-                        </span>
-                      </td>
-                      <td className={s.td}>
-                        <span className={`${s.roleBadge} ${ROLE_CLASS[row.role] ?? s.roleStaff}`}>
-                          {ROLE_FA[row.role] ?? row.role}
-                        </span>
-                      </td>
-                      <td className={s.td}>
-                        <span className={s.titleCell}>{row.title ?? '—'}</span>
-                      </td>
-                      <td className={s.td}>
-                        {row.revokedAt ? (
-                          <span className={`${s.statusBadge} ${s.statusRevoked}`}>
-                            <span className={s.dot} />
-                            لغو شده
+                        </td>
+                        <td className={s.td}>
+                          <span className={s.exchangeCell}>
+                            <Building2 size={12} aria-hidden />
+                            {row.exchangeName}
                           </span>
-                        ) : (
-                          <span className={`${s.statusBadge} ${s.statusActive}`}>
-                            <span className={`${s.dot} ${s.dotActive}`} />
-                            فعال
+                        </td>
+                        <td className={s.td}>
+                          <span className={`${s.roleBadge} ${ROLE_CLASS[row.role] ?? s.roleStaff}`}>
+                            {ROLE_FA[row.role] ?? row.role}
                           </span>
-                        )}
-                      </td>
-                      <td className={s.td}>
-                        <span className={s.dateCell}>{formatDate(row.joinedAt)}</span>
-                      </td>
-                      <td className={s.td}>
-                        <div className={s.actions}>
-                          {!row.revokedAt && (
+                        </td>
+                        <td className={s.td}>
+                          <span className={s.titleCell}>{row.title ?? '—'}</span>
+                        </td>
+                        <td className={s.td}>
+                          {row.revokedAt ? (
+                            <span className={`${s.statusBadge} ${s.statusRevoked}`}>
+                              <span className={s.dot} />
+                              لغو شده
+                            </span>
+                          ) : (
+                            <span className={`${s.statusBadge} ${s.statusActive}`}>
+                              <span className={`${s.dot} ${s.dotActive}`} />
+                              فعال
+                            </span>
+                          )}
+                        </td>
+                        <td className={s.td}>
+                          <span className={s.dateCell}>{formatDate(row.joinedAt)}</span>
+                        </td>
+                        <td className={s.td}>
+                          <div className={s.actions}>
+                            {!row.revokedAt && (
+                              <button
+                                type="button"
+                                className={s.iconBtn}
+                                onClick={() => handleRevoke(row)}
+                                aria-label={`لغو دسترسی ${row.userName ?? row.userId}`}
+                                title="لغو دسترسی"
+                              >
+                                <ShieldBan size={14} aria-hidden />
+                              </button>
+                            )}
                             <button
                               type="button"
-                              className={s.iconBtn}
-                              onClick={() => handleRevoke(row)}
-                              aria-label={`لغو دسترسی ${row.userName ?? row.userId}`}
-                              title="لغو دسترسی"
+                              className={`${s.iconBtn} ${s.iconBtnDanger}`}
+                              onClick={() => handleRemove(row)}
+                              aria-label={`حذف کارمند ${row.userName ?? row.userId}`}
+                              title="حذف کامل"
                             >
-                              <ShieldBan size={14} aria-hidden />
+                              <Trash2 size={14} aria-hidden />
                             </button>
-                          )}
-                          <button
-                            type="button"
-                            className={`${s.iconBtn} ${s.iconBtnDanger}`}
-                            onClick={() => handleRemove(row)}
-                            aria-label={`حذف کارمند ${row.userName ?? row.userId}`}
-                            title="حذف کامل"
-                          >
-                            <Trash2 size={14} aria-hidden />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
             )}
           </div>
         </div>

@@ -160,6 +160,51 @@ export async function updateTag(id: string, input: TagInput): Promise<ActionResu
   }
 }
 
+/**
+ * ادغام دو برچسب — همهٔ پست‌های برچسبِ مبدأ به برچسبِ مقصد منتقل می‌شوند و
+ * برچسبِ مبدأ حذف می‌شود. یک تراکنش اتمی: یا همه‌چیز اعمال می‌شود یا هیچ.
+ */
+export async function mergeTags(
+  sourceId: string,
+  targetId: string,
+): Promise<ActionResult<{ id: string; name: string }>> {
+  try {
+    const authCheck = await requireAdmin();
+    if (!authCheck.success) return authFailureToActionResult(authCheck);
+    if (sourceId === targetId) {
+      return { success: false, message: 'نمی‌توان برچسب را با خودش ادغام کرد' };
+    }
+
+    const [source, target] = await Promise.all([
+      prisma.tag.findUnique({ where: { id: sourceId }, select: { id: true, name: true } }),
+      prisma.tag.findUnique({ where: { id: targetId }, select: { id: true, name: true } }),
+    ]);
+    if (!source || !target) return { success: false, message: 'برچسبی یافت نشد' };
+
+    const sourcePosts = await prisma.post.findMany({
+      where: { tags: { some: { id: sourceId } } },
+      select: { id: true },
+    });
+
+    await prisma.$transaction([
+      prisma.tag.update({
+        where: { id: targetId },
+        data: { posts: { connect: sourcePosts.map((p) => ({ id: p.id })) } },
+      }),
+      prisma.tag.delete({ where: { id: sourceId } }),
+    ]);
+
+    revalidateTag('tags');
+    return {
+      success: true,
+      message: `"${source.name}" در "${target.name}" ادغام شد`,
+      data: { id: targetId, name: target.name },
+    };
+  } catch {
+    return { success: false, message: 'خطا در ادغام برچسب‌ها' };
+  }
+}
+
 /** حذف برچسب — رابطهٔ پست‌ها (many-to-many) به‌صورت خودکار قطع می‌شود. */
 export async function deleteTag(id: string): Promise<ActionResult<{ id: string }>> {
   try {

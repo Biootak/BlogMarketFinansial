@@ -39,11 +39,7 @@ export function StatusBadge({ status, config }: StatusBadgeProps) {
   if (!conf) return <span className={s.statusBadge}>{status}</span>;
 
   return (
-    <span
-      className={`${s.statusBadge} ${s[STATUS_TONE[status] ?? 'default']}`}
-    >
-      {conf.label}
-    </span>
+    <span className={`${s.statusBadge} ${s[STATUS_TONE[status] ?? 'default']}`}>{conf.label}</span>
   );
 }
 

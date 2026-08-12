@@ -1,4 +1,4 @@
-import { getCustomers } from '@/actions/exchange-customers';
+import { getCustomerStats, getCustomers } from '@/actions/exchange-customers';
 import { getAllExchanges } from '@/actions/exchanges';
 import { requireAdmin } from '@/lib/require-auth';
 import type { Metadata } from 'next';
@@ -49,13 +49,20 @@ export default async function CustomersPage({ searchParams }: Props) {
   }
 
   let customersData = { rows: [], total: 0 } as Awaited<ReturnType<typeof getCustomers>>;
+  // آمار کل مشتریان صرافی — برای KPIها (نه فقط صفحهٔ فعلی)
+  let stats = (await getCustomerStats(targetExchangeId)) as Awaited<
+    ReturnType<typeof getCustomerStats>
+  >;
   if (targetExchangeId) {
-    customersData = await getCustomers(targetExchangeId, {
-      query,
-      status: status !== 'all' ? status : undefined,
-      limit,
-      offset: (page - 1) * limit,
-    });
+    [customersData, stats] = await Promise.all([
+      getCustomers(targetExchangeId, {
+        query,
+        status: status !== 'all' ? status : undefined,
+        limit,
+        offset: (page - 1) * limit,
+      }),
+      getCustomerStats(targetExchangeId),
+    ]);
   }
 
   return (
@@ -70,6 +77,7 @@ export default async function CustomersPage({ searchParams }: Props) {
         currentPage={page}
         pageSize={limit}
         currentUserRole={auth.user.role}
+        customerStats={stats}
       />
     </div>
   );

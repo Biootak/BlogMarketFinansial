@@ -62,8 +62,7 @@ export default async function Dashboard2FAPage() {
   }
   const initial = await load2FAState(session.user.id);
   // سرور برای OWNER/SUPERADMIN غیرفعال‌سازی را همیشه رد می‌کند — UI هم نباید دکمه نشان دهد.
-  const canDisable =
-    session.user.role !== 'OWNER' && session.user.role !== 'SUPERADMIN';
+  const canDisable = session.user.role !== 'OWNER' && session.user.role !== 'SUPERADMIN';
 
   return (
     <div className="route-frame" dir="rtl">

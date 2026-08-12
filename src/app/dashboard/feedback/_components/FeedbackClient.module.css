@@ -288,7 +288,8 @@
 .statusProgress {
   background: color-mix(in oklch, var(--nova-indigo, var(--ds-accent-indigo)) 10%, transparent);
   color: var(--nova-indigo, var(--ds-accent-indigo));
-  border: 1px solid color-mix(in oklch, var(--nova-indigo, var(--ds-accent-indigo)) 22%, transparent);
+  border: 1px solid
+    color-mix(in oklch, var(--nova-indigo, var(--ds-accent-indigo)) 22%, transparent);
 }
 
 .statusResolved {
