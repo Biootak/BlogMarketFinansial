@@ -1,8 +1,7 @@
 /* RouteError — canonical error boundary UI (million-dollar premium)
- * - bespoke SVG illustrations per error kind
- * - ambient gradient orbs (no AI-slop particles)
- * - Spotlight overlay
- * - Suggested destination cards (2×2 grid)
+ * - glass card centered in the shell (Linear × Vercel)
+ * - medallion icon + rotating dashed ring
+ * - ambient gradient orbs + fine grid texture
  * - tone-driven accent colors
  * - RTL-safe, tokens only, prefers-reduced-motion
  */
@@ -13,30 +12,26 @@
   isolation: isolate;
   min-block-size: 100dvh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(2rem, 5vw, 3rem);
-  padding: clamp(3rem, 8vw, 5rem) clamp(1rem, 4vw, 2rem);
-  text-align: center;
+  padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem);
   overflow: hidden;
   background: var(--ds-canvas, var(--ds-bg));
 }
 
 .root[data-variant="inline"] {
-  min-block-size: 70vh;
+  min-block-size: 60vh;
   padding: var(--ds-space-8) var(--ds-space-4);
-  gap: var(--ds-space-5);
 }
 
 /* ── Ambient gradient orbs ─────────────────────────────────────────── */
 .ambients {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   pointer-events: none;
-  filter: blur(80px) saturate(140%);
-  opacity: 0.7;
+  filter: blur(90px) saturate(150%);
+  opacity: 0.8;
 }
 
 .orb {
@@ -46,338 +41,186 @@
 }
 
 .orbA {
-  inset-block-start: 8%;
-  inset-inline-start: 12%;
-  inline-size: 320px;
-  block-size: 320px;
+  inset-block-start: -10%;
+  inset-inline-start: -6%;
+  inline-size: 460px;
+  block-size: 460px;
   background: radial-gradient(
     circle,
-    color-mix(in oklch, var(--re-primary) 22%, transparent) 0%,
+    color-mix(in oklch, var(--re-primary) 34%, transparent) 0%,
     transparent 70%
   );
-  animation: re-orb-drift-a 22s var(--ds-ease-in-out-quart, ease) infinite;
+  animation: re-orb-drift-a 26s var(--ds-ease-in-out-quart, ease) infinite;
 }
 
 .orbB {
-  inset-block-end: 10%;
-  inset-inline-end: 8%;
-  inline-size: 380px;
-  block-size: 380px;
+  inset-block-end: -14%;
+  inset-inline-end: -8%;
+  inline-size: 520px;
+  block-size: 520px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--re-primary) 26%, transparent) 0%,
+    transparent 70%
+  );
+  animation: re-orb-drift-b 32s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.orbC {
+  inset-block-start: 42%;
+  inset-inline-start: 40%;
+  inline-size: 300px;
+  block-size: 300px;
   background: radial-gradient(
     circle,
     color-mix(in oklch, var(--re-primary) 14%, transparent) 0%,
     transparent 70%
   );
-  animation: re-orb-drift-b 28s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-.orbC {
-  inset-block-start: 50%;
-  inset-inline-start: 50%;
-  inline-size: 240px;
-  block-size: 240px;
-  background: radial-gradient(
-    circle,
-    color-mix(in oklch, var(--re-primary) 10%, transparent) 0%,
-    transparent 70%
-  );
-  transform: translate(-50%, -50%);
-  animation: re-orb-drift-c 18s var(--ds-ease-in-out-quart, ease) infinite;
+  animation: re-orb-drift-c 20s var(--ds-ease-in-out-quart, ease) infinite;
 }
 
 @keyframes re-orb-drift-a {
   0%,
   100% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) scale(1);
   }
   50% {
-    transform: translate(40px, 30px);
+    transform: translate(50px, 40px) scale(1.08);
   }
 }
 
 @keyframes re-orb-drift-b {
   0%,
   100% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) scale(1);
   }
   50% {
-    transform: translate(-30px, -40px);
+    transform: translate(-40px, -50px) scale(1.1);
   }
 }
 
 @keyframes re-orb-drift-c {
   0%,
   100% {
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(0, 0) scale(1);
   }
   50% {
-    transform: translate(-50%, -50%) scale(1.15);
+    transform: translateY(30px) scale(1.12);
   }
 }
 
-/* ── Spotlight ─────────────────────────────────────────────────────── */
-.spotlight {
+/* ── Fine grid texture ─────────────────────────────────────────────── */
+.grid {
   position: absolute;
   inset: 0;
   z-index: -1;
+  opacity: 0.4;
   pointer-events: none;
+  background-image: linear-gradient(
+      color-mix(in oklch, var(--ds-fg) 4%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, color-mix(in oklch, var(--ds-fg) 4%, transparent) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, black 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, black 30%, transparent 78%);
 }
 
-/* ── Stage (illustration container) ────────────────────────────────── */
-.stage {
+/* ── Glass card ────────────────────────────────────────────────────── */
+.card {
   position: relative;
-  inline-size: min(360px, 75vw);
-  block-size: min(360px, 75vw);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  inline-size: min(560px, 94vw);
+  padding: clamp(34px, 6vw, 46px) clamp(22px, 5vw, 44px) 32px;
+  text-align: center;
+  background: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--ds-bg, white) 6%, transparent),
+      color-mix(in oklch, var(--ds-bg, white) 1.5%, transparent)
+    ), color-mix(in oklch, var(--ds-bg, white) 22%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 14%, transparent);
+  border-radius: var(--ds-radius-2xl, 26px);
+  backdrop-filter: blur(28px) saturate(160%);
+  box-shadow: 0 1px 0 color-mix(in oklch, var(--ds-fg) 8%, transparent) inset, 0 40px 90px -30px
+    color-mix(in oklch, var(--ds-fg) 22%, transparent);
+  animation: re-card-in 640ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)) both;
 }
 
-.illustration {
-  inline-size: 100%;
-  block-size: 100%;
-  overflow: visible;
+.root[data-variant="inline"] .card {
+  inline-size: min(480px, 94vw);
+  padding: var(--ds-space-6) var(--ds-space-5) var(--ds-space-5);
 }
 
-/* ── SVG illustration animations ───────────────────────────────────── */
-
-/* Network — broken signal */
-.signalWaves {
-  transform-origin: 180px 200px;
-  animation: re-signal-fade 3s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-@keyframes re-signal-fade {
-  0%,
-  100% {
-    opacity: 0.4;
+@keyframes re-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
   }
-  50% {
-    opacity: 0.9;
-  }
-}
-
-.signalBreak {
-  animation: re-break-pulse 2.5s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-@keyframes re-break-pulse {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
+  to {
     opacity: 1;
-    transform: scale(1.1);
+    transform: none;
   }
 }
 
-/* Auth — shield pulse */
-.shieldPulse {
-  transform-origin: 200px 200px;
-  animation: re-shield-breathe 5s var(--ds-ease-in-out-quart, ease) infinite;
+/* top sheen */
+.sheen {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 90px;
+  pointer-events: none;
+  border-start-start-radius: var(--ds-radius-2xl, 26px);
+  border-start-end-radius: var(--ds-radius-2xl, 26px);
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--ds-fg) 5%, transparent),
+    transparent
+  );
 }
 
-@keyframes re-shield-breathe {
+/* ── Medallion icon ────────────────────────────────────────────────── */
+.medallion {
+  position: relative;
+  inline-size: 76px;
+  block-size: 76px;
+  margin: 0 auto 22px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  color: var(--re-primary);
+  background: radial-gradient(
+    circle at 30% 25%,
+    color-mix(in oklch, var(--re-primary) 34%, transparent),
+    color-mix(in oklch, var(--re-primary) 8%, transparent)
+  );
+  border: 1px solid color-mix(in oklch, var(--re-primary) 34%, transparent);
+  box-shadow: 0 12px 40px -8px color-mix(in oklch, var(--re-primary) 45%, transparent), 0 1px 0
+    color-mix(in oklch, var(--ds-fg) 10%, transparent) inset;
+  animation: re-medallion-pulse 3.2s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+.medallion::after {
+  content: "";
+  position: absolute;
+  inset: -14px;
+  border-radius: 30px;
+  border: 1px dashed color-mix(in oklch, var(--re-primary) 30%, transparent);
+  animation: re-ring-spin 18s linear infinite;
+}
+
+@keyframes re-medallion-pulse {
   0%,
   100% {
-    opacity: 0.3;
     transform: scale(1);
   }
   50% {
-    opacity: 0.5;
-    transform: scale(1.02);
+    transform: scale(1.045);
   }
 }
 
-.lockIcon {
-  transform-origin: 200px 230px;
-  animation: re-lock-idle 4s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-@keyframes re-lock-idle {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
-/* NotFound — compass drift */
-.compassDrift {
-  transform-origin: 200px 200px;
-  animation: re-compass-drift 8s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-@keyframes re-compass-drift {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(15deg);
-  }
-  75% {
-    transform: rotate(-15deg);
-  }
-}
-
-/* Server — crash shake */
-.serverShake {
-  transform-origin: 200px 200px;
-  animation: re-server-shake 6s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-@keyframes re-server-shake {
-  0%,
-  85%,
-  100% {
-    transform: translateX(0);
-  }
-  87% {
-    transform: translateX(-3px);
-  }
-  89% {
-    transform: translateX(3px);
-  }
-  91% {
-    transform: translateX(-2px);
-  }
-  93% {
-    transform: translateX(2px);
-  }
-  95% {
-    transform: translateX(0);
-  }
-}
-
-.smokeParticles circle {
-  animation: re-smoke-rise 4s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-.smokeParticles circle:nth-child(2) {
-  animation-delay: 1.3s;
-}
-.smokeParticles circle:nth-child(3) {
-  animation-delay: 2.6s;
-}
-
-@keyframes re-smoke-rise {
-  0% {
-    opacity: 0;
-    transform: translateY(0) scale(0.5);
-  }
-  50% {
-    opacity: 0.6;
-    transform: translateY(-20px) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-40px) scale(1.5);
-  }
-}
-
-/* Unknown — warning pulse */
-.warningPulse {
-  transform-origin: 200px 200px;
-  animation: re-warning-pulse 3s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-@keyframes re-warning-pulse {
-  0%,
-  100% {
-    opacity: 0.5;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-.warningRing {
-  transform-origin: 200px 200px;
-  animation: re-ring-expand 3s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-@keyframes re-ring-expand {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.2;
-  }
-  100% {
-    transform: scale(0.9);
-    opacity: 0.6;
-  }
-}
-
-/* Common SVG elements */
-.outerRing {
-  transform-origin: 200px 200px;
-  animation: re-ring-rotate 60s linear infinite;
-}
-
-@keyframes re-ring-rotate {
+@keyframes re-ring-spin {
   to {
     transform: rotate(360deg);
   }
-}
-
-.outerRing2 {
-  transform-origin: 200px 200px;
-  animation: re-ring-rotate 90s linear infinite reverse;
-}
-
-.innerGlow {
-  animation: re-glow-pulse 4s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-@keyframes re-glow-pulse {
-  0%,
-  100% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-.stars circle {
-  animation: re-star-twinkle 3s var(--ds-ease-in-out-quart, ease) infinite;
-}
-
-.stars circle:nth-child(2) {
-  animation-delay: 0.6s;
-}
-.stars circle:nth-child(3) {
-  animation-delay: 1.2s;
-}
-.stars circle:nth-child(4) {
-  animation-delay: 1.8s;
-}
-.stars circle:nth-child(5) {
-  animation-delay: 2.4s;
-}
-
-@keyframes re-star-twinkle {
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
-
-.numeral {
-  user-select: none;
 }
 
 /* ── Headline ──────────────────────────────────────────────────────── */
@@ -386,28 +229,46 @@
   flex-direction: column;
   align-items: center;
   gap: var(--ds-space-3);
-  max-inline-size: 540px;
 }
 
 .eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: var(--ds-space-1-5, 6px);
-  padding: 6px var(--ds-space-3, 12px);
+  gap: var(--ds-space-2, 8px);
+  padding: 6px 14px;
   font-size: var(--ds-text-xs, 12px);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--re-primary);
-  background: color-mix(in oklch, var(--re-primary) 8%, transparent);
-  border: 1px solid color-mix(in oklch, var(--re-primary) 22%, transparent);
+  background: color-mix(in oklch, var(--re-primary) 12%, transparent);
+  border: 1px solid color-mix(in oklch, var(--re-primary) 32%, transparent);
   border-radius: var(--ds-radius-full, 9999px);
   letter-spacing: -0.01em;
+  margin-block-end: 2px;
+}
+
+.eyebrowDot {
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: 50%;
+  background: var(--re-primary);
+  animation: re-dot-blink 1.8s var(--ds-ease-in-out-quart, ease) infinite;
+}
+
+@keyframes re-dot-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
 }
 
 .title {
   margin: 0;
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: clamp(1.5rem, 4.2vw, 1.9rem);
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.35;
   letter-spacing: -0.02em;
   color: var(--ds-fg);
   font-feature-settings: "ss01", "ss02";
@@ -416,38 +277,114 @@
 .lead {
   margin: 0;
   font-size: var(--ds-text-sm, 14px);
-  line-height: 1.7;
+  line-height: 1.85;
   color: var(--ds-fg-muted);
-  max-inline-size: 460px;
+  max-inline-size: 400px;
 }
 
 .devInfo {
-  display: inline-block;
-  margin-block-start: var(--ds-space-1, 4px);
-  padding: 6px var(--ds-space-3, 12px);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2, 8px);
+  margin-block-start: var(--ds-space-2, 8px);
+  padding: 7px 12px;
   font-family: var(--ds-font-mono, ui-monospace);
   font-size: var(--ds-text-xs, 12px);
   font-weight: 500;
   color: var(--ds-fg-muted);
-  background: color-mix(in oklch, var(--ds-fg) 5%, transparent);
+  background: color-mix(in oklch, var(--ds-fg) 4%, transparent);
   border: 1px solid color-mix(in oklch, var(--ds-fg) 8%, transparent);
   border-radius: var(--ds-radius-md, 12px);
   word-break: break-all;
   max-inline-size: 100%;
   font-variant-numeric: tabular-nums;
   text-align: start;
+  direction: ltr;
+}
+
+.devTag {
+  color: var(--re-primary);
+  font-weight: 700;
+}
+
+/* ── Actions ───────────────────────────────────────────────────────── */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-3, 12px);
+  flex-wrap: wrap;
+  margin-block-start: var(--ds-space-5, 20px);
+}
+
+.retryBtn,
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2, 8px);
+  padding: 12px 22px;
+  border-radius: var(--ds-radius-lg, 13px);
+  font-size: var(--ds-text-sm, 14px);
+  font-weight: 700;
+  text-decoration: none;
+  font-family: inherit;
+  transition: transform 180ms var(--ds-ease-out-quart, ease), filter 180ms, background 180ms;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.retryBtn {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--re-primary) 92%, white 8%),
+    var(--re-primary)
+  );
+  color: var(--ds-bg, white);
+  border-color: color-mix(in oklch, var(--re-primary) 45%, transparent);
+  box-shadow: 0 10px 30px -8px color-mix(in oklch, var(--re-primary) 60%, transparent), 0 1px 0
+    color-mix(in oklch, white 25%, transparent) inset;
+}
+
+.retryBtn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+}
+
+.retryBtn:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.retryBtn:focus-visible {
+  outline: 2px solid var(--re-primary);
+  outline-offset: 2px;
+}
+
+.backLink {
+  background: color-mix(in oklch, var(--ds-fg) 5%, transparent);
+  color: var(--ds-fg);
+  border-color: color-mix(in oklch, var(--ds-fg) 14%, transparent);
+}
+
+.backLink:hover {
+  background: color-mix(in oklch, var(--ds-fg) 9%, transparent);
+  transform: translateY(-2px);
+}
+
+.backLink:active {
+  transform: translateY(1px) scale(0.99);
 }
 
 /* ── Suggested destination cards ───────────────────────────────────── */
 .suggestions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--ds-space-2, 8px);
+  gap: var(--ds-space-2-5, 10px);
   inline-size: 100%;
-  max-inline-size: 540px;
+  margin-block-start: var(--ds-space-6, 24px);
 }
 
-@media (max-width: 540px) {
+@media (max-width: 520px) {
   .suggestions {
     grid-template-columns: 1fr;
   }
@@ -457,21 +394,37 @@
   display: flex;
   align-items: center;
   gap: var(--ds-space-3, 12px);
-  padding: var(--ds-space-3, 12px) var(--ds-space-4, 16px);
-  background: color-mix(in oklch, var(--ds-bg, white) 90%, transparent);
-  border: 1px solid color-mix(in oklch, var(--ds-fg) 8%, transparent);
-  border-radius: var(--ds-radius-lg, 16px);
+  padding: 13px 15px;
+  background: color-mix(in oklch, var(--ds-fg) 4%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 9%, transparent);
+  border-radius: var(--ds-radius-lg, 15px);
   text-decoration: none;
   color: var(--ds-fg);
-  transition: transform 220ms var(--ds-ease-out-quart, ease), border-color 220ms, background 220ms;
+  transition: transform 200ms var(--ds-ease-out-quart, ease), border-color 200ms, background 200ms;
   text-align: start;
-  backdrop-filter: blur(6px);
 }
 
 .suggestCard:hover {
   transform: translateY(-2px);
   border-color: color-mix(in oklch, var(--re-primary) 35%, transparent);
-  background: color-mix(in oklch, var(--re-primary) 4%, var(--ds-bg, white));
+  background: color-mix(in oklch, var(--re-primary) 4%, transparent);
+}
+
+.suggestIcon {
+  inline-size: 36px;
+  block-size: 36px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: var(--ds-fg-muted);
+  background: color-mix(in oklch, var(--ds-fg) 6%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 9%, transparent);
+  transition: color 200ms;
+}
+
+.suggestCard:hover .suggestIcon {
+  color: var(--re-primary);
 }
 
 .suggestMain {
@@ -492,19 +445,17 @@
 .suggestSub {
   font-size: var(--ds-text-xs, 11px);
   line-height: 1.5;
-  color: var(--ds-fg-muted);
+  color: var(--ds-fg-faint, var(--ds-fg-muted));
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
 }
 
 .suggestArrow {
   flex-shrink: 0;
   color: var(--ds-fg-muted);
-  transition: transform 220ms var(--ds-ease-out-quart, ease), color 220ms;
+  transition: transform 200ms var(--ds-ease-out-quart, ease), color 200ms;
 }
 
 [dir="rtl"] .suggestCard:hover .suggestArrow {
@@ -522,72 +473,36 @@
   color: var(--re-primary);
 }
 
-/* ── Actions ───────────────────────────────────────────────────────── */
-.actions {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  gap: var(--ds-space-3, 12px);
-  flex-wrap: wrap;
-  justify-content: center;
+/* ── Footer note ───────────────────────────────────────────────────── */
+.foot {
+  margin-block-start: var(--ds-space-5, 20px);
+  font-size: var(--ds-text-xs, 11px);
+  color: var(--ds-fg-muted);
 }
 
-.retryBtn,
-.backLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-2, 8px);
-  padding: var(--ds-space-3, 12px) var(--ds-space-5, 20px);
-  border-radius: var(--ds-radius-md, 12px);
-  font-size: var(--ds-text-sm, 14px);
-  font-weight: 600;
-  text-decoration: none;
-  font-family: inherit;
-  transition: transform 200ms var(--ds-ease-out-quart, ease), filter 200ms, background 200ms;
-  white-space: nowrap;
-  cursor: pointer;
-  border: none;
-}
-
-.retryBtn {
-  background: var(--re-primary);
-  color: var(--ds-bg, white);
-  border: 1px solid var(--re-primary);
-}
-
-.retryBtn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.1);
-}
-
-.retryBtn:focus-visible {
-  outline: 2px solid var(--re-primary);
-  outline-offset: 2px;
-}
-
-.backLink {
-  background: color-mix(in oklch, var(--ds-bg, white) 92%, transparent);
+.foot code {
+  font-family: var(--ds-font-mono, ui-monospace);
+  font-size: 0.95em;
   color: var(--ds-fg);
-  border: 1px solid color-mix(in oklch, var(--ds-fg) 12%, transparent);
-  backdrop-filter: blur(4px);
-}
-
-.backLink:hover {
-  background: color-mix(in oklch, var(--ds-fg) 4%, transparent);
-  border-color: color-mix(in oklch, var(--ds-fg) 20%, transparent);
+  background: color-mix(in oklch, var(--ds-fg) 5%, transparent);
+  border: 1px solid color-mix(in oklch, var(--ds-fg) 9%, transparent);
+  border-radius: 6px;
+  padding: 1px 7px;
+  direction: rtl;
+  display: inline-block;
 }
 
 /* ── Tone variants (sets --re-primary CSS variable) ─────────────────── */
 .root[data-tone="indigo"] {
-  --re-primary: oklch(52% 0.16 270);
+  --re-primary: oklch(66% 0.17 265);
 }
 
 .root[data-tone="rose"] {
-  --re-primary: oklch(55% 0.18 25);
+  --re-primary: oklch(70% 0.19 20);
 }
 
 .root[data-tone="violet"] {
-  --re-primary: oklch(58% 0.18 290);
+  --re-primary: oklch(64% 0.2 300);
 }
 
 .root[data-tone="amber"] {
@@ -595,11 +510,7 @@
 }
 
 .root[data-tone="emerald"] {
-  --re-primary: oklch(58% 0.14 145);
-}
-
-.root[data-tone="cyan"] {
-  --re-primary: oklch(62% 0.12 220);
+  --re-primary: oklch(62% 0.14 160);
 }
 
 /* ── prefers-reduced-motion ────────────────────────────────────────── */
@@ -607,23 +518,14 @@
   .orbA,
   .orbB,
   .orbC,
-  .outerRing,
-  .outerRing2,
-  .signalWaves,
-  .signalBreak,
-  .shieldPulse,
-  .lockIcon,
-  .compassDrift,
-  .serverShake,
-  .smokeParticles circle,
-  .warningPulse,
-  .warningRing,
-  .innerGlow,
-  .stars circle,
+  .medallion,
+  .medallion::after,
+  .eyebrowDot,
   .suggestCard,
   .suggestArrow,
   .retryBtn,
-  .backLink {
+  .backLink,
+  .card {
     animation: none !important;
     transition: none !important;
   }
