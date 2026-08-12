@@ -53,6 +53,27 @@ sudo ./deploy/install.sh
 
 ---
 
+## مهاجرت به VPS خارجی (خارج از ایران) — تصاویر Docker
+
+پیش‌فرض Dockerfile ها و docker-compose از mirror ایرانی
+(`registry.docker.ir/...`) استفاده می‌کنند — مناسب dev لوکال داخل ایران.
+روی سرور خارجی، `registry.docker.ir` کند یا بلاک است. قبل از build روی
+VPS خارجی این سه متغیر را در `.env` ست کن تا از Docker Hub رسمی pull شود:
+
+```bash
+# docker-compose.yml خودکار این‌ها را می‌خواند
+NODE_IMAGE="node:22-alpine"
+POSTGRES_IMAGE="postgres:15-alpine"
+CRON_IMAGE="alpine:3.20"
+```
+
+بقیهٔ پروژه وابستگی به ایران ندارد: npm registry رسمی است و Prisma/sharp
+از CDN بین‌المللی (npmmirror) دانلود می‌شوند. آپلودها هم اگر S3/R2 ست شده
+باشد در ابر می‌مانند و با مهاجرت جابه‌جا نمی‌شوند؛ اگر فقط لوکال است، volume
+`uploads_data` در compose خودش آن‌ها را نگه می‌دارد.
+
+---
+
 ## سه endpoint cron که روی سرور اجرا می‌شوند
 
 هر کدام از این endpointها باید از یک cron job فراخوانی شوند:

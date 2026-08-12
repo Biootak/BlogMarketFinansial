@@ -16,7 +16,9 @@
 #       depends_on:
 #         - web
 # ============================================================================
-FROM registry.docker.ir/alpine:3.20
+# روی VPS خارجی: CRON_IMAGE=alpine:3.20 را در .env ست کن (Docker Hub رسمی)
+ARG CRON_IMAGE=registry.docker.ir/alpine:3.20
+FROM ${CRON_IMAGE}
 
 RUN apk add --no-cache dcron curl tzdata
 

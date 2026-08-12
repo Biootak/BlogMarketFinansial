@@ -29,6 +29,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # روی VPS خارجی در .env ست کن: NODE_IMAGE=node:22-alpine (Docker Hub رسمی)
+        NODE_IMAGE: ${NODE_IMAGE:-registry.docker.ir/node:22-alpine}
     image: fm-blog-web:latest
     ports:
       - "3000:3000"
@@ -68,7 +71,8 @@ services:
       start_period: 60s
 
   db:
-    image: registry.docker.ir/postgres:15-alpine
+    # روی VPS خارجی در .env ست کن: POSTGRES_IMAGE=postgres:15-alpine (Docker Hub رسمی)
+    image: ${POSTGRES_IMAGE:-registry.docker.ir/postgres:15-alpine}
     ports:
       - "15432:5432"
     environment:
@@ -92,6 +96,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.cron
+      args:
+        # روی VPS خارجی در .env ست کن: CRON_IMAGE=alpine:3.20 (Docker Hub رسمی)
+        CRON_IMAGE: ${CRON_IMAGE:-registry.docker.ir/alpine:3.20}
     image: fm-blog-cron:latest
     environment:
       - APP_URL=http://web:3000

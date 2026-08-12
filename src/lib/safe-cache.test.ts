@@ -90,6 +90,36 @@ describe('safeCache', () => {
 });
 
 describe('safeCache byte budget', () => {
+  it('overwriting an existing key does not double-count its bytes', async () => {
+    // 2026-08-12-fix regression test: safeSet on an existing key must
+    // subtract the previous weight first, otherwise totalBytes drifts up
+    // and evicts entries prematurely (cache thrash).
+    process.env.SAFE_CACHE_MAX_BYTES = '1000';
+    process.env.SAFE_CACHE_MAX_ENTRIES = '1000';
+    vi.resetModules();
+
+    const { safeCache, safeSet } = await import('./safe-cache');
+
+    const payload = 'x'.repeat(200); // ~440 bytes estimated
+    // write k1, then OVERWRITE k1 (as the market-rates cron does every minute)
+    safeSet('overwrite:k1', { payload }, 60);
+    safeSet('overwrite:k1', { payload }, 60);
+
+    // write k2 — if k1's weight was double-counted, k2 would push total
+    // over budget and evict k1. With the fix both fit under 1000.
+    safeSet('overwrite:k2', { payload }, 60);
+
+    const fn = vi.fn(async () => 'miss');
+    const cached = safeCache(fn, null, { key: 'overwrite:k1', ttl: 60 });
+    const value = await cached();
+    // k1 survived → fn not called → we read the safeSet value, not a miss
+    expect(value).toEqual({ payload });
+    expect(fn).toHaveBeenCalledTimes(0);
+
+    delete process.env.SAFE_CACHE_MAX_BYTES;
+    delete process.env.SAFE_CACHE_MAX_ENTRIES;
+  });
+
   it('evicts the oldest entries when the total byte budget is exceeded', async () => {
     // budget for ~1.5 entries of the payload size → second distinct key
     // pushes total over budget and evicts the oldest (key a)

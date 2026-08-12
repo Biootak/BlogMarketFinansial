@@ -54,6 +54,21 @@ const TGJU_URL = 'https://www.tgju.org/';
 // bound third-party latency). اگر TGJU کند باشد، بقیهٔ fallback ها جواب می‌دهند.
 const REQUEST_TIMEOUT_MS = 4_000;
 
+// 2026-08-12-perf: کش ماژولی TTL برای fetch صفحه‌های tgju.
+// cron refresh-market-rates هر دقیقه اجرا می‌شود و قبلاً هر بار هر ۹ صفحه
+// (مجموعاً ۱۰-۱۵MB HTML — بعضی بالای ۲MB که Next data cache نمی‌تواند
+// ذخیره کند) از شبکه دانلود و regex-parse می‌شد → مصرف بالای CPU/حافظه
+// و ریسک بلاک IP توسط TGJU. نرخ‌ها در بازهٔ کوتاه تغییر محسوس ندارند؛
+// TTL پیش‌فرض ۱۲۰ ثانیه تعداد request های خروجی را ~۳ برابر کم می‌کند.
+// ENV: TGJU_FETCH_TTL_MS (۰ = غیرفعال).
+const FETCH_TTL_MS = Number(process.env.TGJU_FETCH_TTL_MS) || 120_000;
+const pageCache = new Map<TgjuPageId, { at: number; result: FetchTgjuResult }>();
+
+/** پاک کردن کش صفحه‌ها (برای تست/دیباگ). */
+export function clearTgjuPageCache(): void {
+  pageCache.clear();
+}
+
 export interface TgjuItem {
   /** مقدار — ریال خام (÷10 = تومان). مگر طلای جهانی که USD/oz است. */
   value: number;
@@ -84,6 +99,8 @@ export interface FetchTgjuResult {
   itemCount?: number;
   /** key source — کدام پارسر این خروجی رو ساخته. */
   page?: TgjuPageId;
+  /** 2026-08-12: true = از کش ماژولی TTL آمده (شبکه نرفته). */
+  cached?: boolean;
 }
 
 /* --------------------------------------------------------------------------
@@ -365,6 +382,14 @@ export async function fetchTgjuPage(page: TgjuPageId): Promise<FetchTgjuResult> 
     return { ok: false, error: 'disabled', page };
   }
 
+  // کش TTL — نتیجهٔ موفق تا FETCH_TTL_MS برمی‌گردد (شبکه نمی‌رود).
+  if (FETCH_TTL_MS > 0) {
+    const hit = pageCache.get(page);
+    if (hit && Date.now() - hit.at < FETCH_TTL_MS) {
+      return { ...hit.result, cached: true };
+    }
+  }
+
   const url = getPageUrl(page);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
@@ -404,7 +429,24 @@ export async function fetchTgjuPage(page: TgjuPageId): Promise<FetchTgjuResult> 
       return { ok: false, error: 'parse-error', status: response.status, latencyMs, page };
     }
 
-    return { ok: true, data, itemCount, latencyMs, status: response.status, page };
+    const result: FetchTgjuResult = {
+      ok: true,
+      data,
+      itemCount,
+      latencyMs,
+      status: response.status,
+      page,
+    };
+    // فقط نتیجهٔ موفق کش می‌شود — خطاها همیشه دوباره تلاش می‌شوند.
+    if (FETCH_TTL_MS > 0) {
+      pageCache.set(page, { at: Date.now(), result });
+      // سقف تعداد ورودی‌ها تا Map نامحدود نشود (فقط صفحات فعال می‌مانند).
+      if (pageCache.size > 32) {
+        const oldest = pageCache.keys().next().value;
+        if (oldest !== undefined) pageCache.delete(oldest);
+      }
+    }
+    return result;
   } catch (err) {
     clearTimeout(timeoutId);
     const isAbort = err instanceof Error && err.name === 'AbortError';

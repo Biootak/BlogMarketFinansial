@@ -20,7 +20,10 @@ interface CacheEntry<T> {
 // R14 روی dyno 512MB). هر entry هم وزن تخمینی دارد؛ وقتی مجموع از
 // SAFE_CACHE_MAX_BYTES گذشت، قدیمی‌ترین‌ها حذف می‌شوند.
 const MAX_CACHE_ENTRIES = Number(process.env.SAFE_CACHE_MAX_ENTRIES) || 1000;
-const MAX_CACHE_BYTES = Number(process.env.SAFE_CACHE_MAX_BYTES) || 150 * 1024 * 1024;
+// 2026-08-12: 150MB → 100MB — روی dyno 512MB (RSS پایدار ~340-450MB)
+// سقف کوچک‌تر = margin بیشتر قبل از R14. قیمت: cache های بزرگ‌تر زودتر
+// evict می‌شوند که با SWR/stale-fallback قابل جبران است.
+const MAX_CACHE_BYTES = Number(process.env.SAFE_CACHE_MAX_BYTES) || 100 * 1024 * 1024;
 const memoryStore = new Map<string, CacheEntry<unknown>>();
 
 /** وزن تخمینی یک entry (بایت) — برای سقف حجمی. */
@@ -63,6 +66,15 @@ function evictIfNeeded(): void {
 }
 
 function trackSet(key: string, entry: CacheEntry<unknown>): void {
+  // 2026-08-12-fix: اگر کلید از قبل موجود است، وزن قبلی را کم کن — قبلاً
+  // روی overwrite (مثل safeSet هر دقیقه از cron) totalBytes بدون کم کردن
+  // مقدار قبلی جمع می‌شد و بی‌جا رشد می‌کرد → eviction زودتر از حد لازم
+  // (cache thrash). این باگ در هر سه مسیر (safeSet، refresh SWR، set عادی)
+  // با همین یک اصلاح حل می‌شود.
+  const existing = memoryStore.get(key);
+  if (existing) {
+    totalBytes -= estimateBytes(existing.value);
+  }
   memoryStore.set(key, entry);
   totalBytes += estimateBytes(entry.value);
   evictIfNeeded();

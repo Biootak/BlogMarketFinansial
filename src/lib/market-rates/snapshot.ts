@@ -68,7 +68,11 @@ export async function writeMarketRatesSnapshot(
 
   await mkdir(outDir, { recursive: true });
   const path = join(outDir, fileName);
-  await writeFile(path, JSON.stringify(payload, null, 2), 'utf8');
+  // 2026-08-12-perf: JSON فشرده (بدون indent) — این فایل هر دقیقه نوشته و
+  // خوانده می‌شود؛ pretty-print حجم را ~۳۵٪ بزرگ‌تر و نوشتن/خواندن را
+  // کندتر می‌کند. خواننده (snapshot-reader) فقط parse می‌کند، formatting
+  // برایش بی‌اهمیت است.
+  await writeFile(path, JSON.stringify(payload), 'utf8');
 
   return {
     count: data.length,
