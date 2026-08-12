@@ -239,6 +239,12 @@ heroku container:release web -a $APP
 - بقیه بدون `CRON_SECRET` درست → ۵۰۳ می‌دهند (باید در Heroku config ست باشد).
 - دامنه اختصاصی (مثلاً `https://financialmarket.page`) به‌جای herokuapp.com هم کار می‌کند.
 
+> 2026-08-12: `.github/workflows/keep-alive.yml` به‌عنوان **لایهٔ مکمل** اضافه شد
+> (هر ۲۰ دقیقه `/api/ping` + خانه). این جایگزین cron-job.org نیست — همان تأخیر
+> زمان‌بندی گیت‌هاب که در بالا ذکر شد هنوز پابرجاست؛ cron-job.org منبع اصلی
+> بیدار نگه‌داشتن است و این workflow فقط برای مواردی است که cron-job.org حذف/
+> منقضی شده باشد.
+
 ---
 
 ## ذخیره‌سازی (آپلودها — اجباری برای production واقعی)

@@ -1,0 +1,47 @@
+name: Keep Eco Dyno Awake (GitHub cron)
+
+# Ping به production تا dyno اکو (۳۰ دقیقه خواب) نخوابد.
+#
+# ⚠️ یادداشت مهم (HEROKU.md مرحله ۵): زمان‌بندی cron گیت‌هاب می‌تواند تا ۳۰+ دقیقه
+# تأخیر داشته باشد — به همین دلیل 2026-08-08 cron گیت‌هاب حذف و به cron-job.org
+# منتقل شد که هر ۵ دقیقه دقیق به /api/ping می‌زند (منبع اصلی و قابل‌اعتماد).
+# این workflow یک لایهٔ مکمل/اضطراری است؛ اگر dyno باز هم خوابید، مطمئن‌ترین
+# راه بازگرداندن cron-job.org است نه فشرده‌کردن این بازه.
+#
+# بازهٔ `*/20` طبق درخواست — اگر scheduler لگ زد و dyno خوابید، به `*/15`
+# تغییرش بده (آستانهٔ خواب ۳۰ دقیقه است و هر تأخیری حاشیه را می‌خورد).
+
+on:
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+
+# هم‌زمان فقط یک run — از روی‌هم‌افتادن pings جلوگیری می‌کند.
+concurrency:
+  group: keep-alive
+  cancel-in-progress: false
+
+jobs:
+  keep-alive:
+    name: Ping production
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Warm up /api/ping + home
+        env:
+          # GitHub variable (repo settings → Variables). اگر ست نشده باشد،
+          # آدرس رسمی production از HEROKU.md استفاده می‌شود.
+          PROD_URL: ${{ vars.PROD_URL }}
+        shell: bash
+        run: |
+          BASE="${PROD_URL:-https://financialmarket.page}"
+          # /api/ping = بیدارکردن سبک (همان endpoint ای که cron-job.org می‌زند)
+          # / = گرم‌کردن HTML خانه تا اولین بازدید کاربر بعد از بیداری هم سریع باشد
+          for path in /api/ping /; do
+            CODE=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 90 "$BASE$path")
+            echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $BASE$path -> $CODE"
+          done
+          # این workflow نگه‌دارنده است، نه مونیتور (stability-check هر ۶ ساعت
+          # وضعیت را با fail قرمز گزارش می‌دهد) — غیر-۲۰۰ اینجا fail نمی‌کند
+          # تا با ۷۲ run روزانه، خبرخوان Actions پر از خطا نشود.
+          exit 0
