@@ -26,11 +26,14 @@ import {
   ConfirmDialog,
   DensityToggle,
   FormField,
+  KpiCard,
   MillionDollarEmpty,
   PageHeader,
   SearchInput,
+  StatGrid,
   useTableDensity,
 } from '@/components/Dashboard/primitives';
+import { CustomerBulkBar } from '@/components/Exchange/customers/CustomerBulkBar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -64,6 +67,7 @@ import {
   useCallback,
   useDeferredValue,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useTransition,
@@ -297,11 +301,34 @@ export default function CustomersClient({
 
   const noExchange = exchanges.length === 0;
 
+  // ── Bulk selection (انتخاب گروهی) ────────────────────────────────────────
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const visibleIds = useMemo(() => customers.map((c) => c.id), [customers]);
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+  const someVisibleSelected = visibleIds.some((id) => selectedIds.has(id)) && !allVisibleSelected;
+
+  const toggleAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      if (allVisibleSelected) return new Set();
+      const next = new Set(prev);
+      for (const id of visibleIds) next.add(id);
+      return next;
+    });
+  }, [allVisibleSelected, visibleIds]);
+
+  const toggleOne = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   // ── Search debounce ────────────────────────────────────────────────────────
   const [searchInput, setSearchInput] = useState(currentQuery);
   const deferredSearch = useDeferredValue(searchInput);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const _searchRef = useRef<HTMLInputElement>(null);
 
   const navigate = useCallback(
     (overrides: Record<string, string>) => {
@@ -310,6 +337,8 @@ export default function CustomersClient({
         if (v) p.set(k, v);
         else p.delete(k);
       }
+      // هنگام تغییر صفحه/فیلتر، انتخاب‌های قبلی منقضی می‌شوند
+      setSelectedIds(new Set());
       startTransition(() => router.push(`/dashboard/customers?${p.toString()}`));
     },
     [searchParams, router],
@@ -576,85 +605,67 @@ export default function CustomersClient({
           />
         ) : (
           <>
-            {/* ── KPI Strip ────────────────────────────────────────────── */}
-            <div className={s.kpiStrip} aria-label="آمار مشتریان">
-              {(
-                [
-                  {
-                    label: 'کل مشتریان',
-                    value: total,
-                    icon: <Users size={16} aria-hidden />,
-                    filter: () => true,
-                    color: 'var(--ds-brand-500)',
-                    accent: 'var(--ds-brand-500)',
-                  },
-                  {
-                    label: 'فعال',
-                    value: kpiActive,
-                    icon: <UserCheck size={16} aria-hidden />,
-                    filter: (c: CustomerRow) => c.status === 'ACTIVE',
-                    color: 'var(--nova-emerald, oklch(50% 0.14 145))',
-                    accent: 'var(--nova-emerald)',
-                  },
-                  {
-                    label: 'مسدود',
-                    value: kpiFrozen,
-                    icon: <Lock size={16} aria-hidden />,
-                    filter: (c: CustomerRow) => c.status === 'FROZEN',
-                    color: 'var(--nova-rose, oklch(55% 0.18 25))',
-                    accent: 'var(--nova-rose)',
-                  },
-                  {
-                    label: 'KYC در انتظار',
-                    value: kpiKyc,
-                    icon: <ShieldCheck size={16} aria-hidden />,
-                    filter: (c: CustomerRow) => c.kycStatus === 'PENDING',
-                    color: 'var(--nova-amber, oklch(60% 0.16 70))',
-                    accent: 'var(--nova-amber)',
-                  },
-                ] as const
-              ).map((item, i) => (
-                <div
-                  key={item.label}
-                  className={s.kpiCard}
-                  style={
-                    {
-                      '--kpi-accent': item.accent,
-                      '--kpi-delay': `${i * 60}ms`,
-                    } as React.CSSProperties
-                  }
-                >
-                  {/* top row: icon + sparkline */}
-                  <div className={s.kpiTop}>
-                    <span className={s.kpiIcon}>{item.icon}</span>
-                    <MiniSparkline
-                      customers={customers}
-                      filter={item.filter as (c: CustomerRow) => boolean}
-                      color={item.color}
-                    />
-                  </div>
-                  {/* big number */}
-                  <span className={s.kpiValue}>{_faNum.format(item.value)}</span>
-                  {/* label */}
-                  <span className={s.kpiLabel}>{item.label}</span>
-                </div>
-              ))}
-            </div>
+            {/* ── KPI Strip (پرایمی‌تیو مشترک با بقیهٔ سایت) ────────── */}
+            <StatGrid cols={4} gap="md" aria-label="آمار مشتریان">
+              <KpiCard
+                label="کل مشتریان"
+                value={total}
+                icon={Users}
+                info="کل مشتریان ثبت‌شده در این صرافی"
+                spark={
+                  <MiniSparkline
+                    customers={customers}
+                    filter={() => true}
+                    color="var(--ds-brand-500)"
+                  />
+                }
+              />
+              <KpiCard
+                label="فعال"
+                value={kpiActive}
+                icon={UserCheck}
+                info="مشتریانی که وضعیت فعال دارند"
+                spark={
+                  <MiniSparkline
+                    customers={customers}
+                    filter={(c: CustomerRow) => c.status === 'ACTIVE'}
+                    color="var(--nova-emerald, oklch(50% 0.14 145))"
+                  />
+                }
+              />
+              <KpiCard
+                label="مسدود"
+                value={kpiFrozen}
+                icon={Lock}
+                info="مشتریانی که وضعیت مسدود دارند"
+                spark={
+                  <MiniSparkline
+                    customers={customers}
+                    filter={(c: CustomerRow) => c.status === 'FROZEN'}
+                    color="var(--nova-rose, oklch(55% 0.18 25))"
+                  />
+                }
+              />
+              <KpiCard
+                label="KYC در انتظار"
+                value={kpiKyc}
+                icon={ShieldCheck}
+                info="مشتریانی که احراز هویت‌شان در انتظار بررسی است"
+                spark={
+                  <MiniSparkline
+                    customers={customers}
+                    filter={(c: CustomerRow) => c.kycStatus === 'PENDING'}
+                    color="var(--nova-amber, oklch(60% 0.16 70))"
+                  />
+                }
+              />
+            </StatGrid>
 
             {/* ── Sticky Toolbar (glass + frosted) ──────────────────── */}
             <div ref={toolbarRef} className={s.toolbar} role="search">
               {toolbarFilters}
               {toolbarSearch}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 'var(--ds-space-2)',
-                  marginInlineStart: 'auto',
-                }}
-              >
-                {toolbarActions}
-              </div>
+              <div className={s.toolbarActions}>{toolbarActions}</div>
             </div>
 
             {/* ── Table ────────────────────────────────────────────────── */}
@@ -697,6 +708,20 @@ export default function CustomersClient({
                 <table className={s.table} data-density={density} aria-label="جدول مشتریان">
                   <thead>
                     <tr>
+                      <th scope="col" className={s.checkCell}>
+                        <span className={s.rowCheckbox} aria-hidden>
+                          <input
+                            type="checkbox"
+                            className={s.checkInput}
+                            checked={allVisibleSelected}
+                            ref={(el) => {
+                              if (el) el.indeterminate = someVisibleSelected;
+                            }}
+                            onChange={toggleAll}
+                            aria-label="انتخاب همه مشتریان این صفحه"
+                          />
+                        </span>
+                      </th>
                       <th scope="col">مشتری</th>
                       <th scope="col">تماس</th>
                       <th scope="col">KYC</th>
@@ -727,6 +752,19 @@ export default function CustomersClient({
                           }}
                           aria-label={`مشتری ${c.fullName}`}
                         >
+                          {/* انتخاب */}
+                          <td className={s.checkCell} onClick={(e) => e.stopPropagation()}>
+                            <span className={s.rowCheckbox} aria-hidden>
+                              <input
+                                type="checkbox"
+                                className={s.checkInput}
+                                checked={selectedIds.has(c.id)}
+                                onChange={() => toggleOne(c.id)}
+                                aria-label={`انتخاب ${c.fullName}`}
+                              />
+                            </span>
+                          </td>
+
                           {/* مشتری */}
                           <td>
                             <div className={s.customerCell}>
@@ -869,6 +907,14 @@ export default function CustomersClient({
                 </table>
               </div>
             )}
+
+            {/* ── Bulk action bar (fixed bottom) ─────────────────────── */}
+            <CustomerBulkBar
+              exchangeId={currentExchangeId}
+              selectedIds={selectedIds}
+              rows={customers}
+              onClear={() => setSelectedIds(new Set())}
+            />
 
             {/* ── Pagination ────────────────────────────────────────────── */}
             {totalPages > 1 && (

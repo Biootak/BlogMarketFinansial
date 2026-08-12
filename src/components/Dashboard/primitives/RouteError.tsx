@@ -29,6 +29,7 @@ import * as Sentry from '@sentry/nextjs';
 import {
   AlertTriangle,
   ArrowLeft,
+  ArrowRight,
   Home,
   LayoutDashboard,
   LogIn,
@@ -141,7 +142,7 @@ const KIND_ICON: Record<ErrorKind, LucideIcon> = {
 function defaultSuggestions(kind: ErrorKind, backHref: string, backLabel: string): SuggestItem[] {
   const items: SuggestItem[] = [];
   if (backHref && backHref !== '/') {
-    items.push({ href: backHref, label: backLabel, sub: 'بازگشت به بخش قبلی', icon: ArrowLeft });
+    items.push({ href: backHref, label: backLabel, sub: 'بازگشت به بخش قبلی', icon: ArrowRight });
   }
   items.push({ href: '/', label: 'صفحه اصلی', sub: 'شروع دوباره از سایت', icon: Home });
   items.push({ href: '/dashboard', label: 'داشبورد', sub: 'پنل مدیریت', icon: LayoutDashboard });
@@ -242,7 +243,7 @@ export function RouteError({
             تلاش مجدد
           </button>
           <Link href={backHref} className={s.backLink}>
-            <ArrowLeft size={15} strokeWidth={2.25} aria-hidden />
+            <ArrowRight size={15} strokeWidth={2.25} aria-hidden />
             {backLabel}
           </Link>
         </div>

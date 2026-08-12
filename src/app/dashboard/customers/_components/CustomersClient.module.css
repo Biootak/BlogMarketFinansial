@@ -368,6 +368,21 @@
   }
 }
 
+/* ── Sticky identity columns (mobile horizontal scroll) ──────────────── */
+/* ستون «انتخاب + مشتری» هنگام اسکرول افقی جدول در موبایل چسبان می‌ماند
+   تا هویت ردیف همیشه دیده شود (الگوی Linear/Attio). */
+@media (max-width: 720px) {
+  .table th:nth-child(-n + 2),
+  .table td:nth-child(-n + 2) {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 2;
+  }
+  .table thead th:nth-child(-n + 2) {
+    z-index: 12;
+  }
+}
+
 /* ── Small mobile (≤480px) ───────────────────────────────────────────── */
 @media (max-width: 480px) {
   .kpiStrip {
@@ -440,6 +455,16 @@
   .addForm {
     padding: 0.6rem;
   }
+}
+
+/* ── Toolbar actions ─────────────────────────────────────────────────────── */
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-inline-start: auto;
+  flex: 0 0 auto;
 }
 
 /* ── Scroll Sentinel ──────────────────────────────────────────────────────── */
@@ -697,6 +722,75 @@
   border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl);
   background: var(--at-surface, var(--ds-surface));
+}
+
+/* ── Checkbox column (bulk selection) ───────────────────────────────────── */
+
+.checkCell {
+  inline-size: 38px;
+  min-inline-size: 38px;
+  max-inline-size: 38px;
+  text-align: center;
+}
+
+.rowCheckbox {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 18px;
+  block-size: 18px;
+}
+
+.checkInput {
+  appearance: none;
+  inline-size: 16px;
+  block-size: 16px;
+  margin: 0;
+  border-radius: 5px;
+  border: 1px solid var(--at-line, var(--ds-border-default));
+  background: var(--at-surface, var(--ds-surface));
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), background
+    var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+}
+
+.checkInput::before {
+  content: "";
+  inline-size: 9px;
+  block-size: 9px;
+  transform: scale(0);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart);
+  box-shadow: inset 1em 1em var(--ds-brand-500, oklch(55% 0.2 262));
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+.checkInput:checked {
+  border-color: var(--ds-brand-500, oklch(55% 0.2 262));
+  background: var(--ds-brand-500, oklch(55% 0.2 262));
+}
+
+.checkInput:checked::before {
+  transform: scale(1);
+}
+
+.checkInput:indeterminate {
+  border-color: var(--ds-brand-500, oklch(55% 0.2 262));
+  background: var(--ds-brand-500, oklch(55% 0.2 262));
+}
+
+.checkInput:indeterminate::before {
+  transform: scale(1);
+  clip-path: none;
+  box-shadow: inset 1em 1em #fff;
+  border-radius: 1px;
+}
+
+.checkInput:focus-visible {
+  outline: 2px solid var(--ds-brand-500);
+  outline-offset: 2px;
 }
 
 /* ── Table ────────────────────────────────────────────────────────────────── */
