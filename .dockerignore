@@ -1,6 +1,5 @@
 .git
-.next/*
-!.next/cache/
+.next
 node_modules
 npm-debug.log
 README.md

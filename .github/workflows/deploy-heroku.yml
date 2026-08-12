@@ -56,76 +56,23 @@ jobs:
           # ست شده باشد، همان را به build می‌دهیم تا build شکست نخورد.
           echo "auth_secret=$(echo "$CONFIG" | jq -r '.AUTH_SECRET // .NEXTAUTH_SECRET // empty')" >> "$GITHUB_OUTPUT"
 
-      # ─── 4. Setup Buildx + Docker layer caching (داک رسمی Docker) ──────────
-      # 2026-08-12: بدون کش، هر deploy ~۶ دقیقه طول می‌کشید چون npm ci و
-      # prisma و next build همه از صفر اجرا می‌شدند. حالا:
-      #   - Docker layer cache با backend گیت‌هاب (type=gha) — لایه‌های npm ci،
-      #     prisma generate، migrate و seed وقتی کد عوض نشده از cache می‌آیند.
-      #   - .next/cache بین deployها persist می‌شود (داک رسمی Next.js:
-      #     docs/guides/ci-build-caching) — next build از cache قبلی استفاده
-      #     می‌کند و سریع‌تر تمام می‌شود.
-      # نکتهٔ OCI: build-push-action با push مستقیم (BuildKit container driver)
-      # تصویر را با OCI index push می‌کند که Heroku قبول نمی‌کند. پس فقط با
-      # buildx build می‌کنیم (خروجی docker load) و push را با docker push
-      # سادهٔ جداگانه انجام می‌دهیم.
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # ─── 4b. Next.js build cache — از داک رسمی Next.js ────────────────────
-      # key روی lockfile + کد تغییر می‌کند؛ اگر کد عوض شده باشد ولی lockfile نه،
-      # restore-keys کش قبلی را برمی‌گرداند.
-      - name: Cache Next.js build (.next/cache)
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('src/**', 'prisma/**', 'app/**') }}
-          restore-keys: |
-            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-
-      # ─── 4c. Build (docker load — نه push مستقیم) ─────────────────────────
-      - name: Build image (docker buildx, layer cache on)
+      # ─── 4. Build & Push Docker image to Heroku ───────────────────────────
+      # 2026-08-08: docker/build-push-action (BuildKit container driver) تصویر
+      # را با OCI index push می‌کند که Heroku Container Registry قبول نمی‌کند
+      # ("failed to push ...: unsupported") — حتی با provenance/sbom=false.
+      # راه‌حل قطعی: docker build + docker push ساده (همان کاری که
+      # heroku container:push داخلاً می‌کند — مسیر documented در HEROKU.md).
+      - name: Build and push image (docker)
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
           echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
-          docker buildx build -f Dockerfile.heroku \
-            --cache-from=type=gha,scope=financial-market \
-            --cache-to=type=gha,mode=max,scope=financial-market \
+          docker build -f Dockerfile.heroku \
             --build-arg DATABASE_URL="${{ steps.db.outputs.database_url }}" \
             --build-arg DIRECT_URL="${{ steps.db.outputs.direct_url }}" \
             --build-arg SEED_OWNER_PASSWORD="${{ secrets.SEED_OWNER_PASSWORD }}" \
             --build-arg AUTH_SECRET="${{ steps.db.outputs.auth_secret }}" \
-            --load \
             -t registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web .
-
-      # ─── 4d. استخراج .next/cache به‌روزشده از builder (برای deploy بعدی) ──
-      # export فقط خودِ stage builder را به فایل‌سیستم local می‌دهد — لایه‌ها از
-      # gha cache می‌آیند، پس این مرحله سریع است (build مجدد نمی‌شود).
-      - name: Extract .next/cache from builder stage
-        run: |
-          mkdir -p .next/cache
-          docker buildx build -f Dockerfile.heroku \
-            --target builder \
-            --cache-from=type=gha,scope=financial-market \
-            --output type=local,dest=./builder-cache-out \
-            --build-arg DATABASE_URL="${{ steps.db.outputs.database_url }}" \
-            --build-arg DIRECT_URL="${{ steps.db.outputs.direct_url }}" \
-            --build-arg SEED_OWNER_PASSWORD="${{ secrets.SEED_OWNER_PASSWORD }}" \
-            --build-arg AUTH_SECRET="${{ steps.db.outputs.auth_secret }}" \
-            . || true
-          if [ -d ./builder-cache-out/app/.next/cache ] && [ -n "$(ls -A ./builder-cache-out/app/.next/cache)" ]; then
-            cp -a ./builder-cache-out/app/.next/cache/. .next/cache/
-            echo "cache extracted: $(du -sh .next/cache | cut -f1)"
-          else
-            echo "no .next/cache found in builder stage — skipping"
-          fi
-
-      # ─── 4e. Push (docker push ساده — سازگار با Heroku registry) ──────────
-      - name: Push image to Heroku registry
-        env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-        run: |
-          echo "$HEROKU_API_KEY" | docker login --username=_ --password-stdin registry.heroku.com
           docker push registry.heroku.com/${{ secrets.HEROKU_APP_NAME }}/web
 
       # ─── 5. Release (deploy) روی Heroku ──────────────────────────────────
