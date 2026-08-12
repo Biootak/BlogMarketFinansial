@@ -457,6 +457,11 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
       const currencyVal = matched?.value ?? (isCrypto ? 'USDT' : 'USD');
 
       // از query param type (مگامنو) → service؛ وگرنه از prefill category
+      // 2026-08-12: اگر نه prefill هست نه urlType/urlCurr، یعنی کاربر مستقیم
+      // به صفحه آمده — هیچ pre-fill‌ای نباید انجام شود و step باید روی ۰ بماند.
+      const hasPrefillData = !!(prefill || urlType || urlCurr);
+      if (!hasPrefillData) return;
+
       let service: ServiceTypeKey = 'CURRENCY_BUY';
       if (urlType && SERVICE_OPTIONS.some((o) => o.key === urlType)) {
         service = urlType as ServiceTypeKey;
