@@ -4,6 +4,7 @@ import { BreadcrumbProvider } from '@/components/Dashboard/DashboardPage/Breadcr
 import Header from '@/components/Dashboard/DashboardPage/Header';
 import { KeyboardShortcuts } from '@/components/Dashboard/DashboardPage/KeyboardShortcuts';
 import MainContent from '@/components/Dashboard/DashboardPage/MainContent';
+import { ScrollRestoration } from '@/components/Dashboard/DashboardPage/ScrollRestoration';
 import Sidebar from '@/components/Dashboard/DashboardPage/Sidebar';
 import SidebarInitializer from '@/components/Dashboard/DashboardPage/SidebarInitializer';
 import SidebarToggle from '@/components/Dashboard/DashboardPage/SidebarToggle';
@@ -73,6 +74,7 @@ export function DashboardProviders({
             <div className="dashboard-shell__viewport">
               <Header portal={portal} />
               <MainContent>{children}</MainContent>
+              <ScrollRestoration />
             </div>
           </BreadcrumbProvider>
           <Toaster />
