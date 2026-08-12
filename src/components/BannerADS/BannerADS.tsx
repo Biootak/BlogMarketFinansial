@@ -306,6 +306,7 @@ export default function BannerAds({
   // و DB write حتی برای تبلیغ‌های پایین صفحه که هیچ‌کس نمی‌بیند.
   const viewRef = useRef<HTMLElement | null>(null);
   const viewRecordedRef = useRef(false);
+  const viewObserverRef = useRef<IntersectionObserver | null>(null);
   useEffect(() => {
     if (!ad?.id || viewRecordedRef.current) return;
     const el = viewRef.current;
@@ -325,18 +326,39 @@ export default function BannerAds({
         }
       } catch (_err) {}
     };
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          viewRecordedRef.current = true;
-          void recordView();
-          io.disconnect();
-        }
-      },
-      { rootMargin: '150px' },
-    );
-    io.observe(el);
-    return () => io.disconnect();
+    // 2026-08-12 prerender gate (Speculation Rules): در صفحهٔ prerendered،
+    // viewport شبیه‌سازی می‌شود و IntersectionObserver می‌تواند fire کند؛
+    // بدون این گیت هر prerender یک impression کاذب ثبت می‌کرد (همان الگوی
+    // usePageView). observer فقط بعد از فعال‌شدن واقعی صفحه setup می‌شود.
+    const setupObserver = () => {
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            viewRecordedRef.current = true;
+            void recordView();
+            io.disconnect();
+          }
+        },
+        { rootMargin: '150px' },
+      );
+      viewObserverRef.current = io;
+      io.observe(el);
+    };
+
+    const isPrerendering =
+      typeof document !== 'undefined' &&
+      (document as Document & { prerendering?: boolean }).prerendering === true;
+
+    if (isPrerendering) {
+      const onActivate = () => setupObserver();
+      document.addEventListener('prerenderingchange', onActivate, { once: true });
+      return () => {
+        document.removeEventListener('prerenderingchange', onActivate);
+        viewObserverRef.current?.disconnect();
+      };
+    }
+    setupObserver();
+    return () => viewObserverRef.current?.disconnect();
   }, [ad?.id]);
 
   /* ------------------------------------------------------------------- */

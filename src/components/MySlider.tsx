@@ -76,10 +76,32 @@ export default function MySlider<T>({
   const nextSlideRef = useRef(nextSlide);
   nextSlideRef.current = nextSlide;
 
+  // 2026-08-12 perf: autoplay فقط در تب فعال کار می‌کند. وقتی تب پس‌زمینه شد
+  // (document.hidden) interval متوقف می‌شود تا CPU/باتری هدر نرود و وقتی دوباره
+  // فعال شد از همان‌جا ادامه می‌دهد — بدون هیچ تغییر ظاهری.
   useEffect(() => {
     if (!autoSlideInterval) return;
-    const intervalId = setInterval(() => nextSlideRef.current(), autoSlideInterval);
-    return () => clearInterval(intervalId);
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = setInterval(() => nextSlideRef.current(), autoSlideInterval);
+    };
+    const stop = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+    start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [autoSlideInterval]);
 
   const handlers = useSwipeable({
