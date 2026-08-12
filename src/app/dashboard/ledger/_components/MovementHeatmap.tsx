@@ -140,10 +140,10 @@ export function MovementHeatmap({ data, className, weeks = 12 }: MovementHeatmap
           <div className={s.gridScroll}>
             {/* Month strip */}
             <div className={s.monthStrip} aria-hidden>
-              {grid.map((_, w) => {
+              {grid.map((week, w) => {
                 const ml = monthLabels.find((m) => m.week === w);
                 return (
-                  <span key={`m-${w}`} className={s.monthCell}>
+                  <span key={week[0]?.date ?? `m-${w}`} className={s.monthCell}>
                     {ml?.label ?? ''}
                   </span>
                 );
@@ -153,7 +153,7 @@ export function MovementHeatmap({ data, className, weeks = 12 }: MovementHeatmap
             {/* Day cells */}
             <div className={s.cells}>
               {grid.map((week, wIdx) => (
-                <div key={`w-${wIdx}`} className={s.weekCol}>
+                <div key={week[0]?.date ?? `w-${wIdx}`} className={s.weekCol}>
                   {week.map((cell) => {
                     const dayIdx = (() => {
                       try {
@@ -173,7 +173,8 @@ export function MovementHeatmap({ data, className, weeks = 12 }: MovementHeatmap
                   })}
                   {/* Pad incomplete weeks */}
                   {Array.from({ length: 7 - week.length }).map((_, i) => (
-                    <span key={`pad-${i}`} className={`${s.cell} ${s.pad}`} />
+                    // biome-ignore lint/suspicious/noArrayIndexKey: decorative empty cells — no stable id exists
+                    <span key={i} className={`${s.cell} ${s.pad}`} />
                   ))}
                 </div>
               ))}

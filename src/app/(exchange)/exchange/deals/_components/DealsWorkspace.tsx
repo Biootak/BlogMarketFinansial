@@ -333,13 +333,22 @@ export default function DealsWorkspace({
               </div>
             )}
 
-            <div className={s.panel}>              {filtered.length === 0 ? (
+            <div className={s.panel}>
+              {' '}
+              {filtered.length === 0 ? (
                 <div className={s.empty}>
-                  <div className={s.emptyIcon}><ArrowLeftRight size={22} aria-hidden /></div>
+                  <div className={s.emptyIcon}>
+                    <ArrowLeftRight size={22} aria-hidden />
+                  </div>
                   <b>معامله‌ای یافت نشد</b>
-                  <p>فیلتر یا جستجو را تغییر دهید — یا با «ثبت معاملهٔ حضوری» یک معاملهٔ جدید بسازید.</p>
+                  <p>
+                    فیلتر یا جستجو را تغییر دهید — یا با «ثبت معاملهٔ حضوری» یک معاملهٔ جدید بسازید.
+                  </p>
                   {canWrite && (
-                    <button className={`${s.cta} ${s.emptyCta}`} onClick={() => setCreateOpen(true)}>
+                    <button
+                      className={`${s.cta} ${s.emptyCta}`}
+                      onClick={() => setCreateOpen(true)}
+                    >
                       <Plus size={15} /> ثبت معاملهٔ حضوری
                     </button>
                   )}

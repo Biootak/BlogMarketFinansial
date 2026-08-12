@@ -24,7 +24,6 @@ import {
   ConfirmDialog,
   DataPanel,
   DataTable,
-  ExportButton,
   InsightCard,
   InsightLayout,
   InsightPanel,
@@ -36,6 +35,8 @@ import {
   TableToolbar,
   TrendSparkline,
 } from '@/components/Dashboard/primitives';
+import type { DateRange } from '@/components/ui/PersianDateRangePicker';
+import { PersianDateRangePicker } from '@/components/ui/PersianDateRangePicker';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -61,9 +62,6 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import type { DateRange } from '@/components/ui/PersianDateRangePicker';
-import { PersianDateRangePicker } from '@/components/ui/PersianDateRangePicker';
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import s from './NewsletterClient.module.css';
 
@@ -149,10 +147,11 @@ export default function NewsletterClient({ initial }: Props) {
       filtered = filtered.filter((i) => i.email.toLowerCase().includes(q));
     }
     if (dateRange?.from) {
-      filtered = filtered.filter((i) => i.createdAt >= dateRange.from!);
+      const from = dateRange.from;
+      filtered = filtered.filter((i) => i.createdAt >= from);
     }
     if (dateRange?.to) {
-      const toEnd = new Date(dateRange.to!);
+      const toEnd = new Date(dateRange.to);
       toEnd.setHours(23, 59, 59, 999);
       filtered = filtered.filter((i) => i.createdAt <= toEnd);
     }
@@ -165,8 +164,6 @@ export default function NewsletterClient({ initial }: Props) {
     const start = page * pageSize;
     return displayed.slice(start, start + pageSize);
   }, [displayed, page, pageSize]);
-
-  const linkedCount = useMemo(() => items.filter((i) => i.linkedUser).length, [items]);
 
   const growthSeries = useMemo(() => {
     const days = 14;
@@ -303,13 +300,16 @@ export default function NewsletterClient({ initial }: Props) {
     setBody(t.body);
   }, []);
 
-  const copyEmail = useCallback((email: string, id: string) => {
-    navigator.clipboard.writeText(email).then(() => {
-      setCopiedId(id);
-      toast({ title: 'ایمیل کپی شد', duration: 2000 });
-      setTimeout(() => setCopiedId(null), 2000);
-    });
-  }, [toast]);
+  const copyEmail = useCallback(
+    (email: string, id: string) => {
+      navigator.clipboard.writeText(email).then(() => {
+        setCopiedId(id);
+        toast({ title: 'ایمیل کپی شد', duration: 2000 });
+        setTimeout(() => setCopiedId(null), 2000);
+      });
+    },
+    [toast],
+  );
 
   const exportData = useMemo(
     () =>
@@ -572,10 +572,13 @@ export default function NewsletterClient({ initial }: Props) {
                     صفحه {page + 1} از {totalPages} — {displayed.length} مورد
                   </span>
                   <div className={s.pagerControls}>
-                    <Select value={String(pageSize)} onValueChange={(v) => {
-                      setPageSize(Number(v));
-                      setPage(0);
-                    }}>
+                    <Select
+                      value={String(pageSize)}
+                      onValueChange={(v) => {
+                        setPageSize(Number(v));
+                        setPage(0);
+                      }}
+                    >
                       <SelectTrigger className={s.pageSizeSelect}>
                         <SelectValue />
                       </SelectTrigger>
@@ -613,11 +616,7 @@ export default function NewsletterClient({ initial }: Props) {
           <InsightPanel>
             <InsightCard title="رشد ۱۴ روزه" icon={BarChart3}>
               {growthSeries.length > 1 ? (
-                <TrendSparkline
-                  data={growthSeries}
-                  color="var(--ds-accent-emerald)"
-                  height={64}
-                />
+                <TrendSparkline data={growthSeries} color="var(--ds-accent-emerald)" height={64} />
               ) : (
                 <div className={s.noData}>داده‌ای موجود نیست</div>
               )}
@@ -697,8 +696,11 @@ export default function NewsletterClient({ initial }: Props) {
           </div>
 
           <div className={s.formGroup}>
-            <label className={s.formLabel}>موضوع *</label>
+            <label className={s.formLabel} htmlFor="newsletter-subject">
+              موضوع *
+            </label>
             <Input
+              id="newsletter-subject"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="موضوع خبرنامه..."
@@ -707,17 +709,18 @@ export default function NewsletterClient({ initial }: Props) {
           </div>
 
           <div className={s.formGroup}>
-            <label className={s.formLabel}>متن *</label>
+            <label className={s.formLabel} htmlFor="newsletter-body">
+              متن *
+            </label>
             <Textarea
+              id="newsletter-body"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder="متن خبرنامه..."
               rows={8}
               className={s.composerTextarea}
             />
-            <span className={s.charCount}>
-              {fa.format(body.length)} کاراکتر
-            </span>
+            <span className={s.charCount}>{fa.format(body.length)} کاراکتر</span>
           </div>
 
           <div className={s.composerFooter}>
@@ -741,11 +744,7 @@ export default function NewsletterClient({ initial }: Props) {
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title="حذف مشترک"
-        description={
-          deleteTarget
-            ? `آیا از حذف ${deleteTarget.email} مطمئن هستید؟`
-            : ''
-        }
+        description={deleteTarget ? `آیا از حذف ${deleteTarget.email} مطمئن هستید؟` : ''}
         confirmLabel="حذف شود"
         onConfirm={confirmDelete}
         variant="danger"

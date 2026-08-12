@@ -75,6 +75,7 @@ export function CashflowRiver({ data, height = 160, className }: CashflowRiverPr
         w: segW,
         direction: d.direction,
         label: d.label,
+        srcIndex: i,
       };
     });
 
@@ -135,9 +136,9 @@ export function CashflowRiver({ data, height = 160, className }: CashflowRiverPr
         <g className={s.upGroup}>
           {segments
             .filter((seg) => seg.direction === 'CREDIT')
-            .map((seg, i) => (
+            .map((seg) => (
               <rect
-                key={`up-${i}`}
+                key={`up-${seg.srcIndex}`}
                 x={seg.x}
                 y={seg.y}
                 width={seg.w}
@@ -152,9 +153,9 @@ export function CashflowRiver({ data, height = 160, className }: CashflowRiverPr
         <g className={s.downGroup}>
           {segments
             .filter((seg) => seg.direction === 'DEBIT')
-            .map((seg, i) => (
+            .map((seg) => (
               <rect
-                key={`down-${i}`}
+                key={`down-${seg.srcIndex}`}
                 x={seg.x}
                 y={seg.y}
                 width={seg.w}

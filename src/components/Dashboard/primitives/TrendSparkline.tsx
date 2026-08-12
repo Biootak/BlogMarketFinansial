@@ -84,7 +84,13 @@ export function TrendSparkline({
     }
 
     const dir = direction ?? detectDirection(data);
-    const lineColor = color ?? (dir === 'up' ? 'var(--nova-up, var(--ds-accent-emerald))' : dir === 'down' ? 'var(--nova-down, var(--ds-accent-rose))' : 'var(--ds-text-muted)');
+    const lineColor =
+      color ??
+      (dir === 'up'
+        ? 'var(--nova-up, var(--ds-accent-emerald))'
+        : dir === 'down'
+          ? 'var(--nova-down, var(--ds-accent-rose))'
+          : 'var(--ds-text-muted)');
 
     const min = Math.min(...data);
     const max = Math.max(...data);

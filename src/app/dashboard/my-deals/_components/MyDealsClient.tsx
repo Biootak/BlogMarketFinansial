@@ -286,7 +286,7 @@ export default function MyDealsClient() {
 
   useEffect(() => {
     fetchDeals(page);
-  }, [fetchDeals, page, statusFilter]);
+  }, [fetchDeals, page]);
 
   // ── KPI calculations — سرور-محور (کل معاملات، نه فقط صفحهٔ فعلی) ───────────
   const kpi = useMemo(() => {

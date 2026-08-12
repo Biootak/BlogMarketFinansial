@@ -135,7 +135,8 @@ export function CashflowPulse({ data, height = 140, className, windowLabel }: Ca
           if (i % labelStride !== 0 && i !== data.length - 1) return null;
           const x = PADDING_X + i * ((plotW - BAR_GAP * (data.length - 1)) / data.length + BAR_GAP);
           return (
-            <text key={`lbl-${i}`} x={x} y={height - 6} className={s.axisLabel} textAnchor="middle">
+            // biome-ignore lint/suspicious/noArrayIndexKey: sparse axis ticks — no stable natural key on the point
+            <text key={i} x={x} y={height - 6} className={s.axisLabel} textAnchor="middle">
               {d.label ?? ''}
             </text>
           );

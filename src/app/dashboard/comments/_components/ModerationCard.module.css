@@ -389,7 +389,11 @@
 }
 
 .actionBtn.restore:hover {
-  background: color-mix(in oklch, var(--nova-indigo, var(--ds-accent-indigo, oklch(55% 0.18 264))) 10%, transparent);
+  background: color-mix(
+    in oklch,
+    var(--nova-indigo, var(--ds-accent-indigo, oklch(55% 0.18 264))) 10%,
+    transparent
+  );
   color: var(--nova-indigo, var(--ds-accent-indigo, oklch(55% 0.18 264)));
   border-color: color-mix(
     in oklch,
@@ -397,7 +401,11 @@
     var(--ds-border-subtle)
   );
   box-shadow: 0 2px 6px
-    color-mix(in oklch, var(--nova-indigo, var(--ds-accent-indigo, oklch(55% 0.18 264))) 15%, transparent);
+    color-mix(
+      in oklch,
+      var(--nova-indigo, var(--ds-accent-indigo, oklch(55% 0.18 264))) 15%,
+      transparent
+    );
 }
 
 .actionBtn.delete {

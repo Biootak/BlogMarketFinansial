@@ -13,6 +13,7 @@ import prisma from '@/lib/db';
 import { authFailureToActionResult, requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { ActionResult } from '@/types/types';
+import type { Prisma } from '@prisma/client';
 
 export type CommentRow = {
   id: string;
@@ -68,8 +69,7 @@ export async function getComments(
     `.catch(() => [] as ColRow);
     const hasRejectedAt = colCheck.length > 0;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const buildWhere = (status?: typeof options.status): any => {
+    const buildWhere = (status?: typeof options.status): Prisma.CommentWhereInput => {
       if (status === 'approved') return { approved: true };
       if (status === 'pending')
         return hasRejectedAt ? { approved: false, rejectedAt: null } : { approved: false };
@@ -108,10 +108,8 @@ export async function getComments(
           id: c.id,
           content: c.content,
           approved: c.approved,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          rejectedAt: (c as any).rejectedAt ?? null,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          status: toStatus(c.approved, (c as any).rejectedAt ?? null),
+          rejectedAt: c.rejectedAt ?? null,
+          status: toStatus(c.approved, c.rejectedAt ?? null),
           createdAt: c.createdAt,
           time: c.createdAt.toLocaleString('fa-IR'),
           postId: c.postId,

@@ -250,6 +250,7 @@ function FlowSkeleton() {
   return (
     <div className={s.skeleton} aria-label="در حال بارگذاری">
       {Array.from({ length: 6 }).map((_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
         <div key={i} className={s.skelRow}>
           <span className={`${s.skelBlock} ${s.skelIcon}`} />
           <span className={`${s.skelBlock} ${s.skelTime}`} />

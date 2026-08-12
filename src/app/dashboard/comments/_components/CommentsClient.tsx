@@ -82,7 +82,9 @@ export default function CommentsClient({ initial }: Props) {
   // شروع با تب pending — items بر اساس تب اولیه
   // fallback: اگه status هنوز از server نیومده، بر اساس approved محاسبه میشه
   const [items, setItems] = useState<CommentRow[]>(() =>
-    (initial?.rows ?? []).filter((r) => (r.status ?? (r.approved ? 'approved' : 'pending')) === 'pending'),
+    (initial?.rows ?? []).filter(
+      (r) => (r.status ?? (r.approved ? 'approved' : 'pending')) === 'pending',
+    ),
   );
   const [total, setTotal] = useState(initial?.total ?? 0);
   const [pendingCount, setPendingCount] = useState(initial?.pending ?? 0);
@@ -91,7 +93,9 @@ export default function CommentsClient({ initial }: Props) {
   const [tab, setTab] = useState<Tab>('pending');
   const [search, setSearch] = useState('');
   const [hasMore, setHasMore] = useState(
-    (initial?.rows ?? []).filter((r) => (r.status ?? (r.approved ? 'approved' : 'pending')) === 'pending').length >= PAGE_SIZE,
+    (initial?.rows ?? []).filter(
+      (r) => (r.status ?? (r.approved ? 'approved' : 'pending')) === 'pending',
+    ).length >= PAGE_SIZE,
   );
   const [loading, setLoading] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CommentRow | null>(null);
@@ -155,15 +159,12 @@ export default function CommentsClient({ initial }: Props) {
   }, [items, search]);
 
   /* ── حذف item از لیست و آپدیت counter ── */
-  const removeItem = useCallback(
-    (id: string, prevStatus: 'pending' | 'approved' | 'rejected') => {
-      setItems((prev) => prev.filter((i) => i.id !== id));
-      if (prevStatus === 'pending') setPendingCount((p) => Math.max(0, p - 1));
-      else if (prevStatus === 'approved') setApprovedCount((a) => Math.max(0, a - 1));
-      else setRejectedCount((r) => Math.max(0, r - 1));
-    },
-    [],
-  );
+  const removeItem = useCallback((id: string, prevStatus: 'pending' | 'approved' | 'rejected') => {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    if (prevStatus === 'pending') setPendingCount((p) => Math.max(0, p - 1));
+    else if (prevStatus === 'approved') setApprovedCount((a) => Math.max(0, a - 1));
+    else setRejectedCount((r) => Math.max(0, r - 1));
+  }, []);
 
   /* ── سناریو: تأیید نظر ── */
   const handleApprove = useCallback(
@@ -174,7 +175,14 @@ export default function CommentsClient({ initial }: Props) {
 
       // optimistic: حذف از تب فعلی اگر تب approved نیست
       if (tab !== 'approved') removeItem(id, prevStatus);
-      else setItems((prev) => prev.map((i) => (i.id === id ? { ...i, approved: true, status: 'approved' as const, rejectedAt: null } : i)));
+      else
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === id
+              ? { ...i, approved: true, status: 'approved' as const, rejectedAt: null }
+              : i,
+          ),
+        );
 
       setPendingCount((p) => (prevStatus === 'pending' ? Math.max(0, p - 1) : p));
       setRejectedCount((r) => (prevStatus === 'rejected' ? Math.max(0, r - 1) : r));
@@ -300,7 +308,10 @@ export default function CommentsClient({ initial }: Props) {
   }, [items]);
 
   const pendingPreview = useMemo(
-    () => items.filter((i) => (i.status ?? (i.approved ? 'approved' : 'pending')) === 'pending').slice(0, 3),
+    () =>
+      items
+        .filter((i) => (i.status ?? (i.approved ? 'approved' : 'pending')) === 'pending')
+        .slice(0, 3),
     [items],
   );
 
@@ -360,7 +371,9 @@ export default function CommentsClient({ initial }: Props) {
                     >
                       <cfg.icon size={14} strokeWidth={1.75} />
                       <span className={s.tabLabel}>{cfg.label}</span>
-                      <span className={`${s.tabBadge} ${key === 'rejected' && count > 0 ? s.tabBadgeRejected : ''}`}>
+                      <span
+                        className={`${s.tabBadge} ${key === 'rejected' && count > 0 ? s.tabBadgeRejected : ''}`}
+                      >
                         {fa.format(count)}
                       </span>
                     </button>

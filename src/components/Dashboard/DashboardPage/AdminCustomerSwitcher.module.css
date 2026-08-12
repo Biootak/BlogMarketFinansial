@@ -33,7 +33,7 @@
   .shell {
     background: color-mix(in oklch, var(--nova-amber) 8%, oklch(100% 0 0 / 0.92));
     backdrop-filter: blur(16px) saturate(160%);
-    }
+  }
 }
 
 /* violet when impersonating (explicit manual pick) */

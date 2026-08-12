@@ -11,7 +11,15 @@
  */
 
 import type { CommentRow } from '@/actions/comments-actions';
-import { ArrowUpRight, CheckCheck, FileText, MessageSquare, RotateCcw, Trash2, X } from 'lucide-react';
+import {
+  ArrowUpRight,
+  CheckCheck,
+  FileText,
+  MessageSquare,
+  RotateCcw,
+  Trash2,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import s from './ModerationCard.module.css';
@@ -50,10 +58,7 @@ export function ModerationCard({
   const status = comment.status;
 
   return (
-    <div
-      className={`${s.card} ${s[status]}`}
-      data-status={status}
-    >
+    <div className={`${s.card} ${s[status]}`} data-status={status}>
       {/* ── Header: Author + Status ── */}
       <div className={s.header}>
         <div className={s.author}>
@@ -68,10 +73,7 @@ export function ModerationCard({
           </div>
         </div>
         <div className={s.meta}>
-          <span
-            className={`${s.statusPill} ${s[status]}`}
-            data-status={status}
-          >
+          <span className={`${s.statusPill} ${s[status]}`} data-status={status}>
             <span className={s.statusDot} />
             {STATUS_LABEL[status]}
           </span>
