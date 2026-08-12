@@ -144,7 +144,7 @@
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--ds-color-text-primary, currentColor);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
   line-height: 1.4;
   white-space: nowrap;
   overflow: hidden;

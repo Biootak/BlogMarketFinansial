@@ -105,7 +105,7 @@
   margin: 0;
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--ds-color-text-primary, currentColor);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
   font-variant-numeric: tabular-nums;
 }
 .metaIcon {
@@ -134,7 +134,7 @@
   padding: 0.75rem 0.875rem;
   font-size: 0.875rem;
   line-height: 1.7;
-  color: var(--ds-color-text-primary, currentColor);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
   background: var(--ds-color-surface-recessed, rgba(0, 0, 0, 0.02));
   border: 1px solid var(--ds-color-border-subtle, rgba(0, 0, 0, 0.06));
   border-radius: var(--ds-radius-md, 0.625rem);
@@ -164,7 +164,7 @@
   transition: all 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
 }
 .statusBtn:hover:not(:disabled) {
-  color: var(--ds-color-text-primary, currentColor);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
   border-color: var(--ds-color-border-strong, rgba(0, 0, 0, 0.2));
   transform: translateY(-1px);
 }
@@ -281,7 +281,7 @@
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.7;
-  color: var(--ds-color-text-primary, currentColor);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
   white-space: pre-wrap;
 }
 
@@ -318,7 +318,7 @@
   font-size: 0.875rem;
   font-family: inherit;
   line-height: 1.6;
-  color: var(--ds-color-text-primary, currentColor);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
   background: var(--ds-color-surface-recessed, rgba(0, 0, 0, 0.02));
   border: 1px solid var(--ds-color-border-subtle, rgba(0, 0, 0, 0.1));
   border-radius: var(--ds-radius-md, 0.625rem);

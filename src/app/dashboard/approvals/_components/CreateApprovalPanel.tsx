@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ChevronRight,
   FileText,
   Loader2,
   Plus,
@@ -15,6 +14,7 @@ import {
   ShieldCheck,
   Trash2,
   Wallet,
+  X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -192,7 +192,7 @@ export function CreateApprovalPanel({ open, onClose, onCreated }: Props) {
             <span className={s.headerSubtitle}>یک جریان تأیید چندمرحله‌ای جدید ایجاد کنید</span>
           </div>
           <button type="button" onClick={close} className={s.closeBtn} aria-label="بستن">
-            <ChevronRight className="h-5 w-5" />
+            <X className="h-5 w-5" />
           </button>
         </header>
 

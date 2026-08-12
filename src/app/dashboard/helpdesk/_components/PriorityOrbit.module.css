@@ -187,7 +187,7 @@
   font-size: clamp(1.5rem, 1rem + 1.4vw, 1.875rem);
   font-weight: 800;
   letter-spacing: -0.03em;
-  color: var(--ds-color-text-primary, currentColor);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
   font-variant-numeric: tabular-nums;
 }
 
@@ -223,8 +223,8 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-color-text-primary, #000) 6%, transparent), 0
-    6px 16px -8px color-mix(in oklch, var(--ds-color-text-primary, #000) 14%, transparent);
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary, oklch(20% 0.01 240)) 6%, transparent), 0
+    6px 16px -8px color-mix(in oklch, var(--ds-text-primary, oklch(20% 0.01 240)) 14%, transparent);
   backdrop-filter: blur(8px) saturate(140%);
   pointer-events: auto;
   transition: transform 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
@@ -263,7 +263,7 @@
 }
 
 .legendValue {
-  color: var(--ds-color-text-primary, currentColor);
+  color: var(--ds-text-primary, oklch(20% 0.01 240));
   font-weight: 800;
 }
 
