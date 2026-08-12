@@ -2,6 +2,7 @@
  * PriorityOrbit — signature visual برای Helpdesk
  * --------------------------------------------------------------
  *  token-based, RTL-correct, GPU-friendly (transform/opacity)
+ *  سامانه‌ی مداری شیشه‌ای: سیاره‌ها روی نوارهای ابریشمی + هسته‌ی لایه‌ای
  * ================================================================ */
 
 .orbit {
@@ -18,12 +19,12 @@
 .orbit::before {
   content: "";
   position: absolute;
-  inset: 12%;
+  inset: 10%;
   border-radius: 50%;
   background: radial-gradient(
     circle at 50% 50%,
-    color-mix(in oklch, oklch(52% 0.14 162) 10%, transparent),
-    transparent 70%
+    color-mix(in oklch, oklch(52% 0.14 162) 9%, transparent),
+    transparent 72%
   );
   filter: blur(6px);
   pointer-events: none;
@@ -36,7 +37,7 @@
   height: 100%;
 }
 
-/* ── چرخش آرام گروه‌ها — سرعت بر اساس priority ───────────────── */
+/* ── چرخش آرام گروه‌های سیاره‌ای — سرعت بر اساس priority ────── */
 .orbitGroup {
   animation: orbit-spin 60s linear infinite;
   transform-box: fill-box;
@@ -73,38 +74,97 @@
   transform-origin: center;
 }
 .orbitNode:hover {
-  transform: scale(1.4);
+  transform: scale(1.45);
 }
 .orbitNode[data-selected="true"] {
-  transform: scale(1.5);
+  transform: scale(1.55);
 }
 .orbitNode:focus {
   outline: none;
-  transform: scale(1.4);
+  transform: scale(1.45);
 }
 .orbitNode:focus-visible > circle:first-child {
   stroke: var(--ds-color-accent, currentColor);
   stroke-width: 0.5;
 }
 
-/* ── دیسک مرکز — pulse ────────────────────────────────────── */
+/* حلقه‌ی پالس انتخاب — از گره بیرون می‌زند */
+.nodeRingPulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: node-ring-pulse 2.2s var(--ds-ease-in-out-quart, cubic-bezier(0.76, 0, 0.24, 1))
+    infinite;
+}
+@keyframes node-ring-pulse {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+/* ── بیکن بالایی هسته — تپش ظریف ───────────────────────── */
+.beaconDot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: beacon-breathe 2.4s var(--ds-ease-in-out-quart, cubic-bezier(0.76, 0, 0.24, 1))
+    infinite;
+}
+@keyframes beacon-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.beaconRing {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: beacon-ring 2.4s var(--ds-ease-in-out-quart, cubic-bezier(0.76, 0, 0.24, 1)) infinite;
+}
+@keyframes beacon-ring {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+/* ── هسته‌ی مرکزی — pulse ────────────────────────────────── */
 .coreHalo {
   transform-origin: center;
   transform-box: fill-box;
-  animation: orbit-core-pulse 2.6s var(--ds-ease-in-out-quart, cubic-bezier(0.76, 0, 0.24, 1))
+  animation: orbit-core-pulse 2.8s var(--ds-ease-in-out-quart, cubic-bezier(0.76, 0, 0.24, 1))
     infinite;
 }
 @keyframes orbit-core-pulse {
   0% {
     transform: scale(1);
-    opacity: 0.45;
+    opacity: 0.4;
   }
   70% {
-    transform: scale(1.35);
+    transform: scale(1.28);
     opacity: 0;
   }
   100% {
-    transform: scale(1.35);
+    transform: scale(1.28);
     opacity: 0;
   }
 }
@@ -163,15 +223,11 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-color-text-primary, #000) 6%, transparent);
-  pointer-events: auto;
-  transition: transform 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
-}
-.legendItem {
   box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-color-text-primary, #000) 6%, transparent), 0
     6px 16px -8px color-mix(in oklch, var(--ds-color-text-primary, #000) 14%, transparent);
   backdrop-filter: blur(8px) saturate(140%);
-  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  pointer-events: auto;
+  transition: transform 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
 }
 .legendItem:hover {
   transform: translateY(-1px) scale(1.04);

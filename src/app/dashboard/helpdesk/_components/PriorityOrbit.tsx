@@ -3,10 +3,11 @@
 /**
  * PriorityOrbit — signature visual برای مرکز تیکت‌ها.
  * ---------------------------------------------------------------------------
- *  متافور: یک «مرکز فرماندهی» دایره‌ای. چهار مدار هم‌مرکز، هر کدام متعلق به
- *  یک سطح اولویت (urgent / high / normal / low). تیکت‌های واقعی به‌صورت
- *  نقطه‌هایی روی این مدارها قرار می‌گیرند و آرام به دور مرکز می‌چرخند.
- *  درون دیسک مرکزی، شمارنده‌ی تیکت‌های باز + یک live dot نفس می‌کشد.
+ *  متافور: یک «سامانه‌ی مداری شیشه‌ای». چهار نوار مداری ابریشمی (band) که هر
+ *  کدام متعلق به یک سطح اولویت است (urgent / high / normal / low). تیکت‌ها
+ *  به‌صورت «سیاره‌های» کوچک با هاله‌ی نرم روی نوارها شناورند و آرام می‌چرخند.
+ *  ماهِ کوچک رنگی کنار هر سیاره وضعیت تیکت را نشان می‌دهد. هسته‌ی مرکزی یک
+ *  دیسک شیشه‌ای لایه‌ای است که شمارنده‌ی تیکت‌های باز را نمایش می‌دهد.
  *
  *  - token-based: تمام رنگ‌ها از --ds-* / oklch پالت hub
  *  - RTL-correct: فقط logical props، زاویه‌ها viewport-relative
@@ -94,13 +95,6 @@ const LANE_RADIUS: Record<OrbitPriority, number> = {
   low: 46, // دورترین — کم‌اهمیت‌ترین
 };
 
-const LANE_DASH: Record<OrbitPriority, string> = {
-  urgent: '1.4 1.4',
-  high: '1 1.4',
-  normal: '0.6 1.4',
-  low: '0.4 1.4',
-};
-
 /** محاسبه موقعیت یک node روی مدار (با درصد از viewBox). */
 function nodePos(index: number, total: number, radius: number, seed: number) {
   // توزیع مساوی روی دایره، با چرخش اولیه بر اساس seed برای تنوع
@@ -110,7 +104,6 @@ function nodePos(index: number, total: number, radius: number, seed: number) {
   return {
     x: 50 + radius * Math.cos(rad),
     y: 50 + radius * Math.sin(rad),
-    angle,
   };
 }
 
@@ -130,6 +123,7 @@ export function PriorityOrbit({
 }: PriorityOrbitProps) {
   const palette = HUB_PALETTES.helpdesk;
   const accent = toOklch(palette.primary, 1, 58);
+  const accentDeep = toOklch(palette.primary, 1, 45);
   const accentSoft = toOklch(palette.primary, 0.5, 58);
 
   // گروه‌بندی تیکت‌ها بر اساس priority
@@ -160,72 +154,82 @@ export function PriorityOrbit({
     <div className={cn(s.orbit, className)} role="img" aria-label={ariaLabel}>
       <svg viewBox="0 0 100 100" className={s.svg} preserveAspectRatio="xMidYMid meet" aria-hidden>
         <defs>
-          <radialGradient id="orbit-core" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={accent} stopOpacity="0.18" />
-            <stop offset="55%" stopColor={accent} stopOpacity="0.08" />
+          {/* هاله‌ی مرکزی */}
+          <radialGradient id="po-core-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={accent} stopOpacity="0.22" />
+            <stop offset="55%" stopColor={accent} stopOpacity="0.09" />
             <stop offset="100%" stopColor={accent} stopOpacity="0" />
           </radialGradient>
-          <radialGradient id="orbit-core-disc" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={accent} stopOpacity="0.92" />
-            <stop offset="100%" stopColor={toOklch(palette.primary, 1, 45)} stopOpacity="0.85" />
+
+          {/* درخشش هسته — گرادیان مورب برای حس شیشه */}
+          <radialGradient id="po-core-disc" cx="35%" cy="28%" r="85%">
+            <stop offset="0%" stopColor={accent} stopOpacity="0.9" />
+            <stop offset="55%" stopColor={toOklch(palette.primary, 0.85, 52)} stopOpacity="0.82" />
+            <stop offset="100%" stopColor={accentDeep} stopOpacity="0.9" />
           </radialGradient>
-          <filter id="orbit-glow" x="-30%" y="-30%" width="160%" height="160%">
+
+          {/* محوکننده‌ی عمومی — برای هاله‌ها و نوارهای ابریشمی */}
+          <filter id="po-blur" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="1.1" />
+          </filter>
+          <filter id="po-blur-soft" x="-40%" y="-40%" width="180%" height="180%">
             <feGaussianBlur stdDeviation="0.5" />
           </filter>
         </defs>
 
-        {/* هاله پس‌زمینه */}
-        <circle cx="50" cy="50" r="48" fill="url(#orbit-core)" />
+        {/* ── هاله‌ی پس‌زمینه ─────────────────────────────── */}
+        <circle cx="50" cy="50" r="48.5" fill="url(#po-core-glow)" />
 
-        {/* مدارها — هر کدام با tone اختصاصی */}
+        {/* ── نوارهای مداری — ابریشمی: لایه‌ی محو + خط ظریف ── */}
         {PRIORITY_ORDER.map((p) => {
           const tone = PRIORITY_TONE[p];
-          const c = colorForTone(tone, 65);
+          const c = colorForTone(tone, 62);
           return (
             <g key={`lane-${p}`}>
+              {/* باند شیشه‌ای محو */}
               <circle
                 cx="50"
                 cy="50"
                 r={LANE_RADIUS[p]}
                 fill="none"
                 stroke={c}
-                strokeOpacity="0.18"
-                strokeWidth="0.18"
-                strokeDasharray={LANE_DASH[p]}
+                strokeOpacity="0.4"
+                strokeWidth="1.1"
+                filter="url(#po-blur)"
                 vectorEffect="non-scaling-stroke"
               />
+              {/* خط مرکزی ظریف */}
               <circle
                 cx="50"
                 cy="50"
                 r={LANE_RADIUS[p]}
                 fill="none"
                 stroke={c}
-                strokeOpacity="0.05"
-                strokeWidth="1.2"
+                strokeOpacity="0.55"
+                strokeWidth="0.14"
                 vectorEffect="non-scaling-stroke"
               />
+              {/* درخشش نقطه‌ای در ربع‌ها — حس الماس */}
+              <g
+                stroke={c}
+                strokeOpacity="0.35"
+                strokeWidth="0.16"
+                vectorEffect="non-scaling-stroke"
+              >
+                <line x1="50" y1="0.5" x2="50" y2="3.5" />
+                <line x1="50" y1="96.5" x2="50" y2="99.5" />
+                <line x1="0.5" y1="50" x2="3.5" y2="50" />
+                <line x1="96.5" y1="50" x2="99.5" y2="50" />
+              </g>
             </g>
           );
         })}
 
-        {/* خطوط راهنما از مرکز (cross-hair) */}
-        <g
-          stroke={accentSoft}
-          strokeOpacity="0.18"
-          strokeWidth="0.12"
-          strokeDasharray="0.6 1.2"
-          vectorEffect="non-scaling-stroke"
-        >
-          <line x1="50" y1="2" x2="50" y2="98" />
-          <line x1="2" y1="50" x2="98" y2="50" />
-        </g>
-
-        {/* node ها (تیکت‌ها) — هر priority یک گروه چرخش آرام */}
+        {/* ── سیاره‌ها (تیکت‌ها) — هر priority یک گروه چرخش آرام ── */}
         {PRIORITY_ORDER.map((p) => {
           const items = grouped[p];
           const tone = PRIORITY_TONE[p];
-          const baseColor = colorForTone(tone, 60);
-          const _baseColorDim = colorForTone(tone, 35);
+          const baseColor = colorForTone(tone, 58);
           const direction = p === 'urgent' || p === 'normal' ? 'normal' : 'reverse';
           return (
             <g
@@ -256,29 +260,48 @@ export function PriorityOrbit({
                     }}
                     style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
                   >
-                    {/* halo outer */}
-                    <circle cx={pos.x} cy={pos.y} r="2.4" fill={baseColor} fillOpacity="0.18" />
-                    {/* ring */}
+                    {/* هاله‌ی نرم سیاره */}
                     <circle
                       cx={pos.x}
                       cy={pos.y}
-                      r="1.5"
-                      fill="var(--ds-color-surface, white)"
-                      stroke={baseColor}
-                      strokeWidth="0.4"
+                      r="2.9"
+                      fill={baseColor}
+                      fillOpacity="0.28"
+                      filter="url(#po-blur-soft)"
                     />
-                    {/* status inner dot */}
-                    <circle cx={pos.x} cy={pos.y} r="0.8" fill={statusColor} />
-                    {/* selected ring */}
+                    {/* بدنه‌ی سیاره — گرادیان شعاعی */}
+                    <circle cx={pos.x} cy={pos.y} r="1.7" fill={colorForTone(tone, 62)} />
+                    <circle
+                      cx={pos.x - 0.5}
+                      cy={pos.y - 0.5}
+                      r="1.7"
+                      fill="none"
+                      stroke={colorForTone(tone, 82)}
+                      strokeOpacity="0.55"
+                      strokeWidth="0.18"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    {/* ماه — وضعیت تیکت */}
+                    <circle
+                      cx={pos.x + 1.15}
+                      cy={pos.y - 1.15}
+                      r="0.62"
+                      fill={statusColor}
+                      stroke="var(--ds-color-surface, white)"
+                      strokeWidth="0.22"
+                      vectorEffect="non-scaling-stroke"
+                    />
+                    {/* حلقه‌ی انتخاب — پالس نرم */}
                     {isSelected ? (
                       <circle
                         cx={pos.x}
                         cy={pos.y}
-                        r="2.6"
+                        r="2.2"
                         fill="none"
                         stroke={baseColor}
                         strokeWidth="0.3"
-                        strokeOpacity="0.7"
+                        className={s.nodeRingPulse}
+                        vectorEffect="non-scaling-stroke"
                       />
                     ) : null}
                   </g>
@@ -288,43 +311,73 @@ export function PriorityOrbit({
           );
         })}
 
-        {/* دیسک مرکز — اولویت بحرانی */}
+        {/* ── هسته‌ی مرکزی — دیسک شیشه‌ای لایه‌ای ──────────── */}
         <g transform="translate(50 50)">
-          {/* outer halo (pulse) */}
+          {/* پالس بیرونی — درخشش برند */}
           <circle
             cx="0"
             cy="0"
-            r="14"
-            fill="url(#orbit-core-disc)"
-            opacity="0.35"
+            r="15"
+            fill="url(#po-core-disc)"
+            opacity="0.3"
             className={s.coreHalo}
           />
-          {/* middle disc */}
+          {/* حلقه‌ی گرادیانی دور هسته */}
           <circle
             cx="0"
             cy="0"
-            r="9.5"
+            r="11.6"
+            fill="none"
+            stroke={accent}
+            strokeOpacity="0.4"
+            strokeWidth="0.5"
+            filter="url(#po-blur-soft)"
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* دیسک اصلی شیشه‌ای */}
+          <circle
+            cx="0"
+            cy="0"
+            r="9.4"
             fill="var(--ds-color-surface, white)"
             stroke={accent}
-            strokeWidth="0.5"
+            strokeOpacity="0.5"
+            strokeWidth="0.4"
+            vectorEffect="non-scaling-stroke"
           />
-          {/* inner accent disc */}
-          <circle cx="0" cy="0" r="6.5" fill={accent} fillOpacity="0.12" />
-          {/* central mark — مثل یک آنتن/برج فرماندهی */}
-          <g
-            stroke={toOklch(palette.primary, 1, 45)}
-            strokeWidth="0.55"
-            strokeLinecap="round"
+          {/* حلقه‌ی داخلی ظریف */}
+          <circle
+            cx="0"
+            cy="0"
+            r="7.4"
             fill="none"
-          >
-            <path d="M -3 4 L 3 4 L 0 -5 Z" />
-            <line x1="-2.2" y1="0" x2="2.2" y2="0" />
-            <line x1="-2.6" y1="2" x2="2.6" y2="2" />
-            <line x1="0" y1="-5" x2="0" y2="-8" />
-            <circle cx="0" cy="-8" r="0.8" fill={toOklch(palette.primary, 1, 45)} />
-            <path d="M -1.6 -8.6 Q 0 -10.2 1.6 -8.6" opacity="0.6" />
-            <path d="M -2.6 -9.6 Q 0 -12.2 2.6 -9.6" opacity="0.35" />
+            stroke={accent}
+            strokeOpacity="0.18"
+            strokeWidth="0.12"
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* تینت مرکزی — بدون هیچ علامت درهم */}
+          <circle cx="0" cy="0" r="6.2" fill={accent} fillOpacity="0.08" />
+
+          {/* نشانه‌های قطبی — سه نقطه‌ی ظریف (چپ/پایین/راست) */}
+          <g fill={accentSoft} opacity="0.6">
+            <circle cx="-7.4" cy="0" r="0.28" />
+            <circle cx="0" cy="7.4" r="0.28" />
+            <circle cx="7.4" cy="0" r="0.28" />
           </g>
+          {/* بیکن بالایی — تنها عنصر زنده‌ی هسته */}
+          <circle cx="0" cy="-7.4" r="0.6" fill={accent} className={s.beaconDot} />
+          <circle
+            cx="0"
+            cy="-7.4"
+            r="1.15"
+            fill="none"
+            stroke={accent}
+            strokeOpacity="0.45"
+            strokeWidth="0.14"
+            className={s.beaconRing}
+            vectorEffect="non-scaling-stroke"
+          />
         </g>
       </svg>
 
