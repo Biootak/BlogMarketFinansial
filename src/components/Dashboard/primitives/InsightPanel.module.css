@@ -1,0 +1,481 @@
+/* InsightPanel.module.css — premium 2026 side rail
+   Stripe / Linear aesthetic | Tokens only | RTL logical | Zero hex
+*/
+
+/* ═══════════════════════════════════════════════════════════
+   Layout — main table + sticky aside rail
+   ═══════════════════════════════════════════════════════════ */
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-5);
+  align-items: start;
+}
+
+.main {
+  min-width: 0;
+}
+
+.aside {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+
+  .aside {
+    position: sticky;
+    inset-block-start: var(--ds-space-5);
+    max-height: calc(100dvh - var(--ds-space-10));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Rail — vertical stack of insight cards
+   ═══════════════════════════════════════════════════════════ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Card — refined glass-like surface
+   ═══════════════════════════════════════════════════════════ */
+
+.card {
+  position: relative;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 4%, transparent), 0 4px 12px -4px
+    color-mix(in oklch, var(--ds-text-primary) 6%, transparent);
+  overflow: hidden;
+  transition: border-color 250ms var(--ds-ease-out-quart, ease), box-shadow 250ms
+    var(--ds-ease-out-quart, ease), transform 250ms var(--ds-ease-out-quart, ease);
+}
+
+.card:hover {
+  border-color: color-mix(in oklch, var(--ds-text-primary) 14%, var(--ds-border-subtle));
+  box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 6%, transparent), 0 8px 24px -8px
+    color-mix(in oklch, var(--ds-text-primary) 10%, transparent);
+  transform: translateY(-1px);
+}
+
+/* Dark mode refinement */
+.dark .card {
+  background: color-mix(in oklch, var(--ds-surface) 85%, var(--ds-surface-recessed));
+  border-color: color-mix(in oklch, var(--ds-border-subtle) 70%, transparent);
+  box-shadow: 0 1px 3px color-mix(in oklch, black 30%, transparent), 0 8px 24px -8px
+    color-mix(in oklch, black 20%, transparent);
+}
+
+.dark .card:hover {
+  border-color: color-mix(in oklch, var(--ds-text-primary) 18%, var(--ds-border-subtle));
+  box-shadow: 0 2px 6px color-mix(in oklch, black 40%, transparent), 0 12px 32px -8px
+    color-mix(in oklch, black 25%, transparent);
+}
+
+/* ── Card header ── */
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  background: color-mix(in oklch, var(--ds-canvas) 50%, transparent);
+}
+
+.dark .cardHead {
+  background: color-mix(in oklch, var(--ds-surface-recessed) 40%, transparent);
+  border-block-end-color: color-mix(in oklch, var(--ds-border-subtle) 60%, transparent);
+}
+
+/* Icon chip — pill-shaped, subtle */
+.cardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-space-5);
+  height: var(--ds-space-5);
+  border-radius: var(--ds-radius-md);
+  border: 1px solid color-mix(in oklch, var(--ds-border-subtle) 80%, transparent);
+  background: color-mix(in oklch, var(--ds-surface-recessed) 60%, transparent);
+  color: var(--ds-text-secondary);
+  flex-shrink: 0;
+  transition: color 200ms ease, border-color 200ms ease;
+}
+
+.card:hover .cardIcon {
+  color: var(--ds-text-primary);
+  border-color: color-mix(in oklch, var(--ds-text-primary) 12%, transparent);
+}
+
+.dark .cardIcon {
+  background: color-mix(in oklch, var(--ds-surface) 30%, transparent);
+  border-color: color-mix(in oklch, var(--ds-border-subtle) 50%, transparent);
+}
+
+/* Title — refined typography */
+.cardTitle {
+  margin: 0;
+  color: var(--ds-text-primary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold, 700);
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+/* ── Card body ── */
+
+.cardBody {
+  padding: var(--ds-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Donut — smooth conic gradient chart
+   ═══════════════════════════════════════════════════════════ */
+
+.donutWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.donut {
+  border-radius: var(--ds-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  -webkit-mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - var(--donut-thickness)),
+    #000 calc(100% - var(--donut-thickness) + 1px)
+  );
+  mask: radial-gradient(
+    closest-side,
+    transparent calc(100% - var(--donut-thickness)),
+    #000 calc(100% - var(--donut-thickness) + 1px)
+  );
+  background: var(--ds-surface-recessed);
+  /* Subtle glow behind the donut */
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-border-subtle) 40%, transparent), 0 2px 8px
+    -2px color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
+}
+
+.dark .donut {
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-border-subtle) 30%, transparent), 0 2px 12px
+    -4px color-mix(in oklch, black 30%, transparent);
+}
+
+.donutCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+}
+
+.donutValue {
+  font-size: var(--ds-text-lg);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.donutLabel {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  letter-spacing: 0.01em;
+}
+
+.donutEmpty {
+  color: var(--ds-text-muted);
+  font-size: var(--ds-text-lg);
+}
+
+/* ── Legend ── */
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1_5, 6px);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  padding: var(--ds-space-1) 0;
+  border-block-end: 1px solid color-mix(in oklch, var(--ds-border-subtle) 40%, transparent);
+}
+
+.legendRow:last-child {
+  border-block-end: none;
+}
+
+.dark .legendRow {
+  border-block-end-color: color-mix(in oklch, var(--ds-border-subtle) 25%, transparent);
+}
+
+.legendDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--ds-radius-full);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ds-surface) 80%, transparent);
+}
+
+.legendLabel {
+  color: var(--ds-text-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legendValue {
+  margin-inline-start: auto;
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Split bar — distribution segments
+   ═══════════════════════════════════════════════════════════ */
+
+.splitWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.splitTrack {
+  position: relative;
+  height: 8px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+}
+
+.dark .splitTrack {
+  box-shadow: inset 0 1px 2px color-mix(in oklch, black 20%, transparent);
+}
+
+.splitSeg {
+  position: absolute;
+  inset-block: 0;
+  border-radius: var(--ds-radius-full);
+  transition: opacity 200ms ease;
+  /* Subtle gap between segments */
+  box-shadow: inset inline-end 1px 0 color-mix(in oklch, white 10%, transparent);
+}
+
+.splitSeg:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block: 20%;
+  inset-inline-end: 0;
+  width: 1px;
+  background: var(--ds-surface);
+  border-radius: 1px;
+}
+
+.dark .splitSeg:not(:last-child)::after {
+  background: color-mix(in oklch, var(--ds-surface) 80%, var(--ds-surface-recessed));
+}
+
+/* ── Split legend ── */
+
+.splitLegend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1_5, 6px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.splitRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  padding: var(--ds-space-1) 0;
+  border-block-end: 1px solid color-mix(in oklch, var(--ds-border-subtle) 40%, transparent);
+}
+
+.splitRow:last-child {
+  border-block-end: none;
+}
+
+.dark .splitRow {
+  border-block-end-color: color-mix(in oklch, var(--ds-border-subtle) 25%, transparent);
+}
+
+.splitDot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--ds-radius-full);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--ds-surface) 80%, transparent);
+}
+
+.splitLabel {
+  color: var(--ds-text-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.splitValue {
+  margin-inline-start: auto;
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Bar list — horizontal bars with labels
+   ═══════════════════════════════════════════════════════════ */
+
+.barList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.barRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  min-width: 0;
+}
+
+.barTop {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+.barLabel {
+  color: var(--ds-text-secondary);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium, 500);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barMeta {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--ds-space-2);
+  flex-shrink: 0;
+}
+
+.barShare {
+  font-size: 0.8em;
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.barValue {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bar track — refined with inset shadow */
+.barTrack {
+  height: 5px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  overflow: hidden;
+  box-shadow: inset 0 1px 1px color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
+}
+
+.dark .barTrack {
+  box-shadow: inset 0 1px 1px color-mix(in oklch, black 15%, transparent);
+}
+
+/* Bar fill — smooth pill with gradient overlay */
+.barFill {
+  height: 100%;
+  border-radius: var(--ds-radius-full);
+  background: var(--dashboard-accent, var(--ds-brand-500));
+  transition: width var(--ds-duration-base, 280ms)
+    var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+  /* Subtle sheen */
+  position: relative;
+  overflow: hidden;
+}
+
+.barFill::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  height: 50%;
+  background: linear-gradient(
+    to block-end,
+    color-mix(in oklch, white 15%, transparent),
+    transparent
+  );
+  border-radius: var(--ds-radius-full) var(--ds-radius-full) 0 0;
+  pointer-events: none;
+}
+
+.barHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Mobile — stacked 2-col grid
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 720px) {
+  .aside {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+    gap: var(--ds-space-3);
+  }
+
+  .panel {
+    display: contents;
+  }
+}

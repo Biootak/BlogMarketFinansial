@@ -1,0 +1,221 @@
+/* MovementHeatmap.module.css — daily activity heatmap (GitHub-style)
+   Tokens only | RTL logical
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 6rem;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-size: var(--ds-text-xs);
+}
+
+/* ── Top row (total + legend) ── */
+
+.headRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+}
+
+.totalBox {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.totalLabel {
+  font-size: calc(var(--ds-text-xs) - 1px);
+  color: var(--nova-muted, var(--ds-text-muted));
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.totalValue {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-bold, 700);
+  color: var(--nova-ink, var(--ds-text-primary));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+}
+
+.legendBox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  color: var(--nova-muted, var(--ds-text-muted));
+}
+
+.legendText {
+  white-space: nowrap;
+}
+
+.legendCell {
+  inline-size: 0.6rem;
+  block-size: 0.6rem;
+  border-radius: 0.18rem;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Grid scroll wrapper ── */
+
+.scrollWrap {
+  inline-size: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  padding-block-end: 2px;
+}
+
+.gridWrap {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--ds-space-1-5);
+  min-inline-size: 100%;
+  direction: ltr; /* calendar grid is LTR by definition */
+}
+
+.dayCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-block-start: 0.85rem; /* align with month strip */
+  flex-shrink: 0;
+}
+
+.daySpacer {
+  display: block;
+  block-size: 0.4rem;
+}
+
+.dayLabel {
+  block-size: 0.6rem;
+  font-size: 8px;
+  color: var(--nova-muted, var(--ds-text-muted));
+  line-height: 0.6rem;
+  text-align: center;
+  font-weight: var(--ds-weight-semibold, 600);
+}
+
+.dayLabelHide {
+  visibility: hidden;
+}
+
+.gridScroll {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.monthStrip {
+  display: flex;
+  gap: 3px;
+  block-size: 0.4rem;
+}
+
+.monthCell {
+  flex: 1;
+  font-size: 8px;
+  color: var(--nova-muted, var(--ds-text-muted));
+  white-space: nowrap;
+  line-height: 0.4rem;
+  text-align: start;
+  letter-spacing: 0.02em;
+}
+
+.cells {
+  display: flex;
+  gap: 3px;
+}
+
+.weekCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.cell {
+  inline-size: 100%;
+  aspect-ratio: 1;
+  border-radius: 0.18rem;
+  background: var(--nova-surface-recessed, var(--ds-surface-recessed));
+  border: 1px solid color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 70%, transparent);
+  display: block;
+  transition: transform var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+.cell:hover {
+  transform: scale(1.18);
+  z-index: 1;
+}
+
+.pad {
+  visibility: hidden;
+}
+
+/* ── Intensity levels (mixed against brand emerald hue) ── */
+
+.l0 {
+  background: color-mix(in oklch, var(--nova-surface-recessed, var(--ds-surface-recessed)) 70%, var(--nova-canvas, var(--ds-canvas)));
+}
+
+.l1 {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 18%, var(--nova-surface, var(--ds-surface)));
+  border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 25%, transparent);
+}
+
+.l2 {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 35%, var(--nova-surface, var(--ds-surface)));
+  border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 35%, transparent);
+}
+
+.l3 {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 55%, var(--nova-surface, var(--ds-surface)));
+  border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 50%, transparent);
+}
+
+.l4 {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 78%, var(--nova-surface, var(--ds-surface)));
+  border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 65%, transparent);
+}
+
+.l5 {
+  background: var(--nova-up, var(--ds-accent-emerald));
+  border-color: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 80%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 30%, transparent);
+}
+
+.dark .l5 {
+  box-shadow: 0 0 0 1px color-mix(in oklch, oklch(70% 0.13 165) 35%, transparent);
+}
+
+@media (max-width: 480px) {
+  .legendCell {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+  }
+
+  .dayLabel {
+    font-size: 7px;
+  }
+
+  .monthCell {
+    font-size: 7px;
+  }
+}

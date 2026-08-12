@@ -491,6 +491,19 @@
   cursor: not-allowed;
 }
 
+.noDisableNote {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-md, 10px);
+  font-size: var(--ds-text-sm, 13px);
+  font-weight: 500;
+  color: var(--at-fg-muted);
+  background: color-mix(in oklch, var(--at-accent) 6%, var(--at-surface));
+  border: 1px solid color-mix(in oklch, var(--at-accent) 20%, var(--at-line));
+}
+
 /* ─── Footer ──────────────────────────────────────────────────── */
 .foot {
   display: flex;

@@ -1,0 +1,164 @@
+/* CurrencyOrbit.module.css — concentric-ring radial chart.
+   Tokens only | RTL logical
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-3);
+  inline-size: 100%;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 8rem;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-size: var(--ds-text-xs);
+}
+
+/* ── Canvas ── */
+
+.canvas {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  animation: orbitIn 600ms var(--ds-ease-out-quart) both;
+}
+
+@keyframes orbitIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+}
+
+.trackOuter {
+  fill: none;
+  stroke: var(--nova-surface-recessed, var(--ds-surface-recessed));
+  stroke-width: 10;
+  opacity: 0.6;
+}
+
+.trackInner {
+  fill: none;
+  stroke: var(--nova-surface-recessed, var(--ds-surface-recessed));
+  stroke-width: 6;
+  opacity: 0.6;
+}
+
+.seg {
+  transition: opacity var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+  filter: drop-shadow(0 0 0.4rem color-mix(in oklch, currentColor 40%, transparent));
+}
+
+.segIn {
+  transition: opacity var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+.glow {
+  pointer-events: none;
+}
+
+.tick {
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.6;
+}
+
+.coreDot {
+  filter: drop-shadow(0 0 0.5rem color-mix(in oklch, currentColor 70%, transparent));
+}
+
+/* ── Center label ── */
+
+.label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  gap: 0;
+  inset-block-start: 56%;
+}
+
+.code {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-extrabold, 800);
+  color: var(--nova-ink, var(--ds-text-primary));
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.share {
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  margin-block-start: 2px;
+  letter-spacing: 0.02em;
+}
+
+/* ── Legend ── */
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr));
+  gap: var(--ds-space-1) var(--ds-space-3);
+  inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-xs);
+  color: var(--nova-ink-2, var(--ds-text-secondary));
+}
+
+.legendDot {
+  inline-size: 0.55rem;
+  block-size: 0.55rem;
+  border-radius: var(--ds-radius-full);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px
+    color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 80%, transparent);
+}
+
+.legendCode {
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-ink, var(--ds-text-primary));
+  font-variant-numeric: tabular-nums;
+}
+
+.legendShare {
+  margin-inline-start: auto;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+}
+
+/* ── Mobile ── */
+
+@media (max-width: 480px) {
+  .legend {
+    grid-template-columns: repeat(auto-fill, minmax(4rem, 1fr));
+  }
+}

@@ -1,74 +1,46 @@
 /**
- * StatusBadge + KindBadge — badge‌های مشترک برای وضعیت و نوع تراکنش.
+ * StatusBadge + KindBadge + CustomerStatusBadge — badge‌های مشترک داشبورد.
  *
- * قبلاً در هر workspace یک `.kindBadge` / `.statusBadge` جداگانه بود.
- * از این component همه داشبوردها استفاده می‌کنند.
+ * CSS module — tokens only (--ds-* / --nova-*) — no inline styles.
  */
 
 import { TX_KIND_FA, TX_STATUS_FA, type TxStatusColor } from '@/lib/exchange-labels';
+import s from './StatusBadge.module.css';
 
 // ─── KindBadge ────────────────────────────────────────────────────────────
 
 interface KindBadgeProps {
   kind: string;
-  /** label override — اگر داده نشه از TX_KIND_FA می‌آید */
   label?: string;
 }
 
-const kindStyle: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '2px 10px',
-  borderRadius: '20px',
-  fontSize: '11px',
-  fontWeight: 600,
-  background: 'var(--at-accent-subtle)',
-  color: 'var(--at-accent)',
-  whiteSpace: 'nowrap',
-};
-
 export function KindBadge({ kind, label }: KindBadgeProps) {
-  return <span style={kindStyle}>{label ?? TX_KIND_FA[kind] ?? kind}</span>;
+  return <span className={s.kindBadge}>{label ?? TX_KIND_FA[kind] ?? kind}</span>;
 }
 
 // ─── StatusBadge ──────────────────────────────────────────────────────────
 
 interface StatusBadgeProps {
   status: string;
-  /** override کامل — اگر داده نشه از TX_STATUS_FA می‌آید */
   config?: TxStatusColor;
 }
 
-const statusBase: React.CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '2px 10px',
-  borderRadius: '20px',
-  fontSize: '11px',
-  fontWeight: 600,
-  whiteSpace: 'nowrap',
-};
-
-const STATUS_BG: Record<string, string> = {
-  COMPLETED: 'oklch(95% 0.08 145)',
-  PENDING: 'oklch(95% 0.06 85)',
-  PROCESSING: 'oklch(95% 0.05 250)',
-  FAILED: 'oklch(95% 0.06 25)',
-  CANCELLED: 'oklch(93% 0 0)',
-  REVERSED: 'oklch(95% 0.06 60)',
+const STATUS_TONE: Record<string, string> = {
+  COMPLETED: 'completed',
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  FAILED: 'failed',
+  CANCELLED: 'cancelled',
+  REVERSED: 'reversed',
 };
 
 export function StatusBadge({ status, config }: StatusBadgeProps) {
   const conf = config ?? TX_STATUS_FA[status];
-  if (!conf) return <span style={{ ...statusBase, color: 'var(--at-fg-subtle)' }}>{status}</span>;
+  if (!conf) return <span className={s.statusBadge}>{status}</span>;
 
   return (
     <span
-      style={{
-        ...statusBase,
-        background: STATUS_BG[status] ?? 'oklch(93% 0 0)',
-        color: conf.color,
-      }}
+      className={`${s.statusBadge} ${s[STATUS_TONE[status] ?? 'default']}`}
     >
       {conf.label}
     </span>
@@ -77,11 +49,18 @@ export function StatusBadge({ status, config }: StatusBadgeProps) {
 
 // ─── CustomerStatusBadge ──────────────────────────────────────────────────
 
-const CUSTOMER_STATUS_COLORS: Record<string, { label: string; bg: string; fg: string }> = {
-  ACTIVE: { label: 'فعال', bg: 'oklch(95% 0.08 145)', fg: 'oklch(40% 0.12 145)' },
-  PROSPECT: { label: 'احتمالی', bg: 'oklch(95% 0.06 85)', fg: 'oklch(40% 0.1 80)' },
-  FROZEN: { label: 'مسدود', bg: 'oklch(95% 0.06 50)', fg: 'oklch(40% 0.1 50)' },
-  CLOSED: { label: 'بسته', bg: 'oklch(93% 0 0)', fg: 'oklch(45% 0 0)' },
+const CUSTOMER_TONE: Record<string, string> = {
+  ACTIVE: 'customerActive',
+  PROSPECT: 'customerProspect',
+  FROZEN: 'customerFrozen',
+  CLOSED: 'customerClosed',
+};
+
+const CUSTOMER_LABEL: Record<string, string> = {
+  ACTIVE: 'فعال',
+  PROSPECT: 'احتمالی',
+  FROZEN: 'مسدود',
+  CLOSED: 'بسته',
 };
 
 interface CustomerStatusBadgeProps {
@@ -89,13 +68,9 @@ interface CustomerStatusBadgeProps {
 }
 
 export function CustomerStatusBadge({ status }: CustomerStatusBadgeProps) {
-  const conf = CUSTOMER_STATUS_COLORS[status];
-  if (!conf)
-    return (
-      <span style={{ ...statusBase, background: 'oklch(93% 0 0)', color: 'oklch(45% 0 0)' }}>
-        {status}
-      </span>
-    );
+  const tone = CUSTOMER_TONE[status];
+  const label = CUSTOMER_LABEL[status];
+  if (!tone) return <span className={s.statusBadge}>{status}</span>;
 
-  return <span style={{ ...statusBase, background: conf.bg, color: conf.fg }}>{conf.label}</span>;
+  return <span className={`${s.statusBadge} ${s[tone]}`}>{label}</span>;
 }

@@ -1,0 +1,278 @@
+/* KpiCard.module.css — premium metric tile (2026)
+   Tokens only | RTL logical | zero hex | dark mode via .dark
+*/
+
+/* ── Card ── */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  min-block-size: 7.5rem;
+  padding: var(--ds-space-5);
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--nova-border);
+  background: var(--nova-surface);
+  backdrop-filter: var(--nova-backdrop);
+  -webkit-backdrop-filter: var(--nova-backdrop);
+  box-shadow: var(--nova-shadow-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart), border-color var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+}
+
+.card:hover {
+  transform: translateY(calc(var(--ds-space-1) * -0.5));
+  border-color: var(--nova-primary);
+  box-shadow: var(--nova-shadow-md);
+}
+
+/* ── Header ── */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.label {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--nova-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headerActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  flex-shrink: 0;
+}
+
+/* ── Icon Chip ── */
+
+.iconChip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-space-8);
+  height: var(--ds-space-8);
+  border-radius: var(--ds-radius-md);
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--nova-primary) 12%, transparent),
+    color-mix(in oklch, var(--nova-primary) 4%, transparent)
+  );
+  border: 1px solid color-mix(in oklch, var(--nova-primary) 15%, var(--nova-border));
+  color: var(--nova-primary);
+  flex-shrink: 0;
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.card:hover .iconChip {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--nova-primary) 18%, transparent),
+    color-mix(in oklch, var(--nova-primary) 8%, transparent)
+  );
+}
+
+/* ── Info Icon ── */
+
+.infoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ds-space-5);
+  height: var(--ds-space-5);
+  border-radius: var(--ds-radius-full);
+  color: var(--nova-muted);
+  cursor: help;
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.infoIcon:hover {
+  color: var(--nova-ink);
+}
+
+/* ── Sparkline ── */
+
+.spark {
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Value Row ── */
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  margin-block-start: auto;
+}
+
+.value {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.countUp {
+  font-size: var(--ds-text-2xl);
+  font-weight: var(--ds-weight-extrabold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--nova-tracking-tighter);
+  line-height: 1.05;
+  color: var(--nova-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── Trend Pills ── */
+
+.trendPill {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--ds-space-1) * 0.75);
+  padding: calc(var(--ds-space-1) * 0.5) var(--ds-space-1-5);
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold);
+  flex-shrink: 0;
+}
+
+.trendDot {
+  width: calc(var(--ds-space-1) * 1.25);
+  height: calc(var(--ds-space-1) * 1.25);
+  border-radius: var(--ds-radius-full);
+  flex-shrink: 0;
+}
+
+/* Up */
+.trendPillUp {
+  background: var(--nova-up-bg);
+  color: var(--nova-up);
+}
+
+.trendPillUp .trendDot {
+  background: var(--nova-up);
+}
+
+/* Down */
+.trendPillDown {
+  background: var(--nova-down-bg);
+  color: var(--nova-down);
+}
+
+.trendPillDown .trendDot {
+  background: var(--nova-down);
+}
+
+/* ── Card-level trend tints ── */
+
+.trendUp .countUp {
+  color: var(--nova-up);
+}
+
+.trendDown .countUp {
+  color: var(--nova-down);
+}
+
+/* ── Dark Mode ── */
+
+.dark .card {
+  background: var(--nova-surface);
+  border-color: var(--nova-border);
+}
+
+.dark .card:hover {
+  border-color: var(--nova-primary);
+}
+
+.dark .label {
+  color: var(--nova-ink-2);
+}
+
+.dark .iconChip {
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--nova-primary) 15%, transparent),
+    color-mix(in oklch, var(--nova-primary) 6%, transparent)
+  );
+  border-color: color-mix(in oklch, var(--nova-primary) 20%, var(--nova-border));
+}
+
+.dark .countUp {
+  color: var(--nova-ink);
+}
+
+.dark .infoIcon {
+  color: var(--nova-muted);
+}
+
+.dark .infoIcon:hover {
+  color: var(--nova-ink);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+  .card {
+    min-block-size: 6.5rem;
+    padding: var(--ds-space-4);
+  }
+
+  .iconChip {
+    width: var(--ds-space-6);
+    height: var(--ds-space-6);
+  }
+
+  .countUp {
+    font-size: var(--ds-text-xl);
+  }
+
+  .label {
+    font-size: var(--ds-text-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    min-block-size: 5.5rem;
+    padding: var(--ds-space-3);
+    gap: var(--ds-space-2);
+  }
+
+  .iconChip {
+    width: var(--ds-space-6);
+    height: var(--ds-space-6);
+  }
+
+  .countUp {
+    font-size: var(--ds-text-lg);
+  }
+
+  .label {
+    font-size: var(--ds-text-xs);
+  }
+
+  .trendPill {
+    padding: calc(var(--ds-space-1) * 0.25) var(--ds-space-1);
+    gap: calc(var(--ds-space-1) * 0.5);
+  }
+
+  .trendDot {
+    width: calc(var(--ds-space-1) * 1);
+    height: calc(var(--ds-space-1) * 1);
+  }
+}

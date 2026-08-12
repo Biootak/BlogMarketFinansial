@@ -274,6 +274,20 @@ export const adminRoutes = [
   // 2026-07-31: permissions در sidebar ADMIN بخش admin است اما فقط در superAdminRoutes بود
   '/dashboard/permissions',
   '/dashboard/permissions/[...slug]',
+  // 2026-08-11: صفحات جدید شکاف‌های داشبورد — نظرات، برچسب‌ها، خبرنامه،
+  // بازخوردها، دفتر کل و هدر آد (که در منوی ADMIN هم اضافه شدند).
+  '/dashboard/comments',
+  '/dashboard/comments/[...slug]',
+  '/dashboard/tags',
+  '/dashboard/tags/[...slug]',
+  '/dashboard/newsletter',
+  '/dashboard/newsletter/[...slug]',
+  '/dashboard/feedback',
+  '/dashboard/feedback/[...slug]',
+  '/dashboard/ledger',
+  '/dashboard/ledger/[...slug]',
+  '/dashboard/header-ad',
+  '/dashboard/header-ad/[...slug]',
 ];
 
 /**

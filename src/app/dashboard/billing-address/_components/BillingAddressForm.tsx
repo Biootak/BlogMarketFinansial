@@ -1,6 +1,7 @@
 'use client';
 
 import { type BillingAddressData, saveBillingAddress } from '@/actions/billingAddressActions';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -90,7 +91,8 @@ export function BillingAddressForm({ initial }: Props) {
     phoneNumber: initial?.phoneNumber ?? '',
   });
 
-  const hasAddress = !!(initial && (initial.recipientName || initial.address));
+  // از state زندهٔ فرم مشتق می‌شود تا بعد از ذخیرهٔ موفق، هیرو فوراً آپدیت شود
+  const hasAddress = !!(form.recipientName || form.address);
 
   const set =
     (key: keyof BillingAddressData) =>
@@ -333,18 +335,13 @@ export function BillingAddressForm({ initial }: Props) {
 
             {/* Footer */}
             <div className={s.formFooter}>
-              <button
-                type="button"
-                className={s.btnGhost}
-                onClick={handleReset}
-                disabled={isPending}
-              >
+              <Button variant="outline" type="button" onClick={handleReset} disabled={isPending}>
                 انصراف
-              </button>
-              <button type="submit" disabled={isPending} className={s.btnPrimary}>
+              </Button>
+              <Button type="submit" disabled={isPending}>
                 {isPending ? (
                   <>
-                    <Loader2 size={15} className={s.spinner} aria-hidden />
+                    <Loader2 size={15} className="animate-spin" aria-hidden />
                     در حال ذخیره…
                   </>
                 ) : (
@@ -353,7 +350,7 @@ export function BillingAddressForm({ initial }: Props) {
                     ذخیره آدرس
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </form>

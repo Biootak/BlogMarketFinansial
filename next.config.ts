@@ -146,12 +146,18 @@ const nextConfig: NextConfig = {
       // Cache headers برای مسیرهای عمومی سایت (HTML و RSC)
       // این کمک می‌کنه back/forward cache کار کنه و CDN بتونه
       // نسخه‌ی SSR شده رو نگه داره.
+      // 2026-08-11: در dev مقدار no-store می‌شود تا هیچ لایه‌ای (مرورگر،
+      // bfcache/back-forward، تونل یا پروکسی) نسخهٔ قدیمی HTML را نگه ندارد
+      // و هر تغییری بلافاصله دیده شود. (داک رسمی Next.js: هدر Cache-Control؛
+      // no-store تمام کش‌ها را غیرفعال می‌کند.)
       {
         source: '/((?!api|dashboard|setup|signin|signup|_next).*)',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
+            value: isProd
+              ? 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400'
+              : 'no-store, max-age=0',
           },
         ],
       },
@@ -321,10 +327,12 @@ const nextConfig: NextConfig = {
     // truncates binary bodies over 1MB unless this is set explicitly.
     // Keep in sync with `serverActions.bodySizeLimit` above.
     proxyClientMaxBodySize: '12mb',
-    staleTimes: {
-      dynamic: 30,
-      static: 180,
-    },
+    // 2026-08-11: در dev مقدارها صفر می‌شود تا هر ناوبری client-side صفحه را
+    // دوباره از سرور بگیرد. داک رسمی (staleTimes): `dynamic` پیش‌فرض 0 است
+    // یعنی «cached نمی‌شود»؛ مقدار 30 یعنی صفحهٔ داینامیک تا ۳۰ ثانیه در کش
+    // مرورگر می‌ماند و تغییراتِ بعدی در ناوبری از منو دیده نمی‌شود. مقدارهای
+    // 30/180 فقط برای production نگه داشته شده (بهینه‌سازی perf).
+    staleTimes: isProd ? { dynamic: 30, static: 180 } : { dynamic: 0, static: 0 },
     // 2026-07-29: staticGeneration concurrency dialed to SAFE values.
     // Each worker builds its OWN PrismaClient (the singleton only helps
     // within one worker, not across workers). With connection_limit=3

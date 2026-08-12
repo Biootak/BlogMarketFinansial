@@ -1,0 +1,187 @@
+/* CashflowPulse.module.css — premium animated waveform signature.
+   Tokens only | RTL logical | opacity/transform animation.
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+/* ── Header row ── */
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-ink-2, var(--ds-text-secondary));
+  letter-spacing: 0.01em;
+}
+
+.dot {
+  display: inline-block;
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--nova-up, var(--ds-accent-emerald));
+  box-shadow: 0 0 0 0.3rem
+    color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 18%, transparent);
+  animation: pulse 2.4s var(--ds-ease-out-quart) infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0.3rem
+      color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 18%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 0.55rem
+      color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 4%, transparent);
+  }
+}
+
+.window {
+  font-size: var(--ds-text-xs);
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── SVG canvas ── */
+
+.svg {
+  inline-size: 100%;
+  block-size: auto;
+  display: block;
+  overflow: visible;
+}
+
+.baseline {
+  stroke: var(--nova-border, var(--ds-border-subtle));
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  opacity: 0.7;
+}
+
+.upGroup {
+  color: var(--nova-up, var(--ds-accent-emerald));
+  transform-origin: center;
+  animation: waveIn 600ms var(--ds-ease-out-quart) both;
+}
+
+.downGroup {
+  color: var(--nova-down, var(--ds-accent-rose));
+  transform-origin: center;
+  animation: waveIn 700ms var(--ds-ease-out-quart) 80ms both;
+}
+
+.barUp {
+  transition: opacity var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+.barDown {
+  transition: opacity var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+@keyframes waveIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.axisLabel {
+  font-family: var(--ds-font-mono, monospace);
+  font-size: 9px;
+  fill: var(--nova-muted, var(--ds-text-muted));
+  letter-spacing: 0.04em;
+  direction: ltr;
+  unicode-bidi: bidi-override;
+}
+
+/* ── Scale row (bottom) ── */
+
+.scaleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  padding-inline: 2px;
+}
+
+.scale {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.scaleUp {
+  display: inline-block;
+  inline-size: 0.55rem;
+  block-size: 0.55rem;
+  border-radius: 0.15rem;
+  background: color-mix(
+    in oklch,
+    var(--nova-up, var(--ds-accent-emerald)) 70%,
+    transparent
+  );
+}
+
+.scaleDown {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.scaleDownDot {
+  display: inline-block;
+  inline-size: 0.55rem;
+  block-size: 0.55rem;
+  border-radius: 0.15rem;
+  background: color-mix(
+    in oklch,
+    var(--nova-down, var(--ds-accent-rose)) 70%,
+    transparent
+  );
+}
+
+/* ── Dark mode ── */
+
+.dark .upGroup {
+  color: oklch(70% 0.13 165);
+}
+
+.dark .downGroup {
+  color: oklch(70% 0.14 20);
+}
+
+/* ── Mobile ── */
+
+@media (max-width: 480px) {
+  .axisLabel {
+    font-size: 8px;
+  }
+
+  .scaleRow {
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+    gap: var(--ds-space-2);
+  }
+}

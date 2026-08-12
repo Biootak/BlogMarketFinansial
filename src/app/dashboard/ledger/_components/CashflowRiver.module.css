@@ -1,0 +1,166 @@
+/* CashflowRiver.module.css — waterfall / river flow visualization
+   Tokens only | RTL logical
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 8rem;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-size: var(--ds-text-xs);
+}
+
+/* ── Meta row (start / now) ── */
+
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaLabel {
+  font-size: calc(var(--ds-text-xs) - 1px);
+  color: var(--nova-muted, var(--ds-text-muted));
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.metaValue {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-bold, 700);
+  color: var(--nova-ink, var(--ds-text-primary));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+}
+
+.metaValueNow {
+  color: var(--nova-up, var(--ds-accent-emerald));
+}
+
+/* ── SVG canvas ── */
+
+.svg {
+  inline-size: 100%;
+  block-size: auto;
+  display: block;
+}
+
+.baseline {
+  stroke: var(--nova-border, var(--ds-border-subtle));
+  stroke-width: 1;
+  stroke-dasharray: 1 3;
+  opacity: 0.5;
+}
+
+.upGroup {
+  color: var(--nova-up, var(--ds-accent-emerald));
+  transform-origin: bottom;
+  animation: riverIn 600ms var(--ds-ease-out-quart) both;
+}
+
+.downGroup {
+  color: var(--nova-down, var(--ds-accent-rose));
+  transform-origin: bottom;
+  animation: riverIn 700ms var(--ds-ease-out-quart) 60ms both;
+}
+
+.barUp,
+.barDown {
+  transition: opacity var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+@keyframes riverIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Terminal marker ── */
+
+.terminalDot {
+  fill: var(--nova-up, var(--ds-accent-emerald));
+  filter: drop-shadow(0 0 0.3rem color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 60%, transparent));
+}
+
+.terminalHalo {
+  fill: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 22%, transparent);
+  animation: terminalPulse 1.8s var(--ds-ease-out-quart) infinite;
+}
+
+@keyframes terminalPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.25;
+  }
+}
+
+/* ── Scale marks ── */
+
+.scaleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+}
+
+.scaleMark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+}
+
+.scaleLine {
+  inline-size: 1.5rem;
+  block-size: 1px;
+  background: var(--nova-border, var(--ds-border-subtle));
+  opacity: 0.8;
+}
+
+.scaleLineLow {
+  background: linear-gradient(
+    to left,
+    transparent,
+    var(--nova-border, var(--ds-border-subtle))
+  );
+}
+
+/* ── Dark ── */
+
+.dark .metaValueNow {
+  color: oklch(70% 0.13 165);
+}
+
+.dark .terminalDot {
+  fill: oklch(70% 0.13 165);
+}
+
+.dark .terminalHalo {
+  fill: color-mix(in oklch, oklch(70% 0.13 165) 24%, transparent);
+}

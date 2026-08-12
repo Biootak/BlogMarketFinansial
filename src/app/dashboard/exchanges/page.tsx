@@ -20,13 +20,27 @@ export const metadata: Metadata = {
   description: 'مشاهده، تأیید و مدیریت صرافی‌های عضو پلتفرم در یک نگاه.',
 };
 
-export default async function ExchangesPage() {
+export default async function ExchangesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string }>;
+}) {
   const session = await auth();
   // SUPERADMIN = OWNER alias (G8-fix) — middleware ADMIN_ROLES already
   // lets SUPERADMIN through; keep the page check in sync.
   if (!session?.user || !['OWNER', 'SUPERADMIN', 'ADMIN'].includes(session.user.role as string)) {
     redirect('/dashboard');
   }
+
+  const sp = await searchParams;
+  // فیلتر اولیه از URL — لینک «X در انتظار تأیید» در هدر روی این تکیه دارد
+  const initialStatus: 'all' | 'PENDING' | 'ACTIVE' | 'SUSPENDED' | 'CLOSED' =
+    sp.status === 'PENDING' ||
+    sp.status === 'ACTIVE' ||
+    sp.status === 'SUSPENDED' ||
+    sp.status === 'CLOSED'
+      ? sp.status
+      : 'all';
 
   const exchanges = await getAllExchanges();
 
@@ -50,7 +64,7 @@ export default async function ExchangesPage() {
           </a>
         }
       />
-      <ExchangesWorkspace initialExchanges={exchanges} />
+      <ExchangesWorkspace initialExchanges={exchanges} initialStatusFilter={initialStatus} />
     </div>
   );
 }

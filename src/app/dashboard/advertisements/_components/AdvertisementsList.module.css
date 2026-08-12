@@ -1,0 +1,322 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AdvertisementsList.module.css — Premium ad management list
+   ▸ Tokens: --ds-* only | RTL logical properties
+   ▸ Responsive: desktop table + mobile cards
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Wrapper ─────────────────────────────────────────────────────────────── */
+
+.listWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESKTOP TABLE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.desktopTable {
+  display: block;
+  overflow-x: auto;
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
+}
+
+@media (max-width: 768px) {
+  .desktopTable {
+    display: none;
+  }
+}
+
+.table {
+  width: 100%;
+  text-align: start;
+  border-collapse: collapse;
+}
+
+.tableHeadRow {
+  border-block-end: 1px solid var(--ds-border-default);
+}
+
+.tableHeadCell {
+  padding: var(--ds-space-4);
+  text-align: start;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tableHeadCellCenter {
+  composes: tableHeadCell;
+  text-align: center;
+}
+
+.tableHeadCellEnd {
+  composes: tableHeadCell;
+  text-align: end;
+}
+
+.tableBody {
+  border: none;
+}
+
+.tableRow {
+  border-block-end: 1px solid var(--ds-border-subtle);
+  transition: background var(--ds-duration-fast) ease;
+  animation: anim-fade-in-up 280ms var(--ds-ease-out-quart) both;
+}
+
+.tableRow:last-child {
+  border-block-end: none;
+}
+
+.tableRow:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 2%, var(--ds-surface));
+}
+
+.tableCell {
+  padding: var(--ds-space-4);
+  vertical-align: middle;
+}
+
+.tableCellCenter {
+  composes: tableCell;
+  text-align: center;
+}
+
+.tableCellEnd {
+  composes: tableCell;
+  text-align: end;
+}
+
+/* ── Ad content cell ───────────────────────────────────────────────────── */
+
+.adContent {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+}
+
+.adImageWrap {
+  position: relative;
+  flex-shrink: 0;
+  inline-size: 6rem;
+  block-size: 3.5rem;
+  border-radius: var(--ds-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--ds-border-default);
+}
+
+.adImage {
+  object-fit: cover;
+  transition: transform var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.tableRow:hover .adImage {
+  transform: scale(1.08);
+}
+
+.adInfo {
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.adTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 200px;
+}
+
+.adLink {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 200px;
+  opacity: 0.6;
+}
+
+/* ── Badges ────────────────────────────────────────────────────────────── */
+
+.badgeGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-1);
+}
+
+.badgeNeutral {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}
+
+.badgeBrand {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+  color: var(--ds-brand-500);
+  white-space: nowrap;
+}
+
+/* ── Action buttons ────────────────────────────────────────────────────── */
+
+.actionGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  opacity: 0;
+  transition: opacity var(--ds-duration-fast) ease;
+}
+
+.tableRow:hover .actionGroup {
+  opacity: 1;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: var(--ds-radius-md);
+  border: none;
+  background: transparent;
+  color: var(--ds-text-muted);
+  cursor: pointer;
+  transition: background var(--ds-duration-fast) ease, color var(--ds-duration-fast) ease;
+}
+
+.actionBtn:hover {
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
+  color: var(--ds-text-primary);
+}
+
+.actionBtnDanger:hover {
+  background: color-mix(in oklch, var(--ds-accent-rose) 10%, transparent);
+  color: var(--ds-accent-rose);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE CARDS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.mobileGrid {
+  display: none;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+@media (max-width: 768px) {
+  .mobileGrid {
+    display: flex;
+  }
+}
+
+.mobileCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-xl);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  box-shadow: var(--ds-shadow-sm);
+  animation: anim-fade-in-up 280ms var(--ds-ease-out-quart) both;
+}
+
+.mobileCardTop {
+  display: flex;
+  gap: var(--ds-space-3);
+}
+
+.mobileImageWrap {
+  position: relative;
+  flex-shrink: 0;
+  inline-size: 8rem;
+  block-size: 5rem;
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--ds-border-default);
+}
+
+.mobileImage {
+  object-fit: cover;
+}
+
+.mobileCardInfo {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding-block-start: 2px;
+}
+
+.mobileCardTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block-start: var(--ds-space-3);
+  border-block-start: 1px solid var(--ds-border-subtle);
+}
+
+.mobileStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.statusText {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--ds-text-muted);
+}
+
+/* ── Mobile responsive ─────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .mobileCard {
+    padding: var(--ds-space-2) var(--ds-space-3);
+  }
+
+  .mobileImageWrap {
+    inline-size: 6rem;
+    block-size: 4rem;
+  }
+
+  .mobileCardTitle {
+    font-size: var(--ds-text-xs);
+  }
+}

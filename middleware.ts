@@ -123,6 +123,8 @@ const SUPPORT_ROUTE_PREFIXES = [
   '/dashboard/helpdesk',
   '/dashboard/approvals',
   '/dashboard/service-requests',
+  // 2026-08-11: صفحهٔ بازخوردها — SUPPORT هم در منو می‌بیند
+  '/dashboard/feedback',
 ];
 
 const jsonError = (status: number, code: string, message: string): NextResponse =>

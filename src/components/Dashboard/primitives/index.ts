@@ -134,3 +134,26 @@ export { BookmarkButton, useBookmarks } from './BookmarkButton';
 export { ExportButton } from './ExportButton';
 
 export { ActivityFeed } from './ActivityFeed';
+
+export { PageHero } from './PageHero';
+export type { PageHeroProps } from './PageHero';
+
+export { KpiCard } from './KpiCard';
+export type { KpiCardProps } from './KpiCard';
+
+export { DataPanel } from './DataPanel';
+export type { DataPanelProps } from './DataPanel';
+
+export { InsightLayout, InsightPanel, InsightCard, Donut, SplitBar, BarList } from './InsightPanel';
+export type {
+  InsightLayoutProps,
+  InsightPanelProps,
+  InsightCardProps,
+  DonutProps,
+  DonutSegment,
+  SplitBarProps,
+  SplitBarSegment,
+  BarListProps,
+  BarItem,
+  InsightColor,
+} from './InsightPanel';

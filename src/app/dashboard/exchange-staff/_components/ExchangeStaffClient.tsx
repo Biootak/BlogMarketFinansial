@@ -77,6 +77,8 @@ interface Props {
 
 type RoleFilter = 'all' | 'OWNER' | 'MANAGER' | 'STAFF' | 'VIEWER';
 
+type StatusFilter = 'all' | 'active' | 'revoked';
+
 // ─── Label maps ───────────────────────────────────────────────────────────────
 
 const ROLE_FA: Record<string, string> = {
@@ -145,6 +147,7 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
   const [query, setQuery] = useState('');
   const [exchangeFilter, setExchangeFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [isPending, startTransition] = useTransition();
   const deferredQuery = useDeferredValue(query);
 
@@ -188,6 +191,8 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
     let list = rows;
     if (exchangeFilter !== 'all') list = list.filter((r) => r.exchangeId === exchangeFilter);
     if (roleFilter !== 'all') list = list.filter((r) => r.role === roleFilter);
+    if (statusFilter === 'active') list = list.filter((r) => !r.revokedAt);
+    if (statusFilter === 'revoked') list = list.filter((r) => r.revokedAt);
     if (deferredQuery.trim()) {
       const q = deferredQuery.trim().toLowerCase();
       list = list.filter(
@@ -198,7 +203,7 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
       );
     }
     return list;
-  }, [rows, exchangeFilter, roleFilter, deferredQuery]);
+  }, [rows, exchangeFilter, roleFilter, statusFilter, deferredQuery]);
 
   // ── Autocomplete debounce ─────────────────────────────────────────────────────
 
@@ -284,12 +289,33 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
     }
     toast({ title: 'کارمند با موفقیت اضافه شد.' });
     handleSheetOpenChange(false);
+    // state محلی را هم به‌روز می‌کنیم تا ردیف بدون رفرش کامل ظاهر شود
+    setRows((prev) => [
+      {
+        id: res.data.id,
+        exchangeId: inviteExchangeId,
+        exchangeName: exchanges.find((e) => e.id === inviteExchangeId)?.name ?? '—',
+        userId: inviteUserId,
+        userName: selectedUser?.name ?? null,
+        userEmail: selectedUser?.email ?? null,
+        userImage: selectedUser?.image ?? null,
+        role: inviteRole,
+        title: inviteTitle || null,
+        permissions: [],
+        invitedBy: null,
+        joinedAt: new Date(),
+        revokedAt: null,
+      },
+      ...prev,
+    ]);
     startTransition(() => router.refresh());
   }, [
     inviteExchangeId,
     inviteUserId,
     inviteRole,
     inviteTitle,
+    selectedUser,
+    exchanges,
     toast,
     router,
     handleSheetOpenChange,
@@ -450,10 +476,12 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
 
           <div className={s.sideSection}>
             <p className={s.sideLabel}>وضعیت</p>
-            <div className={s.statusFilters}>
+            <div className={s.statusFilters} role="group" aria-label="فیلتر وضعیت">
               <button
                 type="button"
-                className={`${s.statusChip} ${s.statusChipActive}`}
+                className={`${s.statusChip} ${s.statusChipActive} ${statusFilter === 'active' ? s.statusChipOn : ''}`}
+                onClick={() => setStatusFilter((prev) => (prev === 'active' ? 'all' : 'active'))}
+                aria-pressed={statusFilter === 'active'}
                 aria-label={`فعال: ${kpi.active} نفر`}
               >
                 <span className={s.dot} />
@@ -462,7 +490,9 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
               </button>
               <button
                 type="button"
-                className={`${s.statusChip} ${s.statusChipRevoked}`}
+                className={`${s.statusChip} ${s.statusChipRevoked} ${statusFilter === 'revoked' ? s.statusChipOn : ''}`}
+                onClick={() => setStatusFilter((prev) => (prev === 'revoked' ? 'all' : 'revoked'))}
+                aria-pressed={statusFilter === 'revoked'}
                 aria-label={`لغو شده: ${kpi.revoked} نفر`}
               >
                 <span className={`${s.dot} ${s.dotRevoked}`} />

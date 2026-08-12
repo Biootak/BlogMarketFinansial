@@ -61,13 +61,16 @@ export default async function Dashboard2FAPage() {
     notFound();
   }
   const initial = await load2FAState(session.user.id);
+  // سرور برای OWNER/SUPERADMIN غیرفعال‌سازی را همیشه رد می‌کند — UI هم نباید دکمه نشان دهد.
+  const canDisable =
+    session.user.role !== 'OWNER' && session.user.role !== 'SUPERADMIN';
 
   return (
-    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ds-space-6)' }}>
+    <div className="route-frame" dir="rtl">
       <PageHeader
-        variant="strip"
-        eyebrow="امنیت حساب مالک"
-        title="احراز هویت دو مرحله‌ای (2FA)"
+        variant="compact"
+        eyebrow="امنیت حساب"
+        title="احراز هویت دو مرحله‌ای"
         description="برای حساب مالک، 2FA اجباری است. با فعال‌سازی، در هر ورود یک کد ۶ رقمی از اپلیکیشن authenticator لازم است."
         breadcrumb={[
           { label: 'داشبورد', href: '/dashboard' },
@@ -77,7 +80,7 @@ export default async function Dashboard2FAPage() {
         icon="key-round"
         accent="emerald"
       />
-      <TwoFactorCenter initial={initial} />
+      <TwoFactorCenter initial={initial} canDisable={canDisable} />
     </div>
   );
 }

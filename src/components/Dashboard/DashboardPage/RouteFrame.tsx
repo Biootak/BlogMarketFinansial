@@ -68,6 +68,18 @@ const LOCAL_HEADER_ROUTES = [
   '/transfer',
   '/my-deals',
   '/customers',
+  // 2026-08-11: این صفحات هدر اختصاصی خودشان را دارند (PageHeader/JobHero) —
+  // نبودنشان در این فهرست باعث می‌شد هدر عمومی «فضای کاری» هم بالای هدر خودشان
+  // رندر شود (دو h1 روی یک صفحه).
+  '/2fa',
+  '/communication',
+  '/jobs',
+  // صفحات جدید تحلیل شکاف: نظرات، برچسب‌ها، خبرنامه، بازخوردها، دفتر کل
+  '/comments',
+  '/tags',
+  '/newsletter',
+  '/feedback',
+  '/ledger',
 ];
 
 /* Customer and exchange portals: every page owns its own header

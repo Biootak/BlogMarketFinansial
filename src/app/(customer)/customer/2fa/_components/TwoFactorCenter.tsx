@@ -54,6 +54,11 @@ type Props = {
   initial: Initial2FA;
   /** اگر داده شود، بعد از موفقیت به این مسیر ریدایرکت می‌شود (حساب مالک/مدیر). */
   redirectTo?: string;
+  /**
+   * آیا کاربر اجازهٔ غیرفعال‌سازی دارد؟ (سرور برای OWNER/SUPERADMIN همیشه رد می‌کند؛
+   * UI نباید دکمه‌ای نشان دهد که حتماً با خطا مواجه می‌شود.)
+   */
+  canDisable?: boolean;
 };
 
 const formatPersianDateTime = (iso: string | null): string => {
@@ -84,7 +89,7 @@ const formatRelativeTime = (iso: string | null): string => {
   }).format(new Date(iso));
 };
 
-export default function TwoFactorCenter({ initial, redirectTo }: Props) {
+export default function TwoFactorCenter({ initial, redirectTo, canDisable = true }: Props) {
   const router = useRouter();
   const [flow, setFlow] = useState<FlowState>(initial.enabled ? 'ENABLED' : 'IDLE');
   const [setup, setSetup] = useState<TwoFASetupData | null>(null);
@@ -509,15 +514,22 @@ export default function TwoFactorCenter({ initial, redirectTo }: Props) {
               <strong> قابل بازگشت </strong>
               است اما برای تأیید به کد فعلی ۲FA نیاز دارید.
             </p>
-            <button
-              type="button"
-              className={s.dangerCta}
-              onClick={requestDisable}
-              disabled={pending}
-            >
-              <ShieldOff size={14} aria-hidden />
-              غیرفعال‌سازی ۲FA
-            </button>
+            {canDisable ? (
+              <button
+                type="button"
+                className={s.dangerCta}
+                onClick={requestDisable}
+                disabled={pending}
+              >
+                <ShieldOff size={14} aria-hidden />
+                غیرفعال‌سازی ۲FA
+              </button>
+            ) : (
+              <p className={s.noDisableNote} role="note">
+                <ShieldCheck size={14} aria-hidden />
+                حساب مالک اجازهٔ غیرفعال‌کردن احراز هویت دو مرحله‌ای را ندارد — امنیت دائمی.
+              </p>
+            )}
           </article>
         </section>
       )}

@@ -81,6 +81,7 @@
 
 /* ───────────────────────── Hero ───────────────────────── */
 
+/* 2026-08-11 Premium: lit-from-above highlight + organic grain. */
 .hero {
   display: grid;
   grid-template-columns: 1fr;
@@ -96,11 +97,30 @@
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  /* Elevation tier 1 — subtle depth */
   box-shadow: var(
     --ds-shadow-sm,
     0 1px 3px color-mix(in oklch, var(--ds-text-primary) 6%, transparent)
   );
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background-image: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--ds-text-inverse, white) 7%, transparent) 0%,
+      transparent 20%
+    ),
+    linear-gradient(
+      0deg,
+      color-mix(in oklch, var(--ds-text-primary) 5%, transparent) 0%,
+      transparent 16%
+    );
+  mix-blend-mode: soft-light;
+  opacity: 0.55;
 }
 
 /* Ambient SVG glow — signature moment */
@@ -134,7 +154,7 @@
 
 .hero > :not(.ambientGlow) {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 @media (min-width: 1024px) {
@@ -169,19 +189,30 @@
   border-radius: 50%;
   background: var(--ds-brand-600);
   box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
-  animation: fc-pulse 2.4s ease-in-out infinite;
+  /* 2026-08-11: dual-animation system-breath. 0.5Hz breath on opacity,
+     2.4s halo expansion. Both are clamped by tokens.css @media reduce. */
+  animation: fc-pulse 2.4s ease-in-out infinite, fc-breath 2.4s ease-in-out infinite;
   flex: 0 0 auto;
 }
 
 @keyframes fc-pulse {
   0%,
   100% {
-    opacity: 0.9;
+    opacity: 0.95;
     transform: scale(1);
   }
   50% {
-    opacity: 0.6;
-    transform: scale(0.92);
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+}
+@keyframes fc-breath {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 9px color-mix(in oklch, var(--ds-brand-500) 0%, transparent);
   }
 }
 
@@ -208,6 +239,7 @@
   color: var(--ds-text-primary);
   text-wrap: balance;
   word-break: break-word;
+  font-feature-settings: "ss01", "ss02", "kern";
 }
 
 .heroTitleName {

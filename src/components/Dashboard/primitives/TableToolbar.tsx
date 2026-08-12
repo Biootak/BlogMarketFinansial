@@ -2,6 +2,7 @@
 
 import { ExportButton } from '@/components/Dashboard/primitives';
 import { cn } from '@/lib/utils';
+import { Maximize2, Rows3 } from 'lucide-react';
 import {
   type ReactNode,
   createContext,
@@ -11,6 +12,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import s from './TableToolbar.module.css';
 
 export type TableDensity = 'compact' | 'comfortable';
 
@@ -49,7 +51,14 @@ export interface TableToolbarProps {
   /** Optional view/actions slot rendered after the density toggle. */
   actions?: ReactNode;
   className?: string;
+  /** Optional toolbar-level items rendered next to the density toggle. */
   children?: ReactNode;
+  /**
+   * Optional table slot rendered BELOW the toolbar but INSIDE the density
+   * provider — pass the DataTable here so its rows react to the density
+   * toggle. (The provider must wrap the table for `useTableDensity`.)
+   */
+  content?: ReactNode;
   /** Optional: CSV export config */
   exportData?: {
     data: Record<string, unknown>[];
@@ -65,6 +74,7 @@ export function TableToolbar({
   actions,
   className,
   children,
+  content,
   exportData,
 }: TableToolbarProps) {
   const [density, setDensityState] = useState<TableDensity>(DEFAULT_DENSITY);
@@ -102,16 +112,17 @@ export function TableToolbar({
 
   return (
     <TableDensityContext.Provider value={value}>
-      <div className={cn('dash2-toolbar', className)}>
-        {filters && <div className="flex flex-wrap items-center gap-2">{filters}</div>}
-        <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
-          {children}
+      <div className={cn(s.root, 'dash2-toolbar', className)}>
+        {filters && <div className={s.filters}>{filters}</div>}
+        <div className={s.actions}>
+          {children && <div className={s.childrenSlot}>{children}</div>}
           {search}
           <DensityToggle />
           {exportData && <ExportButton {...exportData} />}
-          {actions}
+          {actions && <div className={s.extraActions}>{actions}</div>}
         </div>
       </div>
+      {content}
     </TableDensityContext.Provider>
   );
 }
@@ -122,34 +133,27 @@ function DensityToggle() {
   // mounted, swap to the persisted density.
   const current = hydrated ? density : DEFAULT_DENSITY;
   return (
-    <fieldset
-      aria-label="چگالی جدول"
-      className="inline-flex items-center overflow-hidden rounded-md border border-[color:var(--ds-color-border-default)] bg-[color:var(--ds-color-surface)] text-xs"
-    >
+    <fieldset aria-label="چگالی جدول" className={s.densityToggle}>
       <button
         type="button"
         aria-pressed={current === 'compact'}
         onClick={() => setDensity('compact')}
-        className={cn(
-          'px-2 py-1 transition-colors',
-          current === 'compact'
-            ? 'bg-[color:var(--ds-color-surface-2)] text-foreground'
-            : 'text-muted-foreground hover:text-foreground',
-        )}
+        className={s.densityButton}
       >
+        <span className={s.densityIcon} aria-hidden>
+          <Rows3 size={13} strokeWidth={1.75} />
+        </span>
         فشرده
       </button>
       <button
         type="button"
         aria-pressed={current === 'comfortable'}
         onClick={() => setDensity('comfortable')}
-        className={cn(
-          'px-2 py-1 transition-colors',
-          current === 'comfortable'
-            ? 'bg-[color:var(--ds-color-surface-2)] text-foreground'
-            : 'text-muted-foreground hover:text-foreground',
-        )}
+        className={s.densityButton}
       >
+        <span className={s.densityIcon} aria-hidden>
+          <Maximize2 size={13} strokeWidth={1.75} />
+        </span>
         راحت
       </button>
     </fieldset>

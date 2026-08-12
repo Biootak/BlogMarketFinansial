@@ -1,0 +1,732 @@
+/* LedgerClient.module.css — دفتر کل (Cashflow Command Center 2026)
+   Tokens only | RTL logical | mobile-first responsive
+*/
+
+/* ═════════════════════════════════════════════════════════════
+   Root layout
+   ═════════════════════════════════════════════════════════════ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  min-inline-size: 0;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Signature row (Pulse + River)
+   ═════════════════════════════════════════════════════════════ */
+
+.signatureRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ds-space-4);
+}
+
+@media (min-width: 1024px) {
+  .signatureRow {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  }
+}
+
+.signatureCard {
+  position: relative;
+  padding: var(--ds-space-4) var(--ds-space-5);
+  border: 1px solid var(--nova-border, var(--ds-border-subtle));
+  border-radius: var(--nova-radius-lg, var(--ds-radius-lg));
+  background: var(--nova-surface, var(--ds-surface));
+  box-shadow: var(--nova-shadow-sm, var(--ds-shadow-sm));
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  overflow: hidden;
+  isolation: isolate;
+  transition: border-color var(--ds-duration-base, 280ms) var(--ds-ease-out-quart),
+    box-shadow var(--ds-duration-base, 280ms) var(--ds-ease-out-quart);
+}
+
+.signatureCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+      60rem 24rem at 100% 0%,
+      color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 4%, transparent),
+      transparent 60%
+    );
+  z-index: 0;
+}
+
+.signatureCard:hover {
+  border-color: color-mix(
+    in oklch,
+    var(--nova-primary, var(--ds-brand-500)) 14%,
+    var(--nova-border, var(--ds-border-subtle))
+  );
+  box-shadow: var(--nova-shadow-md, var(--ds-shadow-md));
+}
+
+.signatureCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Date group inside FlowFilters
+   ═════════════════════════════════════════════════════════════ */
+
+.dateGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  flex-shrink: 0;
+  min-inline-size: 0;
+}
+
+.groupLabel {
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-muted, var(--ds-text-muted));
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.datePicker {
+  min-inline-size: 11rem;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Time cell (date+time stacked)
+   ═════════════════════════════════════════════════════════════ */
+
+.timeCell {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-inline-size: 0;
+}
+
+.timeMain {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-ink, var(--ds-text-primary));
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: end;
+}
+
+.timeDate {
+  font-size: calc(var(--ds-text-xs) - 1px);
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: end;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Exchange cell
+   ═════════════════════════════════════════════════════════════ */
+
+.exchangeCell {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-inline-size: 0;
+}
+
+.exchangeIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 1.4rem;
+  block-size: 1.4rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(
+    in oklch,
+    var(--nova-primary, var(--ds-brand-500)) 8%,
+    transparent
+  );
+  color: var(--nova-primary, var(--ds-brand-500));
+  border: 1px solid
+    color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 15%, transparent);
+  flex-shrink: 0;
+}
+
+.exchangeName {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-ink, var(--ds-text-primary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Party cell
+   ═════════════════════════════════════════════════════════════ */
+
+.partyCell {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  gap: 1px;
+}
+
+.partyMain {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium, 500);
+  color: var(--nova-ink, var(--ds-text-primary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountLabel {
+  font-size: 0.78em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-family: var(--ds-font-mono, monospace);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Description cell
+   ═════════════════════════════════════════════════════════════ */
+
+.descCell {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  gap: 1px;
+}
+
+.descMain {
+  font-size: var(--ds-text-xs);
+  color: var(--nova-ink-2, var(--ds-text-secondary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 14rem;
+}
+
+.txnId {
+  font-size: 0.7em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-family: var(--ds-font-mono, monospace);
+  direction: ltr;
+  unicode-bidi: bidi-override;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Direction badge
+   ═════════════════════════════════════════════════════════════ */
+
+.dirBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--ds-radius-full);
+  font-size: 0.78em;
+  font-weight: var(--ds-weight-semibold, 600);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+.dirCredit {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 12%, transparent);
+  color: var(--nova-up, var(--ds-accent-emerald));
+  border: 1px solid color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 25%, transparent);
+}
+
+.dirDebit {
+  background: color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 12%, transparent);
+  color: var(--nova-down, var(--ds-accent-rose));
+  border: 1px solid color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 25%, transparent);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Number cells (amount, balance)
+   ═════════════════════════════════════════════════════════════ */
+
+.numCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.amount {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: -0.015em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.amountSign {
+  font-size: 0.85em;
+  opacity: 0.85;
+  font-weight: var(--ds-weight-bold, 700);
+}
+
+.amountCredit {
+  color: var(--nova-up, var(--ds-accent-emerald));
+}
+
+.amountDebit {
+  color: var(--nova-down, var(--ds-accent-rose));
+}
+
+.currency {
+  font-size: 0.72em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: var(--ds-weight-medium, 500);
+}
+
+.currencyIcon {
+  font-size: 0.95em;
+  font-weight: var(--ds-weight-bold, 700);
+  display: inline-block;
+  inline-size: 1em;
+  text-align: center;
+}
+
+/* Balance */
+
+.balance {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
+  color: var(--nova-ink, var(--ds-text-primary));
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.balanceCurrency {
+  font-size: 0.78em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-weight: var(--ds-weight-medium, 500);
+}
+
+.balanceBar {
+  display: block;
+  inline-size: 4.5rem;
+  block-size: 3px;
+  border-radius: var(--ds-radius-full);
+  background: var(--nova-surface-recessed, var(--ds-surface-recessed));
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 1px
+    color-mix(in oklch, var(--nova-text-primary, var(--ds-text-primary)) 4%, transparent);
+}
+
+.balanceBarFill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--ds-radius-full);
+  transition: inline-size var(--ds-duration-base, 280ms) var(--ds-ease-out-quart);
+}
+
+.balanceBarUp {
+  background: var(--nova-up, var(--ds-accent-emerald));
+  box-shadow: 0 0 0.3rem
+    color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 40%, transparent);
+}
+
+.balanceBarDown {
+  background: var(--nova-down, var(--ds-accent-rose));
+  box-shadow: 0 0 0.3rem
+    color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 40%, transparent);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Footer (load more + count)
+   ═════════════════════════════════════════════════════════════ */
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-1);
+  flex-wrap: wrap;
+  inline-size: 100%;
+}
+
+.loadMore {
+  min-inline-size: 11rem;
+}
+
+.footCount {
+  font-size: var(--ds-text-xs);
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Table footer bar (export + counts)
+   ═════════════════════════════════════════════════════════════ */
+
+.tableFooterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-2-5, var(--ds-space-2-5)) var(--ds-space-3, var(--ds-space-3));
+  border-block-start: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 60%, transparent);
+  background: color-mix(
+    in oklch,
+    var(--nova-canvas, var(--ds-canvas-subtle, var(--ds-canvas))) 30%,
+    transparent
+  );
+  flex-wrap: wrap;
+}
+
+.footerStats {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  flex-wrap: wrap;
+}
+
+.footerStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--ds-text-xs);
+  color: var(--nova-ink-2, var(--ds-text-secondary));
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--ds-weight-medium, 500);
+}
+
+.footerStatDot {
+  display: inline-block;
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: var(--ds-radius-full);
+  flex-shrink: 0;
+}
+
+.footerStatDot[data-tone="up"] {
+  background: var(--nova-up, var(--ds-accent-emerald));
+  box-shadow: 0 0 0 0.2rem
+    color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 18%, transparent);
+}
+
+.footerStatDot[data-tone="down"] {
+  background: var(--nova-down, var(--ds-accent-rose));
+  box-shadow: 0 0 0 0.2rem
+    color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 18%, transparent);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Insight rail — Mover lists (top exchanges / top transactions)
+   ═════════════════════════════════════════════════════════════ */
+
+.moverList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.moverRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-1) 0;
+  border-block-end: 1px solid
+    color-mix(in oklch, var(--ds-border-subtle) 35%, transparent);
+}
+
+.moverRow:last-child {
+  border-block-end: 0;
+}
+
+.moverRank {
+  display: grid;
+  place-items: center;
+  inline-size: 1.3rem;
+  block-size: 1.3rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--nova-surface-recessed, var(--ds-surface-recessed)) 70%, transparent);
+  color: var(--nova-muted, var(--ds-text-muted));
+  flex-shrink: 0;
+}
+
+.moverRankUp {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 12%, transparent);
+  color: var(--nova-up, var(--ds-accent-emerald));
+}
+
+.moverRankDown {
+  background: color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 12%, transparent);
+  color: var(--nova-down, var(--ds-accent-rose));
+}
+
+.moverInfo {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  gap: 1px;
+  flex: 1;
+}
+
+.moverName {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-ink, var(--ds-text-primary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moverCount {
+  font-size: 0.72em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.moverValue {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold, 700);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.moverValueUp {
+  color: var(--nova-up, var(--ds-accent-emerald));
+}
+
+.moverValueDown {
+  color: var(--nova-down, var(--ds-accent-rose));
+}
+
+.moverCurrency {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.moverEmpty {
+  font-size: var(--ds-text-xs);
+  color: var(--nova-muted, var(--ds-text-muted));
+  text-align: center;
+  padding: var(--ds-space-2) 0;
+}
+
+/* ── Aside footer link ── */
+
+.asideFooter {
+  margin-block-start: var(--ds-space-1);
+  padding-block-start: var(--ds-space-1);
+  border-block-start: 1px dashed
+    color-mix(in oklch, var(--ds-border-subtle) 60%, transparent);
+}
+
+.asideLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-primary, var(--ds-brand-500));
+  text-decoration: none;
+  transition: color var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+.asideLink:hover {
+  color: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 70%, var(--nova-ink, var(--ds-text-primary)));
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Responsive — Tablet (≤1024px)
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .root {
+    gap: var(--ds-space-4);
+  }
+
+  .balanceBar {
+    inline-size: 3.5rem;
+  }
+
+  .descMain {
+    max-inline-size: 10rem;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Responsive — Small tablet (≤768px)
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .root {
+    gap: var(--ds-space-3);
+  }
+
+  .signatureCard {
+    padding: var(--ds-space-3) var(--ds-space-4);
+  }
+
+  .tableFooterBar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--ds-space-2);
+  }
+
+  .footerStats {
+    inline-size: 100%;
+    justify-content: space-between;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Responsive — Mobile (≤480px)
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .root {
+    gap: var(--ds-space-3);
+  }
+
+  .signatureCard {
+    padding: var(--ds-space-3);
+    border-radius: var(--nova-radius-md, var(--ds-radius-md));
+  }
+
+  .balanceBar {
+    inline-size: 2.5rem;
+  }
+
+  .descMain {
+    max-inline-size: 6rem;
+  }
+
+  .txnId {
+    display: none;
+  }
+
+  .accountLabel {
+    display: none;
+  }
+
+  .exchangeIcon {
+    inline-size: 1.2rem;
+    block-size: 1.2rem;
+  }
+
+  .exchangeName {
+    font-size: var(--ds-text-xs);
+  }
+
+  .amount {
+    font-size: var(--ds-text-xs);
+  }
+
+  .balance {
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+
+  .timeMain {
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+
+  .foot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ds-space-1-5);
+  }
+
+  .footCount {
+    text-align: center;
+  }
+
+  .loadMore {
+    inline-size: 100%;
+  }
+
+  .footerStats {
+    gap: var(--ds-space-2);
+  }
+
+  .dirBadge {
+    padding: 2px 6px;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Responsive — Ultra small (≤360px)
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 360px) {
+  .signatureCard {
+    padding: var(--ds-space-2-5);
+  }
+
+  .balanceBar {
+    inline-size: 2rem;
+  }
+
+  .descMain {
+    max-inline-size: 5rem;
+  }
+
+  .amount {
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+
+  .moverName {
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+
+  .moverValue {
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Dark mode refinements
+   ═════════════════════════════════════════════════════════════ */
+
+.dark .signatureCard {
+  background: var(--nova-surface, var(--ds-surface));
+  border-color: var(--nova-border, var(--ds-border-subtle));
+}
+
+.dark .signatureCard::before {
+  background: radial-gradient(
+    60rem 24rem at 100% 0%,
+    color-mix(in oklch, var(--nova-primary, oklch(70% 0.13 165)) 5%, transparent),
+    transparent 60%
+  );
+}
+
+.dark .tableFooterBar {
+  background: color-mix(in oklch, var(--nova-canvas, var(--ds-canvas)) 25%, transparent);
+}
+
+.dark .moverRow {
+  border-block-end-color: color-mix(in oklch, var(--ds-border-subtle) 25%, transparent);
+}

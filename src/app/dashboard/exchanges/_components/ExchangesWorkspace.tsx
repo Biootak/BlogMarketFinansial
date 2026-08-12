@@ -321,13 +321,18 @@ function NetworkHeatmap({ active }: { active: number }) {
 // ─── Main ────────────────────────────────────────────────────────────────
 interface Props {
   initialExchanges: ExchangeRow[];
+  /** فیلتر اولیه از URL (مثلاً ?status=PENDING از لینک هدر) */
+  initialStatusFilter?: SwitchboardId;
 }
 
-export default function ExchangesWorkspace({ initialExchanges }: Props) {
+export default function ExchangesWorkspace({
+  initialExchanges,
+  initialStatusFilter,
+}: Props) {
   const router = useRouter();
   const [rows, setRows] = useState(initialExchanges);
   const [query, setQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<SwitchboardId>('all');
+  const [statusFilter, setStatusFilter] = useState<SwitchboardId>(initialStatusFilter ?? 'all');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editRow, setEditRow] = useState<ExchangeRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ExchangeRow | null>(null);
@@ -492,6 +497,12 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
       const result = editRow ? await updateExchange(editRow.id, data) : await createExchange(data);
       setSaving(false);
       if (result.success) {
+        // state محلی را هم به‌روز می‌کنیم تا موزائیک بدون رفرش کامل آپدیت شود
+        setRows((prev) =>
+          editRow
+            ? prev.map((r) => (r.id === editRow.id ? result.data : r))
+            : [result.data, ...prev],
+        );
         setDrawerOpen(false);
         setEditRow(null);
         router.refresh();
@@ -565,15 +576,21 @@ export default function ExchangesWorkspace({ initialExchanges }: Props) {
     [router],
   );
 
-  // ── Mosaic ordering: lead در ابتدا + wide + بقیه ─────────────────────
+  // ── Mosaic ordering: lead (از نتایج فیلترشده) در ابتدا + wide + بقیه ──
+  // قبلاً lead از کل ردیف‌ها گرفته می‌شد و از فیلتر/جستجو عبور می‌کرد
   const mosaic = useMemo(() => {
-    const lead = stats.lead;
+    const lead =
+      filtered.length > 0
+        ? [...filtered].sort(
+            (a, b) => (b._count?.Customer ?? 0) - (a._count?.Customer ?? 0),
+          )[0] ?? null
+        : null;
     const rest = filtered.filter((r) => !lead || r.id !== lead.id);
     // wide ها: ۲ صرافی بعدی که بیشترین مشتری دارند
     const wide = rest.slice(0, 2);
     const others = rest.slice(2);
     return { lead, wide, others };
-  }, [filtered, stats.lead]);
+  }, [filtered]);
 
   const tileStatusClass = (status: string) => {
     switch (status) {

@@ -1,0 +1,91 @@
+/* StatusBadge — premium badge tokens only | RTL logical | no hex */
+
+/* ── Base ── */
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  font-size: 0.8em;
+  font-weight: var(--ds-weight-semibold, 600);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.kindBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--ds-space-2);
+  border-radius: var(--ds-radius-full);
+  font-size: 0.8em;
+  font-weight: var(--ds-weight-semibold, 600);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  background: color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 10%, transparent);
+  color: var(--dashboard-accent, var(--ds-brand-500));
+}
+
+/* ── Transaction status tones ── */
+
+.completed {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 12%, transparent);
+  color: var(--nova-up, var(--ds-accent-emerald));
+  border: 1px solid color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 25%, transparent);
+}
+
+.pending {
+  background: color-mix(in oklch, var(--ds-accent-amber) 12%, transparent);
+  color: var(--ds-accent-amber);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-amber) 25%, transparent);
+}
+
+.processing {
+  background: color-mix(in oklch, var(--ds-accent-cyan) 12%, transparent);
+  color: var(--ds-accent-cyan);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-cyan) 25%, transparent);
+}
+
+.failed {
+  background: color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 12%, transparent);
+  color: var(--nova-down, var(--ds-accent-rose));
+  border: 1px solid color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 25%, transparent);
+}
+
+.cancelled {
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
+  color: var(--ds-text-muted);
+  border: 1px solid color-mix(in oklch, var(--ds-text-muted) 20%, transparent);
+}
+
+.reversed {
+  background: color-mix(in oklch, var(--ds-accent-violet) 12%, transparent);
+  color: var(--ds-accent-violet);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-violet) 25%, transparent);
+}
+
+/* ── Customer status tones ── */
+
+.customerActive {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 12%, transparent);
+  color: var(--nova-up, var(--ds-accent-emerald));
+  border: 1px solid color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 25%, transparent);
+}
+
+.customerProspect {
+  background: color-mix(in oklch, var(--ds-accent-amber) 12%, transparent);
+  color: var(--ds-accent-amber);
+  border: 1px solid color-mix(in oklch, var(--ds-accent-amber) 25%, transparent);
+}
+
+.customerFrozen {
+  background: color-mix(in oklch, var(--ds-accent-amber) 10%, transparent);
+  color: color-mix(in oklch, var(--ds-accent-amber) 70%, var(--ds-text-primary));
+  border: 1px solid color-mix(in oklch, var(--ds-accent-amber) 20%, transparent);
+}
+
+.customerClosed {
+  background: color-mix(in oklch, var(--ds-text-muted) 8%, transparent);
+  color: var(--ds-text-muted);
+  border: 1px solid color-mix(in oklch, var(--ds-text-muted) 20%, transparent);
+}

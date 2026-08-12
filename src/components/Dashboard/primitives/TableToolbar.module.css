@@ -1,0 +1,299 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   TableToolbar — premium 2026 dashboard toolbar
+   Stripe Dashboard / Linear aesthetic
+   ▸ Tokens: --ds-* / --nova-* only — NO hex/rgb
+   ▸ RTL logical properties only — NO left/right
+   ▸ Responsive: mobile ≤480px / tablet ≤768px / desktop
+   ▸ Dark mode: .dark class
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Toolbar Root — recessed glassy strip ───────────────────────────────── */
+
+.root {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-block-end: 1px solid color-mix(in oklch, var(--ds-border-subtle) 50%, transparent);
+  background: color-mix(in oklch, var(--ds-canvas) 55%, transparent);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  transition: background 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/* Keep backward compat with DataPanel :global selector */
+.dash2-toolbar {
+  /* inherited from .root — this class is applied alongside */
+}
+
+/* ── Filters Slot (inline-start) ────────────────────────────────────────── */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+/* ── Actions Slot (inline-end — search, density, export) ───────────────── */
+
+.actions {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ds-space-2);
+  min-width: 0;
+}
+
+/* ── Density Toggle — premium segmented control ────────────────────────── */
+
+.densityToggle {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium, 500);
+  line-height: 1.4;
+  transition: border-color 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.densityButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  padding: var(--ds-space-1) var(--ds-space-2);
+  border: none;
+  border-inline-start: 1px solid var(--ds-border-default);
+  background: transparent;
+  color: var(--ds-text-secondary);
+  font: inherit;
+  cursor: pointer;
+  transition: background 150ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)), color 150ms
+    var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)), box-shadow 150ms
+    var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+/* First button has no inline-start border */
+.densityButton:first-child {
+  border-inline-start: none;
+}
+
+.densityButton:hover {
+  background: color-mix(in oklch, var(--ds-text-secondary) 6%, transparent);
+  color: var(--ds-text-primary);
+}
+
+.densityButton[aria-pressed="true"] {
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, var(--ds-surface-2, var(--ds-surface)));
+  color: var(--ds-text-primary);
+  font-weight: var(--ds-weight-semibold, 600);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--ds-brand-500) 15%, transparent);
+}
+
+.densityButton[aria-pressed="true"]:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 14%, var(--ds-surface-2, var(--ds-surface)));
+}
+
+.densityIcon {
+  display: inline-flex;
+  opacity: 0.7;
+  transition: opacity 150ms ease;
+}
+
+.densityButton[aria-pressed="true"] .densityIcon {
+  opacity: 1;
+}
+
+/* ── Search Input Wrapper — premium refined ────────────────────────────── */
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-inline-size: 10rem;
+  max-inline-size: 16rem;
+  height: 2rem;
+  overflow: hidden;
+  border: 1px solid var(--ds-border-default);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface);
+  transition: border-color 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 180ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
+}
+
+.searchWrapper:focus-within {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
+}
+
+.searchIcon {
+  display: inline-flex;
+  align-items: center;
+  padding-inline-start: var(--ds-space-2);
+  color: var(--ds-text-secondary);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--ds-space-2);
+  border: none;
+  background: transparent;
+  color: var(--ds-text-primary);
+  font: inherit;
+  font-size: var(--ds-text-xs);
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--ds-text-secondary);
+  opacity: 0.7;
+}
+
+/* Hide native search cancel button */
+.searchInput::-webkit-search-cancel-button {
+  display: none;
+}
+
+.searchClear {
+  display: inline-flex;
+  align-items: center;
+  padding-inline-end: var(--ds-space-2);
+  border: none;
+  background: transparent;
+  color: var(--ds-text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 150ms ease;
+}
+
+.searchClear:hover {
+  color: var(--ds-text-primary);
+}
+
+/* ── Children slot (toolbar-level items) ───────────────────────────────── */
+
+.childrenSlot {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+/* ── Actions Slot (after density + export) ─────────────────────────────── */
+
+.extraActions {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dark Mode
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.dark .root {
+  background: color-mix(in oklch, var(--ds-canvas) 30%, transparent);
+  border-block-end-color: color-mix(in oklch, var(--ds-border-subtle) 35%, transparent);
+}
+
+.dark .densityToggle {
+  background: var(--ds-surface);
+  border-color: var(--ds-border-default);
+}
+
+.dark .densityButton {
+  border-inline-start-color: var(--ds-border-default);
+}
+
+.dark .densityButton[aria-pressed="true"] {
+  background: color-mix(in oklch, var(--ds-brand-500) 15%, var(--ds-surface));
+}
+
+.dark .searchWrapper {
+  background: var(--ds-surface);
+  border-color: var(--ds-border-default);
+}
+
+.dark .searchWrapper:focus-within {
+  border-color: var(--ds-brand-500);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 18%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive — Tablet (≤768px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .root {
+    padding: var(--ds-space-1) var(--ds-space-2);
+    gap: var(--ds-space-1);
+  }
+
+  .filters {
+    gap: var(--ds-space-1);
+  }
+
+  .actions {
+    gap: var(--ds-space-1);
+  }
+
+  .searchWrapper {
+    min-inline-size: 8rem;
+    max-inline-size: 12rem;
+    height: 1.875rem;
+  }
+
+  .densityButton {
+    padding: var(--ds-space-1) var(--ds-space-1);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Responsive — Mobile (≤480px)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .root {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: var(--ds-space-1) var(--ds-space-2);
+    gap: var(--ds-space-1);
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .filters {
+    flex-wrap: nowrap;
+    gap: var(--ds-space-1);
+  }
+
+  .actions {
+    flex-wrap: nowrap;
+    gap: var(--ds-space-1);
+  }
+
+  .searchWrapper {
+    min-inline-size: 7rem;
+    max-inline-size: 10rem;
+    height: 1.75rem;
+  }
+
+  .densityButton {
+    padding: var(--ds-space-1) var(--ds-space-1);
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+
+  .densityIcon {
+    display: none;
+  }
+}

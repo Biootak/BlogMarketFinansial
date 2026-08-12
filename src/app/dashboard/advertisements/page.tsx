@@ -8,16 +8,23 @@ import {
 } from '@/actions/advertisementActions';
 import { getAllHeaderAds } from '@/actions/headerAdActions';
 import HeaderAdsClient, { type HeaderAdData } from '@/app/dashboard/header-ad/HeaderAdsClient';
-import { ConfirmDialog, PageHeader } from '@/components/Dashboard/primitives';
+import {
+  ConfirmDialog,
+  MillionDollarEmpty,
+  PageHero,
+  SearchInput,
+} from '@/components/Dashboard/primitives';
 import { AdvertisementsSkeleton } from '@/components/Skeletons';
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import type { Advertisement, CustomAdDimensions } from '@/types/types';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus, Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useState, useTransition } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
-import { HiMagnifyingGlass, HiOutlineMegaphone, HiOutlinePlus } from 'react-icons/hi2';
 import {
   AdvertisementForm,
   type AdvertisementFormData,
@@ -47,6 +54,10 @@ function AdvertisementsInner() {
 
   const [headerAds, setHeaderAds] = useState<HeaderAdData[]>([]);
   const [isHeaderAdsLoading, setIsHeaderAdsLoading] = useState(false);
+
+  // با تغییر سریع جستجو/صفحه چند درخواست ممکن است هم‌زمان در پرواز باشند —
+  // فقط پاسخ آخرین‌شان اعمال می‌شود تا ردیف‌های قدیمی روی لیست جدید ننشینند.
+  const requestSeq = useRef(0);
 
   const form = useForm<AdvertisementFormData>({
     resolver: zodResolver(advertisementSchema),
@@ -100,9 +111,11 @@ function AdvertisementsInner() {
 
   const fetchAds = useCallback(
     async (pageNumber: number, search: string) => {
+      const seq = ++requestSeq.current;
       setIsLoading(true);
       try {
         const result = await getAllAdvertisements({ limit: 10, page: pageNumber, search });
+        if (seq !== requestSeq.current) return; // پاسخ قدیمی — نادیده بگیر
         if (result.success && result.data) {
           const { ads: newAds, totalCount } = result.data;
           if (pageNumber === 1) {
@@ -115,13 +128,14 @@ function AdvertisementsInner() {
           toast({ title: 'خطا', description: result.message, variant: 'destructive' });
         }
       } catch (_error) {
+        if (seq !== requestSeq.current) return;
         toast({
           title: 'خطا',
           description: 'دریافت اطلاعات با خطا مواجه شد',
           variant: 'destructive',
         });
       } finally {
-        setIsLoading(false);
+        if (seq === requestSeq.current) setIsLoading(false);
       }
     },
     [toast],
@@ -211,6 +225,24 @@ function AdvertisementsInner() {
     setDeleteTarget({ id: ad.id, title: ad.title });
   }, []);
 
+  // تغییر وضعیت فعال/غیرفعال — به‌صورت خوش‌بینانه در لیست اعمال و در صورت شکست بازگردانده می‌شود.
+  const handleToggle = useCallback(
+    async (id: string, checked: boolean) => {
+      const prev = ads.find((a) => a.id === id);
+      setAds((prevAds) => prevAds.map((a) => (a.id === id ? { ...a, isActive: checked } : a)));
+      try {
+        const res = await updateAdvertisement(id, { isActive: checked });
+        if (!res.success) throw new Error(res.message);
+      } catch {
+        toast({ title: 'خطا', description: 'خطا در بروزرسانی', variant: 'destructive' });
+        if (prev) {
+          setAds((prevAds) => prevAds.map((a) => (a.id === id ? prev : a)));
+        }
+      }
+    },
+    [ads, toast],
+  );
+
   const handleDelete = useCallback(async () => {
     if (!deleteTarget) return;
     startDeleteTransition(async () => {
@@ -229,21 +261,9 @@ function AdvertisementsInner() {
     });
   }, [deleteTarget, fetchAds, debouncedSearchTerm, toast]);
 
-  const openNewAdDialog = () => {
-    setEditingAd(null);
-    form.reset({
-      size: 'MEDIUM',
-      position: 'IN_CONTENT',
-      isActive: true,
-      order: 1,
-      customDimensions: {},
-    });
-    setIsDialogOpen(true);
-  };
-
   return (
     <div className="route-frame dash-scope" dir="rtl">
-      <PageHeader
+      <PageHero
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'تبلیغات' }]}
         eyebrow="محتوا"
         title={activeTab === 'header' ? 'تبلیغ بالای هدر' : 'مدیریت تبلیغات'}
@@ -255,34 +275,28 @@ function AdvertisementsInner() {
         actions={
           activeTab === 'advertisements' ? (
             <>
-              <div className="at-filterbar__search" style={{ minWidth: '240px' }}>
-                <input
-                  type="text"
-                  placeholder="جستجوی تبلیغ…"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <HiMagnifyingGlass className="at-filterbar__search__ico size-4" />
-              </div>
+              <SearchInput
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onClear={() => setSearchTerm('')}
+                placeholder="جستجوی تبلیغ…"
+                className="min-w-[200px]"
+              />
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
-                  <button
-                    type="button"
-                    onClick={openNewAdDialog}
-                    className="at-btn at-btn--primary"
-                  >
-                    <HiOutlinePlus className="size-4" />
-                    <span>افزودن تبلیغ</span>
-                  </button>
+                  <Button>
+                    <Plus size={16} aria-hidden />
+                    افزودن تبلیغ
+                  </Button>
                 </DialogTrigger>
                 <DialogContent
-                  className="at-dialog-content max-h-[90vh] w-full max-w-5xl p-0 overflow-hidden"
+                  className="max-h-[90vh] w-full max-w-5xl p-0 overflow-hidden"
                   dir="rtl"
                 >
                   <div className="at-dialog-header">
                     <div className="at-dialog-title">
                       <span className="at-dialog-title__ico">
-                        <HiOutlineMegaphone className="size-4" />
+                        <Search size={16} aria-hidden />
                       </span>
                       <div>
                         <div>{editingAd ? 'ویرایش تبلیغ' : 'افزودن تبلیغ جدید'}</div>
@@ -300,27 +314,13 @@ function AdvertisementsInner() {
         }
       />
 
-      {/* Tabs — atelier */}
-      <nav className="at-form-tabs" role="tablist" style={{ marginBottom: '18px' }}>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'advertisements'}
-          onClick={() => handleTabChange('advertisements')}
-          className={`at-form-tab ${activeTab === 'advertisements' ? 'is-active' : ''}`}
-        >
-          تبلیغات
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activeTab === 'header'}
-          onClick={() => handleTabChange('header')}
-          className={`at-form-tab ${activeTab === 'header' ? 'is-active' : ''}`}
-        >
-          تبلیغ هدر
-        </button>
-      </nav>
+      {/* Tabs — shadcn canonical */}
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-4">
+        <TabsList>
+          <TabsTrigger value="advertisements">تبلیغات</TabsTrigger>
+          <TabsTrigger value="header">تبلیغ هدر</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {activeTab === 'advertisements' && (
         <>
@@ -329,15 +329,13 @@ function AdvertisementsInner() {
           {isLoading && page === 1 ? (
             <AdvertisementsSkeleton />
           ) : ads.length === 0 ? (
-            <div className="dash-panel p-20 flex flex-col items-center justify-center text-center">
-              <div className="dash-ico dash-ico--indigo size-16 mb-6">
-                <HiOutlineMegaphone className="size-8" />
-              </div>
-              <h3 className="text-lg font-bold mb-2">تبلیغی یافت نشد</h3>
-              <p className="text-neutral-500 max-w-xs">
-                هنوز هیچ تبلیغی در سیستم ثبت نشده است. برای شروع اولین تبلیغ را بسازید.
-              </p>
-            </div>
+            <MillionDollarEmpty
+              variant="shield"
+              tone="amber"
+              eyebrow="مدیریت تبلیغات"
+              title="تبلیغی یافت نشد"
+              description="هنوز هیچ تبلیغی در سیستم ثبت نشده است. برای شروع اولین تبلیغ را بسازید."
+            />
           ) : (
             <AdvertisementsList
               ads={ads}
@@ -347,6 +345,7 @@ function AdvertisementsInner() {
               onLoadMore={loadMore}
               onEdit={handleEdit}
               onDelete={openDelete}
+              onToggle={handleToggle}
             />
           )}
         </>

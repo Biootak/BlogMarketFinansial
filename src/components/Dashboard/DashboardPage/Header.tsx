@@ -81,24 +81,48 @@ import {
 const getRoleBadge = (role?: string) => {
   switch (role) {
     case 'OWNER':
-      return { label: 'مالک', color: 'from-rose-500 to-pink-600', tone: 'rose' };
+      return { label: 'مالک', tone: 'rose', accent: 'var(--ds-accent-rose, var(--ds-brand-600))' };
     case 'SUPERADMIN':
-      return { label: 'سوپرادمین', color: 'from-rose-500 to-pink-600', tone: 'rose' };
+      return {
+        label: 'سوپرادمین',
+        tone: 'rose',
+        accent: 'var(--ds-accent-rose, var(--ds-brand-600))',
+      };
     case 'ADMIN':
-      return { label: 'مدیر', color: 'from-violet-500 to-purple-600', tone: 'violet' };
+      return {
+        label: 'مدیر',
+        tone: 'violet',
+        accent: 'var(--ds-accent-violet, var(--ds-brand-600))',
+      };
     case 'AUTHOR':
-      return { label: 'نویسنده', color: 'from-amber-500 to-orange-500', tone: 'amber' };
+      return {
+        label: 'نویسنده',
+        tone: 'amber',
+        accent: 'var(--ds-accent-amber, var(--ds-brand-600))',
+      };
     case 'SUPPORT':
-      return { label: 'پشتیبانی', color: 'from-sky-500 to-blue-600', tone: 'sky' };
+      return {
+        label: 'پشتیبانی',
+        tone: 'sky',
+        accent: 'var(--ds-accent-cyan, var(--ds-brand-600))',
+      };
     case 'CUSTOMER':
     case 'TEST_CUSTOMER':
-      return { label: 'مشتری', color: 'from-emerald-500 to-teal-600', tone: 'emerald' };
+      return {
+        label: 'مشتری',
+        tone: 'emerald',
+        accent: 'var(--ds-accent-emerald, var(--ds-brand-600))',
+      };
     case 'MERCHANT':
-      return { label: 'پذیرنده', color: 'from-cyan-500 to-teal-500', tone: 'cyan' };
+      return {
+        label: 'پذیرنده',
+        tone: 'cyan',
+        accent: 'var(--ds-accent-cyan, var(--ds-brand-600))',
+      };
     case 'EXCHANGE':
-      return { label: 'صرافی', color: 'from-indigo-500 to-blue-600', tone: 'indigo' };
+      return { label: 'صرافی', tone: 'indigo', accent: 'var(--ds-brand-600)' };
     default:
-      return { label: 'کاربر', color: 'from-slate-500 to-gray-600', tone: 'slate' };
+      return { label: 'کاربر', tone: 'slate', accent: 'var(--ds-text-secondary)' };
   }
 };
 
@@ -136,10 +160,11 @@ function rowToTone(n: NotificationRow): 'ok' | 'info' | 'warn' | 'urgent' {
 }
 
 const TONE_ACCENT: Record<'ok' | 'info' | 'warn' | 'urgent', string> = {
-  ok: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-  info: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',
-  warn: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-  urgent: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
+  ok: 'bg-[color:var(--ds-accent-emerald,_var(--ds-brand-500))]/15 text-[color:var(--ds-accent-emerald,_var(--ds-brand-600))] dark:bg-[color:var(--ds-accent-emerald,_var(--ds-brand-500))]/20 dark:text-[color:var(--ds-accent-emerald,_var(--ds-brand-400,_var(--ds-brand-500)))]',
+  info: 'bg-[color:var(--ds-brand-500)]/10 text-[color:var(--ds-brand-600)] dark:bg-[color:var(--ds-brand-500)]/20 dark:text-[color:var(--ds-brand-400,_var(--ds-brand-500))]',
+  warn: 'bg-[color:var(--ds-accent-amber)]/15 text-[color:var(--ds-accent-amber)] dark:bg-[color:var(--ds-accent-amber)]/20 dark:text-[color:var(--ds-accent-amber)]',
+  urgent:
+    'bg-[color:var(--ds-accent-rose)]/15 text-[color:var(--ds-accent-rose)] dark:bg-[color:var(--ds-accent-rose)]/20 dark:text-[color:var(--ds-accent-rose)]',
 };
 
 const TONE_ICON: Record<'ok' | 'info' | 'warn' | 'urgent', React.ReactNode> = {
@@ -462,15 +487,15 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
               <header className="dash-header__popover-head">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">اعلان‌ها</p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    <p className="text-sm font-bold text-[color:var(--ds-text-primary)]">اعلان‌ها</p>
+                    <p className="text-[11px] text-[color:var(--ds-text-muted)] mt-0.5">
                       آخرین رویدادهای داشبورد
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => void handleMarkAllRead()}
-                    className="text-[11px] font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400 hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 px-1"
+                    className="text-[11px] font-semibold text-[color:var(--ds-brand-600)] hover:text-[color:var(--ds-brand-700)] dark:text-[color:var(--ds-brand-400,_var(--ds-brand-500))] hover:underline rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-brand-500)]/60 px-1"
                   >
                     علامت همه خوانده‌شده
                   </button>
@@ -479,11 +504,11 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
 
               {notifLoading ? (
                 <div className="px-6 py-10 text-center">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">در حال بارگذاری…</p>
+                  <p className="text-sm text-[color:var(--ds-text-muted)]">در حال بارگذاری…</p>
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="px-6 py-10 text-center">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">اعلان تازه‌ای ندارید.</p>
+                  <p className="text-sm text-[color:var(--ds-text-muted)]">اعلان تازه‌ای ندارید.</p>
                 </div>
               ) : (
                 <ul className="max-h-96 overflow-y-auto py-1">
@@ -516,10 +541,10 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
                               {TONE_ICON[tone]}
                             </span>
                             <span className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
+                              <p className="text-sm font-semibold text-[color:var(--ds-text-primary)] truncate">
                                 {n.message}
                               </p>
-                              <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                              <p className="text-[11px] text-[color:var(--ds-text-muted)] mt-1">
                                 {n.time}
                               </p>
                             </span>
@@ -534,7 +559,7 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
               <footer className="dash-header__popover-foot">
                 <Link
                   href={PORTAL_NOTIF_HREF[portal]}
-                  className="text-xs font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60 px-1"
+                  className="text-xs font-semibold text-[color:var(--ds-brand-600)] hover:text-[color:var(--ds-brand-700)] dark:text-[color:var(--ds-brand-400,_var(--ds-brand-500))] rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ds-brand-500)]/60 px-1"
                 >
                   مشاهده همه اعلان‌ها
                 </Link>
@@ -571,23 +596,28 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" sideOffset={10} className="min-w-[260px] p-2">
               <div className="flex items-center gap-3 px-2 py-2.5 rounded-lg bg-white/75 dark:bg-[--nova-surface-2]/50 border-[0.5px] border-white/90 dark:border-white/10 mb-1">
-                <div className={cn('p-2.5 rounded-xl bg-gradient-to-br', roleBadge.color)}>
+                <div
+                  className="p-2.5 rounded-xl"
+                  style={{
+                    background: `linear-gradient(135deg, ${roleBadge.accent}, color-mix(in oklch, ${roleBadge.accent} 70%, var(--ds-text-primary)))`,
+                  }}
+                >
                   <HiOutlineShieldCheck className="w-5 h-5 text-white" />
                 </div>
                 <div className="text-start min-w-0 flex-1">
-                  <p className="text-xs text-slate-500 dark:text-slate-400">سطح دسترسی</p>
-                  <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                  <p className="text-xs text-[color:var(--ds-text-muted)]">سطح دسترسی</p>
+                  <p className="text-sm font-bold text-[color:var(--ds-text-primary)] truncate mt-0.5">
                     {roleBadge.label}
                   </p>
                   {user?.email && (
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                    <p className="text-[11px] text-[color:var(--ds-text-muted)] truncate mt-0.5">
                       {user.email}
                     </p>
                   )}
                 </div>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 pt-2">
+              <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-[color:var(--ds-text-muted)] px-2 pt-2">
                 حساب
               </DropdownMenuLabel>
               <DropdownMenuItem asChild>
@@ -632,7 +662,7 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
                   event.preventDefault();
                   void handleLogout();
                 }}
-                className="text-rose-600 dark:text-rose-400 focus:text-rose-700 dark:focus:text-rose-300"
+                className="text-[color:var(--ds-accent-rose)] dark:text-[color:var(--ds-accent-rose)] focus:text-[color:var(--ds-accent-rose)]"
               >
                 <HiOutlineArrowRightOnRectangle className="w-4 h-4" aria-hidden />
                 <span>خروج</span>

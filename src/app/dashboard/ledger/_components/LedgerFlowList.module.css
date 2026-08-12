@@ -1,0 +1,794 @@
+/* LedgerFlowList.module.css — جریان تراکنش‌ها (adaptive console, 2026 rebuild)
+   Desktop dense table / tablet condensed / mobile cards — no horizontal scroll.
+   Tokens only | RTL logical | zero hex | opacity/transform animation only
+   Design reference: Ramp / Brex / Stripe (density for finance consoles)
+*/
+
+/* ═════════════════════════════════════════════════════════════
+   Root container
+   ═════════════════════════════════════════════════════════════ */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-inline-size: 0;
+  border: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 60%, transparent);
+  border-radius: var(--nova-radius-lg, var(--ds-radius-lg));
+  overflow: hidden;
+  background: color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 95%, transparent);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  transition: opacity 200ms var(--ds-ease-out-quart);
+}
+
+/* Live-refetch: keep the old list visible, just softened */
+.rootLoading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Header row — visible from tablet up
+   ═════════════════════════════════════════════════════════════ */
+
+.header {
+  display: grid;
+  grid-template-columns:
+    minmax(4.75rem, 6.5rem)
+    minmax(6.5rem, 9rem)
+    minmax(6.5rem, 11rem)
+    minmax(8rem, 1fr)
+    minmax(4rem, 4.75rem)
+    minmax(6.5rem, 9rem)
+    minmax(7rem, 10rem);
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  background: color-mix(
+    in oklch,
+    var(--nova-surface-recessed, var(--ds-surface-recessed)) 80%,
+    transparent
+  );
+  border-block-end: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 60%, transparent);
+}
+
+.header > span {
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-muted, var(--ds-text-muted));
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding-inline-end: var(--ds-space-1);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Body
+   ═════════════════════════════════════════════════════════════ */
+
+.body {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Flow Row — table row with edge glow
+   ═════════════════════════════════════════════════════════════ */
+
+.row {
+  display: grid;
+  grid-template-columns:
+    minmax(4.75rem, 6.5rem)
+    minmax(6.5rem, 9rem)
+    minmax(6.5rem, 11rem)
+    minmax(8rem, 1fr)
+    minmax(4rem, 4.75rem)
+    minmax(6.5rem, 9rem)
+    minmax(7rem, 10rem);
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  position: relative;
+  min-block-size: 3.25rem;
+  border-block-end: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 25%, transparent);
+  background: transparent;
+  cursor: default;
+  transition: background var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+  animation: rowIn 400ms var(--ds-ease-out-quart) both;
+  animation-delay: var(--animation-delay, 0ms);
+}
+
+@keyframes rowIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Edge glow bar */
+.edgeBar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 2px;
+  border-radius: 0 var(--ds-radius-sm) var(--ds-radius-sm) 0;
+  opacity: 0;
+  transition: opacity var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+.rowCredit .edgeBar {
+  background: var(--nova-up, var(--ds-accent-emerald));
+  box-shadow: 0 0 0.5rem
+    color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 50%, transparent);
+}
+
+.rowDebit .edgeBar {
+  background: var(--nova-down, var(--ds-accent-rose));
+  box-shadow: 0 0 0.5rem
+    color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 50%, transparent);
+}
+
+/* Hover glow */
+.row:hover {
+  background: color-mix(
+    in oklch,
+    var(--nova-surface-recessed, var(--ds-surface-recessed)) 40%,
+    transparent
+  );
+  box-shadow: inset 0 0 0 1px
+    color-mix(
+      in oklch,
+      var(--glow-color, var(--nova-border, var(--ds-border-subtle))) 15%,
+      transparent
+    );
+}
+
+.row:hover .edgeBar {
+  opacity: 1;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Cell: Time
+   ═════════════════════════════════════════════════════════════ */
+
+.cellTime {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-inline-size: 0;
+  padding-inline-end: var(--ds-space-1);
+}
+
+.timeMain {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-ink, var(--ds-text-primary));
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: end;
+}
+
+.timeDate {
+  font-size: calc(var(--ds-text-xs) - 1px);
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: embed;
+  text-align: end;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Cell: Exchange
+   ═════════════════════════════════════════════════════════════ */
+
+.cellExchange {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  min-inline-size: 0;
+  padding-inline-end: var(--ds-space-1);
+}
+
+.exchangeIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 1.3rem;
+  block-size: 1.3rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 8%, transparent);
+  color: var(--nova-primary, var(--ds-brand-500));
+  border: 1px solid color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 15%, transparent);
+  flex-shrink: 0;
+}
+
+.exchangeName {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-ink, var(--ds-text-primary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Cell: Party
+   ═════════════════════════════════════════════════════════════ */
+
+.cellParty {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  gap: 1px;
+  padding-inline-end: var(--ds-space-1);
+}
+
+.partyMain {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium, 500);
+  color: var(--nova-ink, var(--ds-text-primary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountLabel {
+  font-size: 0.72em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-family: var(--ds-font-mono, monospace);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Cell: Description
+   ═════════════════════════════════════════════════════════════ */
+
+.cellDesc {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  gap: 1px;
+  padding-inline-end: var(--ds-space-1);
+}
+
+.descMain {
+  font-size: var(--ds-text-xs);
+  color: var(--nova-ink-2, var(--ds-text-secondary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-inline-size: 14rem;
+}
+
+.txnId {
+  font-size: 0.68em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-family: var(--ds-font-mono, monospace);
+  direction: ltr;
+  unicode-bidi: bidi-override;
+}
+
+/* Mobile-only party prefix (hidden on desktop/tablet) */
+.mobileParty {
+  display: none;
+}
+
+.mobileSep {
+  opacity: 0.7;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Cell: Direction badge
+   ═════════════════════════════════════════════════════════════ */
+
+.cellDir {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--ds-radius-full);
+  font-size: 0.75em;
+  font-weight: var(--ds-weight-semibold, 600);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+}
+
+.dirIcon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.dirCredit {
+  background: color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 12%, transparent);
+  color: var(--nova-up, var(--ds-accent-emerald));
+  border: 1px solid color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 20%, transparent);
+}
+
+.dirDebit {
+  background: color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 12%, transparent);
+  color: var(--nova-down, var(--ds-accent-rose));
+  border: 1px solid color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 20%, transparent);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Cell: Amount
+   ═════════════════════════════════════════════════════════════ */
+
+.cellAmount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-inline-size: 0;
+}
+
+.amount {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  letter-spacing: -0.015em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
+.amountSign {
+  font-size: 0.85em;
+  opacity: 0.85;
+  font-weight: var(--ds-weight-bold, 700);
+}
+
+.amountUp {
+  color: var(--nova-up, var(--ds-accent-emerald));
+}
+
+.amountDown {
+  color: var(--nova-down, var(--ds-accent-rose));
+}
+
+.currencyBadge {
+  font-size: 0.7em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: var(--ds-weight-medium, 500);
+}
+
+.currencySym {
+  font-size: 1.1em;
+  font-weight: var(--ds-weight-bold, 700);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Cell: Balance + inline bar
+   ═════════════════════════════════════════════════════════════ */
+
+.cellBalance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  min-inline-size: 0;
+}
+
+.balanceValue {
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  font-variant-numeric: tabular-nums;
+  color: var(--nova-ink, var(--ds-text-primary));
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.balanceSym {
+  font-size: 0.8em;
+  color: var(--nova-muted, var(--ds-text-muted));
+  font-weight: var(--ds-weight-medium, 500);
+}
+
+.balanceBar {
+  display: block;
+  inline-size: 5rem;
+  block-size: 3px;
+  border-radius: var(--ds-radius-full);
+  background: var(--nova-surface-recessed, var(--ds-surface-recessed));
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 1px
+    color-mix(in oklch, var(--nova-text-primary, var(--ds-text-primary)) 4%, transparent);
+}
+
+.balanceFill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--ds-radius-full);
+  transition: inline-size var(--ds-duration-base, 280ms) var(--ds-ease-out-quart);
+}
+
+.fillUp {
+  background: var(--nova-up, var(--ds-accent-emerald));
+  box-shadow: 0 0 0.4rem
+    color-mix(in oklch, var(--nova-up, var(--ds-accent-emerald)) 40%, transparent);
+}
+
+.fillDown {
+  background: var(--nova-down, var(--ds-accent-rose));
+  box-shadow: 0 0 0.4rem
+    color-mix(in oklch, var(--nova-down, var(--ds-accent-rose)) 40%, transparent);
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Empty state
+   ═════════════════════════════════════════════════════════════ */
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-8) var(--ds-space-4);
+  font-size: var(--ds-text-sm);
+  color: var(--nova-muted, var(--ds-text-muted));
+  text-align: center;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Skeleton loader
+   ═════════════════════════════════════════════════════════════ */
+
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.skelRow {
+  display: grid;
+  grid-template-columns:
+    minmax(4.75rem, 6.5rem)
+    minmax(6.5rem, 9rem)
+    minmax(6.5rem, 11rem)
+    minmax(8rem, 1fr)
+    minmax(4rem, 4.75rem)
+    minmax(6.5rem, 9rem)
+    minmax(7rem, 10rem);
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-block-end: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 20%, transparent);
+}
+
+.skelBlock {
+  display: block;
+  block-size: 1rem;
+  border-radius: var(--ds-radius-sm);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--nova-surface-recessed, var(--ds-surface-recessed)) 60%, transparent)
+      25%,
+    color-mix(in oklch, var(--nova-surface-recessed, var(--ds-surface-recessed)) 80%, transparent)
+      50%,
+    color-mix(in oklch, var(--nova-surface-recessed, var(--ds-surface-recessed)) 60%, transparent)
+      75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skelIcon {
+  inline-size: 1.3rem;
+  block-size: 1.3rem;
+  border-radius: var(--ds-radius-sm);
+}
+.skelTime {
+  inline-size: 4rem;
+}
+.skelExchange {
+  inline-size: 5rem;
+}
+.skelParty {
+  inline-size: 6rem;
+}
+.skelDesc {
+  inline-size: 100%;
+  max-inline-size: 12rem;
+}
+.skelDir {
+  inline-size: 3.5rem;
+}
+.skelAmount {
+  inline-size: 5rem;
+  justify-self: end;
+}
+.skelBalance {
+  inline-size: 6rem;
+  justify-self: end;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Responsive — Desktop wide (≥1280px): breathe a little more
+   ═════════════════════════════════════════════════════════════ */
+
+@media (min-width: 1280px) {
+  .header,
+  .row,
+  .skelRow {
+    grid-template-columns:
+      minmax(4.75rem, 6.5rem)
+      minmax(6.5rem, 9rem)
+      minmax(6.5rem, 11rem)
+      minmax(9rem, 1.5fr)
+      minmax(4rem, 4.75rem)
+      minmax(6.5rem, 9rem)
+      minmax(7rem, 10rem);
+  }
+
+  .descMain {
+    max-inline-size: 16rem;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Responsive — Tablet (768–1279px): drop description column
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1279px) {
+  .header,
+  .row,
+  .skelRow {
+    grid-template-columns:
+      minmax(4rem, 5.5rem)
+      minmax(5.5rem, 8rem)
+      minmax(5rem, 1fr)
+      minmax(3.5rem, 4.25rem)
+      minmax(5.5rem, 8rem)
+      minmax(6rem, 9rem);
+  }
+
+  .cellDesc {
+    display: none;
+  }
+
+  .balanceBar {
+    inline-size: 4rem;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Responsive — Mobile (<768px): card feed
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 767px) {
+  .root {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .header {
+    display: none;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: var(--ds-space-4) minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    gap: var(--ds-space-1-5);
+    padding: var(--ds-space-2-5) var(--ds-space-3);
+    min-block-size: 0;
+    border-block-end: 1px solid
+      color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 25%, transparent);
+    border-radius: var(--ds-radius-md);
+  }
+
+  /* Direction → icon circle (col 1) */
+  .cellDir {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: start;
+    justify-self: start;
+    inline-size: var(--ds-space-4);
+    block-size: var(--ds-space-4);
+    padding: 0;
+    border-radius: var(--ds-radius-full);
+    justify-content: center;
+  }
+
+  .dirText {
+    display: none;
+  }
+
+  .dirIcon svg {
+    inline-size: 12px;
+    block-size: 12px;
+  }
+
+  /* Time hidden — exchange row carries the day */
+  .cellTime {
+    display: none;
+  }
+
+  /* Party hidden — customer name moves into the description meta line */
+  .cellParty {
+    display: none;
+  }
+
+  /* Description becomes the meta line: «مشتری · توضیحات» */
+  .cellDesc {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    padding-inline-end: 0;
+    min-inline-size: 0;
+  }
+
+  .mobileParty {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+    font-weight: var(--ds-weight-medium, 500);
+    color: var(--nova-ink-2, var(--ds-text-secondary));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .descMain {
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+    color: var(--nova-muted, var(--ds-text-muted));
+    max-inline-size: 100%;
+    font-weight: var(--ds-weight-medium, 500);
+  }
+
+  .txnId {
+    display: none;
+  }
+
+  /* Exchange pill on top line */
+  .cellExchange {
+    grid-column: 2;
+    grid-row: 1;
+    gap: var(--ds-space-1-5);
+    padding-inline-end: 0;
+  }
+
+  .exchangeIcon {
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+  }
+
+  .exchangeIcon svg {
+    inline-size: 9px;
+    block-size: 9px;
+  }
+
+  /* Amount → hero on the inline-end */
+  .cellAmount {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+    align-items: flex-end;
+    gap: 1px;
+  }
+
+  .amount {
+    font-size: var(--ds-text-sm);
+  }
+
+  .currencyBadge {
+    font-size: 0.68em;
+  }
+
+  /* Balance hidden */
+  .cellBalance {
+    display: none;
+  }
+
+  /* Skeleton follows card layout */
+  .skelRow {
+    display: grid;
+    grid-template-columns: var(--ds-space-4) minmax(0, 1fr) 5rem;
+    gap: var(--ds-space-1-5);
+    padding: var(--ds-space-2-5) var(--ds-space-3);
+  }
+
+  .skelIcon {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: start;
+    inline-size: var(--ds-space-4);
+    block-size: var(--ds-space-4);
+    border-radius: var(--ds-radius-full);
+  }
+
+  .skelExchange {
+    grid-column: 2;
+    inline-size: 45%;
+  }
+
+  .skelDesc {
+    grid-column: 2;
+    grid-row: 2;
+    inline-size: 80%;
+  }
+
+  .skelAmount {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  .skelDir,
+  .skelParty,
+  .skelTime,
+  .skelBalance {
+    display: none;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Responsive — Ultra small (≤480px)
+   ═════════════════════════════════════════════════════════════ */
+
+@media (max-width: 480px) {
+  .row {
+    padding: var(--ds-space-2) var(--ds-space-2-5);
+  }
+
+  .amount {
+    font-size: calc(var(--ds-text-sm) - 0.5px);
+  }
+
+  .exchangeName {
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════
+   Dark mode refinements
+   ═════════════════════════════════════════════════════════════ */
+
+.dark .root {
+  background: color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 90%, transparent);
+}
+
+.dark .header {
+  background: color-mix(
+    in oklch,
+    var(--nova-surface-recessed, var(--ds-surface-recessed)) 60%,
+    transparent
+  );
+}
+
+.dark .row:hover {
+  background: color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 25%, transparent);
+}

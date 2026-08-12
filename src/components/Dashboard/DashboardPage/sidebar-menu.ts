@@ -11,6 +11,7 @@ import {
   HiOutlineBell,
   HiOutlineBuildingStorefront,
   HiOutlineChartBarSquare,
+  HiOutlineChatBubbleLeftRight,
   HiOutlineCircleStack,
   HiOutlineClipboardDocumentCheck,
   HiOutlineClipboardDocumentList,
@@ -28,6 +29,7 @@ import {
   HiOutlineMap,
   HiOutlineMapPin,
   HiOutlineMegaphone,
+  HiOutlineNewspaper,
   HiOutlineRadio,
   HiOutlineReceiptPercent,
   HiOutlineShieldCheck,
@@ -146,6 +148,56 @@ export function getMenu(role: UserRole): NavSection[] {
     label: 'دسته‌بندی',
     title: 'دسته‌بندی',
     shortcut: SHORTCUT_KEYS.categories,
+  };
+
+  // 2026-08-11: صفحاتی که در تحلیل شکاف وجود نداشتند — نظرات، برچسب‌ها،
+  // خبرنامه، بازخوردها، دفتر کل و هدر آد (صفحهٔ هدر آد بود ولی در منو نبود).
+  const comments: MenuItem = {
+    id: 'comments',
+    href: '/dashboard/comments',
+    icon: HiOutlineChatBubbleLeftRight({ className: ICON_CLASS }),
+    label: 'نظرات',
+    title: 'مدیریت و تأیید نظرات مقالات',
+  };
+
+  const tags: MenuItem = {
+    id: 'tags',
+    href: '/dashboard/tags',
+    icon: HiOutlineTag({ className: ICON_CLASS }),
+    label: 'برچسب‌ها',
+    title: 'مدیریت برچسب‌های مقالات',
+  };
+
+  const newsletter: MenuItem = {
+    id: 'newsletter',
+    href: '/dashboard/newsletter',
+    icon: HiOutlineNewspaper({ className: ICON_CLASS }),
+    label: 'خبرنامه',
+    title: 'مشترکین خبرنامه و ارسال خبرنامه',
+  };
+
+  const feedback: MenuItem = {
+    id: 'feedback',
+    href: '/dashboard/feedback',
+    icon: HiOutlineInboxArrowDown({ className: ICON_CLASS }),
+    label: 'بازخوردها',
+    title: 'پیام‌های بازخورد و تماس کاربران',
+  };
+
+  const ledger: MenuItem = {
+    id: 'ledger',
+    href: '/dashboard/ledger',
+    icon: HiOutlineBanknotes({ className: ICON_CLASS }),
+    label: 'دفتر کل',
+    title: 'کاوشگر دفتر کل پلتفرم',
+  };
+
+  const headerAd: MenuItem = {
+    id: 'headerAd',
+    href: '/dashboard/header-ad',
+    icon: HiOutlineMegaphone({ className: ICON_CLASS }),
+    label: 'هدر آد',
+    title: 'تبلیغات هدر سایت',
   };
 
   const users: MenuItem = {
@@ -708,7 +760,12 @@ export function getMenu(role: UserRole): NavSection[] {
     case 'OWNER':
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
+        {
+          id: 'content',
+          index: '۰۲',
+          label: 'محتوا',
+          items: [posts, categories, comments, tags, newsletter],
+        },
         {
           id: 'operations',
           index: '۰۳',
@@ -721,6 +778,7 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeQuotes,
             creditRates,
             advertisements,
+            headerAd,
             serviceRequests,
             observability,
           ],
@@ -729,13 +787,13 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'fintech',
           index: '۰۴',
           label: 'فین‌تک',
-          items: [customers, kycReview, fraudReview, settlements, auditLog],
+          items: [customers, kycReview, fraudReview, settlements, ledger, auditLog],
         },
         {
           id: 'platform',
           index: '۰۵',
           label: 'پلتفرم',
-          items: [communication, jobCenter, helpdesk, approvals],
+          items: [communication, jobCenter, helpdesk, approvals, feedback],
         },
         {
           id: 'admin',
@@ -775,7 +833,12 @@ export function getMenu(role: UserRole): NavSection[] {
       // items (reports, settings) are excluded from this branch.
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
+        {
+          id: 'content',
+          index: '۰۲',
+          label: 'محتوا',
+          items: [posts, categories, comments, tags, newsletter],
+        },
         {
           id: 'operations',
           index: '۰۳',
@@ -788,6 +851,7 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeQuotes,
             creditRates,
             advertisements,
+            headerAd,
             serviceRequests,
             observability,
           ],
@@ -796,13 +860,13 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'fintech',
           index: '۰۴',
           label: 'فین‌تک',
-          items: [customers, kycReview, fraudReview, settlements, auditLog],
+          items: [customers, kycReview, fraudReview, settlements, ledger, auditLog],
         },
         {
           id: 'platform',
           index: '۰۵',
           label: 'پلتفرم',
-          items: [communication, jobCenter, helpdesk, approvals],
+          items: [communication, jobCenter, helpdesk, approvals, feedback],
         },
         {
           id: 'admin',
@@ -829,7 +893,7 @@ export function getMenu(role: UserRole): NavSection[] {
       ];
     case 'SUPPORT':
       // SUPPORT can access: dashboard, helpdesk, approvals (view), service-requests,
-      // notifications, my-deals, my-requests, devices, profile.
+      // feedback, notifications, my-deals, my-requests, devices, profile.
       // Admin-only items (kycReview, fraudReview, customers, settlements, audit-log,
       // settings, reports, roles, …) are deliberately excluded.
       return [
@@ -838,7 +902,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'support',
           index: '۰۲',
           label: 'پشتیبانی',
-          items: [helpdesk, approvals, serviceRequests],
+          items: [helpdesk, approvals, serviceRequests, feedback],
         },
         {
           id: 'account',
@@ -850,7 +914,7 @@ export function getMenu(role: UserRole): NavSection[] {
     case 'AUTHOR':
       return [
         { id: 'main', index: '۰۱', label: 'مرکز', items: [dashboard] },
-        { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories] },
+        { id: 'content', index: '۰۲', label: 'محتوا', items: [posts, categories, comments, tags] },
         {
           id: 'account',
           index: '۰۵',

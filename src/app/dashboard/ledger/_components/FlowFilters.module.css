@@ -1,0 +1,302 @@
+/* FlowFilters.module.css — premium live filter rail (2026 rebuild)
+   Tokens only | RTL logical | mobile-first responsive
+*/
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-1-5);
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+/* ── Chip row (wraps — never truncates) ── */
+
+.chipRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2);
+  border: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 70%, transparent);
+  border-radius: var(--nova-radius-lg, var(--ds-radius-lg));
+  background: color-mix(
+    in oklch,
+    var(--nova-canvas, var(--ds-canvas-subtle, var(--ds-canvas))) 55%,
+    transparent
+  );
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+}
+
+.chipGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1-5);
+  flex-shrink: 0;
+  min-inline-size: 0;
+}
+
+.groupLabel {
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  font-weight: var(--ds-weight-semibold, 600);
+  color: var(--nova-muted, var(--ds-text-muted));
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.chipPair {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  border-radius: var(--nova-radius-full, var(--ds-radius-full));
+  background: color-mix(
+    in oklch,
+    var(--nova-surface-recessed, var(--ds-surface-recessed)) 70%,
+    transparent
+  );
+  border: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 50%, transparent);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--nova-radius-full, var(--ds-radius-full));
+  border: 0;
+  background: transparent;
+  color: var(--nova-ink-2, var(--ds-text-secondary));
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+.chip:hover {
+  color: var(--nova-ink, var(--ds-text-primary));
+  background: color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 70%, transparent);
+}
+
+.chipActive {
+  background: var(--nova-surface, var(--ds-surface));
+  color: var(--nova-ink, var(--ds-text-primary));
+  box-shadow: 0 1px 2px
+    color-mix(in oklch, var(--nova-text-primary, var(--ds-text-primary)) 6%, transparent), 0 0 0 1px
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 70%, transparent);
+}
+
+.chipDot {
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--nova-muted, var(--ds-text-muted));
+  flex-shrink: 0;
+  transition: background var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+.chipUp .chipDot {
+  background: var(--nova-up, var(--ds-accent-emerald));
+}
+
+.chipDown .chipDot {
+  background: var(--nova-down, var(--ds-accent-rose));
+}
+
+/* ── Select (currency / exchange) ── */
+
+.select {
+  min-inline-size: 8.5rem;
+  height: 1.85rem;
+  font-size: var(--ds-text-xs);
+  border-radius: var(--nova-radius-full, var(--ds-radius-full));
+  padding-inline: var(--ds-space-2-5, var(--ds-space-2-5));
+}
+
+.currencyPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.currencyIcon {
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  display: inline-grid;
+  place-items: center;
+  border-radius: var(--ds-radius-sm);
+  font-weight: var(--ds-weight-bold, 700);
+  font-size: 0.8em;
+  background: color-mix(in oklch, var(--nova-primary, var(--ds-brand-500)) 10%, transparent);
+  color: var(--nova-primary, var(--ds-brand-500));
+}
+
+/* ── Divider ── */
+
+.divider {
+  inline-size: 1px;
+  align-self: stretch;
+  background: color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 70%, transparent);
+  flex-shrink: 0;
+}
+
+/* ── Search ── */
+
+.searchWrap {
+  flex: 1 1 11rem;
+  min-inline-size: 11rem;
+  display: flex;
+  align-items: center;
+}
+
+.search {
+  inline-size: 100%;
+}
+
+/* ── Reset pill (appears only while filters are active) ── */
+
+.resetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px var(--ds-space-2-5, var(--ds-space-2-5));
+  border-radius: var(--nova-radius-full, var(--ds-radius-full));
+  border: 1px solid
+    color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 70%, transparent);
+  background: transparent;
+  color: var(--nova-ink-2, var(--ds-text-secondary));
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-semibold, 600);
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast, 180ms) var(--ds-ease-out-quart);
+}
+
+.resetBtn:hover {
+  color: var(--nova-ink, var(--ds-text-primary));
+  background: color-mix(
+    in oklch,
+    var(--nova-surface-recessed, var(--ds-surface-recessed)) 60%,
+    transparent
+  );
+  border-color: color-mix(in oklch, var(--nova-border, var(--ds-border-subtle)) 90%, transparent);
+}
+
+/* ── Status strip ── */
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-block-size: 1.1rem;
+  padding-inline: var(--ds-space-1);
+}
+
+.loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  color: var(--nova-muted, var(--ds-text-muted));
+}
+
+.loadingDot {
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: var(--ds-radius-full);
+  background: var(--nova-primary, var(--ds-brand-500));
+  animation: dotPulse 1.1s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.7);
+  }
+}
+
+.liveHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  font-weight: var(--ds-weight-medium, 500);
+  color: var(--nova-up, var(--ds-accent-emerald));
+}
+
+.allHint {
+  font-size: calc(var(--ds-text-xs) - 0.5px);
+  color: var(--nova-muted, var(--ds-text-muted));
+  letter-spacing: 0.01em;
+}
+
+/* ── Dark mode ── */
+
+.dark .chipRow {
+  background: color-mix(in oklch, var(--nova-canvas, var(--ds-canvas)) 30%, transparent);
+}
+
+.dark .chipPair {
+  background: color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 30%, transparent);
+}
+
+.dark .chip:hover {
+  background: color-mix(in oklch, var(--nova-surface, var(--ds-surface)) 45%, transparent);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+  .groupLabel {
+    display: none;
+  }
+
+  .select {
+    min-inline-size: 6.5rem;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .searchWrap {
+    min-inline-size: 9rem;
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .chipRow {
+    padding: var(--ds-space-1-5);
+    gap: var(--ds-space-1-5);
+  }
+
+  .chip {
+    padding: 3px 8px;
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+
+  .select {
+    min-inline-size: 5.5rem;
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+
+  .resetBtn {
+    padding: 5px var(--ds-space-2, var(--ds-space-2));
+  }
+}
