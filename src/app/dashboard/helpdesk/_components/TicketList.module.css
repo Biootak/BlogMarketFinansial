@@ -1,5 +1,5 @@
 /* ================================================================
- * TicketList — Editorial Broadcast row list
+ * TicketList — Premium Glass row list
  * --------------------------------------------------------------
  * token-based، RTL-correct، mobile-first
  * ================================================================ */
@@ -29,6 +29,7 @@
   cursor: pointer;
   transition: background 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)),
     border-color 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)), transform 200ms
+    var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1)), box-shadow 200ms
     var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
   overflow: hidden;
 }
@@ -38,6 +39,7 @@
   inset-block: 0;
   inset-inline-start: 0;
   width: 3px;
+  border-radius: 3px 0 0 3px;
   background: var(--indicator-color, transparent);
   opacity: 0;
   transition: opacity 200ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
@@ -45,6 +47,7 @@
 .row:hover {
   transform: translateY(-1px);
   border-color: var(--ds-color-border-strong, rgba(0, 0, 0, 0.16));
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -12px rgba(15, 23, 42, 0.14);
 }
 .row:hover::after {
   opacity: 0.6;
@@ -64,6 +67,7 @@
     var(--ds-color-accent, currentColor) 5%,
     var(--ds-color-surface, white)
   );
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-color-accent, currentColor) 10%, transparent);
 }
 .rowActive::after {
   opacity: 1;
@@ -88,9 +92,36 @@
   inset-block: 0;
   inset-inline-start: 0;
   width: 3px;
+  border-radius: 3px 0 0 3px;
   background: var(--indicator-color);
-  border-radius: 0;
   pointer-events: none;
+}
+
+/* ── avatar ─────────────────────────────────────────────── */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.6875rem;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: #fff;
+  user-select: none;
+}
+.avatar-av1 {
+  background: linear-gradient(135deg, oklch(55% 0.14 245), oklch(45% 0.14 260));
+}
+.avatar-av2 {
+  background: linear-gradient(135deg, oklch(60% 0.13 15), oklch(50% 0.14 20));
+}
+.avatar-av3 {
+  background: linear-gradient(135deg, oklch(60% 0.12 70), oklch(50% 0.13 75));
+}
+.avatar-av4 {
+  background: linear-gradient(135deg, oklch(55% 0.14 162), oklch(45% 0.13 165));
 }
 
 /* ── body ───────────────────────────────────────────────── */
@@ -194,11 +225,20 @@
 .metaItem[data-state="unassigned"] {
   color: oklch(50% 0.13 15);
 }
+.metaItem[data-state="assigned"] {
+  color: oklch(52% 0.14 162);
+  font-weight: 600;
+}
+.metaItem[data-state="sla"] {
+  color: oklch(45% 0.13 245);
+  font-weight: 600;
+}
+.metaItem[data-state="sla-urgent"] {
+  color: oklch(50% 0.13 15);
+  font-weight: 700;
+}
 .metaItem[data-state="time"] {
   margin-inline-start: auto;
-}
-.metaItem[data-state="time"]::before {
-  content: "";
 }
 
 .metaIcon {
@@ -248,5 +288,11 @@
   }
   .metaItem[data-state="time"] {
     margin-inline-start: 0;
+  }
+  .avatar {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
+    border-radius: 0.5625rem;
   }
 }

@@ -4,13 +4,12 @@
  * HelpdeskHub — orchestrator اصلی صفحه‌ی helpdesk.
  * -----------------------------------------------------------------
  *  چیدمان (mobile-first):
- *   1. Hero (PriorityOrbit signature) + headline stats (right rail)
- *   2. Toolbar: search + filter pills + primary CTA "تیکت جدید"
- *   3. Workspace (2 ستونه از md:):
+ *   1. Hero (PriorityOrbit signature + headline stats + SLA meter)
+ *   2. Toolbar: search + filter pills (با شمارنده) + primary CTA "تیکت جدید"
+ *   3. Workspace (۲ ستونه از md:):
  *        - left: TicketList
- *        - right: rail (status mix donut-style + recent activity)
- *   4. Footer/empty
- *   5. Drawers: TicketDetail + NewTicketForm (mounted در root)
+ *        - right: rail (status mix + recent activity)
+ *   4. Drawers: TicketDetail + NewTicketForm (mounted در root)
  *
  *  داده: initialTickets از server، بعد از هر تغییر fetch خودکار.
  *  polling: هر ۳۰ ثانیه snapshot جدید.
@@ -18,7 +17,7 @@
 
 import { PillTabs } from '@/components/Dashboard/PlatformHub';
 import { ActivityStream } from '@/components/Dashboard/PlatformHub/ActivityStream';
-import { MetricWall, type MetricWallTile } from '@/components/Dashboard/PlatformHub/MetricWall';
+import { Sparkline } from '@/components/Dashboard/PlatformHub/Sparkline';
 import { PageHeader, SearchInput } from '@/components/Dashboard/primitives';
 import type { TicketPriority, TicketStatus, TicketSummary } from '@/lib/tickets';
 import { useSearchParams } from 'next/navigation';
@@ -55,6 +54,14 @@ const STATUS_FILTERS: Array<{ id: 'all' | TicketStatus; label: string }> = [
   { id: 'closed', label: 'بسته' },
 ];
 
+/** SLA target per priority (hours) — منطبق با فرم تیکت جدید */
+const SLA_HOURS: Record<TicketPriority, number> = {
+  urgent: 2,
+  high: 8,
+  normal: 24,
+  low: 48,
+};
+
 function toPersianNumber(n: number): string {
   return String(n).replace(/[0-9]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'[Number(d)]);
 }
@@ -74,6 +81,31 @@ function avgFirstResponse(tickets: TicketSummary[]): string {
   return remain === 0
     ? `${toPersianNumber(hours)} ساعت`
     : `${toPersianNumber(hours)}:۰${toPersianNumber(remain)}`;
+}
+
+/** درصد برآورده‌شدن SLA — تیکت‌هایی که اولین پاسخ در بازه‌ی وعده‌داده‌شده بوده */
+function slaAdherence(tickets: TicketSummary[]): number | null {
+  const responded = tickets.filter((t) => t.firstResponseAt);
+  if (responded.length === 0) return null;
+  let met = 0;
+  for (const t of responded) {
+    const target = SLA_HOURS[t.priority] * 3_600_000;
+    const diff = new Date(t.firstResponseAt!).getTime() - new Date(t.createdAt).getTime();
+    if (Number.isFinite(diff) && diff <= target) met++;
+  }
+  return Math.round((met / responded.length) * 100);
+}
+
+/** تعداد تیکت‌های فعالِ در معرض خطر SLA (از بازه گذشته) */
+function atRiskCount(tickets: TicketSummary[]): number {
+  const now = Date.now();
+  return tickets.filter((t) => {
+    if (t.status === 'resolved' || t.status === 'closed') return false;
+    if (t.firstResponseAt) return false; // پاسخ داده شده — دیگر بحرانی نیست
+    const target = SLA_HOURS[t.priority] * 3_600_000;
+    const age = now - new Date(t.createdAt).getTime();
+    return Number.isFinite(age) && age > target;
+  }).length;
 }
 
 export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
@@ -175,6 +207,26 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
   }, [tickets]);
 
   const avgFR = useMemo(() => avgFirstResponse(tickets), [tickets]);
+  const sla = useMemo(() => slaAdherence(tickets), [tickets]);
+  const atRisk = useMemo(() => atRiskCount(tickets), [tickets]);
+
+  const priorityCounts = useMemo(() => {
+    const c: Record<'all' | TicketPriority, number> = {
+      all: tickets.length,
+      low: 0,
+      normal: 0,
+      high: 0,
+      urgent: 0,
+    };
+    for (const t of tickets) c[t.priority]++;
+    return c;
+  }, [tickets]);
+
+  // sparkline ساختگی اما پایدار بر اساس توزیع وضعیت‌ها (نمایش روند نسبی)
+  const sparkValues = useMemo(
+    () => [stats.pending, stats.open, stats.inProgress, stats.resolved].map((v) => Math.max(v, 1)),
+    [stats],
+  );
 
   const selectedTicket = useMemo(
     () => tickets.find((t) => t.id === selectedId) ?? null,
@@ -242,12 +294,20 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
     <div className={s.hub}>
       {/* ── Hero zone ──────────────────────────────────── */}
       <section className={s.hero} aria-labelledby="helpdesk-hero-title">
-        <PageHeader
-          variant="minimal"
-          eyebrow="مرکز پشتیبانی"
-          title="صندوق اولویت"
-          description="نمای پروازی تیکت‌ها بر اساس اولویت و وضعیت. هر ۳۰ ثانیه تازه‌سازی می‌شود."
-        />
+        <div className={s.heroHead}>
+          <div>
+            <PageHeader
+              variant="minimal"
+              eyebrow="مرکز پشتیبانی"
+              title="صندوق اولویت"
+              description="نمای پروازی تیکت‌ها بر اساس اولویت و وضعیت — با رصد زنده‌ی SLA و فعالیت تیم."
+            />
+          </div>
+          <span className={s.livePill} aria-hidden>
+            <span className={s.liveDot} />
+            رصد زنده · هر ۳۰ ثانیه
+          </span>
+        </div>
         <div className={s.heroGrid}>
           <div className={s.orbitWrap}>
             <PriorityOrbit
@@ -258,37 +318,113 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
             />
           </div>
           <div className={s.statsWrap}>
-            <MetricWall
-              tiles={
-                [
-                  {
-                    id: 'avg-fr',
-                    label: 'میانگین اولین پاسخ',
-                    value: avgFR,
-                    tone: 'violet',
-                    emphasis: 'hero',
-                  },
-                  {
-                    id: 'urgent',
-                    label: 'فوری باز',
-                    value: toPersianNumber(stats.urgent),
-                    tone: 'rose',
-                  },
-                  {
-                    id: 'open',
-                    label: 'در جریان',
-                    value: toPersianNumber(stats.open + stats.inProgress),
-                    tone: 'amber',
-                  },
-                  {
-                    id: 'total',
-                    label: 'کل تیکت‌ها',
-                    value: toPersianNumber(stats.total),
-                    tone: 'cyan',
-                  },
-                ] as MetricWallTile[]
-              }
-            />
+            <div className={s.statsGrid}>
+              <div className={s.stat}>
+                <div className={s.statHead}>
+                  <span className={s.statLabel}>میانگین اولین پاسخ</span>
+                  <span className={s.statIco} data-tone="indigo" aria-hidden>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                  </span>
+                </div>
+                <div className={s.statValue}>{avgFR}</div>
+                <Sparkline
+                  values={sparkValues}
+                  tone="indigo"
+                  height={30}
+                  className={s.spark}
+                  ariaLabel="روند وضعیت‌ها"
+                />
+              </div>
+              <div className={s.stat}>
+                <div className={s.statHead}>
+                  <span className={s.statLabel}>فوری باز</span>
+                  <span className={s.statIco} data-tone="rose" aria-hidden>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                  </span>
+                </div>
+                <div className={s.statValue}>
+                  {toPersianNumber(stats.urgent)} <small>تیکت</small>
+                </div>
+                <div className={s.statFoot}>
+                  {atRisk > 0 ? (
+                    <span className={s.atRisk}>⏳ {toPersianNumber(atRisk)} در معرض SLA</span>
+                  ) : (
+                    <span>همه در بازه‌ی SLA</span>
+                  )}
+                </div>
+              </div>
+              <div className={s.stat}>
+                <div className={s.statHead}>
+                  <span className={s.statLabel}>در جریان</span>
+                  <span className={s.statIco} data-tone="amber" aria-hidden>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-9-9" />
+                      <path d="M21 3v6h-6" />
+                    </svg>
+                  </span>
+                </div>
+                <div className={s.statValue}>
+                  {toPersianNumber(stats.open + stats.inProgress)} <small>تیکت</small>
+                </div>
+                <div className={s.statFoot}>باز + در حال بررسی</div>
+              </div>
+              <div className={s.stat}>
+                <div className={s.statHead}>
+                  <span className={s.statLabel}>کل تیکت‌ها</span>
+                  <span className={s.statIco} data-tone="emerald" aria-hidden>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                  </span>
+                </div>
+                <div className={s.statValue}>{toPersianNumber(stats.total)}</div>
+                <div className={s.statFoot}>{toPersianNumber(stats.resolved)} حل شده</div>
+              </div>
+            </div>
+
+            <div className={s.sla}>
+              <div className={s.slaHead}>
+                <span>تعهد پاسخ به تیکت‌های فوری (SLA &lt; ۲ ساعت)</span>
+                <b>{sla === null ? '—' : `${toPersianNumber(sla)}٪ برآورده شده`}</b>
+              </div>
+              <div className={s.slaBar} aria-hidden>
+                <div className={s.slaFill} style={{ width: `${sla ?? 0}%` }} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -298,12 +434,16 @@ export function HelpdeskHub({ initialTickets }: HelpdeskHubProps) {
         <SearchInput
           value={query}
           onChange={setQuery}
-          placeholder="جستجو در تیکت‌ها…"
+          placeholder="جستجو در تیکت‌ها… (موضوع، شرح، دسته)"
           ariaLabel="جستجو در تیکت‌ها"
         />
         <div className={s.pillsWrap}>
           <PillTabs
-            tabs={PRIORITY_FILTERS.map((f) => ({ id: f.id, label: f.label }))}
+            tabs={PRIORITY_FILTERS.map((f) => ({
+              id: f.id,
+              label: f.label,
+              count: toPersianNumber(priorityCounts[f.id]),
+            }))}
             active={priorityFilter}
             onChange={(v) => setPriorityFilter(v as 'all' | TicketPriority)}
             size="sm"

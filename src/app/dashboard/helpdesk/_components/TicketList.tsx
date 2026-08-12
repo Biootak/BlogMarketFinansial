@@ -1,11 +1,11 @@
 'use client';
 
 /**
- * TicketList — فهرست تیکت‌ها با چیدمان Editorial Broadcast.
+ * TicketList — فهرست تیکت‌ها با چیدمان Premium Glass.
  * -----------------------------------------------------------------
- *  چیدمان اختصاصی (نه DataTable ساده): هر ردیف یک "card-row" است که
- *  شامل: indicator اولویت (نوار رنگی) + subject + meta + badges.
- *  hover: lift + accent border. selected: indigo inset glow.
+ *  هر ردیف: آواتار گرادیانی (حرف اول subject) + subject + preview +
+ *  meta (دسته، پیام‌ها، ارجاع، SLA) + badges.
+ *  hover: lift + shadow. selected: accent ring.
  */
 
 import type { TicketCategory, TicketPriority, TicketStatus, TicketSummary } from '@/lib/tickets';
@@ -18,6 +18,14 @@ interface TicketListProps {
   onSelect: (id: string) => void;
   emptyHint?: string;
 }
+
+/** SLA target per priority (hours) — هماهنگ با فرم تیکت جدید */
+const SLA_HOURS: Record<TicketPriority, number> = {
+  urgent: 2,
+  high: 8,
+  normal: 24,
+  low: 48,
+};
 
 // ── minimal inline SVG icons (token-based) ──────────────────────
 const IconTag = (props: { className?: string }) => (
@@ -49,7 +57,7 @@ const IconMessage = (props: { className?: string }) => (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </svg>
 );
-const IconLock = (props: { className?: string }) => (
+const IconUser = (props: { className?: string }) => (
   <svg
     className={props.className}
     viewBox="0 0 24 24"
@@ -60,8 +68,8 @@ const IconLock = (props: { className?: string }) => (
     strokeLinejoin="round"
     aria-hidden
   >
-    <rect x="3" y="11" width="18" height="11" rx="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" />
   </svg>
 );
 
@@ -106,6 +114,14 @@ const STATUS_TONE: Record<TicketStatus, 'cyan' | 'amber' | 'indigo' | 'emerald' 
   closed: 'neutral',
 };
 
+/** گرادیان آواتار پایدار بر اساس id (۴ حالت) */
+const AVATAR_GRADIENTS = ['av1', 'av2', 'av3', 'av4'] as const;
+function avatarTone(id: string): (typeof AVATAR_GRADIENTS)[number] {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffff;
+  return AVATAR_GRADIENTS[h % AVATAR_GRADIENTS.length];
+}
+
 function timeAgo(iso: string): string {
   const d = new Date(iso).getTime();
   if (Number.isNaN(d)) return '—';
@@ -114,6 +130,27 @@ function timeAgo(iso: string): string {
   if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} دقیقه پیش`;
   if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} ساعت پیش`;
   return `${Math.floor(diff / 86_400_000)} روز پیش`;
+}
+
+/**
+ * زمان باقی‌مانده تا SLA برای تیکت‌های بدون پاسخ.
+ * خروجی null یعنی خارج از بازه / پاسخ داده شده.
+ */
+function slaRemaining(t: TicketSummary): { text: string; urgent: boolean } | null {
+  if (t.status === 'resolved' || t.status === 'closed') return null;
+  if (t.firstResponseAt) return null;
+  const target = SLA_HOURS[t.priority] * 3_600_000;
+  const age = Date.now() - new Date(t.createdAt).getTime();
+  if (!Number.isFinite(age)) return null;
+  const remain = target - age;
+  if (remain <= 0) return { text: 'SLA گذشته', urgent: true };
+  const mins = Math.floor(remain / 60_000);
+  if (mins < 60) return { text: `${toPersianNumber(mins)} دقیقه مانده به SLA`, urgent: mins < 90 };
+  const hours = Math.floor(mins / 60);
+  return {
+    text: `${toPersianNumber(hours)} ساعت مانده به SLA`,
+    urgent: hours <= Math.max(1, SLA_HOURS[t.priority] / 4),
+  };
 }
 
 function toPersianNumber(n: number): string {
@@ -134,6 +171,7 @@ export function TicketList({ tickets, selectedId, onSelect, emptyHint }: TicketL
     <ol className={s.list}>
       {tickets.map((t) => {
         const isActive = t.id === selectedId;
+        const sla = slaRemaining(t);
         return (
           <li
             key={t.id}
@@ -150,6 +188,9 @@ export function TicketList({ tickets, selectedId, onSelect, emptyHint }: TicketL
             aria-label={t.subject}
           >
             <span className={s.indicator} data-priority={t.priority} aria-hidden />
+            <span className={cn(s.avatar, s[`avatar-${avatarTone(t.id)}`])} aria-hidden>
+              {t.subject.trim().charAt(0) || '؟'}
+            </span>
             <div className={s.body}>
               <div className={s.head}>
                 <h3 className={s.subject}>{t.subject}</h3>
@@ -178,7 +219,7 @@ export function TicketList({ tickets, selectedId, onSelect, emptyHint }: TicketL
                 </span>
                 {t.assignedToId ? (
                   <span className={s.metaItem} data-state="assigned">
-                    <IconLock className={s.metaIcon} aria-hidden />
+                    <IconUser className={s.metaIcon} aria-hidden />
                     ارجاع شده
                   </span>
                 ) : (
@@ -186,6 +227,12 @@ export function TicketList({ tickets, selectedId, onSelect, emptyHint }: TicketL
                     بدون ارجاع
                   </span>
                 )}
+                {sla ? (
+                  <span className={s.metaItem} data-state={sla.urgent ? 'sla-urgent' : 'sla'}>
+                    <IconClock aria-hidden />
+                    {sla.text}
+                  </span>
+                ) : null}
                 <span className={s.metaItem} data-state="time">
                   {timeAgo(t.updatedAt)}
                 </span>
@@ -197,3 +244,19 @@ export function TicketList({ tickets, selectedId, onSelect, emptyHint }: TicketL
     </ol>
   );
 }
+
+const IconClock = (props: { className?: string }) => (
+  <svg
+    className={props.className}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);

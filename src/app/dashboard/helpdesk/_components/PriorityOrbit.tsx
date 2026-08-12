@@ -166,8 +166,8 @@ export function PriorityOrbit({
             <stop offset="100%" stopColor={accent} stopOpacity="0" />
           </radialGradient>
           <radialGradient id="orbit-core-disc" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={colorForTone('rose', 75)} stopOpacity="0.95" />
-            <stop offset="100%" stopColor={colorForTone('rose', 45)} stopOpacity="0.85" />
+            <stop offset="0%" stopColor={accent} stopOpacity="0.92" />
+            <stop offset="100%" stopColor={toOklch(palette.primary, 1, 45)} stopOpacity="0.85" />
           </radialGradient>
           <filter id="orbit-glow" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="0.5" />
@@ -305,18 +305,23 @@ export function PriorityOrbit({
             cy="0"
             r="9.5"
             fill="var(--ds-color-surface, white)"
-            stroke={colorForTone('rose', 55)}
+            stroke={accent}
             strokeWidth="0.5"
           />
           {/* inner accent disc */}
-          <circle cx="0" cy="0" r="6.5" fill={colorForTone('rose', 55)} fillOpacity="0.12" />
+          <circle cx="0" cy="0" r="6.5" fill={accent} fillOpacity="0.12" />
           {/* central mark — مثل یک آنتن/برج فرماندهی */}
-          <g stroke={colorForTone('rose', 45)} strokeWidth="0.55" strokeLinecap="round" fill="none">
+          <g
+            stroke={toOklch(palette.primary, 1, 45)}
+            strokeWidth="0.55"
+            strokeLinecap="round"
+            fill="none"
+          >
             <path d="M -3 4 L 3 4 L 0 -5 Z" />
             <line x1="-2.2" y1="0" x2="2.2" y2="0" />
             <line x1="-2.6" y1="2" x2="2.6" y2="2" />
             <line x1="0" y1="-5" x2="0" y2="-8" />
-            <circle cx="0" cy="-8" r="0.8" fill={colorForTone('rose', 45)} />
+            <circle cx="0" cy="-8" r="0.8" fill={toOklch(palette.primary, 1, 45)} />
             <path d="M -1.6 -8.6 Q 0 -10.2 1.6 -8.6" opacity="0.6" />
             <path d="M -2.6 -9.6 Q 0 -12.2 2.6 -9.6" opacity="0.35" />
           </g>
