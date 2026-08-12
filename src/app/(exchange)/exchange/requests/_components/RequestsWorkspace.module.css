@@ -120,6 +120,7 @@
   border: 1px solid var(--ds-border-subtle);
   background: transparent;
   color: var(--ds-text-secondary);
+  white-space: nowrap;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   cursor: pointer;
@@ -197,6 +198,7 @@
   padding: 6px 12px;
   border-radius: 999px;
   border: 1px dashed var(--ds-border-default);
+  white-space: nowrap;
   background: transparent;
   color: var(--ds-text-muted);
   font-size: 11px;
@@ -629,6 +631,21 @@
   }
 
   .filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pill {
+    padding: 6px 11px;
+    font-size: calc(var(--ds-text-xs) - 0.5px);
+  }
+
+  .typeFilters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .typeFilters::-webkit-scrollbar {
     display: none;
   }
 

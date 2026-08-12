@@ -148,6 +148,7 @@
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   cursor: pointer;
+  white-space: nowrap;
   transition: all var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
@@ -773,6 +774,11 @@
 
   .filters::-webkit-scrollbar {
     display: none;
+  }
+
+  .pill {
+    padding: 6px 11px;
+    font-size: calc(var(--ds-text-xs) - 0.5px);
   }
 
   .table {

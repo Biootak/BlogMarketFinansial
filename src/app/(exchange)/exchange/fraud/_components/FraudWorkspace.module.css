@@ -127,6 +127,7 @@
   border: 1px solid var(--ds-border-subtle);
   background: transparent;
   color: var(--ds-text-secondary);
+  white-space: nowrap;
   font-size: var(--ds-text-xs);
   font-weight: var(--ds-weight-semibold);
   cursor: pointer;
@@ -523,6 +524,11 @@
 
   .filters::-webkit-scrollbar {
     display: none;
+  }
+
+  .pill {
+    padding: 6px 11px;
+    font-size: calc(var(--ds-text-xs) - 0.5px);
   }
 
   .fraudRow {
