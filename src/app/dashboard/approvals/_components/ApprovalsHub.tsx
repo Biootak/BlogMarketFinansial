@@ -9,22 +9,31 @@ import {
 } from '@/components/ui/select';
 import {
   AlertCircle,
+  ArrowUpRight,
+  BadgeCheck,
+  Building2,
   Check,
   CheckCircle2,
   ChevronRight,
   Circle,
+  ClipboardList,
   Clock,
+  Crown,
   FileText,
   Filter as FilterIcon,
+  Gauge,
   Inbox,
+  Landmark,
   Loader2,
   MessageSquare,
   Plus,
+  Scale,
   Send,
   Shield,
   ShieldCheck,
   ShieldX,
   SkipForward,
+  Sparkles,
   User,
   Wallet,
   Workflow,
@@ -154,6 +163,58 @@ function formatNumber(n: number): string {
   return _faNum.format(n);
 }
 
+/** آیکون و رنگ هر نقش در خط لوله */
+const ROLE_STAGE: Record<string, { icon: React.ReactNode; label: string; tone: string }> = {
+  FINANCE: { icon: <Landmark className="h-4 w-4" />, label: 'مالی', tone: 'brand' },
+  FINANCE_MANAGER: { icon: <Landmark className="h-4 w-4" />, label: 'مدیر مالی', tone: 'brand' },
+  OWNER: { icon: <Crown className="h-4 w-4" />, label: 'مالک', tone: 'violet' },
+  SUPERADMIN: { icon: <Crown className="h-4 w-4" />, label: 'مدیر ارشد', tone: 'violet' },
+  ADMIN: { icon: <Building2 className="h-4 w-4" />, label: 'مدیر', tone: 'indigo' },
+  COMPLIANCE: { icon: <Scale className="h-4 w-4" />, label: 'تطبیق', tone: 'cyan' },
+  LEGAL: { icon: <Scale className="h-4 w-4" />, label: 'حقوقی', tone: 'cyan' },
+  KYC: { icon: <ShieldCheck className="h-4 w-4" />, label: 'احراز هویت', tone: 'cyan' },
+  OPERATIONS: { icon: <Gauge className="h-4 w-4" />, label: 'عملیات', tone: 'amber' },
+  EXCHANGE_STAFF: {
+    icon: <Building2 className="h-4 w-4" />,
+    label: 'کارشناس صرافی',
+    tone: 'indigo',
+  },
+};
+
+function stageForRole(role: string | null) {
+  const key = role?.toUpperCase() ?? '';
+  const known = ROLE_STAGE[key];
+  if (known) return known;
+  // نقش ناشناخته — آیکون عمومی
+  return { icon: <Shield className="h-4 w-4" />, label: role ?? 'نقش', tone: 'neutral' as const };
+}
+
+/** خط لولهٔ تصمیم — ایستگاه‌های واقعی از نقش مرحلهٔ فعلی درخواست‌های pending */
+function buildPipeline(requests: ApprovalSummary[]) {
+  const pending = requests.filter((r) => r.status === 'pending');
+  // نقش‌های مرحلهٔ فعلی (بدون تکرار) به ترتیب اولین ظهور
+  const roles: string[] = [];
+  for (const r of pending) {
+    if (r.currentApproverRole && !roles.includes(r.currentApproverRole)) {
+      roles.push(r.currentApproverRole);
+    }
+  }
+  // تکمیل‌شده‌های امروز
+  const doneToday = requests.filter(
+    (r) =>
+      r.status === 'approved' &&
+      r.decidedAt &&
+      Date.now() - new Date(r.decidedAt).getTime() < 86_400_000,
+  ).length;
+
+  const stages = roles.map((role) => ({
+    role,
+    count: pending.filter((r) => r.currentApproverRole === role).length,
+  }));
+
+  return { stages, doneToday, createdToday: requests.length - doneToday - pending.length };
+}
+
 function StatusPill({ status }: { status: ApprovalStatus }) {
   return (
     <span className={s.statusPill} data-tone={STATUS_TONE[status]}>
@@ -228,6 +289,65 @@ function TimelineNode({
           ) : null}
         </div>
         {comment ? <p className={s.timelineComment}>"{comment}"</p> : null}
+      </div>
+    </div>
+  );
+}
+
+/** ویژگی امضایی — خط لولهٔ تصمیم‌گیری */
+function Pipeline({ requests }: { requests: ApprovalSummary[] }) {
+  const { stages, doneToday } = useMemo(() => buildPipeline(requests), [requests]);
+  const activeIdx = stages.length > 0 ? 0 : -1;
+  // عرض خط تکمیل‌شده — از ورودی تا اولین ایستگاه فعال
+  const totalStages = stages.length + 1;
+  const fillPct = activeIdx >= 0 ? ((activeIdx + 1) / totalStages) * 100 : 4;
+
+  return (
+    <div className={s.pipe}>
+      <div className={s.pipeLabel}>
+        <Workflow className="h-3.5 w-3.5" />
+        خط لولهٔ تصمیم‌گیری
+      </div>
+      <div className={s.pipeTrack}>
+        <div className={s.pipeConn} aria-hidden />
+        <div className={s.pipeConnFill} style={{ width: `${fillPct}%` }} aria-hidden />
+
+        {/* ایستگاه ورودی */}
+        <div className={s.pipeStep} data-kind="in">
+          <div className={s.pipeNode} data-kind="in">
+            <ClipboardList className="h-4 w-4" />
+          </div>
+          <span className={s.pipeName}>ایجاد</span>
+          <span className={s.pipeCount}>{formatNumber(requests.length)}</span>
+        </div>
+
+        {/* ایستگاه‌های نقش‌های واقعی */}
+        {stages.map((st, i) => {
+          const meta = stageForRole(st.role);
+          return (
+            <div
+              key={st.role}
+              className={s.pipeStep}
+              data-active={i === activeIdx}
+              data-tone={meta.tone}
+            >
+              <div className={s.pipeNode} data-tone={meta.tone} data-active={i === activeIdx}>
+                {meta.icon}
+              </div>
+              <span className={s.pipeName}>{meta.label}</span>
+              <span className={s.pipeCount}>{formatNumber(st.count)}</span>
+            </div>
+          );
+        })}
+
+        {/* ایستگاه خروجی */}
+        <div className={s.pipeStep} data-kind="out">
+          <div className={s.pipeNode} data-kind="out">
+            <BadgeCheck className="h-4 w-4" />
+          </div>
+          <span className={s.pipeName}>تکمیل</span>
+          <span className={s.pipeCount}>{formatNumber(doneToday)}</span>
+        </div>
       </div>
     </div>
   );
@@ -606,13 +726,80 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
     <div className={s.root}>
       <Spotlight tone="emerald" />
 
-      {/* نوار ابزار بالا */}
+      {/* ═══ Hero — خط لولهٔ تصمیم‌گیری ═══ */}
+      <section className={s.hero} aria-labelledby="approvals-pipeline">
+        <div className={s.heroHead}>
+          <div className={s.heroEyebrow}>
+            <Sparkles className="h-3.5 w-3.5" />
+            پلتفرم · جریان‌های تأیید
+          </div>
+          <span className={s.livePill} aria-hidden>
+            <span className={s.liveDot} />
+            رصد زنده · هر ۴۵ ثانیه
+          </span>
+        </div>
+
+        <Pipeline requests={data.requests} />
+
+        <div className={s.heroStats}>
+          <div className={s.hstat} data-tone="amber" data-pulse={m.myPending > 0}>
+            <span className={s.hstatIco}>
+              <Zap className="h-4 w-4" />
+            </span>
+            <div className={s.hstatBody}>
+              <b>{formatNumber(m.myPending)}</b>
+              <small>منتظر تصمیم من</small>
+              {m.myPending > 0 ? (
+                <span className={s.hstatTrend} data-up>
+                  <ArrowUpRight className="h-3 w-3" />
+                  نیاز به اقدام
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <div className={s.hstat} data-tone="cyan">
+            <span className={s.hstatIco}>
+              <Clock className="h-4 w-4" />
+            </span>
+            <div className={s.hstatBody}>
+              <b>{formatNumber(m.pending)}</b>
+              <small>در حال بررسی</small>
+              <span className={s.hstatNote}>در صف تأیید</span>
+            </div>
+          </div>
+          <div className={s.hstat} data-tone="emerald">
+            <span className={s.hstatIco}>
+              <BadgeCheck className="h-4 w-4" />
+            </span>
+            <div className={s.hstatBody}>
+              <b>{formatNumber(m.approved24h)}</b>
+              <small>تأیید ۲۴ ساعت</small>
+              <span className={s.hstatTrend} data-up>
+                <ArrowUpRight className="h-3 w-3" />
+                نسبت به دیروز
+              </span>
+            </div>
+          </div>
+          <div className={s.hstat} data-tone="rose">
+            <span className={s.hstatIco}>
+              <ShieldX className="h-4 w-4" />
+            </span>
+            <div className={s.hstatBody}>
+              <b>{formatNumber(m.rejected24h)}</b>
+              <small>رد ۲۴ ساعت</small>
+              <span className={s.hstatNote}>با پیام دلیل</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Toolbar ═══ */}
       <section className={s.toolbar}>
         <SearchInput
           value={query}
           onChange={setQuery}
           onClear={() => setQuery('')}
-          placeholder="جستجو در درخواست‌ها…"
+          placeholder="جستجو در درخواست‌ها… (عنوان، نوع، ایجادکننده)"
           ariaLabel="جستجو در درخواست‌ها"
         />
         <div className={s.toolbarRight}>
@@ -637,62 +824,6 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
               <span>درخواست جدید</span>
             </button>
           ) : null}
-        </div>
-      </section>
-
-      {/* KPI — موبایل‌محور */}
-      <section className={s.kpiGrid}>
-        <div className={s.kpiCard} data-tone="amber" data-pulse={m.myPending > 0}>
-          <div className={s.kpiIconBox}>
-            <User className="h-4 w-4" />
-          </div>
-          <div className={s.kpiBody}>
-            <span className={s.kpiLabel}>منتظر تصمیم من</span>
-            <span className={s.kpiValue}>{formatNumber(m.myPending)}</span>
-          </div>
-          <div className={s.kpiBar} />
-        </div>
-        <div className={s.kpiCard} data-tone="cyan">
-          <div className={s.kpiIconBox}>
-            <Clock className="h-4 w-4" />
-          </div>
-          <div className={s.kpiBody}>
-            <span className={s.kpiLabel}>کل در حال بررسی</span>
-            <span className={s.kpiValue}>{formatNumber(m.pending)}</span>
-          </div>
-          <div className={s.kpiBar} />
-        </div>
-        <div className={s.kpiCard} data-tone="emerald">
-          <div className={s.kpiIconBox}>
-            <ShieldCheck className="h-4 w-4" />
-          </div>
-          <div className={s.kpiBody}>
-            <span className={s.kpiLabel}>تأیید ۲۴ ساعت</span>
-            <span className={s.kpiValue}>{formatNumber(m.approved24h)}</span>
-          </div>
-          <div className={s.kpiBar} />
-        </div>
-        <div className={s.kpiCard} data-tone="rose">
-          <div className={s.kpiIconBox}>
-            <ShieldX className="h-4 w-4" />
-          </div>
-          <div className={s.kpiBody}>
-            <span className={s.kpiLabel}>رد ۲۴ ساعت</span>
-            <span className={s.kpiValue}>{formatNumber(m.rejected24h)}</span>
-          </div>
-          <div className={s.kpiBar} />
-        </div>
-        <div className={s.kpiCard} data-tone="indigo">
-          <div className={s.kpiIconBox}>
-            <Clock className="h-4 w-4" />
-          </div>
-          <div className={s.kpiBody}>
-            <span className={s.kpiLabel}>میانگین زمان تصمیم</span>
-            <span className={s.kpiValue}>
-              {m.avgDecisionMin > 0 ? `${formatNumber(Math.round(m.avgDecisionMin))} دقیقه` : '—'}
-            </span>
-          </div>
-          <div className={s.kpiBar} />
         </div>
       </section>
 
@@ -750,28 +881,43 @@ export function ApprovalsHub({ initialData, canCreate = false }: Props) {
                     onClick={() => handleSelect(r)}
                   >
                     {r.isMine ? <span className={s.mineFlag} aria-label="منتظر تصمیم من" /> : null}
-                    <div className={s.requestHead}>
-                      <TypeChip type={r.type} />
-                      <StatusPill status={r.status} />
-                    </div>
-                    <div className={s.requestTitle}>{r.title}</div>
-                    <div className={s.requestMeta}>
-                      <Shield className="h-3 w-3" />
-                      {formatNumber(r.currentStep)} / {formatNumber(r.totalSteps)}
-                      <span className={s.metaSep}>•</span>
-                      {formatTimeAgo(r.createdAt)}
-                      {r.requesterName ? (
-                        <>
-                          <span className={s.metaSep}>•</span>
-                          <span>{r.requesterName}</span>
-                        </>
+                    <span className={s.reqIco} data-tone={TYPE_TONE[r.type]} aria-hidden>
+                      {TYPE_ICON[r.type]}
+                    </span>
+                    <div className={s.requestBody}>
+                      <div className={s.requestHead}>
+                        <div className={s.requestTitle}>{r.title}</div>
+                        <div className={s.reqBadges}>
+                          <TypeChip type={r.type} />
+                          <StatusPill status={r.status} />
+                        </div>
+                      </div>
+                      <div className={s.requestMeta}>
+                        <span>
+                          <Shield className="h-3 w-3" />
+                          {formatNumber(r.currentStep)} / {formatNumber(r.totalSteps)} مرحله
+                        </span>
+                        <span className={s.metaSep}>•</span>
+                        <span>{formatTimeAgo(r.createdAt)}</span>
+                        {r.requesterName ? (
+                          <>
+                            <span className={s.metaSep}>•</span>
+                            <span>{r.requesterName}</span>
+                          </>
+                        ) : null}
+                        {r.isMine && r.status === 'pending' ? (
+                          <span className={s.reqYours}>
+                            <Zap className="h-3 w-3" />
+                            تصمیم شما
+                          </span>
+                        ) : null}
+                      </div>
+                      {r.status === 'pending' ? (
+                        <div className={s.progress}>
+                          <div className={s.progressBar} style={{ width: `${progress}%` }} />
+                        </div>
                       ) : null}
                     </div>
-                    {r.status === 'pending' ? (
-                      <div className={s.progress}>
-                        <div className={s.progressBar} style={{ width: `${progress}%` }} />
-                      </div>
-                    ) : null}
                   </li>
                 );
               })}
