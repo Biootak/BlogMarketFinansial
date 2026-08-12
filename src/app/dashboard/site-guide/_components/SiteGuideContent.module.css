@@ -236,6 +236,83 @@
   color: var(--ds-text-primary);
 }
 
+/* ── Search meta ────────────────────────────────────────────────── */
+
+.searchMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  background: oklch(from var(--ds-brand-500) l c h / 0.06);
+  border: 1px solid oklch(from var(--ds-brand-500) l c h / 0.15);
+  border-radius: var(--ds-radius-lg);
+}
+
+.searchMetaText {
+  font-size: var(--ds-text-sm);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-text-primary);
+}
+
+.searchMetaClear {
+  margin-inline-start: auto;
+  background: none;
+  border: none;
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-medium);
+  color: var(--ds-brand-500);
+  cursor: pointer;
+  font-family: inherit;
+  padding: 4px 8px;
+  border-radius: var(--ds-radius-sm);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.searchMetaClear:hover {
+  background: oklch(from var(--ds-brand-500) l c h / 0.1);
+}
+
+/* ── Empty state ────────────────────────────────────────────────── */
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-10) var(--ds-space-6);
+  background: var(--ds-surface);
+  border: 1px dashed var(--ds-border-default);
+  border-radius: var(--ds-radius-xl);
+  text-align: center;
+}
+
+.emptyStateIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--ds-radius-full);
+  background: oklch(from var(--ds-brand-500) l c h / 0.08);
+  color: var(--ds-brand-500);
+  margin-bottom: var(--ds-space-1);
+}
+
+.emptyStateTitle {
+  font-size: var(--ds-text-base);
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-primary);
+  margin: 0;
+}
+
+.emptyStateDesc {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-relaxed);
+  margin: 0;
+  max-width: 46ch;
+}
+
 /* ── Info Box ────────────────────────────────────────────────────── */
 
 .infoBox {

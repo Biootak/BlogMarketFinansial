@@ -41,6 +41,21 @@ const BADGE_CLASS: Record<Tone, string> = {
   slate: s.badgeSlate,
 };
 
+/* ─── Persian-aware search matching ───────────────────────────────── */
+
+// Normalize for search: lowercase + drop ZWNJ (نیم‌فاصله) + drop whitespace,
+// so «کیف پول» matches «کیف‌پول» and vice versa.
+const normalize = (v: string) => v.toLowerCase().replace(/[\u200c\s]/g, '');
+
+const matchesQuery = (route: RouteItem, sectionTitle: string, query: string) => {
+  const tokens = query.toLowerCase().split(/\s+/).map(normalize).filter(Boolean);
+  if (tokens.length === 0) return true;
+  const haystack = normalize(
+    [route.label, route.description, route.path, route.badge ?? '', sectionTitle].join(' '),
+  );
+  return tokens.every((t) => haystack.includes(t));
+};
+
 /* ─── Route Card ──────────────────────────────────────────────────── */
 
 function RouteCard({ item, highlighted }: { item: RouteItem; highlighted: boolean }) {
@@ -85,16 +100,10 @@ function GuideSection({
     onRef(section.id, rootRef.current);
   }, [section.id, onRef]);
 
-  const filteredRoutes = useMemo(() => {
-    if (!searchQuery.trim()) return section.routes;
-    const q = searchQuery.toLowerCase();
-    return section.routes.filter(
-      (r) =>
-        r.label.toLowerCase().includes(q) ||
-        r.description.toLowerCase().includes(q) ||
-        r.path.toLowerCase().includes(q),
-    );
-  }, [section.routes, searchQuery]);
+  const filteredRoutes = useMemo(
+    () => section.routes.filter((r) => matchesQuery(r, section.title, searchQuery)),
+    [section.routes, section.title, searchQuery],
+  );
 
   if (filteredRoutes.length === 0) return null;
 
@@ -135,6 +144,17 @@ export function SiteGuideContent({
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
   const totalRoutes = totalPages();
+
+  const isSearching = searchQuery.trim().length > 0;
+
+  const filteredCount = useMemo(() => {
+    if (!isSearching) return totalRoutes;
+    return SECTIONS.reduce(
+      (acc, section) =>
+        acc + section.routes.filter((r) => matchesQuery(r, section.title, searchQuery)).length,
+      0,
+    );
+  }, [isSearching, searchQuery, totalRoutes]);
 
   const handleSectionRef = useCallback((id: string, el: HTMLElement | null) => {
     sectionRefs.current[id] = el;
@@ -233,7 +253,7 @@ export function SiteGuideContent({
                 id="guide-search"
                 type="text"
                 className={s.searchInput}
-                placeholder="جستجو در ۸۰+ صفحه... (Ctrl+K)"
+                placeholder={`جستجو در ${totalRoutes} صفحه... (Ctrl+K)`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 dir="rtl"
@@ -267,20 +287,50 @@ export function SiteGuideContent({
             </p>
           </div>
 
+          {/* ── Search results meta ── */}
+          {isSearching && (
+            <div className={s.searchMeta}>
+              <span className={s.searchMetaText}>
+                {filteredCount > 0
+                  ? `${filteredCount} نتیجه برای «${searchQuery.trim()}»`
+                  : 'هیچ صفحه‌ای پیدا نشد'}
+              </span>
+              <button className={s.searchMetaClear} onClick={() => setSearchQuery('')}>
+                پاک کردن جستجو
+              </button>
+            </div>
+          )}
+
+          {/* ── No results state ── */}
+          {isSearching && filteredCount === 0 && (
+            <div className={s.emptyState}>
+              <div className={s.emptyStateIcon}>
+                <Search size={22} />
+              </div>
+              <h3 className={s.emptyStateTitle}>صفحه‌ای با این مشخصات پیدا نشد</h3>
+              <p className={s.emptyStateDesc}>
+                عبارت «{searchQuery.trim()}» را با املای دیگری امتحان کنید یا روی «پاک کردن جستجو»
+                بزنید.
+              </p>
+            </div>
+          )}
+
           {/* ── Quick Access ── */}
-          <QuickAccess />
+          {!isSearching && <QuickAccess />}
 
           {/* ── System Status ── */}
-          <SystemStatus />
+          {!isSearching && <SystemStatus />}
 
           {/* ── How-To Guides ── */}
-          <HowToGuides />
+          {!isSearching && <HowToGuides />}
 
           {/* ── Divider ── */}
-          <div className={s.divider}>
-            <BookOpen size={16} />
-            <span>تمام بخش‌ها</span>
-          </div>
+          {!isSearching && (
+            <div className={s.divider}>
+              <BookOpen size={16} />
+              <span>تمام بخش‌ها</span>
+            </div>
+          )}
 
           {/* ── Sections ── */}
           {SECTIONS.map((section) => (
