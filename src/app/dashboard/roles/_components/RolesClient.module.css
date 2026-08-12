@@ -465,7 +465,7 @@
   position: absolute;
   inset: 0;
   background: color-mix(in oklch, var(--at-bg) 60%, transparent);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(8px) saturate(120%);
   pointer-events: all;
 }
 

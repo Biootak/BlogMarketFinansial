@@ -326,12 +326,23 @@
   gap: var(--ds-space-2);
   padding: 5px var(--ds-space-2-5);
   border-radius: var(--ds-radius-md, .75rem);
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   font-size: var(--ds-text-sm, .875rem);
   color: var(--at-fg-muted);
-  cursor: default;
+  cursor: pointer;
   text-align: start;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.statusChip:hover {
+  background: var(--at-bg-deep);
+}
+
+.statusChipOn {
+  border-color: var(--at-line-strong, var(--at-line));
+  background: var(--at-bg-deep);
+  color: var(--at-fg);
 }
 
 .statusChipCount {
@@ -411,7 +422,6 @@
   padding: var(--ds-space-2-5) var(--ds-space-4);
   background: color-mix(in oklch, var(--at-surface, oklch(100% 0 0)) 90%, transparent);
   backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl, 1.25rem);
   box-shadow: inset 0 1px 0 oklch(100% 0 0 / 0.06);
@@ -537,7 +547,6 @@
   white-space: nowrap;
   background: color-mix(in oklch, var(--at-bg-elevated, oklch(97% 0.005 240)) 82%, transparent);
   backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-block-end: 1px solid var(--at-line, var(--ds-border-default));
 }
 
@@ -955,7 +964,6 @@
   z-index: 60;
   background: color-mix(in oklch, var(--at-surface) 96%, transparent);
   backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
   border: 1px solid var(--at-line);
   border-radius: var(--ds-radius-xl, 1.25rem);
   box-shadow: 0 10px 36px -6px color-mix(in oklch, var(--at-fg) 13%, transparent), 0 2px 6px

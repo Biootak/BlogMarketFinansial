@@ -8,7 +8,6 @@
   inset-block-start: 0;
   z-index: 30;
   background: color-mix(in oklch, var(--ds-canvas) 80%, transparent);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
   backdrop-filter: blur(14px) saturate(140%);
   border-block-end: 1px solid var(--ds-border-subtle);
   transition: box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart), background

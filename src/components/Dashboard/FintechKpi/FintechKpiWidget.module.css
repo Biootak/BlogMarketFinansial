@@ -91,7 +91,6 @@
   /* Glass surface */
   background: color-mix(in oklch, var(--ds-surface) 90%, transparent);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--ds-border-default);
   border-radius: var(--ds-radius-xl);
   text-decoration: none;

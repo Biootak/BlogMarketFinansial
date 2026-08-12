@@ -406,7 +406,6 @@
   border-radius: var(--ds-radius-md, 12px);
   text-align: start;
   backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
 }
 
 .metaLabel {
@@ -449,7 +448,6 @@
   transition: transform 220ms var(--ds-ease-out-quart, ease), border-color 220ms, background 220ms;
   text-align: start;
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
 }
 
 .suggestCard:hover {

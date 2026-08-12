@@ -7,12 +7,11 @@
   inset: 0;
   z-index: 100;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   padding: var(--ds-space-4);
   background: color-mix(in oklch, var(--ds-bg, currentColor) 25%, transparent);
-  backdrop-filter: blur(8px) saturate(140%);
-  -webkit-backdrop-filter: blur(8px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(150%);
   animation: sg-fade-in 240ms var(--ds-ease-out-quart, cubic-bezier(0.22, 1, 0.36, 1));
 }
 

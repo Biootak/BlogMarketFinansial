@@ -1005,7 +1005,6 @@
   border-radius: 6px;
   background: oklch(0% 0 0 / 0.6);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   color: white;
   font-size: 10px;
   font-weight: 600;
@@ -1021,7 +1020,6 @@
   border-radius: var(--ds-radius-md);
   background: oklch(0% 0 0 / 0.5);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   color: white;
   border: none;
   cursor: pointer;

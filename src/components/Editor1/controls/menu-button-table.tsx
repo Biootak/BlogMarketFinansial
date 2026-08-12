@@ -90,7 +90,7 @@ const MenuButtonTable: React.FC<MenuButtonTableProps> = ({ editor }) => {
       </Dialog.Trigger>
 
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/50 z-[100]" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/50 backdrop-blur-md z-[100]" />
         <Dialog.Content
           className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[90vw] max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6"
           dir={dir}

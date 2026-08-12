@@ -20,8 +20,7 @@
   justify-content: center;
   padding: var(--ds-space-3);
   background: color-mix(in oklch, var(--at-bg) 55%, transparent);
-  backdrop-filter: blur(6px) saturate(120%);
-  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(150%);
   animation: qcFade 200ms var(--ds-ease-out-quart) both;
 }
 @media (min-width: 480px) {

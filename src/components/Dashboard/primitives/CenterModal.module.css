@@ -14,9 +14,8 @@
   position: fixed !important;
   inset: 0 !important;
   z-index: 48 !important;
-  background: color-mix(in oklch, oklch(10% 0.01 250) 55%, transparent) !important;
-  backdrop-filter: blur(6px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(6px) saturate(120%) !important;
+  background: color-mix(in oklch, oklch(10% 0.01 250) 25%, transparent) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
 }
 
 /* ── Panel ────────────────────────────────────────────────────────────────── */
@@ -33,7 +32,6 @@
 
   background: color-mix(in oklch, var(--ds-canvas) 96%, transparent) !important;
   backdrop-filter: blur(28px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
 
   border: 1px solid color-mix(in oklch, var(--ds-border-default) 90%, transparent) !important;
   border-radius: var(--ds-radius-2xl) !important;

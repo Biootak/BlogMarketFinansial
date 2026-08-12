@@ -114,7 +114,6 @@
   border-radius: var(--ds-radius-2xl, 1rem);
   background: color-mix(in srgb, var(--ds-bg, #fff) 60%, transparent);
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
   border: 1px solid color-mix(in srgb, var(--ds-text-primary, #1e293b) 12%, transparent);
   text-decoration: none;
   color: inherit;

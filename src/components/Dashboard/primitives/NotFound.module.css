@@ -339,7 +339,6 @@
   transition: transform 220ms var(--ds-ease-out-quart, ease), border-color 220ms, background 220ms;
   text-align: start;
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
 }
 
 .suggestCard:hover {

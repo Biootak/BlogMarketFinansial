@@ -718,7 +718,6 @@
   inset-block-start: var(--ds-space-3);
   z-index: 10;
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .commandSearch {

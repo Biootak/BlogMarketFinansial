@@ -443,7 +443,6 @@ p {
 .nova-overlay {
   background-color: var(--nova-surface-solid);
   backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
 }
 /* اگر مرورگر backdrop-filter پشتیبانی نمی‌کند — solid کامل */
 @supports not (backdrop-filter: blur(1px)) {

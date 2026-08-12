@@ -107,7 +107,6 @@
   border-block-end: 1px solid var(--obs-rule);
   background: color-mix(in oklch, var(--obs-paper) 86%, transparent);
   backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
   min-inline-size: 0;
 }
 

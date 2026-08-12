@@ -233,7 +233,6 @@
   padding: var(--ds-space-4);
   background: oklch(15% 0.01 250 / 0.6);
   backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
   animation: fadeIn 0.15s ease;
 }
 

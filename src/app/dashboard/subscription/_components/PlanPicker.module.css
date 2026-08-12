@@ -336,8 +336,8 @@
   align-items: center;
   justify-content: center;
   padding: var(--ds-space-4);
-  background: color-mix(in oklch, black 50%, transparent);
-  backdrop-filter: blur(4px);
+  background: color-mix(in oklch, black 25%, transparent);
+  backdrop-filter: blur(20px) saturate(150%);
   animation: fadeIn 200ms var(--ds-ease-out-quart);
 }
 @keyframes fadeIn {

@@ -65,7 +65,10 @@ const NcModal: FC<NcModalProps> = ({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="fixed inset-0 bg-black bg-opacity-40" aria-hidden="true" />
+              <div
+                className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-md"
+                aria-hidden="true"
+              />
             </Transition.Child>
 
             {/* This element is to trick the browser into centering the modal contents. */}

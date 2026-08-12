@@ -8,9 +8,8 @@
   display: grid;
   place-items: center;
   padding: var(--ds-space-3);
-  background: oklch(20% 0.02 240 / 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: oklch(20% 0.02 240 / 0.28);
+  backdrop-filter: blur(20px) saturate(150%);
   animation: fadeIn 0.18s var(--ds-ease-out-quart);
 }
 

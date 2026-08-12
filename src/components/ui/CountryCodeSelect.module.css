@@ -92,7 +92,6 @@
   box-shadow: 0 0 0 1px oklch(45% 0.02 250 / 0.04), 0 4px 8px -2px oklch(0% 0 0 / 0.06), 0 16px 40px
     -8px oklch(0% 0 0 / 0.16);
   backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
   z-index: 70;
   animation: countryPanelIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
 }

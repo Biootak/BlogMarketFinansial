@@ -86,7 +86,6 @@
   padding: var(--ds-space-3) var(--ds-space-4);
   background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 90%, transparent);
   backdrop-filter: blur(10px) saturate(130%);
-  -webkit-backdrop-filter: blur(10px) saturate(130%);
   border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl);
   box-shadow: var(--ds-shadow-sm);
@@ -227,7 +226,6 @@ button.kpiCard:hover::before,
   padding: var(--ds-space-2-5) var(--ds-space-4);
   background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 85%, transparent);
   backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl);
   box-shadow: var(--ds-shadow-sm);
@@ -516,7 +514,6 @@ button.kpiCard:hover::before,
   white-space: nowrap;
   background: color-mix(in oklch, var(--ds-canvas-subtle, var(--ds-canvas)) 88%, transparent);
   backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
   border-block-end: 1px solid var(--at-line, var(--ds-border-default));
   user-select: none;
 }
@@ -937,9 +934,8 @@ button.kpiCard:hover::before,
   position: fixed !important;
   inset: 0 !important;
   z-index: 48 !important;
-  background: color-mix(in oklch, oklch(10% 0.01 250) 55%, transparent) !important;
-  backdrop-filter: blur(6px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(6px) saturate(120%) !important;
+  background: color-mix(in oklch, oklch(10% 0.01 250) 25%, transparent) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
   /* Radix animate-in/out classes work on top of this */
 }
 
@@ -959,7 +955,6 @@ button.kpiCard:hover::before,
   /* Glass surface */
   background: color-mix(in oklch, var(--ds-canvas) 96%, transparent) !important;
   backdrop-filter: blur(28px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
 
   /* Layered border — top highlight + hairline */
   border: 1px solid color-mix(in oklch, var(--ds-border-default) 90%, transparent) !important;
@@ -1403,7 +1398,6 @@ button.kpiCard:hover::before,
   /* Glass surface */
   background: color-mix(in oklch, var(--ds-surface-elevated, var(--ds-surface)) 94%, transparent) !important;
   backdrop-filter: blur(20px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
 
   /* Border */
   border: 1px solid color-mix(in oklch, var(--ds-border-default) 85%, transparent) !important;

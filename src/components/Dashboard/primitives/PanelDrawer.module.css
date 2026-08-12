@@ -16,8 +16,7 @@
   align-items: center;
   justify-content: center;
   background: color-mix(in oklch, var(--at-bg, oklch(10% 0.02 255)) 55%, transparent);
-  backdrop-filter: blur(6px) saturate(120%);
-  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  backdrop-filter: blur(20px) saturate(150%);
   padding: var(--ds-space-4);
   animation: pdFadeIn 200ms var(--ds-ease-out-quart) both;
 }

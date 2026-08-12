@@ -49,9 +49,8 @@
   position: fixed;
   inset: 0;
   z-index: 9998;
-  background: oklch(15% 0.01 250 / 0.5);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: oklch(15% 0.01 250 / 0.26);
+  backdrop-filter: blur(20px) saturate(150%);
   animation: fadeIn 0.15s ease;
 }
 

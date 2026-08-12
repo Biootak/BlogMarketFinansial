@@ -173,7 +173,6 @@
   border-radius: var(--ds-radius-full);
   background: color-mix(in oklch, var(--ds-surface-recessed) 70%, transparent);
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid color-mix(in oklch, var(--ds-border-subtle) 60%, transparent);
   box-shadow: var(--ds-shadow-sm);
   margin-bottom: var(--ds-space-4);

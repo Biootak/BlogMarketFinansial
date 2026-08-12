@@ -74,7 +74,7 @@ const MenuBar = ({ className }: MenuBarProps) => {
             leaveTo="opacity-0"
           >
             <div
-              className="fixed inset-0 bg-neutral-900 bg-opacity-50"
+              className="fixed inset-0 bg-neutral-900 bg-opacity-50 backdrop-blur-md"
               onClick={handleOverlayInteraction}
               onKeyDown={handleOverlayInteraction}
               role="button"

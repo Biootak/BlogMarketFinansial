@@ -646,8 +646,8 @@
   align-items: center;
   justify-content: center;
   padding: var(--ds-space-4);
-  background: oklch(0% 0 0 / 0.45);
-  backdrop-filter: blur(6px);
+  background: oklch(0% 0 0 / 0.25);
+  backdrop-filter: blur(20px) saturate(150%);
   animation: overlayIn 180ms var(--ds-ease-out-quart) both;
 }
 @keyframes overlayIn {

@@ -574,7 +574,6 @@
   padding: var(--ds-space-3) var(--ds-space-4);
   background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 90%, transparent);
   backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
   border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl);
   box-shadow: var(--ds-shadow-sm);
@@ -741,7 +740,6 @@
   letter-spacing: 0.05em;
   background: color-mix(in oklch, var(--ds-canvas-subtle) 88%, transparent);
   backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
 }
 
 .tableRow {

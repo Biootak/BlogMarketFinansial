@@ -882,7 +882,6 @@
   padding: var(--ds-space-3, 0.75rem) var(--ds-space-4, 1rem);
   background: color-mix(in oklab, var(--ds-color-surface, oklch(100% 0 0)) 92%, transparent);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--ds-color-border-default, oklch(85% 0.005 240));
   border-radius: var(--ds-radius-xl, 1.25rem);
   box-shadow: 0 1px 2px oklch(20% 0.01 240 / 0.04), 0 8px 24px -8px oklch(20% 0.01 240 / 0.15);

@@ -470,8 +470,8 @@
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: oklch(10% 0.01 250 / 0.52);
-  backdrop-filter: blur(6px);
+  background: oklch(10% 0.01 250 / 0.26);
+  backdrop-filter: blur(20px) saturate(150%);
   display: flex;
   align-items: center;
   justify-content: center;

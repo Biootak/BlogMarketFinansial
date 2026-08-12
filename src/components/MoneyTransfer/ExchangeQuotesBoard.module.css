@@ -17,7 +17,6 @@
   box-shadow: var(--ds-shadow-md);
   overflow: hidden;
   backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 
 .dark .board {

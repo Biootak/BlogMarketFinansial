@@ -83,7 +83,6 @@
      منجر به drop شدن backdrop-filter/position توسط lightningcss می‌شود.
      از rgba ساده + override داک مود استفاده می‌کنیم تا بلور همیشه کار کند. */
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
   background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: var(--ds-radius-2xl);

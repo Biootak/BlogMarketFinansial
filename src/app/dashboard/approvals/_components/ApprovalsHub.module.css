@@ -1007,8 +1007,8 @@ html[dir="rtl"] .searchClear {
   position: fixed;
   inset: 0;
   z-index: 200;
-  background: color-mix(in srgb, var(--ds-canvas, #0a0a0a) 70%, transparent);
-  backdrop-filter: blur(4px);
+  background: color-mix(in srgb, var(--ds-canvas, #0a0a0a) 30%, transparent);
+  backdrop-filter: blur(20px) saturate(150%);
   display: flex;
   align-items: center;
   justify-content: center;

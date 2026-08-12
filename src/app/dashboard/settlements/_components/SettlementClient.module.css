@@ -62,7 +62,6 @@
   padding: var(--ds-space-4);
   background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 92%, transparent);
   backdrop-filter: blur(12px) saturate(130%);
-  -webkit-backdrop-filter: blur(12px) saturate(130%);
   border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl);
   box-shadow: var(--ds-shadow-sm);
@@ -270,7 +269,6 @@
   padding: var(--ds-space-2) var(--ds-space-3);
   background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 88%, transparent);
   backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border: 1px solid var(--at-line, var(--ds-border-default));
   border-radius: var(--ds-radius-xl);
   box-shadow: var(--ds-shadow-sm);
@@ -483,7 +481,6 @@
   letter-spacing: 0.06em;
   background: color-mix(in oklch, var(--ds-canvas-subtle) 90%, transparent);
   backdrop-filter: blur(12px) saturate(130%);
-  -webkit-backdrop-filter: blur(12px) saturate(130%);
 }
 
 .thNum {
@@ -819,7 +816,6 @@
   gap: 0;
   background: color-mix(in oklch, var(--at-surface, var(--ds-surface)) 92%, transparent) !important;
   backdrop-filter: blur(20px) saturate(150%) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
   border-inline-start: 1px solid var(--at-line, var(--ds-border-default)) !important;
 }
 

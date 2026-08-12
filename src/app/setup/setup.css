@@ -209,7 +209,6 @@
     border-block-end: 1px solid oklch(50% 0.02 250 / 0.08);
     background: oklch(99% 0.002 250 / 0.55);
     backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
   }
   .setup-page__brand {
     display: inline-flex;
@@ -265,7 +264,6 @@
     border: 1px solid oklch(90% 0.006 245 / 0.7);
     background: oklch(100% 0 0 / 0.5);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
       var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
       var(--ds-ease-out-quart);
@@ -319,7 +317,6 @@
       32px 64px -40px oklch(28% 0.03 250 / 0.3), 0 8px 20px -16px oklch(30% 0.03 250 / 0.25), 0
       1px 3px oklch(0% 0 0 / 0.05);
     backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
   }
   .dark .setup-page__shell {
     background: linear-gradient(180deg, oklch(20% 0.018 255 / 0.74), oklch(16% 0.016 255 / 0.62));
@@ -739,7 +736,6 @@
     color: oklch(40% 0.02 250);
     border-color: oklch(90% 0.006 245 / 0.7);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
   .setup-wizard__nav--ghost:not(:disabled):hover {
     background: oklch(100% 0 0 / 0.85);
@@ -819,7 +815,6 @@
     border: 1px solid oklch(65% 0.1 165 / 0.25);
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.7) inset, 0 8px 20px -14px oklch(40% 0.05 250 / 0.4);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     font-size: 0.72rem;
     font-weight: 600;
     color: oklch(48% 0.1 165);
@@ -1083,7 +1078,6 @@
     background: oklch(100% 0 0 / 0.7);
     border: var(--line-hair) solid oklch(90% 0.006 245 / 0.85);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     animation: setup-fade-in 0.5s var(--ds-ease-out-quart) both;
   }
   .dark .setup-intro__perk {
@@ -1142,7 +1136,6 @@
     background: oklch(100% 0 0 / 0.55);
     border: var(--line-hair) solid oklch(90% 0.006 245 / 0.8);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
   .dark .setup-intro__roadmap {
     background: oklch(22% 0.018 255 / 0.45);
@@ -1298,7 +1291,6 @@
     background: linear-gradient(180deg, oklch(100% 0 0 / 0.85), oklch(99% 0.003 245 / 0.78));
     border: 1px solid oklch(90% 0.006 245 / 0.9);
     backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
     box-shadow: 0 24px 48px -28px oklch(30% 0.03 250 / 0.18);
   }
   .dark .setup-sidepanel {
@@ -1658,7 +1650,6 @@
     background: oklch(100% 0 0 / 0.55);
     border: var(--line-hair) solid oklch(90% 0.006 245 / 0.8);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
   .dark .setup-stepper__statusbar {
     background: oklch(22% 0.018 255 / 0.45);
@@ -2565,7 +2556,6 @@
     background: oklch(100% 0 0 / 0.55);
     border: 1px solid oklch(90% 0.006 245 / 0.7);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
   }
   .dark .setup-trust {
     background: oklch(22% 0.018 255 / 0.55);
@@ -3512,7 +3502,6 @@
     .setup-intro__perk,
     .setup-intro__roadmap {
       backdrop-filter: none;
-      -webkit-backdrop-filter: none;
     }
     .setup-stepper__pct-fill::after,
     .setup-step-header__bar-fill::after,

@@ -133,7 +133,6 @@
     background: oklch(100% 0 0 / 0.04);
     border: 1px solid oklch(100% 0 0 / 0.1);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     color: oklch(92% 0.02 240);
     font-size: 0.75rem;
     font-weight: 500;
@@ -209,7 +208,6 @@
     background: oklch(100% 0 0 / 0.04);
     border: 1px solid oklch(100% 0 0 / 0.08);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     overflow: hidden;
   }
   @media (min-width: 640px) {
@@ -316,7 +314,6 @@
     color: oklch(92% 0.02 240);
     border: 1px solid oklch(100% 0 0 / 0.1);
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
   .mt-hero__cta--ghost:hover {
     background: oklch(100% 0 0 / 0.12);
@@ -368,7 +365,6 @@
     line-height: 1;
     cursor: pointer;
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     transition: background 200ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms
       cubic-bezier(0.22, 1, 0.36, 1), color 200ms cubic-bezier(0.22, 1, 0.36, 1), transform 200ms
       cubic-bezier(0.22, 1, 0.36, 1);
@@ -410,7 +406,6 @@
     background: oklch(99% 0.003 240 / 0.85);
     border-block: 1px solid oklch(90% 0.005 240 / 0.9);
     backdrop-filter: blur(14px) saturate(1.4);
-    -webkit-backdrop-filter: blur(14px) saturate(1.4);
   }
   .dark .mt-ticker {
     background: oklch(15% 0.012 250 / 0.85);
@@ -592,7 +587,6 @@
     border-block-end: 0;
     border-radius: clamp(0.75rem, 0.65rem + 0.3vw, 1rem) clamp(0.75rem, 0.65rem + 0.3vw, 1rem) 0 0;
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
   }
   .dark .mt-calc__tabs {
     background: oklch(15% 0.015 250 / 0.7);
@@ -654,7 +648,6 @@
     box-shadow: 0 1px 0 oklch(100% 0 0 / 0.7) inset, 0 30px 80px -24px oklch(0% 0 0 / 0.55), 0 8px
       24px -10px oklch(0% 0 0 / 0.18);
     backdrop-filter: blur(16px) saturate(1.5);
-    -webkit-backdrop-filter: blur(16px) saturate(1.5);
   }
   .dark .mt-calc {
     background: oklch(18% 0.012 250 / 0.88);
@@ -1084,7 +1077,6 @@
     border: 1px solid oklch(92% 0.005 240 / 0.85);
     overflow: hidden;
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
   }
   .dark .mt-table {
     background: oklch(20% 0.012 250 / 0.7);
@@ -1100,7 +1092,6 @@
     background: oklch(98% 0.004 240 / 0.92);
     border-block-end: 1px solid oklch(90% 0.005 240 / 0.85);
     backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
   }
   .dark .mt-table__header {
     background: oklch(18% 0.012 250 / 0.92);
@@ -1504,7 +1495,6 @@
     border: 1px solid oklch(90% 0.005 240 / 0.85);
     overflow: hidden;
     backdrop-filter: blur(14px) saturate(1.4);
-    -webkit-backdrop-filter: blur(14px) saturate(1.4);
   }
   .dark .mt-trust {
     background: oklch(18% 0.012 250 / 0.7);
@@ -1768,7 +1758,6 @@
     border: 1px solid oklch(92% 0.005 240 / 0.85);
     overflow: hidden;
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
   }
   .dark .mt-faq {
     background: oklch(20% 0.012 250 / 0.7);

@@ -15,7 +15,6 @@
   border: 1px solid var(--nova-border);
   background: var(--nova-surface);
   backdrop-filter: var(--nova-backdrop);
-  -webkit-backdrop-filter: var(--nova-backdrop);
   box-shadow: var(--nova-shadow-sm);
   text-decoration: none;
   color: inherit;
@@ -26,7 +25,7 @@
 
 .card:hover {
   transform: translateY(calc(var(--ds-space-1) * -0.5));
-  border-color: var(--nova-primary);
+  border-color: var(--dashboard-accent, var(--ds-brand-500));
   box-shadow: var(--nova-shadow-md);
 }
 
@@ -66,11 +65,12 @@
   border-radius: var(--ds-radius-md);
   background: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--nova-primary) 12%, transparent),
-    color-mix(in oklch, var(--nova-primary) 4%, transparent)
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 12%, transparent),
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 4%, transparent)
   );
-  border: 1px solid color-mix(in oklch, var(--nova-primary) 15%, var(--nova-border));
-  color: var(--nova-primary);
+  border: 1px solid
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 15%, var(--nova-border));
+  color: var(--dashboard-accent, var(--ds-brand-500));
   flex-shrink: 0;
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
@@ -78,8 +78,8 @@
 .card:hover .iconChip {
   background: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--nova-primary) 18%, transparent),
-    color-mix(in oklch, var(--nova-primary) 8%, transparent)
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 18%, transparent),
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 8%, transparent)
   );
 }
 
@@ -196,7 +196,7 @@
 }
 
 .dark .card:hover {
-  border-color: var(--nova-primary);
+  border-color: var(--dashboard-accent, var(--ds-brand-500));
 }
 
 .dark .label {
@@ -206,10 +206,14 @@
 .dark .iconChip {
   background: linear-gradient(
     135deg,
-    color-mix(in oklch, var(--nova-primary) 15%, transparent),
-    color-mix(in oklch, var(--nova-primary) 6%, transparent)
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 15%, transparent),
+    color-mix(in oklch, var(--dashboard-accent, var(--ds-brand-500)) 6%, transparent)
   );
-  border-color: color-mix(in oklch, var(--nova-primary) 20%, var(--nova-border));
+  border-color: color-mix(
+    in oklch,
+    var(--dashboard-accent, var(--ds-brand-500)) 20%,
+    var(--nova-border)
+  );
 }
 
 .dark .countUp {
@@ -248,9 +252,13 @@
 
 @media (max-width: 480px) {
   .card {
-    min-block-size: 5.5rem;
+    min-block-size: 4.5rem;
     padding: var(--ds-space-3);
-    gap: var(--ds-space-2);
+    gap: var(--ds-space-1);
+  }
+
+  .spark {
+    height: 1.25rem;
   }
 
   .iconChip {

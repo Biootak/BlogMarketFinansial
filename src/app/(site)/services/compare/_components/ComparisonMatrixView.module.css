@@ -172,7 +172,6 @@
   background: var(--ds-canvas);
   border-block-end: 1px solid var(--ds-border-subtle);
   backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
 }
 
 .toolbarInner {

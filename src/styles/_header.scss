@@ -172,14 +172,12 @@
    ============================================================================ */
 .mbn-glass {
   backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 /* در حالت reduced-motion، بلور سنگین را غیرفعال می‌کنیم (بدون از دست دادن opacity) */
 @media (prefers-reduced-motion: reduce) {
   .mbn-glass {
     backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
+    }
 }
 

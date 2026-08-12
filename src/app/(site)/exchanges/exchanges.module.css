@@ -118,7 +118,6 @@
   color: oklch(85% 0.06 165);
   letter-spacing: 0.04em;
   backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .eyebrowDot {
