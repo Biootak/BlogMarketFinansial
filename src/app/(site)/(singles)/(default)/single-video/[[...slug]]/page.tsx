@@ -2,12 +2,14 @@ import { getActiveAdvertisements } from '@/actions/advertisementActions';
 import { getMoreFromAuthor } from '@/actions/getMoreFromAuthor';
 import { getPostBySlug } from '@/actions/getPostBySlug';
 import { getRelatedPosts } from '@/actions/getRelatedPosts';
+import { getPostsForStaticParams } from '@/actions/postActions';
 import { getSidebarData } from '@/actions/sidebarActions';
 import SingleContent from '@/app/(site)/(singles)/SingleContent';
 import SingleHeader from '@/app/(site)/(singles)/SingleHeader';
 import SingleRelatedPosts from '@/app/(site)/(singles)/SingleRelatedPosts';
 import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia';
 import type { ActionResult, PostWithRelations } from '@/types/types';
+import { PostType } from '@prisma/client';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Sidebar from '../../../Sidebar';
@@ -22,6 +24,15 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://financialmarket.page
 // auth(), and all data comes through safeCache, so this route can be ISR
 // instead of rendering on-demand for every visitor.
 export const revalidate = 300;
+export const dynamicParams = true;
+
+// 2026-08-12: prerender published VIDEO posts at build (same pattern as
+// /single) so video articles serve static HTML instead of on-demand renders.
+// Other slugs stay dynamic (dynamicParams=true) and cache afterwards.
+export async function generateStaticParams(): Promise<Array<{ slug: string[] }>> {
+  const posts = await getPostsForStaticParams(PostType.VIDEO);
+  return posts.map((s) => ({ slug: s.split('/') }));
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;

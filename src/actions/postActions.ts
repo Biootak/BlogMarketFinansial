@@ -18,7 +18,7 @@ import type {
   RelatedPostWithRelations,
   UpdatePostInput,
 } from '@/types/types';
-import { PostStatus, type Prisma, Role } from '@prisma/client';
+import { PostStatus, type PostType, type Prisma, Role } from '@prisma/client';
 
 export async function createPost(data: CreatePostInput): Promise<ActionResult<PostWithRelations>> {
   const session = await checkRole(['ADMIN', 'AUTHOR', 'SUPERADMIN']);
@@ -942,12 +942,20 @@ const getCachedPostBySlug = safeCache(
 /**
  * getPostsForStaticParams — bounded slug list for single-page ISR prerender.
  * Only PUBLISHED posts; limits to the most recent N (build-time DB stays small).
+ *
+ * 2026-08-12: optional `postType` filter added so the single-audio/video/gallery
+ * variants prerender only their own type at build (cache key already includes
+ * args via safeCache's makeKey, so typed calls never collide with the unfiltered
+ * list used by /single).
  */
 export const getPostsForStaticParams = safeCache(
-  async (): Promise<string[]> => {
+  async (postType?: PostType): Promise<string[]> => {
     try {
       const rows = await prisma.post.findMany({
-        where: { status: PostStatus.PUBLISHED },
+        where: {
+          status: PostStatus.PUBLISHED,
+          ...(postType ? { postType } : {}),
+        },
         select: { slug: true },
         orderBy: { createdAt: 'desc' },
         take: 200,

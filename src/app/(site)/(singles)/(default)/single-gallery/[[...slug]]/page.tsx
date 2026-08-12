@@ -18,6 +18,17 @@ export interface PageProps {
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://financialmarket.page';
 
+// 2026-08-12: align with the other single variants — header no longer awaits
+// auth(), data comes through safeCache, so gallery pages revalidate every 5
+// minutes instead of rendering on-demand for every visitor.
+//
+// NOTE: intentionally NO generateStaticParams here (unlike /single, audio,
+// video): GalleryImages reads useSearchParams (lightbox deep-link), so a
+// build-time static render would force the whole gallery to bail to CSR —
+// empty HTML + client-rendered grid, which hurts LCP for an image-heavy
+// page. ISR-on-demand keeps full server HTML while still caching.
+export const revalidate = 300;
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const postSlug = slug?.join('/') || '';
