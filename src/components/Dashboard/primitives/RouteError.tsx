@@ -174,6 +174,14 @@ export function RouteError({
   const { eyebrow, title, description } = KIND_META[kind];
   const heading = section ? `خطا در بارگذاری ${section}` : title;
   const suggestItems = suggestions ?? defaultSuggestions(kind, backHref, backLabel);
+  // dedupe by href — backHref ممکن است با یکی از پیشنهادهای پیش‌فرض یکسان باشد
+  // (مثلاً backHref="/dashboard") و key تکراری در لیست کارت‌ها می‌سازد.
+  const seenHrefs = new Set<string>();
+  const uniqueSuggestItems = suggestItems.filter((item) => {
+    if (seenHrefs.has(item.href)) return false;
+    seenHrefs.add(item.href);
+    return true;
+  });
   const Icon = KIND_ICON[kind];
   const root = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
@@ -240,9 +248,9 @@ export function RouteError({
         </div>
 
         {/* Suggested destination cards (2×2) */}
-        {suggestItems.length > 0 && (
+        {uniqueSuggestItems.length > 0 && (
           <div data-stagger className={s.suggestions}>
-            {suggestItems.map((item) => {
+            {uniqueSuggestItems.map((item) => {
               const ItemIcon = item.icon;
               return (
                 <Link key={item.href} href={item.href} className={s.suggestCard}>
