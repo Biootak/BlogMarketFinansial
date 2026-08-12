@@ -229,11 +229,18 @@ heroku container:release web -a $APP
 
 | Job | URL | بازه |
 |-----|-----|------|
-| Keep-alive dyno (بدون auth) | `https://your-app.herokuapp.com/api/ping` | هر ۵ دقیقه |
-| انتشار پست‌های زمان‌بندی‌شده | `https://your-app.herokuapp.com/api/cron/publish-scheduled-posts` | هر ۱ دقیقه |
-| به‌روزرسانی نرخ بازار | `https://your-app.herokuapp.com/api/cron/refresh-market-rates` | هر ۱ دقیقه |
-| Sync بازار (TGJU) | `https://your-app.herokuapp.com/api/cron/sync-bazaar` | هر ۱۰ دقیقه |
-| Backup دیتابیس | `https://your-app.herokuapp.com/api/cron/backup` | شبانه ۰۳:۰۰ UTC |
+| Keep-alive dyno (بدون auth) | `https://financialmarket.page/api/ping` | هر ۵ دقیقه |
+| انتشار پست‌های زمان‌بندی‌شده | `.../api/cron/publish-scheduled-posts` | هر ۱ دقیقه |
+| به‌روزرسانی نرخ بازار | `.../api/cron/refresh-market-rates` | هر ۱ دقیقه |
+| صف اعلان تلگرام | `.../api/cron/telegram-notifications` | هر ۱ دقیقه |
+| انقضای quote ها | `.../api/cron/expire-quotes` | هر ۵ دقیقه |
+| Sync لیست‌های نرخ | `.../api/cron/sync-rate-lists` | هر ۵ دقیقه |
+| Sync بازار (TGJU) | `.../api/cron/sync-bazaar` | هر ۱۰ دقیقه |
+| انقضای KYC ها | `.../api/cron/expire-kyc` | روزانه ۰۱:۰۰ UTC |
+| Backup دیتابیس | `.../api/cron/backup` | شبانه ۰۳:۰۰ UTC |
+
+> ساخت مجدد همهٔ job ها با یک دستور (REST API رسمی — `scripts/setup-cron-jobs.mjs`):
+> `CROJOB_API_KEY="..." node scripts/setup-cron-jobs.mjs` (CRON_SECRET از `.env.local` خوانده می‌شود).
 
 - `/api/ping` فقط برای بیدار نگه داشتن است (۵ دقیقه < آستانهٔ خواب ۳۰ دقیقه → هیچ‌وقت نمی‌خوابد).
 - بقیه بدون `CRON_SECRET` درست → ۵۰۳ می‌دهند (باید در Heroku config ست باشد).

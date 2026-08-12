@@ -22,6 +22,7 @@ scripts/*
 !scripts/restore-db.mjs
 !scripts/dev-turbo.mjs
 !scripts/clear-dev-cache.mjs
+!scripts/setup-cron-jobs.mjs
 .agents/skills/*/scripts/
 .claude/skills/*/scripts/
 # Logs
