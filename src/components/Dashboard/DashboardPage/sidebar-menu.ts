@@ -192,14 +192,6 @@ export function getMenu(role: UserRole): NavSection[] {
     title: 'کاوشگر دفتر کل پلتفرم',
   };
 
-  const headerAd: MenuItem = {
-    id: 'headerAd',
-    href: '/dashboard/header-ad',
-    icon: HiOutlineMegaphone({ className: ICON_CLASS }),
-    label: 'هدر آد',
-    title: 'تبلیغات هدر سایت',
-  };
-
   const users: MenuItem = {
     id: 'users',
     href: '/dashboard/users',
@@ -778,7 +770,6 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeQuotes,
             creditRates,
             advertisements,
-            headerAd,
             serviceRequests,
             observability,
           ],
@@ -851,7 +842,6 @@ export function getMenu(role: UserRole): NavSection[] {
             exchangeQuotes,
             creditRates,
             advertisements,
-            headerAd,
             serviceRequests,
             observability,
           ],

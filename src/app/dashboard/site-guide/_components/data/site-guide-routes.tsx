@@ -665,13 +665,6 @@ export const SECTIONS: SectionDef[] = [
         tone: 'violet',
       },
       {
-        label: 'هدر آد',
-        path: '/dashboard/header-ad',
-        description: 'مدیریت تبلیغات هدر سایت',
-        icon: <Megaphone size={S} />,
-        tone: 'violet',
-      },
-      {
         label: 'درخواست‌های سرویس',
         path: '/dashboard/service-requests',
         description: 'مدیریت درخواست‌های سرویس کاربران',

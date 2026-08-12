@@ -52,7 +52,6 @@ const LOCAL_HEADER_ROUTES = [
   '/posts',
   '/reports',
   '/advertisements',
-  '/header-ad',
   '/subscription',
   '/helpdesk',
   '/devices',
