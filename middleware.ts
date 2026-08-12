@@ -186,6 +186,10 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
  *
  * شکست (DB پایین و…) هرگز نباید درخواست را خراب کند — best-effort.
  */
+// 2026-08-12: sentinel value — وقتی کاربر از DB حذف شده باشد، cookie باید
+// expire شود نه اینکه null برگردد و session زنده بماند.
+const DELETED_USER_SENTINEL = '__DELETED__' as const;
+
 async function refreshStaleTokenClaims(
   token: JWT | null,
   pathname: string,
@@ -199,7 +203,7 @@ async function refreshStaleTokenClaims(
   sameSite: 'lax';
   path: string;
   expires: Date;
-} | null> {
+} | null | typeof DELETED_USER_SENTINEL> {
   if (!token?.sub) return null;
   // فقط مسیرهایی که گارد اینجا نقش/دسترسی را تصمیم می‌گیرد. مسیرهای عمومی
   // فرقی نمی‌کند — بدون هزینهٔ DB رد می‌شوند.
@@ -216,7 +220,10 @@ async function refreshStaleTokenClaims(
       where: { id: token.sub },
       select: { role: true, tokenVersion: true, permissions: true, deniedPermissions: true },
     });
-    if (!dbUser) return null;
+    // 2026-08-12: کاربر از DB حذف شده — session باید فوری منقضی شود.
+    // قبلاً `return null` بود که token را زنده نگه می‌داشت؛ الان sentinel
+    // برمی‌گردد تا middleware کوکی را expire کند و به /auth ریدایرکت کند.
+    if (!dbUser) return DELETED_USER_SENTINEL;
     const storedVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
     if (dbUser.tokenVersion === storedVersion) return null;
 
@@ -397,15 +404,37 @@ export async function middleware(req: NextRequest) {
   // اگر tokenVersion توکن با DB ناهماهنگ بود (مجوز/نقش کاربر تغییر کرده)،
   // ادعاها را تازه کن تا تصمیم همین درخواست و همهٔ درخواست‌های بعدی با
   // دسترسی جدید گرفته شود — بدون رفرش یا logout.
-  const refreshedCookie = await refreshStaleTokenClaims(
+  const claimsResult = await refreshStaleTokenClaims(
     token,
     pathname,
     cookieName,
     useSecureCookies,
   );
 
+  // 2026-08-12: اگر کاربر از DB حذف شده باشد — کوکی را expire کن و به /auth
+  // ریدایرکت کن. قبلاً session زنده می‌ماند چون JWT هنوز valid بود.
+  if (claimsResult === DELETED_USER_SENTINEL) {
+    const expiredCookieValue = '__deleted__';
+    const redirectTarget = isApi
+      ? undefined
+      : new URL('/auth?step=login', nextUrl);
+    const res = isApi
+      ? jsonError(401, 'SESSION_INVALID', 'حساب کاربری موجود نیست')
+      : NextResponse.redirect(redirectTarget!);
+    res.cookies.set({
+      name: cookieName,
+      value: expiredCookieValue,
+      httpOnly: true,
+      secure: useSecureCookies,
+      sameSite: 'lax',
+      path: '/',
+      expires: new Date(0), // فوری expire
+    });
+    return res;
+  }
+
   const res = await runGuards(nextUrl, pathname, search, token, isProduction, isApi);
-  if (refreshedCookie) res.cookies.set(refreshedCookie);
+  if (claimsResult) res.cookies.set(claimsResult);
   return res;
 }
 

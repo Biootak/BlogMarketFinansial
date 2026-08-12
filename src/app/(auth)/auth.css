@@ -584,6 +584,11 @@
   line-height: 1.6;
   color: var(--a-fg-4);
 }
+/* 2026-08-12: دکمه «بازگشت» / «تغییر ایمیل» داخل auth-helper به متن قبلش
+   می‌چسبید چون inline بود و gap نداشت. margin-inline-start فاصله کافی می‌دهد. */
+.auth-helper .auth-context-link {
+  margin-inline-start: 0.3em;
+}
 .auth-error {
   display: inline-flex;
   align-items: center;
