@@ -1,5 +1,5 @@
 /* ============================================================================
- * AuditWorkspace — سوابق عملیات صرافی
+ * AuditWorkspace — سوابق عملیات صرافی (premium glass, لایه‌دار)
  * ========================================================================== */
 
 .root {
@@ -16,4 +16,81 @@
   box-shadow: 0 18px 50px rgba(28, 36, 52, 0.07);
   overflow: hidden;
   padding: var(--ds-space-3) 0;
+}
+
+/* ── Action mix visual (hero) ────────────────────────────────────────────── */
+
+.mixCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+}
+
+.mixHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--ds-text-muted);
+}
+
+.mixHead b {
+  font-size: 13px;
+  font-weight: var(--ds-weight-extrabold);
+  color: var(--ds-brand-700);
+}
+
+.mixTrack {
+  display: flex;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  gap: 2px;
+}
+
+.mixSeg {
+  height: 100%;
+  transition: width 0.6s var(--ds-ease-out-quart);
+}
+
+.mixEmpty {
+  width: 100%;
+  height: 100%;
+  background: var(--ds-surface-recessed);
+}
+
+.mixLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.mixLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  color: var(--ds-text-secondary);
+}
+
+.mixLegendItem i {
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+}
+
+.mixLegendItem b {
+  color: var(--ds-text-primary);
+}
+
+.mixEmptyText {
+  font-size: 11px;
+  color: var(--ds-text-muted);
 }

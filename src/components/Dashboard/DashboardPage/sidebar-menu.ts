@@ -546,6 +546,14 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineArrowsRightLeft({ className: ICON_CLASS }),
     label: 'تراکنش‌ها',
   };
+  // 2026-08-12: معاملات ارزی من — همان MyDealsClient مشترک با داشبورد
+  const customerDeals: MenuItem = {
+    id: 'customerDeals',
+    href: '/customer/deals',
+    icon: HiOutlineScale({ className: ICON_CLASS }),
+    label: 'معاملات ارزی',
+    title: 'کد پیگیری و وضعیت معاملات ارزی شما',
+  };
   const customerBeneficiaries: MenuItem = {
     id: 'customerBeneficiaries',
     href: '/customer/beneficiaries',
@@ -756,6 +764,7 @@ export function getMenu(role: UserRole): NavSection[] {
             customerTransfer,
             customerBeneficiaries,
             customerTransactions,
+            customerDeals,
             customerRequests,
           ],
         },

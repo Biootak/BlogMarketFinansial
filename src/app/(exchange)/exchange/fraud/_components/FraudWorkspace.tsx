@@ -1,11 +1,12 @@
 'use client';
 
 /**
- * FraudWorkspace — صف بررسی تقلب صرافی (premium glass).
+ * FraudWorkspace — صف بررسی تقلب صرافی (premium glass, لایه‌دار).
  *
- * - KPI: باز / در حال بررسی / بسته‌شده / میانگین ریسک موارد باز
- * - ردیف‌های پرونده: مشتری، تراکنش، دلیل هشدار، نوار امتیاز ریسک، وضعیت
- * - جزئیات + اقدامات: بستن بدون اقدام / تأیید کلاهبرداری / بازگشایی
+ * ساختار:
+ *   ۱. Hero: موارد باز + «باندهای ریسک» (بالا/متوسط/کم)
+ *   ۲. نوار KPI
+ *   ۳. InsightLayout: صف + rail (وضعیت Donut / دلایل هشدار BarList)
  */
 
 import {
@@ -15,9 +16,18 @@ import {
   getExchangeFraudStats,
   resolveExchangeFraud,
 } from '@/actions/exchange-ops';
-import { KpiCard } from '@/components/Dashboard/primitives/KpiCard';
+import {
+  type BarItem,
+  BarList,
+  Donut,
+  type DonutSegment,
+  InsightCard,
+  InsightLayout,
+  InsightPanel,
+} from '@/components/Dashboard/primitives/InsightPanel';
 import { PanelDrawer } from '@/components/Dashboard/primitives/PanelDrawer';
-import { StatGrid } from '@/components/Dashboard/primitives/StatGrid';
+import { ExchangeKpiRibbon, type ExchangeKpiTile } from '@/components/Exchange/ExchangeKpiRibbon';
+import { ExchangePageHero } from '@/components/Exchange/ExchangePageHero';
 import {
   CheckCircle2,
   ChevronLeft,
@@ -95,6 +105,49 @@ export default function FraudWorkspace({ exchangeId, initial, stats, staffRole }
     return map;
   }, [rows]);
 
+  // ── دادهٔ rail ────────────────────────────────────────────────────────
+  const statusSegments: DonutSegment[] = useMemo(() => {
+    const order: [string, DonutSegment['color']][] = [
+      ['OPEN', 'rose'],
+      ['IN_REVIEW', 'amber'],
+      ['RESOLVED', 'emerald'],
+      ['CLOSED', 'slate'],
+    ];
+    return order
+      .map(([status, color]) => ({
+        label: STATUS_FA[status] ?? status,
+        value: statusCounts.get(status) ?? 0,
+        color,
+      }))
+      .filter((x) => x.value > 0);
+  }, [statusCounts]);
+
+  const reasonItems: BarItem[] = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const r of rows) {
+      const key = r.reason.slice(0, 42);
+      map.set(key, (map.get(key) ?? 0) + 1);
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([label, value]) => ({ label, value, color: 'rose' as const }));
+  }, [rows]);
+
+  // ── باندهای ریسک برای hero ────────────────────────────────────────────
+  const riskBands = useMemo(() => {
+    let high = 0;
+    let medium = 0;
+    let low = 0;
+    for (const r of rows) {
+      if (r.status === 'RESOLVED' || r.status === 'CLOSED') continue;
+      if (r.riskScore >= 75) high += 1;
+      else if (r.riskScore >= 45) medium += 1;
+      else low += 1;
+    }
+    return { high, medium, low };
+  }, [rows]);
+
   async function refresh() {
     const [next, nextStats] = await Promise.all([
       getExchangeFraudQueue(exchangeId),
@@ -137,107 +190,164 @@ export default function FraudWorkspace({ exchangeId, initial, stats, staffRole }
 
   return (
     <div className={s.root}>
-      <StatGrid>
-        <KpiCard
-          label="پرونده‌های باز"
-          value={kpi.open}
-          icon={ShieldAlert}
-          trend={kpi.open > 0 ? 'down' : 'neutral'}
-          info="نیاز به تصمیم"
-        />
-        <KpiCard
-          label="در حال بررسی"
-          value={kpi.inReview}
-          icon={ShieldCheck}
-          info="واگذار به کارکنان"
-        />
-        <KpiCard
-          label="بسته‌شده"
-          value={kpi.resolved}
-          icon={CheckCircle2}
-          trend="up"
-          info="کل موارد بررسی‌شده"
-        />
-        <KpiCard
-          label="میانگین ریسک موارد باز"
-          value={kpi.avgRisk}
-          icon={ShieldAlert}
-          trend={kpi.avgRisk >= 45 ? 'down' : 'neutral'}
-          info="از ۱۰۰"
-        />
-      </StatGrid>
+      {/* ── ۱. Hero + باندهای ریسک ────────────────── */}
+      <ExchangePageHero
+        eyebrow="صرافی · امنیت"
+        title="بررسی تقلب"
+        description="صف تراکنش‌های پرریسک این صرافی — اولویت‌بندی خودکار بر اساس امتیاز ریسک"
+        statValue={faNum.format(kpi.open)}
+        statLabel="پروندهٔ باز"
+        trend={
+          kpi.open > 0
+            ? { label: `${faNum.format(kpi.open)} مورد نیاز به تصمیم دارد`, tone: 'down' }
+            : { label: 'صف تقلب پاک است', tone: 'neutral' }
+        }
+        liveLabel="رصد زنده · هر ۳۰ ثانیه"
+        visual={<RiskBands bands={riskBands} avg={kpi.avgRisk} />}
+      />
 
-      <div className={s.toolbar}>
-        <div className={s.filters} role="tablist" aria-label="فیلتر وضعیت پرونده">
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              className={`${s.pill} ${statusFilter === t.key ? s.pillActive : ''}`}
-              onClick={() => setStatusFilter(t.key)}
-            >
-              {t.label}
-              <span className={s.pillCount}>
-                {t.key === 'all' ? rows.length : (statusCounts.get(t.key) ?? 0)}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* ── ۲. روبان KPI فشرده ───────────────────── */}
+      <ExchangeKpiRibbon
+        tiles={
+          [
+            {
+              label: 'پرونده‌های باز',
+              value: faNum.format(kpi.open),
+              icon: ShieldAlert,
+              tone: 'rose',
+              trend:
+                kpi.open > 0
+                  ? { dir: 'down', label: 'نیاز به تصمیم' }
+                  : { dir: 'flat', label: 'صف پاک' },
+            },
+            {
+              label: 'در حال بررسی',
+              value: faNum.format(kpi.inReview),
+              icon: ShieldCheck,
+              tone: 'amber',
+              sub: 'واگذار به کارکنان',
+            },
+            {
+              label: 'بسته‌شده',
+              value: faNum.format(kpi.resolved),
+              icon: CheckCircle2,
+              tone: 'emerald',
+              sub: 'کل موارد بررسی‌شده',
+            },
+            {
+              label: 'میانگین ریسک موارد باز',
+              value: faNum.format(kpi.avgRisk),
+              icon: ShieldAlert,
+              tone: 'violet',
+              sub: 'از ۱۰۰',
+            },
+          ] as ExchangeKpiTile[]
+        }
+      />
 
-      {error && (
-        <div className={s.error} role="alert">
-          {error}
-        </div>
-      )}
-
-      <div className={s.panel}>
-        {filtered.length === 0 ? (
-          <div className={s.empty}>
-            <div className={s.emptyIcon}>
-              <ShieldCheck size={24} />
-            </div>
-            <b>پرونده‌ای در این وضعیت نیست</b>
-            <p>صف تقلب این صرافی پاک است — عالی.</p>
-          </div>
-        ) : (
-          <div className={s.list}>
-            {filtered.map((r) => (
-              <div key={r.id} className={s.fraudRow} onClick={() => setSelected(r)}>
-                <div className={s.riskBox} style={{ color: riskColor(r.riskScore) }}>
-                  <b>{r.riskScore}</b>
-                  <span>ریسک</span>
-                </div>
-                <div className={s.grow}>
-                  <div className={s.fraudTitle}>
-                    <b>{r.customerName ?? 'مشتری ناشناس'}</b>
-                    {r.txnId && (
-                      <span className={s.tracking} dir="ltr">
-                        {r.txnId}
-                      </span>
-                    )}
-                  </div>
-                  <div className={s.fraudMeta}>
-                    {r.reason}
-                    {r.txnAmount ? ` · ${faNum.format(Number(r.txnAmount))} ${r.txnCurrency}` : ''}
-                  </div>
-                  <div className={s.riskBar}>
-                    <i
-                      style={{
-                        width: `${Math.min(100, r.riskScore)}%`,
-                        background: riskColor(r.riskScore),
-                      }}
-                    />
-                  </div>
-                </div>
-                <span className={`${s.status} ${s[`status_${r.status}`] ?? ''}`}>
-                  {STATUS_FA[r.status] ?? r.status}
-                </span>
-                <ChevronLeft size={16} className={s.chev} aria-hidden />
+      {/* ── ۳. صف + rail ─────────────────────────── */}
+      <InsightLayout
+        main={
+          <div className={s.workspace}>
+            <div className={s.toolbar}>
+              <div className={s.filters} role="tablist" aria-label="فیلتر وضعیت پرونده">
+                {tabs.map((t) => (
+                  <button
+                    key={t.key}
+                    className={`${s.pill} ${statusFilter === t.key ? s.pillActive : ''}`}
+                    onClick={() => setStatusFilter(t.key)}
+                  >
+                    {t.label}
+                    <span className={s.pillCount}>
+                      {t.key === 'all' ? rows.length : (statusCounts.get(t.key) ?? 0)}
+                    </span>
+                  </button>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {error && (
+              <div className={s.error} role="alert">
+                {error}
+              </div>
+            )}
+
+            <div className={s.panel}>
+              {filtered.length === 0 ? (
+                <div className={s.empty}>
+                  <div className={s.emptyIcon}>
+                    <ShieldCheck size={24} />
+                  </div>
+                  <b>پرونده‌ای در این وضعیت نیست</b>
+                  <p>صف تقلب این صرافی پاک است — عالی.</p>
+                </div>
+              ) : (
+                <div className={s.list}>
+                  {filtered.map((r) => (
+                    <div key={r.id} className={s.fraudRow} onClick={() => setSelected(r)}>
+                      <div className={s.riskBox} style={{ color: riskColor(r.riskScore) }}>
+                        <b>{r.riskScore}</b>
+                        <span>ریسک</span>
+                      </div>
+                      <div className={s.grow}>
+                        <div className={s.fraudTitle}>
+                          <b>{r.customerName ?? 'مشتری ناشناس'}</b>
+                          {r.txnId && (
+                            <span className={s.tracking} dir="ltr">
+                              {r.txnId}
+                            </span>
+                          )}
+                        </div>
+                        <div className={s.fraudMeta}>
+                          {r.reason}
+                          {r.txnAmount
+                            ? ` · ${faNum.format(Number(r.txnAmount))} ${r.txnCurrency}`
+                            : ''}
+                        </div>
+                        <div className={s.riskBar}>
+                          <i
+                            style={{
+                              width: `${Math.min(100, r.riskScore)}%`,
+                              background: riskColor(r.riskScore),
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <span className={`${s.status} ${s[`status_${r.status}`] ?? ''}`}>
+                        {STATUS_FA[r.status] ?? r.status}
+                      </span>
+                      <ChevronLeft size={16} className={s.chev} aria-hidden />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+        }
+        aside={
+          <InsightPanel>
+            <InsightCard title="وضعیت پرونده‌ها" icon={ShieldCheck}>
+              <Donut
+                data={statusSegments}
+                size={132}
+                centerLabel="مجموع"
+                centerValue={faNum.format(rows.length)}
+              />
+            </InsightCard>
+            <InsightCard title="دلایل هشدار" icon={ShieldAlert}>
+              <BarList data={reasonItems} />
+            </InsightCard>
+            <InsightCard title="معیار اولویت‌بندی" icon={ShieldCheck}>
+              <div className={s.priorityHint}>
+                <p>
+                  پرونده‌های باز ابتدا بر اساس امتیاز ریسک مرتب می‌شوند؛ موارد بالای ۷۵ نیاز به تصمیم
+                  فوری دارند.
+                </p>
+              </div>
+            </InsightCard>
+          </InsightPanel>
+        }
+      />
 
       {/* ── Detail drawer ──────────────────────── */}
       <PanelDrawer
@@ -356,6 +466,47 @@ export default function FraudWorkspace({ exchangeId, initial, stats, staffRole }
           </div>
         )}
       </PanelDrawer>
+    </div>
+  );
+}
+
+// ─── Risk bands visual (hero) ────────────────────────────────────────────────
+
+function RiskBands({
+  bands,
+  avg,
+}: { bands: { high: number; medium: number; low: number }; avg: number }) {
+  const total = bands.high + bands.medium + bands.low;
+  const rows: Array<{ label: string; value: number; color: string }> = [
+    { label: 'ریسک بالا (۷۵+)', value: bands.high, color: 'var(--ds-rose)' },
+    { label: 'ریسک متوسط (۴۵–۷۴)', value: bands.medium, color: 'var(--ds-accent-amber)' },
+    { label: 'ریسک کم (زیر ۴۵)', value: bands.low, color: 'var(--ds-brand-500)' },
+  ];
+  const max = Math.max(1, ...rows.map((r) => r.value));
+
+  return (
+    <div className={s.riskCard}>
+      <div className={s.riskCardHead}>
+        <span>توزیع ریسک موارد باز</span>
+        <b>{faNum.format(total)} باز</b>
+      </div>
+      <div className={s.riskBands}>
+        {rows.map((r) => (
+          <div key={r.label} className={s.riskBand}>
+            <div className={s.riskBandLabel}>
+              <span>{r.label}</span>
+              <b>{faNum.format(r.value)}</b>
+            </div>
+            <div className={s.riskBandTrack}>
+              <i style={{ width: `${(r.value / max) * 100}%`, background: r.color }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className={s.riskCardFoot}>
+        <span>میانگین ریسک موارد باز</span>
+        <b style={{ color: riskColor(avg) }}>{faNum.format(avg)} / ۱۰۰</b>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,174 @@
+/* ============================================================================
+ * ExchangeKpiRibbon — تایل‌های KPI فشرده (۲ ستون → ۴ ستون)
+ * الهام از ExchangeKpiRow — KPIها «نشانه»اند نه «جلب توجه»
+ * ========================================================================== */
+
+.ribbon {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ds-space-2);
+}
+
+@media (min-width: 640px) {
+  .ribbon {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--ds-space-3);
+  }
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: var(--ds-space-3) var(--ds-space-3);
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  min-height: 84px;
+  overflow: hidden;
+  position: relative;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.tile:hover {
+  border-color: color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-subtle));
+  transform: translateY(-1px);
+}
+
+@media (min-width: 640px) {
+  .tile {
+    padding: var(--ds-space-3-5) var(--ds-space-4);
+    min-height: 92px;
+  }
+}
+
+.tileHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ds-text-muted);
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .tileHead {
+    font-size: 11px;
+  }
+}
+
+.tileIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-muted);
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .tileIcon {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+  }
+}
+
+.tileIcon[data-tone="emerald"] {
+  background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface));
+  color: var(--ds-brand-700);
+}
+
+.tileIcon[data-tone="amber"] {
+  background: color-mix(in oklch, var(--ds-accent-amber) 14%, var(--ds-surface));
+  color: color-mix(in oklch, var(--ds-accent-amber) 82%, #000);
+}
+
+.tileIcon[data-tone="rose"] {
+  background: color-mix(in oklch, var(--ds-rose) 11%, var(--ds-surface));
+  color: var(--ds-rose);
+}
+
+.tileIcon[data-tone="sky"] {
+  background: oklch(96% 0.04 250);
+  color: var(--ds-accent-cyan, #0284c7);
+}
+
+.tileIcon[data-tone="violet"] {
+  background: color-mix(in oklch, var(--ds-accent-violet) 12%, var(--ds-surface));
+  color: var(--ds-accent-violet);
+}
+
+.tileIcon[data-tone="slate"] {
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-muted);
+}
+
+.tileValue {
+  font-size: clamp(1.1rem, 4.5vw, 1.45rem);
+  font-weight: var(--ds-weight-bold);
+  letter-spacing: -0.02em;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tileFoot {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 3px 8px;
+  font-size: 10px;
+  color: var(--ds-text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .tileFoot {
+    font-size: 10.5px;
+    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+}
+
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-weight: var(--ds-weight-semibold);
+  min-width: 0;
+}
+
+.trend span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trend[data-trend="up"] {
+  color: var(--ds-brand-700);
+}
+
+.trend[data-trend="down"] {
+  color: var(--ds-rose);
+}
+
+.trend[data-trend="flat"] {
+  color: var(--ds-text-muted);
+}
+
+.sub {
+  font-weight: 500;
+}

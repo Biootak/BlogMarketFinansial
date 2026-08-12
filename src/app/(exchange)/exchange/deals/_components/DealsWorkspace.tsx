@@ -1,15 +1,14 @@
 'use client';
 
 /**
- * DealsWorkspace — کارتابل معاملات ارزی صرافی (premium glass).
+ * DealsWorkspace — کارتابل معاملات ارزی صرافی (premium glass, لایه‌دار).
  *
- * امکانات:
- *   - KPI: صف در انتظار / در حال انجام / تکمیل امروز / حجم امروز
- *   - فیلتر وضعیت با شمارنده + جستجو (کد پیگیری / مشتری / جفت ارز)
- *   - ردیف‌های معامله: کد پیگیری، مشتری، جفت ارز، مبلغ، نرخ، وضعیت
- *   - جزئیات در PanelDrawer: تمام فیلدها + timeline زمانی + اقدامات
- *   - ثبت معاملهٔ حضوری از quote های ACTIVE صرافی
- *   - اقدامات: confirmDeal / completeDeal / cancelDeal (server actions موجود)
+ * ساختار:
+ *   ۱. Hero شیشه‌ای + «خط لولهٔ معامله» (ایجاد ← در انتظار ← تأیید ← تکمیل)
+ *   ۲. نوار KPI با trend
+ *   ۳. InsightLayout: جدول اصلی + rail تحلیلی (Donut وضعیت / جفت‌ارزها / کانال‌ها)
+ *
+ * اقدامات از اکشن‌های موجود (currency-deals.ts) و جزئیات در PanelDrawer.
  */
 
 import {
@@ -22,9 +21,20 @@ import {
 } from '@/actions/currency-deals';
 import { type ExchangeDealStats, getExchangeDealStats } from '@/actions/exchange-ops';
 import type { QuoteRow } from '@/actions/exchange-quotes';
-import { KpiCard } from '@/components/Dashboard/primitives/KpiCard';
+import {
+  type BarItem,
+  BarList,
+  Donut,
+  type DonutSegment,
+  InsightCard,
+  InsightLayout,
+  InsightPanel,
+  SplitBar,
+  type SplitBarSegment,
+} from '@/components/Dashboard/primitives/InsightPanel';
 import { PanelDrawer } from '@/components/Dashboard/primitives/PanelDrawer';
-import { StatGrid } from '@/components/Dashboard/primitives/StatGrid';
+import { ExchangeKpiRibbon, type ExchangeKpiTile } from '@/components/Exchange/ExchangeKpiRibbon';
+import { ExchangePageHero } from '@/components/Exchange/ExchangePageHero';
 import {
   CheckCircle2,
   ChevronLeft,
@@ -132,6 +142,54 @@ export default function DealsWorkspace({
     return map;
   }, [rows]);
 
+  // ── دادهٔ rail تحلیلی ──────────────────────────────────────────────
+  const statusSegments: DonutSegment[] = useMemo(() => {
+    const order: [DealRow['status'], DonutSegment['color']][] = [
+      ['PENDING', 'amber'],
+      ['CONFIRMED', 'indigo'],
+      ['PROCESSING', 'violet'],
+      ['COMPLETED', 'emerald'],
+      ['CANCELLED', 'rose'],
+      ['DISPUTED', 'amber'],
+    ];
+    return order
+      .map(([status, color]) => ({
+        label: STATUS_FA[status],
+        value: counts.get(status) ?? 0,
+        color,
+      }))
+      .filter((x) => x.value > 0);
+  }, [counts]);
+
+  const pairItems: BarItem[] = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const d of rows) {
+      const key = `${d.fromCurrency}/${d.toCurrency}`;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([label, value]) => ({ label, value, color: 'emerald' as const }));
+  }, [rows]);
+
+  const channelSegments: SplitBarSegment[] = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const d of rows)
+      map.set(
+        CHANNEL_FA[d.channel] ?? d.channel,
+        (map.get(CHANNEL_FA[d.channel] ?? d.channel) ?? 0) + 1,
+      );
+    const order: [string, SplitBarSegment['color']][] = [
+      ['آنلاین', 'emerald'],
+      ['حضوری', 'indigo'],
+      ['تلفنی', 'violet'],
+    ];
+    return order
+      .map(([label, color]) => ({ label, value: map.get(label) ?? 0, color }))
+      .filter((x) => x.value > 0);
+  }, [rows]);
+
   async function refresh() {
     const [next, nextStats] = await Promise.all([
       getExchangeDeals(exchangeId, { limit: 60 }),
@@ -170,187 +228,241 @@ export default function DealsWorkspace({
     { key: 'CANCELLED', label: 'لغوشده' },
   ];
 
+  const pendingTrend =
+    kpi.pending > 0
+      ? { label: `${faNum.format(kpi.pending)} معامله نیاز به اقدام دارد`, tone: 'up' as const }
+      : { label: 'صف تأیید خالی است', tone: 'neutral' as const };
+
   return (
     <div className={s.root}>
-      {/* ── KPI row ─────────────────────────────── */}
-      <StatGrid>
-        <KpiCard
-          label="در انتظار تأیید"
-          value={kpi.pending}
-          icon={Clock}
-          trend={kpi.pending > 0 ? 'up' : 'neutral'}
-          info="معاملاتی که اقدام شما لازم است"
-        />
-        <KpiCard
-          label="تأییدشده / در حال انجام"
-          value={kpi.confirmed + kpi.processing}
-          icon={RefreshCw}
-          info="در انتظار تکمیل"
-        />
-        <KpiCard
-          label="تکمیل‌شده امروز"
-          value={kpi.todayCount}
-          icon={CheckCircle2}
-          trend={kpi.todayCount > 0 ? 'up' : 'neutral'}
-        />
-        <KpiCard
-          label={`حجم معاملات امروز (${primaryCurrency})`}
-          value={fmtNum(kpi.todayVolume) || '۰'}
-          format="latin"
-          icon={TrendingUp}
-          info="مجموع مبلغ ورودی معاملات تکمیل‌شدهٔ امروز"
-        />
-      </StatGrid>
-
-      {/* ── Toolbar ────────────────────────────── */}
-      <div className={s.toolbar}>
-        <div className={s.filters} role="tablist" aria-label="فیلتر وضعیت معامله">
-          {filters.map((f) => (
-            <button
-              key={f.key}
-              className={`${s.pill} ${statusFilter === f.key ? s.pillActive : ''}`}
-              onClick={() => setStatusFilter(f.key)}
-            >
-              {f.label}
-              <span className={s.pillCount}>
-                {f.key === 'all' ? rows.length : (counts.get(f.key) ?? 0)}
-              </span>
-            </button>
-          ))}
-        </div>
-        <div className={s.toolbarRight}>
-          <div className={s.search}>
-            <Search size={15} aria-hidden />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="جستجوی کد پیگیری، مشتری، جفت ارز…"
-              aria-label="جستجوی معامله"
-            />
-          </div>
-          {canWrite && (
+      {/* ── ۱. Hero + خط لوله ─────────────────────── */}
+      <ExchangePageHero
+        eyebrow="صرافی · معاملات"
+        title="کارتابل معاملات ارزی"
+        description="تأیید، رسید و پیگیری معاملات حضوری و آنلاین — روند هر معامله از ثبت تا تکمیل در یک نگاه"
+        statValue={faNum.format(kpi.pending)}
+        statLabel="در انتظار تأیید"
+        trend={pendingTrend}
+        liveLabel="رصد زنده · هر ۲۰ ثانیه"
+        visual={<DealPipeline stats={kpi} />}
+        action={
+          canWrite ? (
             <button className={s.cta} onClick={() => setCreateOpen(true)}>
               <Plus size={16} /> ثبت معاملهٔ حضوری
             </button>
-          )}
-        </div>
-      </div>
+          ) : undefined
+        }
+      />
 
-      {error && (
-        <div className={s.error} role="alert">
-          {error}
-          <button onClick={() => setError(null)} aria-label="بستن">
-            <X size={14} />
-          </button>
-        </div>
-      )}
+      {/* ── ۲. روبان KPI فشرده ───────────────────── */}
+      <ExchangeKpiRibbon
+        tiles={
+          [
+            {
+              label: 'در انتظار تأیید',
+              value: faNum.format(kpi.pending),
+              icon: Clock,
+              tone: 'amber',
+              trend:
+                kpi.pending > 0
+                  ? { dir: 'up', label: 'نیاز به اقدام' }
+                  : { dir: 'flat', label: 'صف خالی' },
+            },
+            {
+              label: 'تأییدشده / در حال انجام',
+              value: faNum.format(kpi.confirmed + kpi.processing),
+              icon: RefreshCw,
+              tone: 'sky',
+              sub: 'در انتظار تکمیل',
+            },
+            {
+              label: 'تکمیل‌شده امروز',
+              value: faNum.format(kpi.todayCount),
+              icon: CheckCircle2,
+              tone: 'emerald',
+              sub: kpi.todayCount > 0 ? `از ${faNum.format(kpi.completed)} کل` : '—',
+            },
+            {
+              label: `حجم امروز (${primaryCurrency})`,
+              value: fmtNum(kpi.todayVolume) || '۰',
+              icon: TrendingUp,
+              tone: 'violet',
+              sub: 'مبلغ ورودی تکمیل‌شدهٔ امروز',
+            },
+          ] as ExchangeKpiTile[]
+        }
+      />
 
-      {/* ── Table ──────────────────────────────── */}
-      <div className={s.panel}>
-        {filtered.length === 0 ? (
-          <div className={s.empty}>
-            <div className={s.emptyIcon}>💱</div>
-            <b>معامله‌ای یافت نشد</b>
-            <p>فیلتر یا جستجو را تغییر دهید — یا با «ثبت معاملهٔ حضوری» یک معاملهٔ جدید بسازید.</p>
+      {/* ── ۳. جدول + rail ───────────────────────── */}
+      <InsightLayout
+        main={
+          <div className={s.workspace}>
+            <div className={s.toolbar}>
+              <div className={s.filters} role="tablist" aria-label="فیلتر وضعیت معامله">
+                {filters.map((f) => (
+                  <button
+                    key={f.key}
+                    className={`${s.pill} ${statusFilter === f.key ? s.pillActive : ''}`}
+                    onClick={() => setStatusFilter(f.key)}
+                  >
+                    {f.label}
+                    <span className={s.pillCount}>
+                      {f.key === 'all' ? rows.length : (counts.get(f.key) ?? 0)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div className={s.search}>
+                <Search size={15} aria-hidden />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="جستجوی کد پیگیری، مشتری، جفت ارز…"
+                  aria-label="جستجوی معامله"
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className={s.error} role="alert">
+                {error}
+                <button onClick={() => setError(null)} aria-label="بستن">
+                  <X size={14} />
+                </button>
+              </div>
+            )}
+
+            <div className={s.panel}>
+              {filtered.length === 0 ? (
+                <div className={s.empty}>
+                  <div className={s.emptyIcon}>💱</div>
+                  <b>معامله‌ای یافت نشد</b>
+                  <p>
+                    فیلتر یا جستجو را تغییر دهید — یا با «ثبت معاملهٔ حضوری» یک معاملهٔ جدید بسازید.
+                  </p>
+                </div>
+              ) : (
+                <div className={s.tableWrap}>
+                  <table className={s.table}>
+                    <thead>
+                      <tr>
+                        <th>کد پیگیری</th>
+                        <th>مشتری</th>
+                        <th>جفت ارز</th>
+                        <th>مبلغ</th>
+                        <th>نرخ</th>
+                        <th>کانال</th>
+                        <th>وضعیت</th>
+                        <th aria-label="اقدامات" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filtered.map((d) => (
+                        <tr key={d.id} onClick={() => setSelected(d)} className={s.row}>
+                          <td className={s.stickyCol}>
+                            <span className={s.tracking} dir="ltr">
+                              {d.trackingCode}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={s.customer}>
+                              <span className={s.avatar}>{d.customerName.slice(0, 1)}</span>
+                              <div>
+                                <b>{d.customerName}</b>
+                                <span className={s.phone} dir="ltr">
+                                  {d.customerPhone}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className={s.pair} dir="ltr">
+                            <b>{d.fromCurrency}</b> → <b>{d.toCurrency}</b>
+                          </td>
+                          <td>{fmtAmount(d.fromAmount)}</td>
+                          <td className={s.rate} dir="ltr">
+                            {fmtNum(d.appliedRate)}
+                          </td>
+                          <td>
+                            <span className={s.channel}>{CHANNEL_FA[d.channel] ?? d.channel}</span>
+                          </td>
+                          <td>
+                            <span className={`${s.status} ${s[`status_${d.status}`] ?? ''}`}>
+                              {STATUS_FA[d.status] ?? d.status}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={s.rowActions} onClick={(e) => e.stopPropagation()}>
+                              {d.status === 'PENDING' && canWrite && (
+                                <button
+                                  className={`${s.miniBtn} ${s.miniG}`}
+                                  disabled={busy !== null}
+                                  onClick={() =>
+                                    run(
+                                      () =>
+                                        confirmDeal(d.id, { idempotencyKey: crypto.randomUUID() }),
+                                      `confirm-${d.id}`,
+                                    )
+                                  }
+                                >
+                                  تأیید
+                                </button>
+                              )}
+                              {d.status === 'CONFIRMED' && canWrite && (
+                                <button
+                                  className={`${s.miniBtn} ${s.miniG}`}
+                                  disabled={busy !== null}
+                                  onClick={() =>
+                                    run(
+                                      () => completeDeal(d.id, undefined, crypto.randomUUID()),
+                                      `complete-${d.id}`,
+                                    )
+                                  }
+                                >
+                                  تکمیل
+                                </button>
+                              )}
+                              {(d.status === 'PENDING' || d.status === 'CONFIRMED') && canWrite && (
+                                <button
+                                  className={`${s.miniBtn} ${s.miniGhost}`}
+                                  disabled={busy !== null}
+                                  onClick={() =>
+                                    run(() => cancelDeal(d.id, 'لغو توسط صرافی'), `cancel-${d.id}`)
+                                  }
+                                >
+                                  لغو
+                                </button>
+                              )}
+                              <ChevronLeft size={15} className={s.chev} aria-hidden />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
-        ) : (
-          <table className={s.table}>
-            <thead>
-              <tr>
-                <th>کد پیگیری</th>
-                <th>مشتری</th>
-                <th>جفت ارز</th>
-                <th>مبلغ</th>
-                <th>نرخ</th>
-                <th>کانال</th>
-                <th>وضعیت</th>
-                <th aria-label="اقدامات" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((d) => (
-                <tr key={d.id} onClick={() => setSelected(d)} className={s.row}>
-                  <td>
-                    <span className={s.tracking} dir="ltr">
-                      {d.trackingCode}
-                    </span>
-                  </td>
-                  <td>
-                    <div className={s.customer}>
-                      <span className={s.avatar}>{d.customerName.slice(0, 1)}</span>
-                      <div>
-                        <b>{d.customerName}</b>
-                        <span className={s.phone} dir="ltr">
-                          {d.customerPhone}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td className={s.pair} dir="ltr">
-                    <b>{d.fromCurrency}</b> → <b>{d.toCurrency}</b>
-                  </td>
-                  <td>{fmtAmount(d.fromAmount)}</td>
-                  <td className={s.rate} dir="ltr">
-                    {fmtNum(d.appliedRate)}
-                  </td>
-                  <td>
-                    <span className={s.channel}>{CHANNEL_FA[d.channel] ?? d.channel}</span>
-                  </td>
-                  <td>
-                    <span className={`${s.status} ${s[`status_${d.status}`] ?? ''}`}>
-                      {STATUS_FA[d.status] ?? d.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className={s.rowActions} onClick={(e) => e.stopPropagation()}>
-                      {d.status === 'PENDING' && canWrite && (
-                        <button
-                          className={`${s.miniBtn} ${s.miniG}`}
-                          disabled={busy !== null}
-                          onClick={() =>
-                            run(
-                              () => confirmDeal(d.id, { idempotencyKey: crypto.randomUUID() }),
-                              `confirm-${d.id}`,
-                            )
-                          }
-                        >
-                          تأیید
-                        </button>
-                      )}
-                      {d.status === 'CONFIRMED' && canWrite && (
-                        <button
-                          className={`${s.miniBtn} ${s.miniG}`}
-                          disabled={busy !== null}
-                          onClick={() =>
-                            run(
-                              () => completeDeal(d.id, undefined, crypto.randomUUID()),
-                              `complete-${d.id}`,
-                            )
-                          }
-                        >
-                          تکمیل
-                        </button>
-                      )}
-                      {(d.status === 'PENDING' || d.status === 'CONFIRMED') && canWrite && (
-                        <button
-                          className={`${s.miniBtn} ${s.miniGhost}`}
-                          disabled={busy !== null}
-                          onClick={() =>
-                            run(() => cancelDeal(d.id, 'لغو توسط صرافی'), `cancel-${d.id}`)
-                          }
-                        >
-                          لغو
-                        </button>
-                      )}
-                      <ChevronLeft size={15} className={s.chev} aria-hidden />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        }
+        aside={
+          <InsightPanel>
+            <InsightCard title="توزیع وضعیت معاملات" icon={Clock}>
+              <Donut
+                data={statusSegments}
+                size={132}
+                centerLabel="مجموع"
+                centerValue={faNum.format(rows.length)}
+              />
+            </InsightCard>
+            <InsightCard title="جفت‌ارزهای پرتکرار" icon={TrendingUp}>
+              <BarList data={pairItems} />
+            </InsightCard>
+            <InsightCard title="کانال‌های معامله" icon={RefreshCw}>
+              <SplitBar data={channelSegments} />
+            </InsightCard>
+          </InsightPanel>
+        }
+      />
 
       {/* ── Detail drawer ──────────────────────── */}
       <PanelDrawer
@@ -530,6 +642,52 @@ export default function DealsWorkspace({
           void refresh();
         }}
       />
+    </div>
+  );
+}
+
+// ─── Deal pipeline visual ───────────────────────────────────────────────────
+
+function DealPipeline({ stats }: { stats: ExchangeDealStats }) {
+  const stages = [
+    {
+      key: 'pending',
+      label: 'در انتظار تأیید',
+      count: stats.pending,
+      color: 'var(--ds-accent-amber)',
+    },
+    { key: 'confirmed', label: 'تأییدشده', count: stats.confirmed, color: '#2563eb' },
+    {
+      key: 'processing',
+      label: 'در حال انجام',
+      count: stats.processing,
+      color: 'var(--ds-accent-violet)',
+    },
+    { key: 'completed', label: 'تکمیل', count: stats.completed, color: 'var(--ds-brand-500)' },
+  ];
+  const total = stages.reduce((sum, st) => sum + st.count, 0);
+
+  return (
+    <div className={s.pipeline} aria-label="خط لولهٔ وضعیت معاملات">
+      {stages.map((st, i) => (
+        <div key={st.key} className={s.pipeStageWrap}>
+          {i > 0 && (
+            <div className={s.pipeConnector} aria-hidden>
+              <span className={s.pipeFlow} />
+            </div>
+          )}
+          <div className={`${s.pipeStage} ${i === 0 && st.count > 0 ? s.pipeActive : ''}`}>
+            <span className={s.pipeCount} style={{ color: st.color }}>
+              {faNum.format(st.count)}
+            </span>
+            <span className={s.pipeLabel}>{st.label}</span>
+          </div>
+        </div>
+      ))}
+      <div className={s.pipeTotal}>
+        <span>{faNum.format(total)}</span>
+        <span>کل</span>
+      </div>
     </div>
   );
 }

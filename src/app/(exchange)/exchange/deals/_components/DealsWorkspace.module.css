@@ -1,11 +1,117 @@
 /* ============================================================================
- * DealsWorkspace — کارتابل معاملات ارزی (premium glass)
+ * DealsWorkspace — کارتابل معاملات ارزی (premium glass, لایه‌دار)
  * ========================================================================== */
 
 .root {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
+}
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* ── Pipeline visual (hero) ──────────────────────────────────────────────── */
+
+.pipeline {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pipeStageWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 130px;
+}
+
+.pipeConnector {
+  position: relative;
+  flex: 0 0 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ds-border-strong);
+  overflow: hidden;
+}
+
+.pipeFlow {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 40%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--ds-brand-500));
+  animation: pipeFlow 1.8s var(--ds-ease-in-out-quart) infinite;
+}
+
+@keyframes pipeFlow {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+
+.pipeStage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 8px;
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+  transition: all var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.pipeActive {
+  background: color-mix(in oklch, var(--ds-accent-amber) 9%, var(--ds-surface));
+  border-color: color-mix(in oklch, var(--ds-accent-amber) 45%, var(--ds-border-subtle));
+  box-shadow: 0 8px 22px color-mix(in oklch, var(--ds-accent-amber) 22%, transparent);
+}
+
+.pipeCount {
+  font-size: 22px;
+  font-weight: var(--ds-weight-extrabold);
+  line-height: 1;
+}
+
+.pipeLabel {
+  font-size: 10px;
+  font-weight: var(--ds-weight-semibold);
+  color: var(--ds-text-secondary);
+}
+
+.pipeTotal {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 58px;
+  padding: 10px;
+  border-radius: var(--ds-radius-md);
+  background: linear-gradient(135deg, var(--ds-brand-500), var(--ds-brand-700));
+  color: var(--ds-brand-on);
+}
+
+.pipeTotal span:first-child {
+  font-size: 18px;
+  font-weight: var(--ds-weight-extrabold);
+  line-height: 1;
+}
+
+.pipeTotal span:last-child {
+  font-size: 9.5px;
+  opacity: 0.85;
 }
 
 /* ── Toolbar ──────────────────────────────────────────────────────────────── */
@@ -196,7 +302,12 @@
   overflow: hidden;
 }
 
+.tableWrap {
+  overflow-x: auto;
+}
+
 .table {
+  min-width: 720px;
   width: 100%;
   border-collapse: collapse;
   font-size: var(--ds-text-xs);
@@ -242,6 +353,19 @@
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 22%, var(--ds-border-subtle));
   padding: 3px 9px;
   border-radius: 7px;
+  white-space: nowrap;
+}
+
+.stickyCol {
+  position: sticky;
+  right: 0;
+  background: inherit;
+  z-index: 1;
+  box-shadow: 4px 0 10px -8px rgba(28, 36, 52, 0.25);
+}
+
+.table tbody tr:hover .stickyCol {
+  background: color-mix(in oklch, var(--ds-brand-500) 5%, var(--ds-surface));
 }
 
 .customer {

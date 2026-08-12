@@ -1,11 +1,102 @@
 /* ============================================================================
- * FraudWorkspace — صف بررسی تقلب صرافی (premium glass)
+ * FraudWorkspace — صف بررسی تقلب صرافی (premium glass, لایه‌دار)
  * ========================================================================== */
 
 .root {
   display: flex;
   flex-direction: column;
   gap: var(--ds-space-4);
+}
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+}
+
+/* ── Risk bands visual (hero) ────────────────────────────────────────────── */
+
+.riskCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-recessed);
+  border: 1px solid var(--ds-border-subtle);
+}
+
+.riskCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--ds-text-muted);
+}
+
+.riskCardHead b {
+  font-size: 13px;
+  font-weight: var(--ds-weight-extrabold);
+  color: var(--ds-rose);
+}
+
+.riskBands {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.riskBandLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  color: var(--ds-text-secondary);
+  margin-bottom: 5px;
+}
+
+.riskBandLabel b {
+  color: var(--ds-text-primary);
+}
+
+.riskBandTrack {
+  height: 8px;
+  border-radius: 6px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border-subtle);
+  overflow: hidden;
+}
+
+.riskBandTrack i {
+  display: block;
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s var(--ds-ease-out-quart);
+}
+
+.riskCardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px dashed var(--ds-border-default);
+  font-size: 11px;
+  color: var(--ds-text-muted);
+}
+
+.riskCardFoot b {
+  font-weight: var(--ds-weight-extrabold);
+}
+
+.priorityHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  line-height: 1.8;
+}
+
+.priorityHint p {
+  margin: 0;
 }
 
 .toolbar {
