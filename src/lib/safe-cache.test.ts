@@ -88,3 +88,37 @@ describe('safeCache', () => {
     expect(await cached()).not.toBe(first);
   });
 });
+
+describe('safeCache byte budget', () => {
+  it('evicts the oldest entries when the total byte budget is exceeded', async () => {
+    // budget for ~1.5 entries of the payload size → second distinct key
+    // pushes total over budget and evicts the oldest (key a)
+    process.env.SAFE_CACHE_MAX_BYTES = '800';
+    process.env.SAFE_CACHE_MAX_ENTRIES = '1000';
+    vi.resetModules();
+
+    // fresh module instance so the env is picked up at module init
+    const { safeCache } = await import('./safe-cache');
+
+    const fn = vi.fn(async (n: number) => ({ n, payload: 'x'.repeat(200) }));
+    const cached = safeCache(fn, null, { key: 'byte-budget:a', ttl: 60 });
+
+    const first = await cached(1);
+    expect(fn).toHaveBeenCalledTimes(1);
+
+    // same key is cached — no second call
+    await cached(1);
+    expect(fn).toHaveBeenCalledTimes(1);
+
+    // a different key pushes total over budget → oldest (key a) is evicted
+    const cachedB = safeCache(fn, null, { key: 'byte-budget:b', ttl: 60 });
+    await cachedB(2);
+
+    // re-reading key a now re-invokes fn (was evicted)
+    await cached(1);
+    expect(fn).toHaveBeenCalledTimes(3);
+
+    delete process.env.SAFE_CACHE_MAX_BYTES;
+    delete process.env.SAFE_CACHE_MAX_ENTRIES;
+  });
+});

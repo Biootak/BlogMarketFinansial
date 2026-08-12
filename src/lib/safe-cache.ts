@@ -15,8 +15,29 @@ interface CacheEntry<T> {
 }
 
 // In-memory cache bounded to prevent unbounded growth; oldest entries evicted first.
+// 2026-08-12: علاوه بر سقف تعداد، سقف حجمی هم داریم — چند entry بزرگ (پست‌ها،
+// نرخ بازار) می‌توانند صدها KB بگیرند و ۱۰۰۰ تا از آن‌ها = صدها MB (دلیل
+// R14 روی dyno 512MB). هر entry هم وزن تخمینی دارد؛ وقتی مجموع از
+// SAFE_CACHE_MAX_BYTES گذشت، قدیمی‌ترین‌ها حذف می‌شوند.
 const MAX_CACHE_ENTRIES = Number(process.env.SAFE_CACHE_MAX_ENTRIES) || 1000;
+const MAX_CACHE_BYTES = Number(process.env.SAFE_CACHE_MAX_BYTES) || 150 * 1024 * 1024;
 const memoryStore = new Map<string, CacheEntry<unknown>>();
+
+/** وزن تخمینی یک entry (بایت) — برای سقف حجمی. */
+function estimateBytes<T>(value: T): number {
+  // JSON.stringify روی objects/cache های بزرگ کافی است؛ برای ساده‌سازی
+  // string/number/boolean هم به همین شکل محاسبه می‌شود.
+  try {
+    if (typeof value === 'string') return value.length * 2;
+    if (typeof value === 'number') return 8;
+    if (value === null || value === undefined) return 0;
+    const json = JSON.stringify(value);
+    return json ? json.length * 2 : 64;
+  } catch {
+    // circular reference یا خیلی بزرگ — تخمین محافظه‌کارانه
+    return 1024;
+  }
+}
 
 // Maps tag → set of base keys so safeRevalidateTag can purge in-memory slots by tag.
 const tagRegistry = new Map<string, Set<string>>();
@@ -26,13 +47,25 @@ const tagRegistry = new Map<string, Set<string>>();
 // scrape دوباره را trigger کنند (ضد stampede).
 const inflightRefresh = new Set<string>();
 
+let totalBytes = 0;
+
 function evictIfNeeded(): void {
-  while (memoryStore.size > MAX_CACHE_ENTRIES) {
+  while (memoryStore.size > MAX_CACHE_ENTRIES || totalBytes > MAX_CACHE_BYTES) {
     const oldestKey = memoryStore.keys().next().value;
-    if (oldestKey !== undefined) {
-      memoryStore.delete(oldestKey);
+    if (oldestKey === undefined) {
+      totalBytes = 0;
+      break;
     }
+    const entry = memoryStore.get(oldestKey);
+    if (entry) totalBytes -= estimateBytes(entry.value);
+    memoryStore.delete(oldestKey);
   }
+}
+
+function trackSet(key: string, entry: CacheEntry<unknown>): void {
+  memoryStore.set(key, entry);
+  totalBytes += estimateBytes(entry.value);
+  evictIfNeeded();
 }
 
 interface SafeCacheOptions {
@@ -100,12 +133,11 @@ export function safeCache<TArgs extends unknown[], T>(
             // فعلی قدیمی‌تر از شروعِ این refresh باشد.
             const current = memoryStore.get(fullKey) as CacheEntry<T> | undefined;
             if (!current || current.storedAt <= startedAt) {
-              memoryStore.set(fullKey, {
+              trackSet(fullKey, {
                 value,
                 expiresAt: performance.now() + ttl * 1000,
                 storedAt: performance.now(),
               });
-              evictIfNeeded();
             }
           })
           .catch(() => {
@@ -122,8 +154,7 @@ export function safeCache<TArgs extends unknown[], T>(
     // 2) cache تازه نیست → fn را فراخوانی کن
     try {
       const value = await fn(...args);
-      memoryStore.set(fullKey, { value, expiresAt: now + ttl * 1000, storedAt: now });
-      evictIfNeeded();
+      trackSet(fullKey, { value, expiresAt: now + ttl * 1000, storedAt: now });
       if (isDev && tags.length > 0) {
         // فقط برای dev observability
       }
@@ -147,7 +178,11 @@ export function safeCache<TArgs extends unknown[], T>(
  * معادل `revalidateTag` ولی برای memory cache ما.
  */
 export function safeRevalidate(key: string): void {
-  memoryStore.delete(key);
+  const entry = memoryStore.get(key);
+  if (entry) {
+    totalBytes -= estimateBytes(entry.value);
+    memoryStore.delete(key);
+  }
 }
 
 /**
@@ -157,8 +192,7 @@ export function safeRevalidate(key: string): void {
  */
 export function safeSet<T>(key: string, value: T, ttlSeconds: number): void {
   const now = performance.now();
-  memoryStore.set(key, { value, expiresAt: now + ttlSeconds * 1000, storedAt: now });
-  evictIfNeeded();
+  trackSet(key, { value, expiresAt: now + ttlSeconds * 1000, storedAt: now });
 }
 
 /**
@@ -170,6 +204,8 @@ export function safeRevalidateTag(tag: string): void {
   for (const baseKey of [...keys]) {
     for (const fullKey of [...memoryStore.keys()]) {
       if (fullKey === baseKey || fullKey.startsWith(`${baseKey}${ARG_SEPARATOR}`)) {
+        const entry = memoryStore.get(fullKey);
+        if (entry) totalBytes -= estimateBytes(entry.value);
         memoryStore.delete(fullKey);
       }
     }
@@ -181,6 +217,7 @@ export function safeRevalidateTag(tag: string): void {
  */
 export function safeRevalidateAll(): void {
   memoryStore.clear();
+  totalBytes = 0;
 }
 
 export default safeCache;
