@@ -42,7 +42,7 @@
 .mixHead b {
   font-size: 13px;
   font-weight: var(--ds-weight-extrabold);
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .mixTrack {

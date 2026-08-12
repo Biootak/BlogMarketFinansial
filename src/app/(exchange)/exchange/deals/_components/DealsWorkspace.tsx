@@ -36,6 +36,7 @@ import { PanelDrawer } from '@/components/Dashboard/primitives/PanelDrawer';
 import { ExchangeKpiRibbon, type ExchangeKpiTile } from '@/components/Exchange/ExchangeKpiRibbon';
 import { ExchangePageHero } from '@/components/Exchange/ExchangePageHero';
 import {
+  ArrowLeftRight,
   CheckCircle2,
   ChevronLeft,
   Clock,
@@ -332,14 +333,16 @@ export default function DealsWorkspace({
               </div>
             )}
 
-            <div className={s.panel}>
-              {filtered.length === 0 ? (
+            <div className={s.panel}>              {filtered.length === 0 ? (
                 <div className={s.empty}>
-                  <div className={s.emptyIcon}>💱</div>
+                  <div className={s.emptyIcon}><ArrowLeftRight size={22} aria-hidden /></div>
                   <b>معامله‌ای یافت نشد</b>
-                  <p>
-                    فیلتر یا جستجو را تغییر دهید — یا با «ثبت معاملهٔ حضوری» یک معاملهٔ جدید بسازید.
-                  </p>
+                  <p>فیلتر یا جستجو را تغییر دهید — یا با «ثبت معاملهٔ حضوری» یک معاملهٔ جدید بسازید.</p>
+                  {canWrite && (
+                    <button className={`${s.cta} ${s.emptyCta}`} onClick={() => setCreateOpen(true)}>
+                      <Plus size={15} /> ثبت معاملهٔ حضوری
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className={s.tableWrap}>

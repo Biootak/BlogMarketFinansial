@@ -38,7 +38,7 @@
 .sparkHead b {
   font-size: 14px;
   font-weight: var(--ds-weight-extrabold);
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .sparkSvg {
@@ -70,8 +70,8 @@
 }
 
 .reload:hover {
-  border-color: var(--ds-brand-500);
-  color: var(--ds-brand-700);
+  border-color: var(--ds-primary);
+  color: var(--ds-primary);
 }
 
 .reload:disabled {
@@ -122,13 +122,13 @@
 
 .pill:hover {
   border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-subtle));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .pillActive {
   background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--ds-brand-500) 45%, var(--ds-border-subtle));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .toolbarRight {
@@ -151,7 +151,7 @@
 }
 
 .search:focus-within {
-  border-color: var(--ds-brand-500);
+  border-color: var(--ds-primary);
 }
 
 .search input {
@@ -182,8 +182,8 @@
 }
 
 .reload:hover {
-  border-color: var(--ds-brand-500);
-  color: var(--ds-brand-700);
+  border-color: var(--ds-primary);
+  color: var(--ds-primary);
 }
 
 .spin {
@@ -294,7 +294,7 @@
 
 .dirIn {
   background: color-mix(in oklch, var(--ds-brand-500) 13%, var(--ds-surface));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 38%, transparent);
 }
 
@@ -305,7 +305,7 @@
 }
 
 .amountIn {
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   font-weight: var(--ds-weight-bold);
 }
 

@@ -67,7 +67,7 @@
   font-size: 10.5px;
   font-weight: var(--ds-weight-bold);
   letter-spacing: 0.04em;
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   background: color-mix(in oklch, var(--ds-brand-500) 10%, var(--ds-surface));
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 26%, var(--ds-border-subtle));
   padding: 4px 11px;
@@ -101,7 +101,7 @@
   font-weight: var(--ds-weight-extrabold);
   line-height: 1;
   letter-spacing: -0.02em;
-  background: linear-gradient(120deg, var(--ds-brand-700), var(--ds-brand-500));
+  background: linear-gradient(120deg, var(--ds-primary), var(--ds-primary-light));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -132,7 +132,7 @@
 
 .trend_up {
   background: color-mix(in oklch, var(--ds-brand-500) 13%, var(--ds-surface));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .trend_down {

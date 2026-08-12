@@ -38,7 +38,7 @@
 .statusBarHead b {
   font-size: 13px;
   font-weight: var(--ds-weight-extrabold);
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .statusBarTrack {
@@ -128,13 +128,13 @@
 
 .pill:hover {
   border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-subtle));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .pillActive {
   background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--ds-brand-500) 45%, var(--ds-border-subtle));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .pillCount {
@@ -165,7 +165,7 @@
 }
 
 .search:focus-within {
-  border-color: var(--ds-brand-500);
+  border-color: var(--ds-primary);
 }
 
 .search input {
@@ -206,7 +206,7 @@
 }
 
 .typePill:hover {
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   border-color: color-mix(in oklch, var(--ds-brand-500) 45%, var(--ds-border-default));
 }
 
@@ -214,7 +214,7 @@
   background: color-mix(in oklch, var(--ds-brand-500) 8%, var(--ds-surface));
   border-style: solid;
   border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-default));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .error {
@@ -268,7 +268,7 @@
   display: grid;
   place-items: center;
   flex: none;
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   background: color-mix(in oklch, var(--ds-brand-500) 10%, var(--ds-surface));
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 25%, var(--ds-border-subtle));
 }
@@ -331,7 +331,7 @@
 
 .status_APPROVED {
   background: color-mix(in oklch, var(--ds-brand-500) 13%, var(--ds-surface));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 38%, transparent);
 }
 
@@ -505,7 +505,7 @@
 }
 
 .noteResolved span {
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .note p {
@@ -541,7 +541,7 @@
 }
 
 .resolutionField textarea:focus {
-  border-color: var(--ds-brand-500);
+  border-color: var(--ds-primary);
 }
 
 .timeline {

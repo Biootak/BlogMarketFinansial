@@ -656,7 +656,7 @@
 }
 
 .searchInput:focus {
-  border-color: var(--ds-brand-500);
+  border-color: var(--ds-primary);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
 }
 
@@ -1071,7 +1071,7 @@
 
 .status_PROSPECT {
   background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
-  color: var(--ds-brand-500);
+  color: var(--ds-primary);
 }
 
 /* Date cell */
@@ -1208,7 +1208,7 @@
 }
 
 .pageJumpInput:focus {
-  border-color: var(--ds-brand-500);
+  border-color: var(--ds-primary);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 14%, transparent);
 }
 
@@ -1276,7 +1276,7 @@
   align-items: center;
   justify-content: center;
   background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
-  color: var(--ds-brand-500);
+  color: var(--ds-primary);
   border: 1.5px dashed color-mix(in oklch, var(--ds-brand-500) 40%, transparent);
 }
 

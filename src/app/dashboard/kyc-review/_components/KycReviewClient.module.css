@@ -177,8 +177,8 @@
   gap: 2px;
   padding: 2px;
   border-radius: var(--ds-radius-lg);
-  background: color-mix(in srgb, var(--ds-color-text-primary, #000) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ds-color-text-primary, #000) 4%, transparent);
+  background: color-mix(in srgb, var(--ds-text-primary) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-text-primary) 4%, transparent);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -206,14 +206,14 @@
 }
 
 .scopePill:hover {
-  color: var(--ds-color-text-primary, var(--ds-text-primary));
-  background: color-mix(in srgb, var(--ds-color-text-primary, #000) 4%, transparent);
+  color: var(--ds-text-primary);
+  background: color-mix(in srgb, var(--ds-text-primary) 4%, transparent);
 }
 
 .scopePillActive {
   background: var(--ds-color-bg-elevated, #fff);
-  color: var(--ds-color-text-primary, var(--ds-text-primary));
-  border-color: color-mix(in srgb, var(--ds-color-text-primary, #000) 6%, transparent);
+  color: var(--ds-text-primary);
+  border-color: color-mix(in srgb, var(--ds-text-primary) 6%, transparent);
   box-shadow: 0 1px 4px color-mix(in srgb, #000 4%, transparent), 0 8px 20px -8px
     color-mix(in srgb, #000 8%, transparent);
 }
@@ -395,7 +395,7 @@
 .queueCard:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px -4px oklch(0% 0 0 / 0.12);
-  border-color: color-mix(in srgb, var(--ds-color-text-primary, #000) 12%, transparent);
+  border-color: color-mix(in srgb, var(--ds-text-primary) 12%, transparent);
 }
 
 .queueCard:focus-visible {
@@ -542,14 +542,14 @@
 }
 
 .chipTime {
-  background: color-mix(in srgb, var(--ds-color-text-primary, #000) 4%, transparent);
+  background: color-mix(in srgb, var(--ds-text-primary) 4%, transparent);
   color: var(--at-fg-muted, var(--ds-text-muted));
   font-variant-numeric: tabular-nums;
 }
 
 .chipDocType {
-  background: color-mix(in srgb, var(--ds-color-text-primary, #000) 5%, transparent);
-  color: var(--ds-color-text-primary, var(--ds-text-primary));
+  background: color-mix(in srgb, var(--ds-text-primary) 5%, transparent);
+  color: var(--ds-text-primary);
   font-weight: 700;
   letter-spacing: 0.02em;
 }
@@ -687,7 +687,7 @@
   inline-size: 60px;
   block-size: 60px;
   border-radius: var(--ds-radius-xl);
-  background: color-mix(in srgb, var(--ds-color-text-primary, #000) 3%, transparent);
+  background: color-mix(in srgb, var(--ds-text-primary) 3%, transparent);
   color: var(--at-fg-muted, var(--ds-text-muted));
   opacity: 0.45;
   margin-block-end: var(--ds-space-1);
@@ -715,8 +715,8 @@
   margin-block-start: var(--ds-space-2);
   padding: var(--ds-space-2) var(--ds-space-3);
   border-radius: var(--ds-radius-md);
-  background: color-mix(in srgb, var(--ds-color-text-primary, #000) 2%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ds-color-text-primary, #000) 4%, transparent);
+  background: color-mix(in srgb, var(--ds-text-primary) 2%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-text-primary) 4%, transparent);
   animation: fadeInHint 300ms ease both;
 }
 
@@ -746,8 +746,8 @@
   justify-content: center;
   padding: 2px 6px;
   border-radius: 4px;
-  background: color-mix(in srgb, var(--ds-color-text-primary, #000) 6%, transparent);
-  border: 1px solid color-mix(in srgb, var(--ds-color-text-primary, #000) 10%, transparent);
+  background: color-mix(in srgb, var(--ds-text-primary) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-text-primary) 10%, transparent);
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
   font-size: 10px;
   font-weight: 600;
@@ -870,14 +870,14 @@
   flex-direction: column;
   gap: 4px;
   padding: var(--ds-space-2) var(--ds-space-3);
-  background: color-mix(in srgb, var(--ds-color-text-primary, #000) 2%, transparent);
+  background: color-mix(in srgb, var(--ds-text-primary) 2%, transparent);
   border-radius: var(--ds-radius-md);
-  border: 1px solid color-mix(in srgb, var(--ds-color-text-primary, #000) 4%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ds-text-primary) 4%, transparent);
   transition: border-color 120ms ease;
 }
 
 .metaCell:hover {
-  border-color: color-mix(in srgb, var(--ds-color-text-primary, #000) 8%, transparent);
+  border-color: color-mix(in srgb, var(--ds-text-primary) 8%, transparent);
 }
 
 .metaCell__label {
@@ -960,7 +960,7 @@
   background: linear-gradient(
     110deg,
     var(--ds-canvas-subtle) 30%,
-    color-mix(in srgb, var(--ds-color-text-primary, #000) 4%, var(--ds-canvas-subtle)) 50%,
+    color-mix(in srgb, var(--ds-text-primary) 4%, var(--ds-canvas-subtle)) 50%,
     var(--ds-canvas-subtle) 70%
   );
   background-size: 200% 100%;

@@ -135,13 +135,13 @@
 
 .pill:hover {
   border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-subtle));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .pillActive {
   background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--ds-brand-500) 45%, var(--ds-border-subtle));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .pillCount {
@@ -298,7 +298,7 @@
 
 .status_RESOLVED {
   background: color-mix(in oklch, var(--ds-brand-500) 13%, var(--ds-surface));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 38%, transparent);
 }
 
@@ -330,7 +330,7 @@
   border-radius: 16px;
   display: grid;
   place-items: center;
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   background: color-mix(in oklch, var(--ds-brand-500) 9%, var(--ds-surface));
   border: 1px solid var(--ds-border-subtle);
 }
@@ -384,7 +384,7 @@
   flex: 1;
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-subtle));
   background: color-mix(in oklch, var(--ds-brand-500) 7%, var(--ds-surface));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .resolvedBtn:disabled,
@@ -464,7 +464,7 @@
 }
 
 .noteResolved span {
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .note p {
@@ -500,7 +500,7 @@
 }
 
 .resolutionField textarea:focus {
-  border-color: var(--ds-brand-500);
+  border-color: var(--ds-primary);
 }
 
 .spin {

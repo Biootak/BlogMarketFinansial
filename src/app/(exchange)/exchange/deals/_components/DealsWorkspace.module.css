@@ -78,7 +78,7 @@
 }
 
 .pipeCount {
-  font-size: 22px;
+  font-size: var(--ds-text-2xl);
   font-weight: var(--ds-weight-extrabold);
   line-height: 1;
 }
@@ -104,7 +104,7 @@
 }
 
 .pipeTotal span:first-child {
-  font-size: 18px;
+  font-size: var(--ds-text-xl);
   font-weight: var(--ds-weight-extrabold);
   line-height: 1;
 }
@@ -153,13 +153,13 @@
 
 .pill:hover {
   border-color: color-mix(in oklch, var(--ds-brand-500) 40%, var(--ds-border-subtle));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .pillActive {
   background: color-mix(in oklch, var(--ds-brand-500) 12%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--ds-brand-500) 45%, var(--ds-border-subtle));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .pillCount {
@@ -196,7 +196,7 @@
 }
 
 .search:focus-within {
-  border-color: var(--ds-brand-500);
+  border-color: var(--ds-primary);
 }
 
 .search input {
@@ -348,7 +348,7 @@
   font-family: ui-monospace, "SF Mono", Menlo, monospace;
   font-size: 11.5px;
   font-weight: var(--ds-weight-bold);
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   background: color-mix(in oklch, var(--ds-brand-500) 9%, var(--ds-surface));
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 22%, var(--ds-border-subtle));
   padding: 3px 9px;
@@ -446,7 +446,7 @@
 
 .status_COMPLETED {
   background: color-mix(in oklch, var(--ds-brand-500) 13%, var(--ds-surface));
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 38%, transparent);
 }
 
@@ -545,6 +545,10 @@
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
   max-width: 340px;
+}
+
+.emptyCta {
+  margin-top: 6px;
 }
 
 /* ── Drawer content ───────────────────────────────────────────────────────── */
@@ -706,7 +710,7 @@
 .form input:focus,
 .form select:focus,
 .form textarea:focus {
-  border-color: var(--ds-brand-500);
+  border-color: var(--ds-primary);
 }
 
 .hint {
@@ -730,7 +734,7 @@
 }
 
 .quotePreview b {
-  color: var(--ds-brand-700);
+  color: var(--ds-primary);
 }
 
 .spin {
