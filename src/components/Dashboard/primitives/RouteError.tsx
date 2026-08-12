@@ -61,6 +61,8 @@ export interface RouteErrorProps {
   variant?: 'page' | 'inline';
   /** کارت‌های مقصد پیشنهادی (شبکهٔ ۲×۲). پیش‌فرض بر اساس نوع خطا ساخته می‌شود. */
   suggestions?: SuggestItem[];
+  /** ثبت خطا در Sentry — پیش‌فرض true. برای پیش‌نمایش/صفحه‌های دمو false بدهید. */
+  reportToSentry?: boolean;
 }
 
 /** یک کارت مقصد پیشنهادی در شبکهٔ ۲×۲. */
@@ -161,10 +163,11 @@ export function RouteError({
   backLabel = 'صفحه اصلی',
   variant = 'page',
   suggestions,
+  reportToSentry = true,
 }: RouteErrorProps) {
   useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
+    if (reportToSentry) Sentry.captureException(error);
+  }, [error, reportToSentry]);
 
   const kind = detectKind(error);
   const tone = KIND_TONE[kind];

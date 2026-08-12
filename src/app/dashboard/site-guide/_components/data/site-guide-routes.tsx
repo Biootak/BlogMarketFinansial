@@ -1144,7 +1144,7 @@ export const SECTIONS: SectionDef[] = [
     routes: [
       {
         label: 'خطای عمومی',
-        path: '/error',
+        path: '/error-page',
         description: 'RouteError — صفحهٔ خطا با طراحی شیشه‌ای',
         icon: <AlertTriangle size={S} />,
         tone: 'rose',
@@ -1193,7 +1193,7 @@ export const SECTIONS: SectionDef[] = [
       },
       {
         label: 'تأیید درخواست',
-        path: '/verify-request',
+        path: '/verify-status',
         description: 'صفحهٔ تأیید تراکنش یا درخواست',
         icon: <BadgeCheck size={S} />,
         tone: 'emerald',
