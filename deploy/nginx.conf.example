@@ -1,6 +1,35 @@
 # ============================================================
 # Nginx config example for Financial Market Blog (self-hosted)
 # ============================================================
+
+# ────────────────────────────────────────────────────────────────
+# Brotli — داک رسمی NGINX (docs.nginx.com → Brotli)
+# نیاز به ماژول ngx_brotli دارد. روی Debian/Ubuntu:
+#   sudo apt install nginx-module-brotli      (پکیج community)
+# یا نسخهٔ Plus: sudo apt install nginx-plus-module-brotli
+# این دو خط load_module باید در main context (بالای http) باشند:
+#   load_module modules/ngx_http_brotli_filter_module.so;
+#   load_module modules/ngx_http_brotli_static_module.so;
+# پس از نصب: nginx -t && sudo systemctl reload nginx
+# توجه: مرورگرها Accept-Encoding: br می‌فرستند؛ gzip زیر به‌عنوان
+# fallback برای کلاینت‌های قدیمی باقی می‌ماند. Brotli ~۱۵-۲۰٪
+# کوچک‌تر از gzip است (همان نوع MIMEها، فقط سطح فشرده‌سازی فرق دارد).
+# ────────────────────────────────────────────────────────────────
+
+# Early Hints (HTTP 103) — بلاگ رسمی NGINX (blog.nginx.org, 2025-06-24)
+# دایرکتیو `early_hints` فقط در NGINX 1.29.0+ موجود است و 103 را از
+# backend به کلاینت پروکسی می‌کند. طبق راهنمای رسمی Chrome فقط برای
+# navigation requests به کلاینت‌های HTTP/2 و HTTP/3 ارسال می‌شود:
+#   map $http_sec_fetch_mode $early_hints {
+#       navigate $http2$http3;
+#   }
+# (این map باید در سطح http context تعریف شود — اینجا فقط نمونه است)
+# ⚠️ پیش‌شرط: خود backend باید 103 بفرستد. Next.js `next start` به‌صورت
+# بومی 103 تولید نمی‌کند (رفرنس: بحث رسمی vercel/next.js#36089).
+# اگر سایت پشت Cloudflare است، ساده‌ترین راه این است که به 200 پاسخ
+# `Link` header اضافه کنید — Cloudflare خودش آن را به 103 تبدیل می‌کند
+# (blog.cloudflare.com/early-hints). این کار در next.config.ts از طریق
+# هدر `Link` برای مسیرهای عمومی قابل انجام است.
 # قبل از فعال‌سازی:
 #   1) دامنه را در DNS به IP سرور وصل کن
 #   2) certbot --nginx -d your-domain.com -d www.your-domain.com
@@ -78,9 +107,32 @@ server {
         image/x-icon
         font/woff2;
 
+    # --- Brotli (بعد از نصب ngx_brotli — ر.ک بالای فایل) ---
+    # مرورگرهای مدرن (Chrome/Edge/Firefox/Safari 15+) br را ترجیح می‌دهند؛
+    # بقیه به‌صورت خودکار gzip دریافت می‌کنند.
+    # brotli on;
+    # brotli_comp_level 6;
+    # brotli_min_length 1024;
+    # brotli_types
+    #     text/plain
+    #     text/css
+    #     text/xml
+    #     text/javascript
+    #     application/json
+    #     application/javascript
+    #     application/xml+rss
+    #     application/atom+xml
+    #     application/vnd.ms-fontobject
+    #     image/svg+xml
+    #     image/x-icon
+    #     font/woff2;
+
     # --- Proxy به Next.js ---
     location / {
         proxy_pass http://127.0.0.1:3000;
+        # Early Hints: 103 را از backend به کلاینت بفرست (فقط NGINX 1.29+؛
+        # و فقط وقتی backend خودش 103 تولید می‌کند — ر.ک بالای فایل).
+        # early_hints $early_hints;
         proxy_http_version 1.1;
         proxy_set_header Host              $host;
         proxy_set_header X-Real-IP         $remote_addr;

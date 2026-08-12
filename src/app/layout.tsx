@@ -118,6 +118,41 @@ export default function RootLayout({
         {/* 2026-08-05 perf: MutationObserver روی کل subtree در prod فقط
             CPU می‌سوزاند. hydration mismatch warning فقط در dev نمایش داده
             می‌شود، پس اسکریپت strip-extension-attrs فقط در dev لود می‌شود. */}
+        {/* 2026-08-12 perf (performance skill): Speculation Rules — صفحاتی
+            که کاربر به‌احتمال زیاد باز می‌کند (بعد از ~200ms هوور، eagerness:
+            moderate) در پس‌زمینه prerender می‌شوند تا navigation تقریباً
+            آنی باشد. فقط مسیرهای عمومی: api/dashboard/exchange/customer/
+            auth/upload و… مستثنا هستند تا صفحات خصوصی و DB-سنگین هرگز
+            prerender نشوند. PageViewTracker با document.prerendering gate
+            شده — پریرندر pageview کاذب ثبت نمی‌کند (ر.ک usePageView). */}
+        {/* 2026-08-12 perf (performance skill): اتصال به هاست‌های تصویر خارجی که
+            مرورگر واقعاً مستقیم به آن‌ها وصل می‌شود. تحلیل HTML صفحات عمومی:
+            i.pravatar.cc → آواتار نویسنده‌ها (۳۳۹ ارجاع؛ مستقیم با <Image
+            unoptimized> لود می‌شود) → preconnect کامل. تصاویر شاخص پست‌ها
+            (unsplash/pexels) از /_next/image پراکسی می‌شوند (same-origin) پس
+            preconnect به آن‌ها بی‌فایده است. آواتارهای OAuth کاربران واقعی
+            (Google/GitHub) هم مستقیم لود می‌شوند → dns-prefetch ارزان برای
+            گرم نگه‌داشتن DNS. */}
+        <link rel="preconnect" href="https://i.pravatar.cc" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
+        <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
+        <script
+          type="speculationrules"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON استاتیک از regex ثابت — هیچ ورودی کاربری ندارد (Speculation Rules رسمی Chrome)
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              prerender: [
+                {
+                  where: {
+                    href_matches:
+                      '^/((?!api|dashboard|exchange/|customer|setup|signin|signup|auth|forgot-password|reset-password|verify-email|verify-request|2fa-setup|session-expired|verify-status|maintenance|offline|forbidden|monitoring|uploads|error)[^.]*)$',
+                  },
+                  eagerness: 'moderate',
+                },
+              ],
+            }),
+          }}
+        />
       </head>
       <body
         className="bg-[var(--ds-canvas)] text-[var(--ds-text-primary)] antialiased"

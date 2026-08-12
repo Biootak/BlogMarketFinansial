@@ -18,66 +18,89 @@ export function usePageView() {
   useEffect(() => {
     if (!pathname) return;
 
-    // پاک کردن timer قبلی (debounce)
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
+    // 2026-08-12 perf (Speculation Rules gate): با prerender شدن صفحات
+    // (هوور روی لینک)، صفحه در پس‌زمینه اجرا می‌شود و این effect هم اجرا
+    // می‌شود — بدون این gate هر prerender یک pageview کاذب ثبت می‌کرد.
+    // وقتی page واقعاً فعال شد (prerenderingchange) pageview واقعی ثبت
+    // می‌شود. (الگوی رسمی: web.dev پریرندر — gating analytics)
+    const isPrerendering =
+      typeof document !== 'undefined' &&
+      (document as Document & { prerendering?: boolean }).prerendering === true;
 
-    timerRef.current = setTimeout(() => {
-      // Skip اگه همین pathname اخیراً ثبت شده (StrictMode guard)
-      const last = lastRecordedPath.get(pathname);
-      const now = Date.now();
-      if (last && now - last < RECORD_COOLDOWN) {
-        return;
+    const schedule = () => {
+      // پاک کردن timer قبلی (debounce)
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
       }
-      lastRecordedPath.set(pathname, now);
 
-      // cleanup old entries (بیش از 10 pathname نگه ندار)
-      if (lastRecordedPath.size > 50) {
-        const cutoff = now - RECORD_COOLDOWN * 10;
-        for (const [key, ts] of lastRecordedPath.entries()) {
-          if (ts < cutoff) lastRecordedPath.delete(key);
+      timerRef.current = setTimeout(() => {
+        // Skip اگه همین pathname اخیراً ثبت شده (StrictMode guard)
+        const last = lastRecordedPath.get(pathname);
+        const now = Date.now();
+        if (last && now - last < RECORD_COOLDOWN) {
+          return;
         }
-      }
+        lastRecordedPath.set(pathname, now);
 
-      // ارسال pageview - با sendBeacon در صورت امکان (non-blocking)
-      const send = () => {
-        try {
-          const body = JSON.stringify({ page: pathname });
-          // اولویت با sendBeacon - در unload کار می‌کنه و non-blocking هست
-          if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
-            const blob = new Blob([body], { type: 'application/json' });
-            navigator.sendBeacon('/api/pageview', blob);
-            return;
+        // cleanup old entries (بیش از 10 pathname نگه ندار)
+        if (lastRecordedPath.size > 50) {
+          const cutoff = now - RECORD_COOLDOWN * 10;
+          for (const [key, ts] of lastRecordedPath.entries()) {
+            if (ts < cutoff) lastRecordedPath.delete(key);
           }
-          // fallback به fetch با keepalive
-          fetch('/api/pageview', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body,
-            keepalive: true,
-          }).catch((_error) => {
-            // silent fail - pageview نباید UX رو خراب کنه
-            if (process.env.NODE_ENV === 'development') {
-              // biome-ignore lint/suspicious/noConsole: dev-only error logging
-              console.error('[usePageView] fetch failed:', _error);
+        }
+
+        // ارسال pageview - با sendBeacon در صورت امکان (non-blocking)
+        const send = () => {
+          try {
+            const body = JSON.stringify({ page: pathname });
+            // اولویت با sendBeacon - در unload کار می‌کنه و non-blocking هست
+            if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+              const blob = new Blob([body], { type: 'application/json' });
+              navigator.sendBeacon('/api/pageview', blob);
+              return;
             }
-          });
-        } catch {
-          // silent
+            // fallback به fetch با keepalive
+            fetch('/api/pageview', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body,
+              keepalive: true,
+            }).catch((_error) => {
+              // silent fail - pageview نباید UX رو خراب کنه
+              if (process.env.NODE_ENV === 'development') {
+                // biome-ignore lint/suspicious/noConsole: dev-only error logging
+                console.error('[usePageView] fetch failed:', _error);
+              }
+            });
+          } catch {
+            // silent
+          }
+        };
+
+        // درخواست رو در idle time بفرست تا UI رو بلاک نکنه
+        if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+          (
+            window as Window & { requestIdleCallback?: (cb: () => void) => void }
+          ).requestIdleCallback?.(send);
+        } else {
+          send();
+        }
+      }, DEBOUNCE_MS);
+    };
+
+    if (isPrerendering) {
+      const onActivate = () => schedule();
+      document.addEventListener('prerenderingchange', onActivate, { once: true });
+      return () => {
+        document.removeEventListener('prerenderingchange', onActivate);
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
         }
       };
+    }
 
-      // درخواست رو در idle time بفرست تا UI رو بلاک نکنه
-      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-        (
-          window as Window & { requestIdleCallback?: (cb: () => void) => void }
-        ).requestIdleCallback?.(send);
-      } else {
-        send();
-      }
-    }, DEBOUNCE_MS);
-
+    schedule();
     return () => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);

@@ -21,6 +21,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "verify": "node scripts/verify.mjs",
+    "bundle:audit": "node scripts/bundle-audit.mjs",
     "postinstall": "prisma migrate deploy && prisma generate",
     "db:seed": "node prisma/seed.js",
     "db:seed:quotes": "node prisma/seed-exchange-quotes.js",

@@ -269,3 +269,6 @@ terraform.tfvars
 !deploy/gozunga/example-openrc
 # Codebuff/agent session plans
 .zcode/
+
+# Bundle-audit production snapshot (npm run bundle:audit) — regenerated per audit
+/.next-bundle-audit/
