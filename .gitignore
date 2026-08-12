@@ -23,6 +23,11 @@ scripts/*
 !scripts/dev-turbo.mjs
 !scripts/clear-dev-cache.mjs
 !scripts/setup-cron-jobs.mjs
+# cron-job.org browser automation (حاوی session/cookie کاربر — هرگز commit نشود)
+.cronjob-profile/
+.cronjob-mcp.log
+.cronjob-mcp.err
+.mcp-cmds/
 .agents/skills/*/scripts/
 .claude/skills/*/scripts/
 # Logs

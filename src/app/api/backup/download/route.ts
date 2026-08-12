@@ -10,7 +10,7 @@
  *  - X-Content-Type-Options: nosniff → sniffing مسدود
  */
 
-import { readBackup } from '@/lib/backup';
+import { jsonReplacer, readBackup } from '@/lib/backup';
 import { requireSuperAdmin } from '@/lib/require-auth';
 import { NextResponse } from 'next/server';
 
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
     );
   }
 
-  const body = JSON.stringify(envelope, null, 2);
+  const body = JSON.stringify(envelope, jsonReplacer, 2);
 
   // RFC 5987: encode filename برای جلوگیری از مشکل کاراکترهای خاص
   const safeFilename = encodeURIComponent(filename);

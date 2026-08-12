@@ -104,6 +104,18 @@ export const DEFAULT_BACKUP_CONFIG: BackupConfig = {
   notifyEmail: null,
 };
 
+/**
+ * JSON replacer امن برای BigInt.
+ *
+ * چند جدول (Exchange.dailyLimitAf و…) ستون `BigInt` دارند؛ `JSON.stringify` روی
+ * BigInt throw می‌کند (`Do not know how to serialize a BigInt`) و کل backup را
+ * با 500 می‌شکست (مشاهده‌شده در prod در /api/cron/backup).
+ * BigInt به رشته تبدیل می‌شود تا دقت از دست نرود.
+ */
+export function jsonReplacer(_key: string, value: unknown): unknown {
+  return typeof value === 'bigint' ? value.toString() : value;
+}
+
 // ── Storage location ────────────────────────────────────────────────────────
 
 const BACKUP_DIR = path.join(process.cwd(), 'backups');
@@ -269,7 +281,7 @@ export async function writeBackup(
   reason = 'manual',
 ): Promise<BackupFileInfo> {
   await ensureBackupDir();
-  const json = JSON.stringify(envelope, null, 2);
+  const json = JSON.stringify(envelope, jsonReplacer, 2);
   const filename = makeFilename(reason, envelope.manifest.checksum);
   const fullPath = path.join(BACKUP_DIR, filename);
   const tmpPath = `${fullPath}.tmp`;
@@ -438,7 +450,7 @@ export function computeChecksum(
   },
 ): string {
   const hash = createHash('sha256');
-  hash.update(JSON.stringify(envelope.sections));
+  hash.update(JSON.stringify(envelope.sections, jsonReplacer));
   hash.update('|');
   hash.update(envelope.manifest.source);
   hash.update('|');

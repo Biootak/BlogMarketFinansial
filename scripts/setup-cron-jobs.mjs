@@ -65,8 +65,11 @@ function schedule({ minutes, hours = [-1], timezone = 'UTC' }) {
  * تعریف همهٔ job ها — لیست از HEROKU.md مرحله ۵ + endpoint های جدید کد:
  *   /api/ping (keep-alive، بدون auth)، publish-scheduled-posts (1m)،
  *   refresh-market-rates (1m)، telegram-notifications (1m)، expire-quotes (5m)،
- *   sync-rate-lists (5m)، sync-bazaar (10m)، expire-kyc (روزانه 01:00)،
+ *   sync-rate-lists (5m)، expire-kyc (روزانه 01:00)،
  *   backup (شبانه 03:00 UTC).
+ *
+ * نکته: sync-bazaar دیگر تعریف نمی‌شود — endpoint آن 410 Gone برمی‌گرداند
+ * (منسوخ شده، به‌جایش refresh-market-rates).
  */
 const JOBS = [
   {
@@ -102,12 +105,6 @@ const JOBS = [
     title: 'FM sync-rate-lists',
     url: `${BASE_URL}/api/cron/sync-rate-lists`,
     schedule: schedule({ minutes: everyNMinutes(5) }),
-    headers: authHeader,
-  },
-  {
-    title: 'FM sync-bazaar',
-    url: `${BASE_URL}/api/cron/sync-bazaar`,
-    schedule: schedule({ minutes: everyNMinutes(10) }),
     headers: authHeader,
   },
   {
