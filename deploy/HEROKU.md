@@ -385,6 +385,38 @@ gh run watch <run-id>   # جدول PERF/A11Y/BP/SEO + FCP/LCP/TBT/CLS/TTFB در 
 | `R14/R15` بعد از هر deploy | آپتیمایز AVIF با sharp + کش خالی | فقط `webp` در `next.config.ts` + سقف هیپ ۲۵۶MB |
 | buildpack OOM در `next build` | build روی Heroku با ۵۱۲MB | از buildpack استفاده نکن — استک container است |
 | cron ها ۵۰۳ | `CRON_SECRET` در Heroku نبود | در هر دو سمت ست کن (مرحله ۲ و ۳) |
+| `P3018: column ... already exists` در migrate deploy | drift بین مایگریشن‌ها و DB (ستون با db push/دستی اضافه شده) | ر.ک «تعمیر مایگریشن drift» پایین |
+
+### ⛔ قانون timeout بیرونی (Upstash/Redis) — 2026-08-12
+
+> هر فراخوانی شبکهٔ بیرونی در مسیر بحرانی باید **سقف زمانی سخت** داشته باشد — همان اصل
+> «هرگز روی scrape بلاک نشو» در نرخ بازار. بدون سقف، روی شبکه‌های پر-latency
+> (مثلاً افغانستان → Upstash اروپا) هر فراخوانی ۰.۵ تا ۵+ ثانیه طول می‌کشید و **کل سایت**
+> روی L1-miss صفحات (tiered-cache) یا اکشن‌ها (rate-limiter) بلاک می‌شد.
+
+- **مبنای رسمی:** داک Upstash «Request Timeout» — `signal: () => AbortSignal.timeout(ms)`
+  روی کلاینت (upstash.com/docs/redis/sdks/ts/advanced).
+- **پیاده‌سازی (در هر سه کلاینت):** `redis-cache.ts` (۲s)، `rate-limiter.ts` (۲s)،
+  `edge-maintenance.ts` (۱s). هر call-site جدید که `Redis` می‌سازد باید signal داشته باشد.
+- **L2 روی مسیر رندر:** `tiered-cache` خواندن L2 را با بودجهٔ ۲۰۰ms race می‌کند — سقف
+  کلاینت فقط backstop است؛ مسیر رندر هیچ‌وقت منتظر Redis کامل نمی‌ماند.
+- **rate-limiter:** از آپشن `timeout` خود Ratelimit استفاده نکن — طبق داک رسمی آن آپشن
+  روی timeout **fail-open** می‌کند؛ با signal کلاینت، TimeoutError می‌گیریم و سیاست
+  fail-closed برای auth حفظ می‌شود (ر.ک `rate-limiter.ts`).
+
+### تعمیر مایگریشن drift (P3018)
+
+اگر `prisma migrate deploy` با «column already exists» یا «failed to apply» شکست:
+
+```bash
+# روی همان DB (prod هم از همین RDS استفاده می‌کند — یک DB مشترک است):
+npx prisma migrate resolve --applied <migration_name> --schema=./prisma/schema.prisma
+# سپس دیپلوی را دوباره اجرا کن:
+gh workflow run 'Deploy to Heroku'
+```
+
+> ⚠️ پس از resolve هرگز فایل مایگریشن را ویرایش نکن — رکورد checksum می‌شکند.
+> اگر مایگریشن واقعاً باید idempotent شود، یک مایگریشن جدید با `IF NOT EXISTS` بساز.
 
 ---
 

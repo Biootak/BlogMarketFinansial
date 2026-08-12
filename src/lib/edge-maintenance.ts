@@ -34,7 +34,15 @@ function getRedis(): Redis | undefined {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return undefined;
-  return new Redis({ url, token, automaticDeserialization: false });
+  return new Redis({
+    url,
+    token,
+    automaticDeserialization: false,
+    // 2026-08-12 — داک رسمی Upstash (Request Timeout): سقف هر فراخوانی، تا
+    // middleware هرگز روی شبکهٔ پر-latency آویزان نماند (کش ۳ ثانیه‌ای فرکانس
+    // را کم می‌کند؛ این سقف هر فراخوانی را باند می‌کند).
+    signal: () => AbortSignal.timeout(1000),
+  });
 }
 
 /**

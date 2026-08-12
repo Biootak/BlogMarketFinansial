@@ -8,6 +8,16 @@ const redis = process.env.UPSTASH_REDIS_REST_URL
       url: process.env.UPSTASH_REDIS_REST_URL,
       // biome-ignore lint/style/noNonNullAssertion: UPSTASH_REDIS_REST_TOKEN is guaranteed present when UPSTASH_REDIS_REST_URL is set
       token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+      // 2026-08-12 — داک رسمی Upstash (Request Timeout): سقف هر فراخوانی در
+      // سطح کلاینت؛ روی شبکه‌های پر-latency هر pipeline ۰.۵ تا ۵+ ثانیه طول
+      // می‌کشید و اکشن‌های auth/صرافی/صفحه‌بینی بدون سقف آویزان می‌ماندند.
+      // در timeout، @upstash/ratelimit به‌صورت TimeoutError reject می‌کند و
+      // catch پایین همان سیاست موجود را اعمال می‌کند (auth فیل-کلوز، بقیه
+      // in-memory). توجه: از آپشن `timeout` خود Ratelimit استفاده نمی‌کنیم
+      // چون طبق داک رسمی (features → Timeout) آن آپشن روی timeout درخواست را
+      // ALLOW می‌کند (fail-open) که با سیاست fail-closed این پروژه برای auth
+      // ناسازگار است.
+      signal: () => AbortSignal.timeout(2000),
     })
   : null;
 
@@ -107,35 +117,22 @@ const LIMITS: Record<string, { max: number; windowMs: number }> = {
   'transfer-find': { max: 10, windowMs: 60 * 1000 },
 };
 
-// 2026-08-12: سقف انتظار برای فراخوانی Upstash. روی شبکه‌های پر-latency
-// (مثلاً افغانستان → Upstash اروپا) هر pipeline ۰.۵ تا ۵+ ثانیه طول می‌کشد و
-// بدون این بودجه، اکشن‌های auth/صرافی/صفحه‌بینی به‌طور نامحدود آویزان می‌ماندند.
-// در timeout رفتار دقیقاً مثل خطای Upstash است: auth فیل-کلوز (رد)، بقیه به
-// in-memory fallback می‌شوند — هیچ تغییری در تصمیم‌گیری امنیتی نیست.
-const UPSTASH_TIMEOUT_MS = 1500;
-
 export async function checkRateLimit(
   identifier: string,
   type: keyof typeof rateLimiters = 'api',
 ): Promise<{ success: boolean; remaining: number; reset: number }> {
   const limiter = rateLimiters[type];
 
-  // اگه Redis داریم، از Upstash استفاده کن
+  // اگه Redis داریم، از Upstash استفاده کن. هر فراخوانی با signal کلاینت
+  // (بالا) بعد از 2 ثانیه TimeoutError می‌دهد — همان مسیر catch پایین.
   if (limiter) {
     try {
-      const result = await Promise.race([
-        limiter.limit(identifier),
-        new Promise<null>((resolve) => setTimeout(() => resolve(null), UPSTASH_TIMEOUT_MS)),
-      ]);
-      if (result) {
-        return {
-          success: result.success,
-          remaining: result.remaining,
-          reset: result.reset,
-        };
-      }
-      // timeout → مثل خطا رفتار کن (بلاک زیر)
-      throw new Error('Upstash rate-limit timed out');
+      const result = await limiter.limit(identifier);
+      return {
+        success: result.success,
+        remaining: result.remaining,
+        reset: result.reset,
+      };
     } catch {
       // For security-critical limiters (auth) we must fail CLOSED: when Upstash
       // is unreachable we deny the request rather than silently letting an

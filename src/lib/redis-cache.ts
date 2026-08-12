@@ -38,6 +38,13 @@ function getRedis(): Redis | null {
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
     // Upstash Redis HTTP-based است — نیاز به keep-alive یا pooling خاصی ندارد
     automaticDeserialization: false, // خودمان JSON.stringify/parse می‌کنیم
+    // 2026-08-12 — داک رسمی Upstash (upstash.com/docs/redis/sdks/ts/advanced →
+    // "Request Timeout"): signal روی کلاینت هر درخواست را محدود می‌کند و در
+    // timeout به‌جای آویزان‌ماندن خطای TimeoutError می‌دهد. بدون این، روی
+    // شبکه‌های پر-latency (مثلاً افغانستان → Upstash اروپا، ۰.۵–۵s برای هر
+    // فراخوانی) هر استفاده از L2 بدون سقف بلاک می‌شد. این سقف «پایانی» است —
+    // هیچ call-site نمی‌تواند بینهایت صبر کند.
+    signal: () => AbortSignal.timeout(2000),
   });
   _redisEnabled = true;
   return redisClient;
