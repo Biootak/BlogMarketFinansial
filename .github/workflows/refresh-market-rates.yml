@@ -1,0 +1,45 @@
+name: Refresh Market Rates
+
+# هر 5 دقیقه اجرا می‌شه.
+# scraping TGJU + bonbast + USDT اینجا (GitHub-hosted runner) انجام می‌شه.
+# web dyno فقط نتیجه JSON را می‌گیره، ذخیره می‌کنه، cache bust می‌کنه.
+# → هیچ scraping روی web dyno انجام نمی‌شه → صفر spike RAM.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  scrape-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install minimal deps for scraper
+        run: npm ci --ignore-scripts --only=production 2>/dev/null || npm install --ignore-scripts
+
+      - name: Setup Prisma client
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npx prisma generate
+
+      - name: Scrape & push rates
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          USDT_PREMIUM_PERCENT: ${{ secrets.USDT_PREMIUM_PERCENT }}
+          TGJU_SCRAPER_ENABLED: 'true'
+          TGJU_FETCH_TTL_MS: '0'
+          NODE_ENV: 'production'
+        run: |
+          npx tsx scripts/scrape-and-push-rates.ts
