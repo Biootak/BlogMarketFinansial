@@ -15,7 +15,7 @@ vi.mock('@/lib/db', () => ({
     transaction: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     customer: { findFirst: vi.fn() },
     kycRecord: { findUnique: vi.fn().mockResolvedValue({ expiresAt: null }) },
-    fintechAccount: { update: vi.fn() },
+    fintechAccount: { findFirst: vi.fn(), update: vi.fn() },
     ledgerEntry: { create: vi.fn() },
     auditLog: { create: vi.fn() },
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) =>
@@ -27,7 +27,12 @@ vi.mock('@/lib/db', () => ({
           findUniqueOrThrow: vi.fn().mockResolvedValue({ balance: BigInt(950000) }),
         },
         ledgerEntry: { create: vi.fn() },
-        transaction: { update: vi.fn(), updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        transaction: {
+          create: vi.fn().mockResolvedValue({ id: 'txn-new', accountId: 'acc-1', exchangeId: 'exch-1' }),
+          update: vi.fn(),
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+        transactionStatusLog: { create: vi.fn() },
       }),
     ),
   },
@@ -41,6 +46,13 @@ vi.mock('@/lib/fintech/transaction-guard', () => ({
   isHighValueTransaction: vi.fn().mockReturnValue(false),
   requestTransactionOtp: vi.fn(),
   verifyTransactionOtp: vi.fn(),
+}));
+vi.mock('@/lib/fraud/screener', () => ({
+  screenTransaction: vi.fn().mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
+}));
+vi.mock('@/lib/fintech/txn-trail', () => ({
+  logTxnStatusChange: vi.fn().mockResolvedValue(undefined),
+  logFintechEvent: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue({ get: vi.fn().mockReturnValue('127.0.0.1') }),
@@ -238,12 +250,33 @@ describe('initiateTransfer', () => {
     vi.mocked(requireUser).mockResolvedValue(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValue(RL_OK as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValue(null);
+    // customer.findFirst: cust-1 (sender) + recipient
     vi.mocked(prisma.customer.findFirst)
-      .mockResolvedValueOnce({
-        id: 'cust-1',
-        FintechAccount: [{ id: 'acc-1', balance: BigInt(100), exchangeId: 'exch-1' }],
-      } as never)
+      .mockResolvedValueOnce({ id: 'cust-1' } as never)
       .mockResolvedValueOnce(MOCK_RECIPIENT_CUSTOMER as never);
+    // fintechAccount.findFirst (fraud pre-check) → exchangeId موجود
+    vi.mocked(prisma.fintechAccount.findFirst).mockResolvedValue({
+      exchangeId: 'exch-1',
+    } as never);
+    // $transaction داخلی: account موجودی ناکافی دارد
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(prisma.$transaction).mockImplementationOnce((fn: (tx: any) => Promise<unknown>) =>
+      fn({
+        fintechAccount: {
+          findFirst: vi.fn().mockResolvedValue({ id: 'acc-1', balance: BigInt(100), exchangeId: 'exch-1' }),
+          update: vi.fn(),
+          updateMany: vi.fn(),
+          findUniqueOrThrow: vi.fn(),
+        },
+        ledgerEntry: { create: vi.fn() },
+        transaction: {
+          create: vi.fn(),
+          update: vi.fn(),
+          updateMany: vi.fn(),
+        },
+        transactionStatusLog: { create: vi.fn() },
+      }),
+    );
 
     const result = await initiateTransfer({
       recipientUserId: 'u2',
