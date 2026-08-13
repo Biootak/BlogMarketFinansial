@@ -240,12 +240,14 @@ const nextConfig: NextConfig = {
     // و با چند درخواست همزمان روی Eco dyno (512MB) باعث R14/R15 می‌شد.
     // WebP چند برابر سبک‌تر است و مرورگرها پشتیبانی کامل دارند.
     formats: ['image/webp'],
-    // محدودیت سایز دستگاه‌ها
-    // 2026-08-02: hero/deferred sections request w=1600 — without it the
-    // optimizer 400s and the hero image never loads (LCP falls back to a
-    // text node). 1600 is a real device width for 2x mobile / 1x laptop.
-    deviceSizes: [640, 750, 828, 1080, 1200, 1600, 1920],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // mem-fix: محدود کردن device/image sizes برای کاهش تعداد variant های sharp.
+    // هر width یک decode+encode جداگانه = یک libvips buffer در RAM.
+    // کاهش از 7 به 5 deviceSizes: ~28% کاهش RAM در burst.
+    // 1920 حذف شد (صفحه‌ای با عرض >1600 در موبایل/لپ‌تاپ معمول نیست).
+    // 750 حذف شد (کافی است که 640 و 828 داشته باشیم).
+    // مستند رسمی: https://nextjs.org/docs/app/api-reference/components/image#devicesizes
+    deviceSizes: [640, 828, 1080, 1200, 1600],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
     remotePatterns: [
       {
         protocol: 'https',

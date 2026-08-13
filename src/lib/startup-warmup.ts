@@ -81,43 +81,12 @@ export async function warmup(): Promise<void> {
       // silent fail — pre-warm اختیاری است
     }
 
-    // ─── 3.5. پیش‌گرم آپتیمایزر تصویر (sequential) ─────────────────────────
-    // بعد از هر restart، کش آپتیمایزر (ephemeral) خالی است — اولین درخواست هر
-    // تصویر، sharp را سرد اجرا می‌کند (LCP پرش + موج R14). با fetch کردن خود
-    // URL های /_next/image موجود در HTML، پردازش پیش‌گرم می‌شود و ۲۴ ساعت
-    // (minimumCacheTTL) کش می‌ماند. sequential است تا حافظه روی Eco باند بماند.
-    try {
-      const imageWarmStart = performance.now();
-      const warmPages = ['/', '/archive', '/exchanges', '/money-transfer'];
-      let warmed = 0;
-      for (const path of warmPages) {
-        try {
-          const res = await fetch(`${siteUrl}${path}`, {
-            headers: { 'x-warmup': '1' },
-            cache: 'no-store',
-          });
-          const html = await res.text();
-          // HTML entity decode: در HTML واقعی URL ها &amp; دارند نه &
-          const srcs = [...html.matchAll(/src="(\/_next\/image\?[^"]+)"/g)]
-            .map((m) => m[1].replaceAll('&amp;', '&'))
-            .filter((s) => /[?&]w=\d+/.test(s));
-          for (const src of [...new Set(srcs)].slice(0, 4)) {
-            await fetch(`${siteUrl}${src}`, {
-              headers: { 'x-warmup': '1' },
-              cache: 'no-store',
-            }).catch(() => null);
-            warmed++;
-          }
-        } catch {
-          // best-effort
-        }
-      }
-      log(
-        `image optimizer pre-warmed ${warmed} urls (${Math.round(performance.now() - imageWarmStart)}ms)`,
-      );
-    } catch {
-      // silent fail — pre-warm اختیاری است
-    }
+    // NOTE (mem-fix): image optimizer pre-warm حذف شد.
+    // fetch کردن /_next/image در startup خودش sharp را در فاز cold-start
+    // اجرا می‌کنه که spike های اولیه RAM رو ایجاد می‌کرد (164MB→225MB).
+    // next/image با minimumCacheTTL=86400 هر تصویر را ۲۴ ساعت cache می‌کنه؛
+    // کاربر اول کمی کندتر تصویر می‌گیره ولی Eco dyno crash نمی‌کنه.
+    // sharp.cache(false) + concurrency(1) در instrumentation.ts کافی است.
   }
 
   log(`total warmup: ${Math.round(performance.now() - start)}ms`);

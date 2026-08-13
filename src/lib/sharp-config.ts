@@ -49,11 +49,13 @@ export function configureSharp(): void {
   // drops peak RSS by ~30–50% on large uploads.
   sharp.cache(false);
 
-  // Cap libvips' worker pool. Default is CPU count, which on a 4-core
-  // container means 4 libvips threads can each hold a full decoded
-  // image in RAM at once. 2 is a safe ceiling for a Node server that
-  // also serves API requests.
-  sharp.concurrency(2);
+  // Cap libvips' worker pool at 1 for Eco dyno (single vCPU).
+  // Default is CPU count — on multi-core builders that means several threads
+  // each holding decoded pixel buffers. On Heroku Eco (1 vCPU), >1 thread
+  // just adds context-switch overhead. 1 keeps memory bounded.
+  // NOTE: instrumentation.ts also sets this before any route loads;
+  // this call is the fallback for dev/non-standalone environments.
+  sharp.concurrency(1);
 
   // Keep SIMD enabled — it's a free win and doesn't affect memory.
   sharp.simd(true);

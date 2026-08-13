@@ -12,8 +12,11 @@ import sharp from 'sharp';
 
 // ---------- constants ------------------------------------------------------
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_FILES_PER_REQUEST = 10;
+// mem-fix: کاهش سقف برای جلوگیری از spike های RAM روی Eco dyno (512MB).
+// قبلاً 10MB × 10 = 100MB decode buffer ممکن بود. حالا 5MB × 5 = 25MB.
+// هنوز برای تصاویر واقعی (عکس 12MP ≈ 3-4MB JPEG) کافی است.
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB (از 10MB کاهش یافت)
+const MAX_FILES_PER_REQUEST = 5; // از 10 کاهش یافت
 // C5 fix: SVG removed from the allowlist. A regex blocklist sanitizer for
 // SVG is trivially bypassable (e.g. <style>/<foreignObject>/<use>), and the
 // file is then served with Content-Type image/svg+xml + nosniff, so it can
