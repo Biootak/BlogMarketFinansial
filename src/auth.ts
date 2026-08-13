@@ -85,18 +85,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user, account }) {
       if (account?.provider !== 'credentials') return;
 
+      // G2-fix: در events.signIn، throw باعث می‌شود NextAuth session را نسازد
+      // ولی signIn() در auth-actions خطا نمی‌دهد — کاربر redirect می‌شود ولی
+      // session ندارد → loop. این چک‌ها در authorize() هم هستند (redundant
+      // ولی best-effort) پس اینجا فقط best-effort activity log می‌نویسیم.
       const existingUser = await prisma.user.findUnique({
         where: { id: user.id as string },
       });
-      if (!existingUser) {
-        throw new Error('کاربر در دیتابیس یافت نشد.');
-      }
-      if (!existingUser.emailVerified) {
-        throw new Error('ایمیل تأیید نشده است.');
-      }
-      // 2026-08-12: banned/suspended accounts must never mint a session.
-      if (existingUser.status !== 'Active') {
-        throw new Error('دسترسی به این حساب غیرفعال شده است.');
+      if (!existingUser || !existingUser.emailVerified || existingUser.status !== 'Active') {
+        // authorize() already blocked this — این branch نباید رخ دهد.
+        // اگر رخ داد، فقط log کن؛ throw نکن (session block را authorize انجام داده)
+        serverLog.warn('auth', 'signIn-event-guard', {
+          userId: user.id,
+          hasUser: !!existingUser,
+          emailVerified: existingUser?.emailVerified,
+          status: existingUser?.status,
+        });
+        return;
       }
 
       try {

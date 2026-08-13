@@ -667,7 +667,20 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
         return { success: false, error: 'ایمیل شما تأیید نشده است' };
       }
       // C2-fix: decrypt secret رمزنگاری‌شده قبل از verify
-      const totpOk = await verifyTotp(decryptTotpSecret(twoFaUser.twoFactorSecretEnc), input.code);
+      // G1-fix: اگر AUTH_SECRET اشتباه باشد یا secret خراب شده باشد،
+      // decryptTotpSecret خطا می‌دهد و به handleAuthError می‌رود → «خطای موقتی».
+      // اینجا صریحاً catch می‌کنیم تا پیام مناسب بدهیم.
+      let totpSecret: string;
+      try {
+        totpSecret = decryptTotpSecret(twoFaUser.twoFactorSecretEnc);
+      } catch (decryptErr) {
+        serverLog.error('auth-actions', 'decrypt-totp-secret', decryptErr);
+        return {
+          success: false,
+          error: 'خطای داخلی در احراز هویت. لطفاً با پشتیبانی تماس بگیرید (کد: TOTP-DEC)',
+        };
+      }
+      const totpOk = await verifyTotp(totpSecret, input.code);
 
       // ── کد پشتیبان (backup code) ──
       // اگر TOTP درست نبود، کد پشتیبان ۸ کاراکتری (هگز) را هم امتحان کن.

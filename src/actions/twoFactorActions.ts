@@ -65,7 +65,12 @@ export async function confirmEnable2FA(
       error: { code: 'SETUP_REQUIRED', message: 'ابتدا setup2FA را انجام دهید' },
     };
   // H2-fix: decrypt کن — با encryptTotpSecret ذخیره شده بود
-  const secret = decryptTotpSecret(user.twoFactorSecretEnc.slice('pending:'.length));
+  let secret: string;
+  try {
+    secret = decryptTotpSecret(user.twoFactorSecretEnc.slice('pending:'.length));
+  } catch {
+    return { success: false, error: { code: 'DECRYPT_FAILED', message: 'خطای رمزگشایی. لطفاً با پشتیبانی تماس بگیرید' } };
+  }
   if (!(await verifyTotp(secret, token)))
     return { success: false, error: { code: 'INVALID_TOKEN', message: 'کد وارد شده نادرست است' } };
   // 10 کد پشتیبان — هماهنگ با وعده UI (TwoFactorCenter) و استاندارد صنعتی (Google/Microsoft 10 کد)
