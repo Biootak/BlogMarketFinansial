@@ -471,7 +471,20 @@ export async function fetchTgjuLatest(): Promise<FetchTgjuResult> {
   return fetchTgjuPage('homepage');
 }
 
-/** همه‌ی صفحات فعال را به‌صورت موازی scrape کن. خروجی per-page نگه داشته می‌شه. */
+/**
+ * همه‌ی صفحات فعال را scrape کن.
+ *
+ * 2026-08-13 mem-fix: موازی → sequential.
+ * قبلاً Promise.allSettled روی ۹ صفحه همزمان اجرا می‌شد — یعنی ۹ HTML بزرگ
+ * (هر کدام تا ۵MB) همزمان در RAM بودند → spike تا +120MB هر ۳ دقیقه.
+ * Sequential: هر صفحه parse می‌شه و HTML بلافاصله GC می‌شه قبل از شروع بعدی.
+ * Peak RAM از ۹×۵MB → ۱×۵MB کاهش می‌یابد.
+ *
+ * trade-off: زمان کل ~۴s×۹ = ~۳۶s sequential در بدترین حالت، ولی چون
+ * cron هر ۶۰s اجرا می‌شه و pageCache TTL = ۱۸۰s، هر ۳ cycle یک scrape
+ * واقعی داریم — ۳۶s کاملاً قابل‌قبول است (timeout هر صفحه ۴s است).
+ * در عمل صفحاتی که در pageCache هستند فوری برمی‌گردند (cache hit).
+ */
 export async function fetchAllTgjuPages(): Promise<Record<TgjuPageId, FetchTgjuResult>> {
   const allIds: TgjuPageId[] = [
     'homepage',
@@ -484,29 +497,26 @@ export async function fetchAllTgjuPages(): Promise<Record<TgjuPageId, FetchTgjuR
     'gold-global',
     'local-markets',
   ];
-  // فقط صفحات فعال (perf optimization)
-  const ids = allIds.filter((id) => isPageEnabled(id));
-  const settled = await Promise.allSettled(ids.map((id) => fetchTgjuPage(id)));
 
-  // out را با default disabled پر کن برای صفحات غیرفعال
   const out = {} as Record<TgjuPageId, FetchTgjuResult>;
+
+  // صفحات غیرفعال را مستقیم disabled mark کن
   for (const id of allIds) {
     if (!isPageEnabled(id)) {
       out[id] = { ok: false, error: 'disabled', page: id };
     }
   }
-  ids.forEach((id, i) => {
-    const s = settled[i];
-    if (s.status === 'fulfilled') {
-      out[id] = s.value;
-    } else {
-      out[id] = {
-        ok: false,
-        error: 'network-error',
-        page: id,
-      };
+
+  // صفحات فعال را sequential پردازش کن — یکی تمام بشه، بعدی شروع شه
+  for (const id of allIds) {
+    if (!isPageEnabled(id)) continue;
+    try {
+      out[id] = await fetchTgjuPage(id);
+    } catch {
+      out[id] = { ok: false, error: 'network-error', page: id };
     }
-  });
+  }
+
   return out;
 }
 
