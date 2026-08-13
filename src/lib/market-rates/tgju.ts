@@ -405,11 +405,14 @@ export async function fetchTgjuPage(page: TgjuPageId): Promise<FetchTgjuResult> 
         'Accept-Language': 'fa-IR,fa;q=0.9,en;q=0.8',
       },
       signal: controller.signal,
-      // Not `cache:'no-store'` — see src/lib/market-rates/bonbast.ts. The
-      // 60s cache is managed by unstable_cache (safeCache) in getMarketRates;
-      // a no-store fetch here would make the static home page flip dynamic
-      // at runtime (500 "Page changed from static to dynamic").
-      cache: 'force-cache',
+      // 2026-08-13 fix: force-cache بود ولی Next.js cache سقف 2MB دارد و
+      // صفحات tgju (مثل /transfer = 4.8MB) هرگز کش نمی‌شدند → هر بار از
+      // شبکه fetch می‌شد و warning «items over 2MB can not be cached» می‌داد.
+      // pageCache (Map داخلی با TTL) کار کش را انجام می‌دهد — نه Next.js.
+      // no-store: Next.js data cache را کاملاً bypass کن؛ pageCache بالادست
+      // (خط ۳۸۶) قبل از رسیدن به اینجا hit می‌کند پس شبکه فقط وقتی TTL
+      // منقضی شده باشد می‌رود.
+      cache: 'no-store',
       redirect: 'follow',
     });
 
