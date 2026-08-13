@@ -1083,21 +1083,34 @@
   animation: a-shake 0.32s var(--a-ease);
 }
 .auth-otp-input {
+  /* 2026-08-12: visually hidden 1px — cells forward clicks to it so the
+     caret can be placed on any digit (each cell is individually editable).
+     pointer-events:none keeps cell clicks from hitting the input. */
   position: absolute;
-  inset: 0;
-  inline-size: 100%;
-  block-size: 100%;
+  inline-size: 1px;
+  block-size: 1px;
   opacity: 0;
   border: 0;
   background: transparent;
   caret-color: transparent;
+  pointer-events: none;
 }
 .auth-otp-input:focus {
   outline: none;
 }
+/* سلول فعال = جایگاه caret — کاربر می‌داند الان روی کدام خانه است */
+.auth-otp-cell--active,
+.auth-otp-shell:focus-within .auth-otp-cell--active {
+  border-color: var(--a-input-bd-f);
+  box-shadow: 0 0 0 2px var(--a-focus-ring);
+}
+.auth-otp-grid {
+  cursor: text;
+}
 .auth-otp-toolbar {
   display: flex;
   justify-content: flex-start;
+  gap: 1.25rem;
 }
 .auth-verify-actions {
   display: grid;

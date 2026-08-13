@@ -178,6 +178,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
     setValue: infoSetValue,
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(UpdateProfileSchema),
+    mode: 'onTouched',
     defaultValues: {
       name: initialData.name ?? '',
       email: initialData.email ?? '',
@@ -198,6 +199,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
     reset: resetSecurity,
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(UpdateProfileSchema),
+    mode: 'onTouched',
     defaultValues: {
       currentPassword: '',
       newPassword: '',

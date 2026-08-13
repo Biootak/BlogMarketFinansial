@@ -1152,3 +1152,19 @@ p {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+/* 2026-08-12-perf: اسکرول نرم روی صفحات بلند.
+   content-visibility مرورگر را مجبور می‌کند بخش‌های بیرون از دید را اصلاً
+   render نکند (skip layout/paint) — توصیه‌ی رسمی web.dev برای صفحات با
+   محتوای زیاد. contain-intrinsic-size از پرش اسکرول‌بار جلوگیری می‌کند. */
+.cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
+}
+
+/* روی موبایل بخش‌های پایینی صفحه را هم نرم‌تر می‌کند */
+@media (max-width: 640px) {
+  .cv-auto {
+    contain-intrinsic-size: auto 900px;
+  }
+}

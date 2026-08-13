@@ -5,8 +5,11 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 // Rate limiter in-memory با LRU bounded cache (حداکثر 10,000 IP)
 // جایگزین Map بی‌نهایت قبلی - خودکار entryهای قدیمی/کم‌استفاده را حذف می‌کند
+// 2026-08-13 mem-fix: 10,000 → 2,000 — هر entry ~80 بایت؛ روی Eco dyno
+// 10,000 IP = ~800KB که بی‌مورد است. در بدترین حالت با 2,000 LRU قدیمی‌ها
+// evict می‌شوند که برای rate-limit صفحات خوانده‌شده کاملاً قابل‌قبول است.
 const viewCounts = new LRUCache<string, { count: number; resetTime: number }>({
-  max: 10_000,
+  max: 2_000,
   ttl: 60 * 1000,
   ttlAutopurge: true,
 });

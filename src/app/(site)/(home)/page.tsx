@@ -64,14 +64,14 @@ export default function Home() {
       </div>
 
       {/* ── Trending Topics (async streaming) ───────────────── */}
-      <div className="container relative mt-6 sm:mt-8 lg:mt-12">
+      <div className="container relative mt-6 sm:mt-8 lg:mt-12 cv-auto">
         <Suspense fallback={<SectionCategoriesSkeleton />}>
           <TrendingDeferred />
         </Suspense>
       </div>
 
       {/* ── Pulse Board (async, suspended) ──────────────────── */}
-      <div className="container relative mt-6 sm:mt-8 lg:mt-12">
+      <div className="container relative mt-6 sm:mt-8 lg:mt-12 cv-auto">
         <Suspense
           fallback={
             <div className="space-y-3 sm:space-y-4">
@@ -101,13 +101,13 @@ export default function Home() {
         }
       >
         <AdStripsDeferred />
-        <div className="container relative mt-4 sm:mt-5 lg:mt-6">
+        <div className="container relative mt-4 sm:mt-5 lg:mt-6 cv-auto">
           <PostsSection />
         </div>
       </Suspense>
 
       {/* ── Top Authors (async streaming) ───────────────────── */}
-      <div className="container relative mt-4 sm:mt-5 lg:mt-6">
+      <div className="container relative mt-4 sm:mt-5 lg:mt-6 cv-auto">
         <Suspense fallback={<SectionAuthorsSkeleton />}>
           <TopAuthorsSectionDeferred />
         </Suspense>

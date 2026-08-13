@@ -204,7 +204,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
     trigger,
   } = useForm<ServiceRequestFormData>({
     resolver: zodResolver(ServiceRequestSchema),
-    mode: 'onBlur', // Stripe pattern: validate on blur, not on keystroke
+    mode: 'onChange', // validation زنده — خطا همان لحظه که تایپ می‌شود دیده شود
     defaultValues: {
       serviceType: defaultServiceType,
       currency: 'USD',

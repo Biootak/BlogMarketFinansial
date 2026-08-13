@@ -33,7 +33,7 @@ export default function SetPasswordStep({
   type Values = z.infer<typeof SetPasswordSchema>;
   const form = useForm<Values>({
     resolver: zodResolver(SetPasswordSchema),
-    mode: 'onBlur',
+    mode: 'onChange', // validation زنده — خطا همان لحظه که تایپ می‌شود دیده شود
     defaultValues: {
       email,
       resetToken: resetToken ?? '',

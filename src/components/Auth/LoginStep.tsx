@@ -26,7 +26,7 @@ export default function LoginStep({
   type Values = z.infer<typeof LoginSchema>;
   const form = useForm<Values>({
     resolver: zodResolver(LoginSchema),
-    mode: 'onBlur',
+    mode: 'onChange', // validation زنده — خطا همان لحظه که تایپ می‌شود دیده شود
     defaultValues: {
       email: initialEmail,
       password: '',

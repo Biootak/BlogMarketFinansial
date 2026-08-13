@@ -17,6 +17,7 @@ import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import type { FintechActionResult } from '@/types/types';
 import { headers } from 'next/headers';
+import { revalidateTag } from '@/lib/revalidate';
 import { v4 as createId } from 'uuid';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -343,6 +344,14 @@ export async function getExchangeRequestStats(exchangeId: string): Promise<Excha
   };
 }
 
+const REQUEST_TYPE_LABEL: Record<string, string> = {
+  ACCOUNT_NEW: 'باز کردن حساب جدید',
+  ACCOUNT_UNFREEZE: 'رفع مسدودی حساب',
+  TRANSFER_INITIATE: 'شروع انتقال',
+  LIMIT_INCREASE: 'افزایش سقف تراکنش',
+  OTHER: 'سایر',
+};
+
 const ReviewRequestSchema = {
   requestId: (v: unknown) => typeof v === 'string' && v.length > 0,
   status: (v: unknown) =>
@@ -363,7 +372,7 @@ export async function reviewExchangeRequest(input: {
 
   const req = await prisma.customerRequest.findUnique({
     where: { id: input.requestId },
-    select: { id: true, exchangeId: true, status: true },
+    select: { id: true, exchangeId: true, status: true, userId: true, type: true, trackingCode: true },
   });
   if (!req) return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد' } };
 
@@ -407,8 +416,23 @@ export async function reviewExchangeRequest(input: {
         meta: { fromStatus: req.status, note: input.resolution?.trim() || null },
       },
     });
+
+    // REQ-006: پاسخ صرافی (تأیید/رد) → اعلان فوری به مشتری
+    if (input.status === 'APPROVED' || input.status === 'REJECTED' || input.status === 'CANCELLED') {
+      const label = REQUEST_TYPE_LABEL[req.type] ?? 'درخواست';
+      const message =
+        input.status === 'APPROVED'
+          ? `✅ درخواست «${label}» (${req.trackingCode}) تأیید شد.${input.resolution?.trim() ? ` — ${input.resolution.trim()}` : ''}`
+          : input.status === 'REJECTED'
+            ? `❌ درخواست «${label}» (${req.trackingCode}) رد شد.${input.resolution?.trim() ? ` دلیل: ${input.resolution.trim()}` : ''}`
+            : `درخواست «${label}» (${req.trackingCode}) لغو شد.`;
+      await tx.notification.create({
+        data: { userId: req.userId, message, isRead: false },
+      });
+    }
   });
 
+  revalidateTag('customer-requests');
   return { success: true, data: { id: input.requestId, status: input.status } };
 }
 

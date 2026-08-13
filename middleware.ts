@@ -189,6 +189,8 @@ const checkDashboardAccess = (pathname: string, role?: string) => {
 // 2026-08-12: sentinel value — وقتی کاربر از DB حذف شده باشد، cookie باید
 // expire شود نه اینکه null برگردد و session زنده بماند.
 const DELETED_USER_SENTINEL = '__DELETED__' as const;
+// 2026-08-13: رمز عوض شده — session قدیمی باید expire شود (AUTH-603).
+const PASSWORD_CHANGED_SENTINEL = '__PASSWORD_CHANGED__' as const;
 
 async function refreshStaleTokenClaims(
   token: JWT | null,
@@ -203,7 +205,7 @@ async function refreshStaleTokenClaims(
   sameSite: 'lax';
   path: string;
   expires: Date;
-} | null | typeof DELETED_USER_SENTINEL> {
+} | null | typeof DELETED_USER_SENTINEL | typeof PASSWORD_CHANGED_SENTINEL> {
   if (!token?.sub) return null;
   // فقط مسیرهایی که گارد اینجا نقش/دسترسی را تصمیم می‌گیرد. مسیرهای عمومی
   // فرقی نمی‌کند — بدون هزینهٔ DB رد می‌شوند.
@@ -218,12 +220,16 @@ async function refreshStaleTokenClaims(
   try {
     const dbUser = await prisma.user.findUnique({
       where: { id: token.sub },
-      select: { role: true, tokenVersion: true, permissions: true, deniedPermissions: true },
+      select: { role: true, tokenVersion: true, passwordVersion: true, permissions: true, deniedPermissions: true },
     });
     // 2026-08-12: کاربر از DB حذف شده — session باید فوری منقضی شود.
     // قبلاً `return null` بود که token را زنده نگه می‌داشت؛ الان sentinel
     // برمی‌گردد تا middleware کوکی را expire کند و به /auth ریدایرکت کند.
     if (!dbUser) return DELETED_USER_SENTINEL;
+    // 2026-08-13: رمز عوض شده → session قدیمی فوری باطل (AUTH-603).
+    const storedPasswordVersion =
+      typeof token.passwordVersion === 'number' ? token.passwordVersion : 0;
+    if ((dbUser.passwordVersion ?? 0) !== storedPasswordVersion) return PASSWORD_CHANGED_SENTINEL;
     const storedVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
     if (dbUser.tokenVersion === storedVersion) return null;
 
@@ -413,13 +419,19 @@ export async function middleware(req: NextRequest) {
 
   // 2026-08-12: اگر کاربر از DB حذف شده باشد — کوکی را expire کن و به /auth
   // ریدایرکت کن. قبلاً session زنده می‌ماند چون JWT هنوز valid بود.
-  if (claimsResult === DELETED_USER_SENTINEL) {
-    const expiredCookieValue = '__deleted__';
+  // 2026-08-13: اگر رمز عوض شده باشد (PASSWORD_CHANGED_SENTINEL) هم همین
+  // رفتار — session قدیمی باطل است (AUTH-603).
+  if (claimsResult === DELETED_USER_SENTINEL || claimsResult === PASSWORD_CHANGED_SENTINEL) {
+    const expiredCookieValue = claimsResult === DELETED_USER_SENTINEL ? '__deleted__' : '__password_changed__';
     const redirectTarget = isApi
       ? undefined
       : new URL('/auth?step=login', nextUrl);
     const res = isApi
-      ? jsonError(401, 'SESSION_INVALID', 'حساب کاربری موجود نیست')
+      ? jsonError(
+          401,
+          claimsResult === DELETED_USER_SENTINEL ? 'SESSION_INVALID' : 'SESSION_EXPIRED',
+          claimsResult === DELETED_USER_SENTINEL ? 'حساب کاربری موجود نیست' : 'رمز عبور تغییر کرده است؛ دوباره وارد شوید',
+        )
       : NextResponse.redirect(redirectTarget!);
     res.cookies.set({
       name: cookieName,
@@ -434,7 +446,8 @@ export async function middleware(req: NextRequest) {
   }
 
   const res = await runGuards(nextUrl, pathname, search, token, isProduction, isApi);
-  if (claimsResult) res.cookies.set(claimsResult);
+  // claimsResult می‌تواند فقط کوکی تازه باشد این‌جا (sentinel ها بالا return شده‌اند).
+  if (claimsResult && typeof claimsResult === 'object') res.cookies.set(claimsResult);
   return res;
 }
 

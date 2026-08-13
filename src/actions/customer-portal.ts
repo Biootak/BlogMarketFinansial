@@ -1979,7 +1979,10 @@ export async function changeMyPassword(input: {
     where: { id: access.userId },
     data: {
       password: newHash,
-      tokenVersion: { increment: 1 }, // تمام sessionهای فعلی باطل می‌شود
+      // 2026-08-13: passwordVersion (نه tokenVersion) — افزایش آن session های
+      // قبلی را باطل می‌کند (jwt callback توکن را discard می‌کند). tokenVersion
+      // مخصوص تغییر نقش/مجوز است که فقط claims را refresh می‌کند.
+      passwordVersion: { increment: 1 },
     },
   });
 

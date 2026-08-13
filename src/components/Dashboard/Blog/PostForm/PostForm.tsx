@@ -165,6 +165,7 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
 
   const form = useForm<CreatePostInput | UpdatePostInput>({
     resolver: zodResolver(schema),
+    mode: 'onTouched',
     defaultValues,
   });
 

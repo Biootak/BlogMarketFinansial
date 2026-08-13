@@ -29,6 +29,7 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
+    mode: 'onChange', // validation زنده — خطای ایمیل همان لحظه که تایپ می‌شود دیده شود
   });
 
   const handleFormSubmit = async (data: FormData) => {

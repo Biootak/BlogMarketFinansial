@@ -22,7 +22,7 @@ import { signIn, signOut } from '@/auth';
 import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
 import { type OtpEmailIntent, otpEmail, otpExpiresLabel } from '@/lib/email/templates';
-import { checkRateLimit } from '@/lib/rate-limiter';
+import { checkRateLimit, resetRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
 import {
   type VerificationEmailIntent,
@@ -414,6 +414,7 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
         emailVerified: true,
         email: true,
         role: true,
+        status: true,
       },
     });
 
@@ -428,6 +429,13 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
           await logOwnerSecurityEvent('OWNER_LOGIN_FAILED', twoFaUser.id, await getClientIp());
         }
         return { success: false, error: 'ایمیل یا رمز عبور اشتباه است' };
+      }
+      // 2026-08-12: banned/suspended → مسدود کردن ورود با پیام واضح
+      if (twoFaUser.status !== 'Active') {
+        return {
+          success: false,
+          error: 'دسترسی به این حساب غیرفعال شده است. برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.',
+        };
       }
       if (!twoFaUser.emailVerified) {
         const sent = await issueOtp(input.email, 'reverify');
@@ -494,6 +502,13 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
         }
         return { success: false, error: 'ایمیل یا رمز عبور اشتباه است' };
       }
+      // 2026-08-12: banned/suspended → مسدود کردن ورود با پیام واضح
+      if (twoFaUser.status !== 'Active') {
+        return {
+          success: false,
+          error: 'دسترسی به این حساب غیرفعال شده است. برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.',
+        };
+      }
       if (!twoFaUser.emailVerified) {
         const sent = await issueOtp(input.email, 'reverify');
         if (sent.ok) {
@@ -521,6 +536,7 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
       });
 
       await logOwnerSecurityEvent('OWNER_LOGIN_2FA_PENDING', twoFaUser.id, await getClientIp());
+      await resetRateLimit(`login:${input.email.toLowerCase()}`, 'auth');
 
       const ownerLabel = twoFaUser.role === Role.OWNER ? 'مالک' : 'سوپرادمین';
       return {
@@ -537,6 +553,10 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
       kind: 'password',
       redirect: false,
     });
+
+    // UX-fix: ورود موفق نباید تلاش‌های قبلی را به حساب بیاورد — شمارنده را
+    // ریست کن تا فقط تلاش‌های ناموفق brute-force شمارش شوند.
+    await resetRateLimit(`login:${input.email.toLowerCase()}`, 'auth');
 
     return {
       success: true,
@@ -627,12 +647,20 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
           emailVerified: true,
           email: true,
           role: true,
+          status: true,
         },
       });
       if (!twoFaUser?.twoFactorEnabled || !twoFaUser.twoFactorSecretEnc) {
         return {
           success: false,
           error: 'احراز هویت دو مرحله‌ای برای این حساب فعال نیست',
+        };
+      }
+      // 2026-08-12: banned/suspended → حتی با TOTP معتبر هم ورود ممنوع
+      if (twoFaUser.status !== 'Active') {
+        return {
+          success: false,
+          error: 'دسترسی به این حساب غیرفعال شده است. برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.',
         };
       }
       if (!twoFaUser.emailVerified) {
@@ -709,6 +737,10 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       if (twoFaUser.role === Role.OWNER || twoFaUser.role === Role.SUPERADMIN) {
         await logOwnerSecurityEvent('OWNER_LOGIN', twoFaUser.id, await getClientIp());
       }
+
+      // UX-fix: ورود موفق شمارنده را ریست می‌کند
+      await resetRateLimit(`login:${input.email.toLowerCase()}`, 'auth');
+      await resetRateLimit(`2fa-verify:${input.email.toLowerCase()}`, 'auth');
 
       return {
         success: true,
@@ -984,6 +1016,8 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
           // emailVerified as a side effect of the OTP we already consumed
           // (applyIntent skipped it for recover).
           emailVerified: user.emailVerified ?? new Date(),
+          // 2026-08-13: reset رمز — هر session قبلی این کاربر باطل شود.
+          passwordVersion: { increment: 1 },
         },
       });
       await tx.verificationToken.deleteMany({ where: { email: input.email } });

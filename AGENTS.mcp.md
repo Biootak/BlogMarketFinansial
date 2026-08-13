@@ -142,3 +142,14 @@ mavis-trash E:\path\to\file.tsx
 | حذف فایل/فولدر | `mavis-trash` |
 | ساخت تصویر/ویدیو/موسیقی/صدا | `matrix.generate_*` |
 | OCR یا transcribe فایل صوتی | `matrix.transcribe_audio` / `matrix.audios_understand` |
+
+---
+
+# Freebuff (این محیط) — Playwright MCP
+
+> **در Freebuff ابزارهای MCP به agent وصل نمی‌شوند** — پس برای باز کردن مرورگر واقعی:
+> 1. `npm run dev` (سرور dev)
+> 2. `npm run browser:open` (مرورگر واقعی پلی‌رایت)
+>
+> ⛔ **هرگز از صفر کانفیگ نکن.** سند کامل + تله‌ها + بازسازی: **`AGENTS.playwright.md`**.
+> درایور: `scripts/playwright-open.mjs` (خودترمیم — SDK را خودش نصب می‌کند).

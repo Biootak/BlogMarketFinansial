@@ -54,7 +54,7 @@ export default async function ExchangeLayout({ children }: { children: React.Rea
   }
 
   const membership = await getExchangeForUser();
-  if (!membership) redirect('/');
+  if (!membership) redirect('/forbidden');
   if (membership.exchange.status === 'SUSPENDED') redirect('/exchange-suspended');
 
   const exchangeRole: 'OWNER' | 'SUPERADMIN' | 'ADMIN' = 'OWNER';

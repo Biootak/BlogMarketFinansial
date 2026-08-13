@@ -29,8 +29,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
 import { FileText, Gauge, Loader2, Send, ShieldCheck, Wallet } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 import s from './RequestForm.module.css';
+
+/** خطای زندهٔ هر فیلد — هم‌زمان با تایپ نمایش داده می‌شود */
+type FieldErrors = Partial<Record<'fromAccount' | 'toAccount' | 'amount' | 'unfreezeAccount' | 'requestedLimit' | 'note', string>>;
 
 interface Props {
   initialType: CustomerRequestType;
@@ -125,10 +128,37 @@ export default function RequestForm({
   const [requestedLimit, setRequestedLimit] = useState('');
 
   const isFrozen = profileStatus === 'FROZEN' || profileStatus === 'CLOSED';
+  const [interacted, setInteracted] = useState(false);
+
+  // validation زنده: هر فیلد همان لحظه که پر/تغییر می‌شود خطایش نمایش داده می‌شود
+  const fieldErrors = useMemo<FieldErrors>(() => {
+    const errs: FieldErrors = {};
+    if (type === 'TRANSFER_INITIATE') {
+      if (!fromAccount) errs.fromAccount = 'انتخاب حساب مبدأ الزامی است';
+      if (!toAccount.trim()) errs.toAccount = 'شناسه مقصد الزامی است';
+      else if (toAccount.trim() === fromAccount) errs.toAccount = 'مبدأ و مقصد نمی‌توانند یکسان باشند';
+      if (!amount || Number(amount) <= 0) errs.amount = 'مبلغ باید بزرگ‌تر از صفر باشد';
+    }
+    if (type === 'ACCOUNT_UNFREEZE' && !unfreezeAccount) {
+      errs.unfreezeAccount = 'انتخاب حساب منجمد الزامی است';
+    }
+    if (type === 'LIMIT_INCREASE' && (!requestedLimit || Number(requestedLimit) <= 0)) {
+      errs.requestedLimit = 'سقف درخواستی باید بزرگ‌تر از صفر باشد';
+    }
+    if (type === 'OTHER' && !note.trim()) {
+      errs.note = 'برای درخواست «سایر»، توضیح الزامی است';
+    }
+    return errs;
+  }, [type, fromAccount, toAccount, amount, unfreezeAccount, requestedLimit, note]);
+
+  const liveError = useMemo(() => validate(), [
+    type, note, fromAccount, toAccount, amount, unfreezeAccount, requestedLimit, isFrozen,
+  ]);
 
   function handleTypeChange(next: CustomerRequestType) {
     setType(next);
     setError(null);
+    setInteracted(true);
   }
 
   function buildPayload(): Record<string, string | number> {
@@ -181,7 +211,8 @@ export default function RequestForm({
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const validationError = validate();
+    setInteracted(true);
+    const validationError = liveError;
     if (validationError) {
       setError(validationError);
       return;
@@ -294,7 +325,10 @@ export default function RequestForm({
             <Input
               id="acc-label"
               value={accountLabel}
-              onChange={(e) => setAccountLabel(e.target.value)}
+              onChange={(e) => {
+                setAccountLabel(e.target.value);
+                setInteracted(true);
+              }}
               placeholder="مثلاً: حساب شخصی"
               maxLength={40}
             />
@@ -304,8 +338,14 @@ export default function RequestForm({
 
       {type === 'TRANSFER_INITIATE' && (
         <FormSection title="جزئیات انتقال" description="از کدام حساب، به کجا، چه مبلغ">
-          <FormField label="از حساب" htmlFor="t-from" required>
-            <Select value={fromAccount} onValueChange={setFromAccount}>
+          <FormField label="از حساب" htmlFor="t-from" required error={interacted ? fieldErrors.fromAccount : undefined}>
+            <Select
+              value={fromAccount}
+              onValueChange={(v) => {
+                setFromAccount(v);
+                setInteracted(true);
+              }}
+            >
               <SelectTrigger id="t-from" className={s.select}>
                 <SelectValue placeholder="انتخاب حساب مبدأ" />
               </SelectTrigger>
@@ -325,17 +365,21 @@ export default function RequestForm({
             label="به (شناسه مقصد)"
             htmlFor="t-to"
             required
+            error={interacted ? fieldErrors.toAccount : undefined}
             helper="مثلاً شماره حساب، IBAN، یا ID مقصد"
           >
             <Input
               id="t-to"
               value={toAccount}
-              onChange={(e) => setToAccount(e.target.value)}
+              onChange={(e) => {
+                setToAccount(e.target.value);
+                setInteracted(true);
+              }}
               placeholder="ACCT-XXX یا شماره حساب"
             />
           </FormField>
 
-          <FormField label="مبلغ" htmlFor="t-amount" required>
+          <FormField label="مبلغ" htmlFor="t-amount" required error={interacted ? fieldErrors.amount : undefined}>
             <Input
               id="t-amount"
               type="number"
@@ -343,7 +387,10 @@ export default function RequestForm({
               min="0"
               step="0.01"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                setInteracted(true);
+              }}
               placeholder="مثلاً: 5000"
               dir="ltr"
             />
@@ -353,8 +400,14 @@ export default function RequestForm({
 
       {type === 'ACCOUNT_UNFREEZE' && (
         <FormSection title="انتخاب حساب منجمد" description="صرافی پس از بررسی حساب را باز می‌کند">
-          <FormField label="حساب منجمد" htmlFor="u-acc" required>
-            <Select value={unfreezeAccount} onValueChange={setUnfreezeAccount}>
+          <FormField label="حساب منجمد" htmlFor="u-acc" required error={interacted ? fieldErrors.unfreezeAccount : undefined}>
+            <Select
+              value={unfreezeAccount}
+              onValueChange={(v) => {
+                setUnfreezeAccount(v);
+                setInteracted(true);
+              }}
+            >
               <SelectTrigger id="u-acc" className={s.select}>
                 <SelectValue placeholder="انتخاب حساب" />
               </SelectTrigger>
@@ -379,7 +432,7 @@ export default function RequestForm({
 
       {type === 'LIMIT_INCREASE' && (
         <FormSection title="سقف درخواستی" description="پیشنهاد شما برای limit روزانه (AFN)">
-          <FormField label="سقف روزانه پیشنهادی" htmlFor="lim-amount" required>
+          <FormField label="سقف روزانه پیشنهادی" htmlFor="lim-amount" required error={interacted ? fieldErrors.requestedLimit : undefined}>
             <Input
               id="lim-amount"
               type="number"
@@ -387,7 +440,10 @@ export default function RequestForm({
               min="0"
               step="1000"
               value={requestedLimit}
-              onChange={(e) => setRequestedLimit(e.target.value)}
+              onChange={(e) => {
+                setRequestedLimit(e.target.value);
+                setInteracted(true);
+              }}
               placeholder="مثلاً: 1000000"
               dir="ltr"
             />
@@ -396,23 +452,30 @@ export default function RequestForm({
       )}
 
       {/* ─── Note (common) ─── */}
-      <FormSection title="توضیحات" description="هر اطلاعات اضافی که صرافی باید بداند">
-        <FormField label="یادداشت (اختیاری)" htmlFor="note" helper={`${note.length} / ۵۰۰ کاراکتر`}>
-          <Textarea
-            id="note"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="مثلاً: لطفاً زودتر بررسی شود. با تشکر"
-            rows={4}
-            maxLength={500}
-          />
-        </FormField>
+      <FormSection title="توضیحات" description="هر اطلاعات اضافی که صرافی باید بداند">          <FormField
+            label="یادداشت (اختیاری)"
+            htmlFor="note"
+            helper={`${note.length} / ۵۰۰ کاراکتر`}
+            error={type === 'OTHER' && interacted ? fieldErrors.note : undefined}
+          >
+            <Textarea
+              id="note"
+              value={note}
+              onChange={(e) => {
+                setNote(e.target.value);
+                setInteracted(true);
+              }}
+              placeholder="مثلاً: لطفاً زودتر بررسی شود. با تشکر"
+              rows={4}
+              maxLength={500}
+            />
+          </FormField>
       </FormSection>
 
       {/* ─── Error / Submit ─── */}
-      {error && (
+      {(interacted || error) && (liveError || error) && (
         <div className={s.errorBox} role="alert">
-          {error}
+          {error ?? liveError}
         </div>
       )}
 

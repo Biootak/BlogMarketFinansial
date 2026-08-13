@@ -125,6 +125,14 @@ export default function SafeImage({
 }: SafeImageProps) {
   const [hasError, setHasError] = useState(false);
 
+  // وقتی fill فعال است، width/height نباید پاس داده شوند — Next.js خطای
+  // "has both width and fill properties" می‌دهد (مثلاً SearchResult با width={88}).
+  const imageProps = { ...props };
+  if (fill) {
+    delete imageProps.width;
+    delete imageProps.height;
+  }
+
   // وقتی src تغییر می‌کنه، error state رو reset کن
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional — reset on src change only
   useEffect(() => {
@@ -187,7 +195,7 @@ export default function SafeImage({
             priority={priority}
             fill
             src={normalizeRasterUrl(src as string)}
-            {...props}
+            {...imageProps}
           />
           {/* لایه foreground: wrapper با inset → تصویر کامل بدون برش */}
           <div className="absolute inset-[5%]">
@@ -199,7 +207,7 @@ export default function SafeImage({
               fill
               src={normalizeRasterUrl(src as string)}
               onError={() => setHasError(true)}
-              {...props}
+              {...imageProps}
             />
           </div>
         </>
@@ -212,7 +220,7 @@ export default function SafeImage({
           fill={fill}
           src={normalizeRasterUrl(src as string)}
           onError={() => setHasError(true)}
-          {...props}
+          {...imageProps}
         />
       )}
     </div>

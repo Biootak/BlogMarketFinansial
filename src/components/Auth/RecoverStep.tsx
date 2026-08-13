@@ -27,7 +27,7 @@ export default function RecoverStep({
 
   const form = useForm<Values>({
     resolver: zodResolver(EmailLookupSchema),
-    mode: 'onBlur',
+    mode: 'onChange', // validation زنده — خطا همان لحظه که تایپ می‌شود دیده شود
     defaultValues: { email: initialEmail },
   });
   const [isPending, startTransition] = useTransition();

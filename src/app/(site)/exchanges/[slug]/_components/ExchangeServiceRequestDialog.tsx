@@ -28,7 +28,7 @@ import {
   User as UserIcon,
   X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import s from './ExchangeServiceRequestDialog.module.css';
 
 type Props = {
@@ -61,6 +61,16 @@ export default function ExchangeServiceRequestDialog({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [trackingCode, setTrackingCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [interacted, setInteracted] = useState(false);
+
+  // validation زنده — خطا همان لحظه که فیلد پر/تغییر می‌شود نمایش داده می‌شود
+  const fieldErrors = useMemo(() => {
+    if (!interacted) return {} as Record<string, string>;
+    const errs: Record<string, string> = {};
+    if (name.trim().length < 2) errs.name = 'نام و نام خانوادگی را وارد کنید';
+    if (phone.replace(/\D/g, '').length < 10) errs.phone = 'شماره تماس معتبر نیست';
+    return errs;
+  }, [interacted, name, phone]);
 
   const meta = getServiceMeta(service.serviceKey);
   const exchangeTitle = exchange.displayName ?? exchange.name;
@@ -103,14 +113,11 @@ export default function ExchangeServiceRequestDialog({
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (status === 'submitting') return;
+    setInteracted(true);
 
-    // basic validation
-    if (name.trim().length < 2) {
-      setErrorMsg('نام و نام خانوادگی را وارد کنید');
-      return;
-    }
-    if (phone.replace(/\D/g, '').length < 10) {
-      setErrorMsg('شماره تماس معتبر نیست');
+    // basic validation (با پیام‌های یکسان سمت UI — برای اطمینان دوباره چک می‌شود)
+    if (fieldErrors.name || fieldErrors.phone) {
+      setErrorMsg(fieldErrors.name ?? fieldErrors.phone ?? '');
       return;
     }
 
@@ -211,12 +218,21 @@ export default function ExchangeServiceRequestDialog({
                 type="text"
                 className={s.input}
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setInteracted(true);
+                }}
                 placeholder="مثلاً علی محمدی"
                 autoComplete="name"
                 maxLength={80}
                 disabled={status === 'submitting'}
+                aria-invalid={!!fieldErrors.name || undefined}
               />
+              {fieldErrors.name && (
+                <span className={s.fieldError} role="alert">
+                  {fieldErrors.name}
+                </span>
+              )}
             </div>
 
             <div className={s.field}>
@@ -230,12 +246,21 @@ export default function ExchangeServiceRequestDialog({
                 inputMode="tel"
                 className={s.input}
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setInteracted(true);
+                }}
                 placeholder="مثلاً ۰۹۱۲۳۴۵۶۷۸۹"
                 autoComplete="tel"
                 maxLength={20}
                 disabled={status === 'submitting'}
+                aria-invalid={!!fieldErrors.phone || undefined}
               />
+              {fieldErrors.phone && (
+                <span className={s.fieldError} role="alert">
+                  {fieldErrors.phone}
+                </span>
+              )}
             </div>
 
             <fieldset className={s.field} disabled={status === 'submitting'}>

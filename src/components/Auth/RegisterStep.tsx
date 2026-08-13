@@ -23,7 +23,7 @@ export default function RegisterStep({
   type Values = z.infer<typeof RegisterSchema>;
   const form = useForm<Values>({
     resolver: zodResolver(RegisterSchema),
-    mode: 'onBlur',
+    mode: 'onChange', // validation زنده — خطا همان لحظه که تایپ می‌شود دیده شود
     defaultValues: {
       name: '',
       email: initialEmail,

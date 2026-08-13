@@ -1,6 +1,5 @@
 'use client';
 
-import { Delete } from 'lucide-react';
 import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import type React from 'react';
 
@@ -14,6 +13,13 @@ import type React from 'react';
 // IME / paste: a 6-digit paste of any kind is accepted; partial pastes
 // (e.g. 4 digits) are honoured. The hidden input keeps full keyboard
 // accessibility for screen-reader users.
+//
+// 2026-08-12: each cell is individually clickable — the click moves the
+// hidden input's caret to that digit, so the user can edit any position
+// (not just the tail). The active cell (caret position) is highlighted
+// with .auth-otp-cell--active so it's obvious where typing lands. The
+// explicit "پاک کردن کد" button is gone — Backspace/Delete on the
+// keyboard clears from the caret, which is the natural affordance.
 
 export type OtpDialPadHandle = {
   focus: () => void;
@@ -62,6 +68,8 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
       ? initialValue.toUpperCase()
       : initialValue.replace(/\D/g, '').slice(0, CELLS),
   );
+  // محل caret در input مخفی — سلول فعال از روی همین مقدار مشخص می‌شود.
+  const [caretPos, setCaretPos] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastSubmitRef = useRef<string>('');
   // 2026-06-24: A1 / F1 — replace hard-coded `id="otp-input"` with a
@@ -79,6 +87,7 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
     focus: () => inputRef.current?.focus({ preventScroll: true }),
     clear: () => {
       setValue('');
+      setCaretPos(0);
       lastSubmitRef.current = '';
       inputRef.current?.focus({ preventScroll: true });
     },
@@ -92,9 +101,17 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
   const switchMode = () => {
     setMode((m) => (m === 'otp' ? 'backup' : 'otp'));
     setValue('');
+    setCaretPos(0);
     lastSubmitRef.current = '';
     onChange?.('');
     inputRef.current?.focus({ preventScroll: true });
+  };
+
+  /** خواندن موقعیت caret از input — در focus/click/select/keyup صدا زده می‌شود. */
+  const syncCaret = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    setCaretPos(el.selectionStart ?? el.value.length);
   };
 
   const handleChange = (raw: string) => {
@@ -123,11 +140,21 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
     }
   };
 
-  const handleClear = () => {
-    setValue('');
-    lastSubmitRef.current = '';
-    onChange?.('');
-    inputRef.current?.focus({ preventScroll: true });
+  /**
+   * کلیک روی سلول i: caret را روی همان خانه می‌گذارد تا کاربر بتواند
+   * هر رقم را مستقیم ویرایش کند (نه فقط آخرین خانه).
+   */
+  const focusCell = (index: number) => {
+    const el = inputRef.current;
+    if (!el || disabled) return;
+    const pos = Math.min(index, value.length);
+    el.focus({ preventScroll: true });
+    try {
+      el.setSelectionRange(pos, pos);
+    } catch {
+      // ignore — بعضی مرورگرها روی input مخفی setSelectionRange را رد می‌کنند
+    }
+    setCaretPos(pos);
   };
 
   const cells: string[] = Array.from({ length: maxLen });
@@ -141,17 +168,39 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
       <div
         className={`auth-otp-grid${isBackup ? ' auth-otp-grid--backup' : ''}`}
         aria-hidden="true"
+        onClick={(e) => {
+          // کلیک روی خود گرید (بین سلول‌ها) → caret به انتهای مقدار فعلی
+          if (e.target === e.currentTarget) {
+            const el = inputRef.current;
+            if (!el || disabled) return;
+            el.focus({ preventScroll: true });
+            const pos = value.length;
+            try {
+              el.setSelectionRange(pos, pos);
+            } catch {
+              // ignore
+            }
+            setCaretPos(pos);
+          }
+        }}
       >
         {cells.map((char, i) => {
           const cls = [
             'auth-otp-cell',
             char && 'auth-otp-cell--filled',
             invalid && char && 'auth-otp-cell--invalid',
+            i === caretPos && 'auth-otp-cell--active',
           ]
             .filter(Boolean)
             .join(' ');
           return (
-            <div key={i} className={cls}>
+            <div
+              key={i}
+              className={cls}
+              role="presentation"
+              onClick={() => focusCell(i)}
+              onMouseDown={(e) => e.preventDefault()}
+            >
               <span className="block text-center" dir="ltr">
                 {char || '–'}
               </span>
@@ -172,6 +221,10 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
         value={value}
         onChange={(e) => handleChange(e.target.value)}
         onKeyDown={handleKeyDown}
+        onSelect={syncCaret}
+        onClick={syncCaret}
+        onKeyUp={syncCaret}
+        onFocus={() => syncCaret()}
         aria-describedby={
           invalid && value.length > 0
             ? [describedBy, invalidMessageId].filter(Boolean).join(' ')
@@ -189,15 +242,6 @@ const OtpDialPad = forwardRef<OtpDialPadHandle, OtpDialPadProps>(function OtpDia
         {invalid && value.length > 0 ? 'کد وارد شده نادرست است. لطفاً دوباره وارد کنید' : ''}
       </p>
       <div className="auth-otp-toolbar">
-        <button
-          type="button"
-          className="auth-link-row auth-link-row--inline"
-          onClick={handleClear}
-          disabled={disabled || value.length === 0}
-        >
-          <Delete aria-hidden="true" />
-          پاک کردن کد
-        </button>
         {allowBackupCode && (
           <button
             type="button"

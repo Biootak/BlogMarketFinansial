@@ -71,6 +71,7 @@ export default function ApplyExchangeForm() {
     trigger,
     formState: { errors },
   } = useForm<FormValues>({
+    mode: 'onTouched', // validation زنده — بعد از اولین تعامل خطا همان لحظه دیده می‌شود
     defaultValues: {
       name: '',
       slug: '',

@@ -103,6 +103,12 @@
   opacity: 0.75;
 }
 
+.fieldError {
+  font-size: var(--at-fs-xs);
+  font-weight: 600;
+  color: var(--nova-down);
+}
+
 /* ── Select ──────────────────────────────────────────────────────────── */
 .select {
   height: 36px;

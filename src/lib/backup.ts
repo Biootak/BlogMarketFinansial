@@ -569,20 +569,27 @@ export async function runBackup(reason = 'manual', actor = 'cron'): Promise<Back
 
   // ── محتوای اصلی سایت ────────────────────────────────────────────────────
 
-  // Posts — recent 2000 (reduced from 5000 for faster backup)
+  // 2026-08-13 mem-fix: limit های کمتر برای Heroku Eco dyno (512MB).
+  // هر ردیف ~2KB → 500 پست = ~1MB، قابل override با env var.
+  // اگر backup کامل‌تری لازم است از BACKUP_POST_LIMIT / BACKUP_USER_LIMIT
+  // در محیط‌های با RAM بیشتر استفاده کنید.
+  const POST_LIMIT = Number(process.env.BACKUP_POST_LIMIT) || 500;
+  const USER_LIMIT = Number(process.env.BACKUP_USER_LIMIT) || 5_000;
+  const COMMENT_LIMIT = Number(process.env.BACKUP_COMMENT_LIMIT) || 1_000;
+
+  // Posts — recent N
   await pushSection(sections, createdAt, 'posts', async () =>
-    prisma.post.findMany({ orderBy: { createdAt: 'desc' }, take: 2000 }),
+    prisma.post.findMany({ orderBy: { createdAt: 'desc' }, take: POST_LIMIT }),
   );
 
-  // Users — sensitive fields stripped (TOTP secrets, national id hash);
-  // سقف 50k برای جلوگیری از backup بی‌نهایت بزرگ در سایت بزرگ‌تر.
+  // Users — sensitive fields stripped (TOTP secrets, national id hash)
   await pushSection(sections, createdAt, 'users', async () =>
-    stripSecrets('user', await prisma.user.findMany({ take: 50_000 })),
+    stripSecrets('user', await prisma.user.findMany({ take: USER_LIMIT })),
   );
 
-  // Comments — recent 5000 (reduced from 10000 for faster backup)
+  // Comments — recent N
   await pushSection(sections, createdAt, 'comments', async () =>
-    prisma.comment.findMany({ orderBy: { createdAt: 'desc' }, take: 5000 }),
+    prisma.comment.findMany({ orderBy: { createdAt: 'desc' }, take: COMMENT_LIMIT }),
   );
 
   // Categories & Tags

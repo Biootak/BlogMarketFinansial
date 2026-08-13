@@ -357,7 +357,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     formState: { errors },
   } = useForm<RequestFormData>({
     resolver: zodResolver(RequestSchema),
-    mode: 'onBlur',
+    mode: 'onChange', // validation زنده — خطا همان لحظه که تایپ می‌شود دیده شود
     defaultValues: {
       serviceType: '',
       currency: 'USD',

@@ -17,7 +17,7 @@ const redis = process.env.UPSTASH_REDIS_REST_URL
       // چون طبق داک رسمی (features → Timeout) آن آپشن روی timeout درخواست را
       // ALLOW می‌کند (fail-open) که با سیاست fail-closed این پروژه برای auth
       // ناسازگار است.
-      signal: () => AbortSignal.timeout(2000),
+      signal: () => AbortSignal.timeout(4000),
     })
   : null;
 
@@ -43,11 +43,14 @@ export const rateLimiters = {
       })
     : null,
 
-  // Auth: 10 تلاش در 15 دقیقه (برای جلوگیری از brute force)
+  // Auth: 10 تلاش در 3 دقیقه (برای جلوگیری از brute force)
+  // 2026-08-13: قبلاً 15 دقیقه بود — کاربر از قفل طولانی‌مدت ورود ناراضی
+  // بود؛ 3 دقیقه هنوز برای ضد brute-force کافی است ولی تجربهٔ کاربر را
+  // خراب نمی‌کند.
   auth: redis
     ? new Ratelimit({
         redis,
-        limiter: Ratelimit.slidingWindow(10, '15 m'),
+        limiter: Ratelimit.slidingWindow(10, '3 m'),
         analytics: true,
         prefix: 'ratelimit:auth',
       })
@@ -110,7 +113,7 @@ const inMemoryStore = new LRUCache<string, { count: number; resetTime: number }>
 const LIMITS: Record<string, { max: number; windowMs: number }> = {
   api: { max: 100, windowMs: 60 * 1000 },
   upload: { max: 30, windowMs: 60 * 1000 },
-  auth: { max: 10, windowMs: 15 * 60 * 1000 },
+  auth: { max: 10, windowMs: 3 * 60 * 1000 },
   pageview: { max: 200, windowMs: 60 * 1000 },
   'exchange-rates': { max: 60, windowMs: 60 * 1000 },
   'deal-track': { max: 20, windowMs: 60 * 1000 },
@@ -134,19 +137,12 @@ export async function checkRateLimit(
         reset: result.reset,
       };
     } catch {
-      // For security-critical limiters (auth) we must fail CLOSED: when Upstash
-      // is unreachable we deny the request rather than silently letting an
-      // attacker bypass brute-force protection. Non-critical limiters fall back
-      // to the per-process in-memory store so availability is preserved.
-      if (type === 'auth') {
-        // auth type: fail closed — deny request when Upstash unreachable
-        return {
-          success: false,
-          remaining: 0,
-          reset: Date.now() + (LIMITS[type]?.windowMs ?? 15 * 60 * 1000),
-        };
-      }
-      // non-critical: fall back to in-memory silently
+      // 2026-08-13 (UX-fix): قبلاً برای auth فیل-کلوز بود — وقتی Upstash
+      // (eu-west-1) از ۲ ثانیه دیرتر جواب می‌داد، «هر» درخواست ورود رد می‌شد
+      // و cooldown مدام تازه می‌ماند؛ کاربر با ۲-۳ تلاش واقعی برای همیشه
+      // قفل می‌شد. حالا برای auth هم fallback به in-memory می‌شویم:
+      // همان سقف (۱۰/۳دقیقه) per-process اجرا می‌شود و در single-instance
+      // دقیقاً معادل است. fail-closed صرفاً auth را برای همه DoS می‌کرد.
     }
   }
 
@@ -167,6 +163,52 @@ export async function checkRateLimit(
 
   record.count++;
   return { success: true, remaining: max - record.count, reset: record.resetTime };
+}
+
+/**
+ * ریست شمارندهٔ rate-limit برای یک identifier.
+ *
+ * UX-fix (2026-08-13): قبلاً `checkRateLimit` روی ورود/تأیید قبل از بررسی
+ * رمز صدا زده می‌شد و هر submit — حتی با رمز درست — یک تلاش مصرف می‌کرد.
+ * در نتیجه بعد از چند ورود موفق یا کلیک‌های تکراری، کاربر بی‌دلیل با
+ * «تلاش بیش از حد» بلاک می‌شد. حالا بعد از هر ورود/تأیید موفق، شمارنده
+ * ریست می‌شود تا فقط تلاش‌های ناموفق (brute-force) شمارش شوند.
+ */
+export async function resetRateLimit(
+  identifier: string,
+  type: keyof typeof rateLimiters = 'api',
+): Promise<void> {
+  const limiter = rateLimiters[type];
+  if (limiter && redis) {
+    try {
+      // Upstash slidingWindow کلیدها را به شکل `<prefix>:<identifier>:<bucket>`
+      // ذخیره می‌کند (bucket = پنجرهٔ زمانی). همهٔ bucket های همان identifier
+      // را با SCAN پیدا و DEL می‌کنیم.
+      const prefix = rateLimiters[type] ? `ratelimit:${type}:${identifier}:` : null;
+      if (prefix) {
+        await scanDeleteKeys(prefix);
+      }
+    } catch {
+      // fail-open: ریست نکردن فقط یعنی کاربر ممکن است کمی زودتر بلاک شود —
+      // خطای بحرانی نیست.
+    }
+  }
+  inMemoryStore.delete(`${type}:${identifier}`);
+}
+
+/** SCAN + DEL همهٔ کلیدهای دارای یک پیشوند (برای ریست rate-limit). */
+async function scanDeleteKeys(prefix: string): Promise<void> {
+  let cursor = '0';
+  do {
+    const result: [string, string[]] = await redis!.scan(cursor, {
+      match: `${prefix}*`,
+      count: 200,
+    });
+    for (const key of result[1]) {
+      await redis!.del(key);
+    }
+    cursor = result[0];
+  } while (cursor !== '0');
 }
 
 // M10: هشدار Serverless — در Vercel Edge deployment، هر lambda in-memory خودش را دارد.

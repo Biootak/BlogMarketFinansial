@@ -6,6 +6,13 @@
 
 ---
 
+## 🌐 Playwright MCP / مرورگر (همیشه فعال — قبل از هر کار مرورگر/Preview)
+
+> باز کردن مرورگر واقعی **فقط** با `npm run browser:open` (بعد از `npm run dev`).
+> ⛔ هرگز MCP پلی‌رایت را از صفر کانفیگ نکن — سند کامل: **`AGENTS.playwright.md`** (درایور + تله‌ها + بازسازی).
+
+---
+
 ## 🇦🇫 Domain Priority — Afghanistan-first (always-on)
 
 > **قانون P0:** این سایت **مخصوص افغانستان** است. هر تصمیم UX/UI/copy باید این اولویت را رعایت کند.
@@ -415,6 +422,7 @@ interface RouteErrorProps {
 | Style & tooling | `AGENTS.style.md` | Writing any code |
 | Gotchas | `AGENTS.gotchas.md` | Anything weird happening |
 | MCPs | `AGENTS.mcp.md` | Runtime MCP usage |
+| **Playwright MCP / browser** | **`AGENTS.playwright.md`** | **باز کردن مرورگر واقعی، هر کار مرورگر/Preview — قبل از هر کانفیگ** |
 | Visual contract | `DESIGN.md` | Any UI task (load WITH `COMPONENTS.md`) |
 | Component manifest | `COMPONENTS.md` | Choosing/creating any UI component |
 | UI design direction | `AGENTS.ui-design.md` | Visual / UX intent |
@@ -478,6 +486,7 @@ interface RouteErrorProps {
 | 2026-07 | **CUSTOM-FIRST, NATIVE-NEVER (P0):** سلسله مراتب Repo Scan + Decision Ladder برای هر المان؛ موجودی کامل primitives/ui/custom + site-level ثبت شد؛ قانون جدا برای داشبورد vs سایت؛ export اجباری؛ namespace جداگانه site/dashboard |
 | 2026-07 | **Error Handling یکپارچه:** `RouteError` canonical ساخته شد؛ همه error.tsx ها migrate شدند؛ `SiteRouteError`/`ExchangeRouteError` deprecated؛ §Error Handling section اضافه شد؛ `SettingsSubNavItem.icon` → `iconName: string` برای Server→Client safety |
 | 2026-07-30 | **§3.7 Flexibility & Restraint اضافه شد:** page-specific premium containers، header متنوع در هر zone، color discipline (۲-۳ tone) — همزمان با anti-overdesign: حداکثر ۴ zone، حداکثر ۳ tone، حداکثر ۱ overlay تزئینی، حداکثر ۲ animation، حداکثر ۱ SVG signature در page. یاد گرفته شد از: ۶-zone redesign که همه zoneها با هم رقابت می‌کردند. |
+| 2026-08-13 | **Playwright MCP دائمی شد:** `scripts/playwright-open.mjs` (خودترمیم، SDK را خودش نصب می‌کند) + `npm run browser:open` + `AGENTS.playwright.md`. باز کردن مرورگر واقعی دیگر فقط یک فرمان است — هر AI باید این سند را بخواند و از صفر کانفیگ نکند. |
 | 2026-08 | **UI/UX Pro Max Skill تنظیم شد:** Skill local در `.claude/skills/ui-ux-pro-max/` نصب شده؛ Design System با `--variance 6 --density 8` برای fintech/RTL/dark در `design-system/afghanistan-exchange-market/MASTER.md` persist شد؛ `AGENTS.ui-ux-skill.md` با قوانین P1–P10 از SKILL.md و وضعیت انطباق پروژه ایجاد شد؛ `AUDIT.md` با gap report نوشته شد. در هر سشن UI باید `AGENTS.ui-ux-skill.md` خوانده شود. |
 
 ---

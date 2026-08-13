@@ -49,6 +49,7 @@ export default function SystemSettings() {
 
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
+    mode: 'onTouched',
     defaultValues: {
       siteName: '',
       siteUrl: '',

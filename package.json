@@ -57,7 +57,8 @@
     "cron:test:scheduled": "curl -fsS -H \"Authorization: Bearer ${CRON_SECRET}\" ${APP_URL:-http://localhost:3000}/api/cron/publish-scheduled-posts",
     "cron:test:rates": "curl -fsS -H \"Authorization: Bearer ${CRON_SECRET}\" ${APP_URL:-http://localhost:3000}/api/cron/refresh-market-rates",
     "cron:test:bazaar": "curl -fsS -H \"Authorization: Bearer ${CRON_SECRET}\" ${APP_URL:-http://localhost:3000}/api/cron/sync-bazaar",
-    "dev:cron": "node scripts/dev-cron.js"
+    "dev:cron": "node scripts/dev-cron.js",
+    "browser:open": "node scripts/playwright-open.mjs"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

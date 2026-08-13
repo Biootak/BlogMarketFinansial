@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle, ArrowLeft, Loader2, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './CustomerCreateWorkspace.module.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -63,12 +63,14 @@ function Field({
   label,
   required,
   hint,
+  error,
   children,
 }: {
   id: string;
   label: string;
   required?: boolean;
   hint?: string;
+  error?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -78,7 +80,13 @@ function Field({
         {required && <span className={s.fieldRequired}>*</span>}
       </label>
       {children}
-      {hint && <span className={s.fieldHint}>{hint}</span>}
+      {error ? (
+        <span className={s.fieldError} role="alert">
+          {error}
+        </span>
+      ) : hint ? (
+        <span className={s.fieldHint}>{hint}</span>
+      ) : null}
     </div>
   );
 }
@@ -90,7 +98,20 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
   const { toast } = useToast();
   const [form, setForm] = useState<FormState>(EMPTY);
   const [error, setError] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isPending, startTransition] = useTransition();
+
+  // validation زنده — خطا همان لحظه که فیلد پر/تغییر می‌شود نمایش داده می‌شود
+  const liveErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    if (touched.fullName && form.fullName.trim() && form.fullName.length < 2) {
+      errs.fullName = 'نام کامل حداقل ۲ کاراکتر باشد';
+    }
+    if (touched.phone && form.phone.trim() && form.phone.replace(/\D/g, '').length < 7) {
+      errs.phone = 'شماره تلفن معتبر وارد کنید';
+    }
+    return errs;
+  }, [touched, form.fullName, form.phone]);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -99,6 +120,7 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
         ...prev,
         [name]: type === 'number' ? Number(value) : value,
       }));
+      setTouched((prev) => ({ ...prev, [name]: true }));
       setError(null);
     },
     [],
@@ -107,12 +129,9 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
-      if (!form.fullName.trim() || form.fullName.length < 2) {
-        setError('نام کامل حداقل ۲ کاراکتر باشد');
-        return;
-      }
-      if (!form.phone.trim() || form.phone.length < 7) {
-        setError('شماره تلفن معتبر وارد کنید');
+      setTouched({ fullName: true, phone: true });
+      if (liveErrors.fullName || liveErrors.phone) {
+        setError(liveErrors.fullName ?? liveErrors.phone);
         return;
       }
 
@@ -154,7 +173,12 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
             <h2 className={s.cardTitle}>اطلاعات هویتی</h2>
           </div>
           <div className={s.grid2}>
-            <Field id="cc-fullName" label="نام کامل" required>
+            <Field
+              id="cc-fullName"
+              label="نام کامل"
+              required
+              error={liveErrors.fullName}
+            >
               <Input
                 id="cc-fullName"
                 name="fullName"
@@ -163,6 +187,7 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
                 placeholder="احمد محمدی"
                 autoComplete="name"
                 aria-required="true"
+                aria-invalid={!!liveErrors.fullName || undefined}
                 disabled={isPending}
               />
             </Field>
@@ -186,7 +211,13 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
             <h2 className={s.cardTitle}>اطلاعات تماس</h2>
           </div>
           <div className={s.grid2}>
-            <Field id="cc-phone" label="شماره تلفن" required hint="مثال: +93700000001">
+            <Field
+              id="cc-phone"
+              label="شماره تلفن"
+              required
+              hint="مثال: +93700000001"
+              error={liveErrors.phone}
+            >
               <Input
                 id="cc-phone"
                 name="phone"
@@ -196,6 +227,7 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
                 dir="ltr"
                 inputMode="tel"
                 aria-required="true"
+                aria-invalid={!!liveErrors.phone || undefined}
                 disabled={isPending}
               />
             </Field>

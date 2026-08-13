@@ -18,9 +18,11 @@ import type { AuthNotice, AuthResult, FlowIntent, InternalStep } from './flow-sh
  * loads on first render. Other steps pull their own dynamic chunks.
  */
 export default function EmailStep({
+  initialEmail = '',
   onResult,
   onMoveTo,
 }: {
+  initialEmail?: string;
   onResult: (result: AuthResult) => void;
   onMoveTo: (
     nextStep: InternalStep,
@@ -30,8 +32,12 @@ export default function EmailStep({
   type Values = z.infer<typeof EmailLookupSchema>;
   const form = useForm<Values>({
     resolver: zodResolver(EmailLookupSchema),
-    mode: 'onBlur',
-    defaultValues: { email: '' },
+    mode: 'onChange', // validation زنده — خطا همان لحظه که تایپ می‌شود دیده شود
+    // 2026-08-12: when the user comes back from a later step (تغییر ایمیل),
+    // pre-fill the email they already entered instead of showing an empty
+    // field. The component remounts on each step transition, so defaultValues
+    // reflects the latest email.
+    defaultValues: { email: initialEmail },
   });
   const [isPending, startTransition] = useTransition();
   const busy = isPending || form.formState.isSubmitting;

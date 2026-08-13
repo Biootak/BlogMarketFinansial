@@ -216,7 +216,7 @@ export default function AuthFlow() {
 
         {/* ── Step content ── */}
         <Suspense fallback={<StepFallback />}>
-          {step === 'email' && <EmailStep onResult={handleResult} onMoveTo={moveTo} />}
+          {step === 'email' && <EmailStep initialEmail={email} onResult={handleResult} onMoveTo={moveTo} />}
           {step === 'register' && (
             <RegisterStep
               initialEmail={email}

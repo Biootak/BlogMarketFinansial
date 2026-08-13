@@ -237,6 +237,7 @@ export function LockedEmailChip({
 /** Notice / alert banner — با پشتیبانی از rate-limit countdown */
 export function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
   if (!notice) return null;
+  const hasCooldown = Boolean(notice.cooldownMs && notice.cooldownMs > 0);
   const cls =
     notice.tone === 'error'
       ? 'auth-alert'
@@ -249,11 +250,23 @@ export function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
     <div>
       <p className={cls} aria-live="polite">
         <Icon aria-hidden="true" />
-        <span>{notice.message}</span>
+        <span>
+          {/* UX-fix (2026-08-13): وقتی cooldown هست، پیام و countdown در یک
+              جملهٔ واحد نمایش داده می‌شوند تا دو باکس تکراری (پیام «بیش از حد
+              مجاز» + باکس جدا «می‌توانید دوباره تلاش کنید») نباشند.
+              جملهٔ انتهایی پیام («لحظاتی دیگر دوباره تلاش کنید») حذف می‌شود
+              چون countdown همان معنا را دقیق‌تر می‌رساند. */}
+          {hasCooldown
+            ? notice.message.replace(/لحظاتی دیگر دوباره تلاش کنید\.?/, '').trim()
+            : notice.message}
+          {hasCooldown ? (
+            <>
+              {' '}
+              <RateLimitCountdown initialMs={notice.cooldownMs!} inline />
+            </>
+          ) : null}
+        </span>
       </p>
-      {notice.cooldownMs && notice.cooldownMs > 0 ? (
-        <RateLimitCountdown initialMs={notice.cooldownMs} />
-      ) : null}
     </div>
   );
 }

@@ -135,8 +135,10 @@ export async function createCategory(
       parentIds = [],
     } = parsed.data;
 
-    let slug = providedSlug || generateSlug(name);
-    slug = generateSlug(slug);
+    // FIX (2026-08-13): اسلاگ دستی کاربر نباید دوباره از generateSlug
+    // عبور کند — translateWord خط فاصله‌ها را حذف می‌کرد (test-cat → testcat).
+    // generateSlug فقط وقتی اعمال می‌شود که اسلاگ دستی نداده باشیم.
+    const slug = providedSlug ? providedSlug.trim() : generateSlug(name);
 
     if (!validateSlug(slug)) {
       return {
@@ -264,8 +266,10 @@ export async function updateCategory(
       parentIds = [],
     } = parsed.data;
 
-    let slug = providedSlug || generateSlug(name);
-    slug = generateSlug(slug);
+    // FIX (2026-08-13): اسلاگ دستی کاربر نباید دوباره از generateSlug
+    // عبور کند — translateWord خط فاصله‌ها را حذف می‌کرد (test-cat → testcat).
+    // generateSlug فقط وقتی اعمال می‌شود که اسلاگ دستی نداده باشیم.
+    const slug = providedSlug ? providedSlug.trim() : generateSlug(name);
 
     if (!validateSlug(slug)) {
       return {

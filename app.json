@@ -35,6 +35,34 @@
       "description": "سقف هیپ Node برای Eco dyno (512MB) — از OOM/R14/R15 جلوگیری می‌کند",
       "value": "--max-old-space-size=256"
     },
+    "SAFE_CACHE_MAX_ENTRIES": {
+      "description": "حداکثر entry های in-memory cache — پایین‌تر نگه داشتن برای dyno 512MB",
+      "value": "300"
+    },
+    "SAFE_CACHE_MAX_BYTES": {
+      "description": "سقف حجمی in-memory cache به بایت (پیش‌فرض 100MB) — 50MB برای Eco dyno",
+      "value": "52428800"
+    },
+    "TGJU_FETCH_TTL_MS": {
+      "description": "TTL کش صفحات tgju به میلی‌ثانیه — 120s پیش‌فرض؛ 180s برای کاهش فشار شبکه و حافظه",
+      "value": "180000"
+    },
+    "SYSTEM_LOG_PERSIST": {
+      "description": "ذخیره لاگ‌ها در DB — false برای کاهش فشار Prisma در ترافیک بالا",
+      "value": "true"
+    },
+    "BACKUP_POST_LIMIT": {
+      "description": "حداکثر تعداد پست در backup — پایین‌تر برای کاهش memory spike",
+      "value": "500"
+    },
+    "BACKUP_USER_LIMIT": {
+      "description": "حداکثر تعداد کاربر در backup",
+      "value": "5000"
+    },
+    "BACKUP_COMMENT_LIMIT": {
+      "description": "حداکثر تعداد نظر در backup",
+      "value": "1000"
+    },
     "AUTH_SECRET": {
       "description": "کلید رمزنگاری NextAuth — بساز با: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"",
       "generator": "secret",

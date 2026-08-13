@@ -23,6 +23,7 @@ import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { revalidateTag } from '@/lib/revalidate';
+import { formatAmount } from '@/lib/exchange-tx-formatters';
 import type { FintechActionResult } from '@/types/types';
 import { Decimal } from '@prisma/client/runtime/library';
 import { headers } from 'next/headers';
@@ -337,15 +338,15 @@ export async function createTransaction(
     }
   }
 
-  // H3: KYC gate
+  // H3: KYC gate + سقف روزانهٔ صرافی (dailyLimitAf)
   const [customer, exchange] = await Promise.all([
     prisma.customer.findFirst({
       where: { id: customerId, exchangeId },
-      select: { id: true, kycLevel: true, kycStatus: true },
+      select: { id: true, fullName: true, phone: true, kycLevel: true, kycStatus: true },
     }),
     prisma.exchange.findUnique({
       where: { id: exchangeId },
-      select: { requireKyc: true },
+      select: { requireKyc: true, dailyLimitAf: true },
     }),
   ]);
   if (!customer) {
@@ -385,6 +386,34 @@ export async function createTransaction(
   const amountBig = toBigInt(amount);
   const feeBig = toBigInt(fee ?? 0);
   const destAmountBig = destAmount ? toBigInt(destAmount) : null;
+
+  // EX-020: سقف معاملات روزانهٔ صرافی (dailyLimitAf) — مجموع تراکنش‌های امروز
+  // (کامپلت و در حال پردازش) نباید از سقف صرافی بگذرد. فقط برای ارز AFN اعمال
+  // می‌شود چون سقف به AFN تعریف شده؛ تراکنش‌های غیر AFN خارج از این چک هستند.
+  const ZERO = BigInt(0);
+  if (exchange?.dailyLimitAf && exchange.dailyLimitAf > ZERO && currency === 'AFN') {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayAgg = await prisma.transaction.aggregate({
+      where: {
+        exchangeId,
+        currency: 'AFN',
+        createdAt: { gte: todayStart },
+        status: { in: ['COMPLETED', 'PROCESSING'] },
+      },
+      _sum: { amount: true },
+    });
+    const used = todayAgg._sum.amount ?? ZERO;
+    if (used + amountBig > exchange.dailyLimitAf) {
+      return {
+        success: false,
+        error: {
+          code: 'DAILY_LIMIT_EXCEEDED',
+          message: `سقف معاملات روزانهٔ صرافی (${formatAmount(exchange.dailyLimitAf.toString(), 'AFN')}) تکمیل شده است. امروز ${formatAmount(used.toString(), 'AFN')} معامله ثبت شده.`,
+        },
+      };
+    }
+  }
 
   // ثبت تراکنش + ledger در یک transaction با serializable isolation
   let txResult: Awaited<ReturnType<typeof prisma.transaction.create>>;
@@ -570,6 +599,7 @@ export async function createTransaction(
       idempotencyKey: txResult.idempotencyKey,
       createdAt: txResult.createdAt.toISOString(),
       updatedAt: txResult.updatedAt.toISOString(),
+      customer: customer ? { fullName: customer.fullName, phone: customer.phone } : undefined,
     },
   };
 }

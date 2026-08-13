@@ -45,6 +45,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { createPortal } from 'react-dom';
 import s from './CurrencySelect.module.css';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -129,7 +130,8 @@ export function CurrencySelect({
 }: CurrencySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+  // panelStyle شامل position:fixed + coordinates است — null یعنی هنوز محاسبه نشده (panel مخفی است)
+  const [panelStyle, setPanelStyle] = useState<CSSProperties | null>(null);
 
   const wrapRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -146,15 +148,20 @@ export function CurrencySelect({
 
   const selected = useMemo(() => allItems.find((it) => it.value === value), [allItems, value]);
 
-  // ── Close on outside click or scroll ──────────────────────────────
+  // ── Close on outside click or scroll ───────────────────
   useEffect(() => {
     if (!open) return;
     const handleClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+      if (
+        wrapRef.current &&
+        !wrapRef.current.contains(e.target as Node) &&
+        panelRef.current &&
+        !panelRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
-    // Close on scroll so the fixed panel doesn't drift from the trigger
+    // بستن panel هنگام scroll — چون position:fixed موقعیتش جابجا نمی‌شود
     const handleScroll = () => setOpen(false);
     document.addEventListener('mousedown', handleClick);
     window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
@@ -165,47 +172,59 @@ export function CurrencySelect({
   }, [open]);
 
   // ── Focus search when opened + reset query when closed ──
-  // ── Position panel with fixed coords to escape any stacking context ──
+  // ── Position panel as fixed to escape any stacking context (hero cards, transform, etc.) ──
   useEffect(() => {
     if (!open) {
       setQuery('');
-      setPanelStyle({});
+      setPanelStyle(null);
       return;
     }
-    const t = setTimeout(() => {
-      searchRef.current?.focus();
-      if (!triggerRef.current) return;
-      const trigRect = triggerRef.current.getBoundingClientRect();
-      const PANEL_W = Math.min(352, window.innerWidth - 16);
-      const PANEL_H = 336; // max-block-size approximate
-      const pad = 8;
+    const compute = () => {
+      const anchor = triggerRef.current ?? wrapRef.current;
+      if (!anchor) return;
+      const tr = anchor.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const PAD = 8;
+      const PANEL_W = Math.min(240, vw - PAD * 2);
 
-      // Default: open below trigger, aligned to inline-end (RTL: right edge)
-      let top = trigRect.bottom + 6;
-      // In RTL the panel's right edge aligns with the trigger's right edge
-      let left = trigRect.right - PANEL_W;
+      // ارتفاع واقعی panel — اگر هنوز رندر نشده از max استفاده کن
+      const panelH = panelRef.current
+        ? panelRef.current.getBoundingClientRect().height || 280
+        : 280;
 
-      // Flip up if not enough space below
-      if (top + PANEL_H > window.innerHeight - pad) {
-        top = trigRect.top - PANEL_H - 6;
-      }
-      // Clamp horizontally
-      if (left < pad) left = pad;
-      if (left + PANEL_W > window.innerWidth - pad) left = window.innerWidth - pad - PANEL_W;
+      // عمودی: زیر trigger — اگر فضا نبود و بالا فضا داشت، بالا باز شو
+      const spaceBelow = vh - tr.bottom - PAD;
+      const spaceAbove = tr.top - PAD;
+      const goUp = spaceBelow < panelH && spaceAbove >= panelH;
+
+      // افقی: از لبه‌ی چپ trigger — clamp به viewport
+      let left = tr.left;
+      if (left + PANEL_W > vw - PAD) left = vw - PAD - PANEL_W;
+      if (left < PAD) left = PAD;
 
       setPanelStyle({
         position: 'fixed',
-        top,
+        top: goUp ? undefined : tr.bottom + 4,
+        bottom: goUp ? vh - tr.top + 4 : undefined,
         left,
         width: PANEL_W,
-        // override inset-inline-start so the CSS default doesn't fight
-        insetInlineStart: 'unset',
-        insetInlineEnd: 'unset',
-        insetBlockStart: 'unset',
-        insetBlockEnd: 'unset',
+        insetInlineStart: undefined,
+        insetInlineEnd: undefined,
+        insetBlockStart: undefined,
+        insetBlockEnd: undefined,
+        minInlineSize: undefined,
+        maxInlineSize: undefined,
       });
-    }, 0);
-    return () => clearTimeout(t);
+    };
+
+    // مرحله ۱: render با visibility:hidden (panelStyle=null)
+    // مرحله ۲: بعد از یک frame — panel در DOM است و getBoundingClientRect دقیق است
+    const t = requestAnimationFrame(() => {
+      compute();
+      setTimeout(() => searchRef.current?.focus(), 0);
+    });
+    return () => cancelAnimationFrame(t);
   }, [open]);
 
   // ── Pick an item ────────────────────────────────────────
@@ -291,14 +310,14 @@ export function CurrencySelect({
         />
       </button>
 
-      {/* ── Dropdown panel ── */}
-      {open && (
+      {/* ── Dropdown panel — با Portal مستقیم روی body تا از transform ancestors خارج شود ── */}
+      {open && typeof document !== 'undefined' && createPortal(
         <div
           ref={panelRef}
           className={`${s.panel} ${tone === 'dark' ? s.panelDark : ''}`}
           data-tone={tone}
           aria-label="انتخاب ارز"
-          style={panelStyle}
+          style={panelStyle ?? { visibility: 'hidden' }}
         >
           {/* Search */}
           <div className={s.search}>
@@ -377,7 +396,8 @@ export function CurrencySelect({
               </li>
             ))}
           </ul>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

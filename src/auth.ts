@@ -8,6 +8,7 @@ import 'server-only';
 import authConfig from '@/auth.config';
 import { getUserByEmail } from '@/data/user';
 import { getAuthSecret } from '@/lib/auth-secret';
+import { devOwnerRoleForEmail } from '@/lib/dev-access';
 import prisma from '@/lib/db';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
@@ -92,6 +93,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       if (!existingUser.emailVerified) {
         throw new Error('ایمیل تأیید نشده است.');
+      }
+      // 2026-08-12: banned/suspended accounts must never mint a session.
+      if (existingUser.status !== 'Active') {
+        throw new Error('دسترسی به این حساب غیرفعال شده است.');
       }
 
       try {
@@ -188,14 +193,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: user.id as string },
-            select: { tokenVersion: true, permissions: true, deniedPermissions: true },
+            select: { tokenVersion: true, passwordVersion: true, permissions: true, deniedPermissions: true },
           });
           token.tokenVersion = dbUser?.tokenVersion ?? 0;
+          token.passwordVersion = dbUser?.passwordVersion ?? 0;
           token.permissions = dbUser?.permissions ?? [];
           token.deniedPermissions = dbUser?.deniedPermissions ?? [];
         } catch (error) {
           serverLog.warn('auth', 'jwt-seed-db-unavailable', error);
           token.tokenVersion = 0;
+          token.passwordVersion = 0;
           token.permissions = [];
           token.deniedPermissions = [];
         }
@@ -226,9 +233,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.sub },
-            select: { role: true, tokenVersion: true, permissions: true, deniedPermissions: true },
+            select: {
+              role: true,
+              tokenVersion: true,
+              passwordVersion: true,
+              permissions: true,
+              deniedPermissions: true,
+              status: true,
+            },
           });
           if (dbUser) {
+            // 2026-08-12: banned/suspended → discard the token so the
+            // session dies on the very next request (no forced sign-out
+            // round-trip needed).
+            if (dbUser.status !== 'Active') return null;
+            // 2026-08-13: password changed (passwordVersion bumped) → the
+            // session was minted against an old password — discard it so
+            // stolen/old sessions die immediately.
+            const storedPasswordVersion =
+              typeof token.passwordVersion === 'number' ? token.passwordVersion : 0;
+            if ((dbUser.passwordVersion ?? 0) !== storedPasswordVersion) return null;
             const storedVersion = typeof token.tokenVersion === 'number' ? token.tokenVersion : 0;
             if (dbUser.tokenVersion !== storedVersion) {
               // Version mismatch → role/permissions changed or session was
@@ -250,10 +274,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ token, session }) {
       if (token) {
+        // 2026-08-12: dev-only OWNER elevation — فقط توسعه‌دهنده در محیط
+        // توسعه (سه گارد: NODE_ENV=development + DEV_OWNER_BYPASS=1 +
+        // DEV_OWNER_EMAIL منطبق با ایمیل session). در prod همیشه null است
+        // و نقش واقعی token استفاده می‌شود. هویت (id) هرگز عوض نمی‌شود.
+        const devRole = devOwnerRoleForEmail(
+          typeof token.email === 'string' ? token.email : undefined,
+        );
         session.user = {
           ...session.user,
           id: token.sub || '',
-          role: (token.role as Role) || 'USER',
+          role: devRole ?? ((token.role as Role) || 'USER'),
           permissions: token.permissions ?? [],
           deniedPermissions: token.deniedPermissions ?? [],
           emailVerified: token.emailVerified
@@ -325,6 +356,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await getUserByEmail(email);
         if (!user) return null;
+        // 2026-08-12: banned/suspended users must not get a session under
+        // any circumstance (password OR after_otp path).
+        if (user.status !== 'Active') return null;
 
         // OAuth-only / after-otp path: we already verified the user out of
         // band in auth-actions.ts (OTP consumed, emailVerified set).

@@ -77,6 +77,12 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+# 2026-08-13 mem-fix: Cap V8 old-space at 256MB so Heroku Eco dyno (512MB RSS)
+# has headroom before R14 (>512MB) or R15 (>1.5x dyno size → restart).
+# Without this flag, Node defaults to ~1.4GB heap limit and can grow past 512MB
+# before GC kicks in — triggering R14 on every cold-start with a warm cache.
+# Keep in sync with NODE_OPTIONS in app.json.
+ENV NODE_OPTIONS="--max-old-space-size=256"
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs && \

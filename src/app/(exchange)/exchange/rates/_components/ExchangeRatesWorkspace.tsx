@@ -62,13 +62,18 @@ interface FormState {
 function buildInitial(exchange: ExchangeRow, provider: TransferProviderRow | null): FormState {
   return {
     name: provider?.name ?? exchange.name,
-    spreadPercent: provider ? String(provider.spreadPercent) : '0',
+    spreadPercent: provider ? String(roundSpread(provider.spreadPercent)) : '0',
     flatFeeToman: provider ? String(provider.flatFeeToman) : '0',
     speedMinutes: provider ? String(provider.speedMinutes) : '30',
     features: (provider?.features ?? ['fee-transparent']) as Feature[],
     active: provider?.active ?? true,
     description: provider?.description ?? '',
   };
+}
+
+/** نرخ اسپرد را به حداکثر ۲ رقم اعشار محدود می‌کند (مشکل float دقت). */
+function roundSpread(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 function formatDuration(min: number): string {

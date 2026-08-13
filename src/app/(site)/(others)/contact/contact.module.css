@@ -248,6 +248,17 @@
   box-shadow: var(--ds-glow-brand);
 }
 
+.input[aria-invalid="true"] {
+  border-color: var(--nova-down);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--nova-down) 40%, transparent);
+}
+
+.fieldError {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--nova-down);
+}
+
 /* Override height for textarea (input sets height: 46px) */
 .textarea {
   height: auto;

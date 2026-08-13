@@ -66,7 +66,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import s from './KycContent.module.css';
 
 interface Props {
@@ -127,29 +127,56 @@ export default function KycContent({ profile, records }: Props) {
   const [docType, setDocType] = useState<string>('NATIONAL_ID');
   const [docNumber, setDocNumber] = useState('');
   const [fileUrl, setFileUrl] = useState('');
-  const handleImageUpload = useCallback((urls: string[]) => setFileUrl(urls[0] ?? ''), []);
-  const handleImageRemove = useCallback(() => setFileUrl(''), []);
+  const handleImageUpload = useCallback((urls: string[]) => {
+    setFileUrl(urls[0] ?? '');
+    setInteracted(true);
+  }, []);
+  const handleImageRemove = useCallback(() => {
+    setFileUrl('');
+    setInteracted(true);
+  }, []);
 
   // سطح ۲ — سلفی
   const [selfieUrl, setSelfieUrl] = useState('');
-  const handleSelfieUpload = useCallback((urls: string[]) => setSelfieUrl(urls[0] ?? ''), []);
-  const handleSelfieRemove = useCallback(() => setSelfieUrl(''), []);
+  const handleSelfieUpload = useCallback((urls: string[]) => {
+    setSelfieUrl(urls[0] ?? '');
+    setInteracted(true);
+  }, []);
+  const handleSelfieRemove = useCallback(() => {
+    setSelfieUrl('');
+    setInteracted(true);
+  }, []);
 
   // سطح ۳ — آدرس و صورت حساب بانکی
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
   const [addressDocUrl, setAddressDocUrl] = useState('');
   const handleAddressDocUpload = useCallback(
-    (urls: string[]) => setAddressDocUrl(urls[0] ?? ''),
+    (urls: string[]) => {
+      setAddressDocUrl(urls[0] ?? '');
+      setInteracted(true);
+    },
     [],
   );
-  const handleAddressDocRemove = useCallback(() => setAddressDocUrl(''), []);
+  const handleAddressDocRemove = useCallback(() => {
+    setAddressDocUrl('');
+    setInteracted(true);
+  }, []);
   const [bankStatementUrl, setBankStatementUrl] = useState('');
   const handleBankStatementUpload = useCallback(
-    (urls: string[]) => setBankStatementUrl(urls[0] ?? ''),
+    (urls: string[]) => {
+      setBankStatementUrl(urls[0] ?? '');
+      setInteracted(true);
+    },
     [],
   );
-  const handleBankStatementRemove = useCallback(() => setBankStatementUrl(''), []);
+  const handleBankStatementRemove = useCallback(() => {
+    setBankStatementUrl('');
+    setInteracted(true);
+  }, []);
+
+  // validation زنده — خطا همان لحظه که فیلد پر/تغییر می‌شود نمایش داده می‌شود
+  const [interacted, setInteracted] = useState(false);
 
   // ── جریان سکوئنشی ────────────────────────────────────────────────────
   // سطح هدف = اولین سطحی که هنوز کامل (APPROVED) نشده است.
@@ -157,6 +184,23 @@ export default function KycContent({ profile, records }: Props) {
     profile.kycLevel === 'NONE' ? 0 : Number(profile.kycLevel.replace('LEVEL_', ''));
   const targetLevel: KycLevel | null =
     currentNum >= 3 ? null : (['LEVEL_1', 'LEVEL_2', 'LEVEL_3'][currentNum] as KycLevel);
+
+  const kycFieldErrors = useMemo(() => {
+    const errs: Record<string, string> = {};
+    if (targetLevel === 'LEVEL_2' || targetLevel === 'LEVEL_3') {
+      if (!docNumber.trim()) errs.docNumber = 'شماره مدرک الزامی است';
+      else if (docNumber.trim().length < 4) errs.docNumber = 'شماره مدرک باید حداقل ۴ رقم باشد';
+      if (!fileUrl.trim()) errs.fileUrl = 'تصویر مدرک را آپلود کنید';
+      if (!selfieUrl.trim()) errs.selfieUrl = 'برای این سطح، سلفی (تأیید چهره) الزامی است';
+    }
+    if (targetLevel === 'LEVEL_3') {
+      if (!city.trim()) errs.city = 'برای سطح ۳، شهر الزامی است';
+      if (!address.trim()) errs.address = 'برای سطح ۳، آدرس الزامی است';
+      if (!addressDocUrl.trim()) errs.addressDocUrl = 'تصویر سند اثبات آدرس الزامی است';
+      if (!bankStatementUrl.trim()) errs.bankStatementUrl = 'تصویر صورت حساب بانکی الزامی است';
+    }
+    return errs;
+  }, [targetLevel, docNumber, fileUrl, selfieUrl, city, address, addressDocUrl, bankStatementUrl]);
 
   // سطح هدف در صف بررسی است؟ (بعد از تأیید، فرم آن سطح بسته می‌شود)
   const hasPendingTarget = targetLevel
@@ -242,6 +286,7 @@ export default function KycContent({ profile, records }: Props) {
   // ── سطح ۱: ارسال کد تلگرام ─────────────────────────────────────────
   function handleSendOtp(e: React.FormEvent) {
     e.preventDefault();
+    setInteracted(true);
     setError(null);
     setOtpInfo(null);
     const full = getFullPhone();
@@ -292,37 +337,13 @@ export default function KycContent({ profile, records }: Props) {
   // ── سطح ۲ / ۳: ارسال مدرک ──────────────────────────────────────────
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setInteracted(true);
     setError(null);
 
-    if (!docNumber.trim()) {
-      setError('شماره مدرک الزامی است');
+    const firstError = kycFieldErrors[Object.keys(kycFieldErrors)[0]];
+    if (firstError) {
+      setError(firstError);
       return;
-    }
-    if (!fileUrl.trim()) {
-      setError('تصویر مدرک را آپلود کنید');
-      return;
-    }
-    if (!selfieUrl.trim()) {
-      setError('برای این سطح، سلفی (تأیید چهره) الزامی است');
-      return;
-    }
-    if (targetLevel === 'LEVEL_3') {
-      if (!city.trim()) {
-        setError('برای سطح ۳، شهر الزامی است');
-        return;
-      }
-      if (!address.trim()) {
-        setError('برای سطح ۳، آدرس الزامی است');
-        return;
-      }
-      if (!addressDocUrl.trim()) {
-        setError('برای سطح ۳، تصویر سند اثبات آدرس الزامی است');
-        return;
-      }
-      if (!bankStatementUrl.trim()) {
-        setError('برای سطح ۳، تصویر صورت حساب بانکی الزامی است');
-        return;
-      }
     }
 
     startTransition(async () => {
@@ -758,16 +779,25 @@ export default function KycContent({ profile, records }: Props) {
                                 <input
                                   id="docNumber"
                                   type="text"
-                                  className={s.formControl}
+                                  className={`${s.formControl} ${interacted && kycFieldErrors.docNumber ? s.formControlError : ''}`}
                                   value={docNumber}
-                                  onChange={(e) => setDocNumber(e.target.value)}
+                                  onChange={(e) => {
+                                    setDocNumber(e.target.value);
+                                    setInteracted(true);
+                                  }}
                                   placeholder="مثال: ۰۰۱۲۳۴۵۶۷۸"
                                   disabled={isPending}
                                   autoComplete="off"
                                   maxLength={30}
                                   required
                                   dir="ltr"
+                                  aria-invalid={interacted && !!kycFieldErrors.docNumber}
                                 />
+                                {interacted && kycFieldErrors.docNumber && (
+                                  <span className={s.fieldError} role="alert">
+                                    {kycFieldErrors.docNumber}
+                                  </span>
+                                )}
                               </div>
 
                               <div className={s.formField} data-span="full">
@@ -780,7 +810,7 @@ export default function KycContent({ profile, records }: Props) {
                                   folder="kyc"
                                   thumbSize="xl"
                                   label="تصویر مدرک"
-                                  hint="تصویر واضح از مدرک انتخاب‌شده — JPG، PNG، WebP، GIF، SVG"
+                                  hint="تصویر واضح از مدرک انتخاب‌شده — JPG، PNG، WebP، GIF"
                                   disabled={isPending}
                                 />
                                 <span className={s.formHint}>
@@ -814,15 +844,24 @@ export default function KycContent({ profile, records }: Props) {
                                   <input
                                     id="city"
                                     type="text"
-                                    className={s.formControl}
+                                    className={`${s.formControl} ${interacted && kycFieldErrors.city ? s.formControlError : ''}`}
                                     value={city}
-                                    onChange={(e) => setCity(e.target.value)}
+                                    onChange={(e) => {
+                                      setCity(e.target.value);
+                                      setInteracted(true);
+                                    }}
                                     placeholder="مثال: کابل"
                                     disabled={isPending}
                                     autoComplete="address-level2"
                                     maxLength={120}
                                     required
+                                    aria-invalid={interacted && !!kycFieldErrors.city}
                                   />
+                                  {interacted && kycFieldErrors.city && (
+                                    <span className={s.fieldError} role="alert">
+                                      {kycFieldErrors.city}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className={s.formField}>
                                   <label htmlFor="address" className={s.formLabel}>
@@ -831,15 +870,24 @@ export default function KycContent({ profile, records }: Props) {
                                   <input
                                     id="address"
                                     type="text"
-                                    className={s.formControl}
+                                    className={`${s.formControl} ${interacted && kycFieldErrors.address ? s.formControlError : ''}`}
                                     value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
+                                    onChange={(e) => {
+                                      setAddress(e.target.value);
+                                      setInteracted(true);
+                                    }}
                                     placeholder="مثال: ناحیه ۳، خیابان …"
                                     disabled={isPending}
                                     autoComplete="street-address"
                                     maxLength={300}
                                     required
+                                    aria-invalid={interacted && !!kycFieldErrors.address}
                                   />
+                                  {interacted && kycFieldErrors.address && (
+                                    <span className={s.fieldError} role="alert">
+                                      {kycFieldErrors.address}
+                                    </span>
+                                  )}
                                 </div>
                                 <div className={s.formField} data-span="full">
                                   <ImageUploader

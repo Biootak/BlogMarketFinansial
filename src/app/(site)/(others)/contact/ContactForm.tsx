@@ -2,9 +2,11 @@
 
 import SocialLinks from '@/components/SocialsList/SocialLinks';
 import { AlertCircle, CheckCircle2, Mail, MapPin, Phone, SendHorizonal } from 'lucide-react';
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { type ContactFormState, sendContactAction } from './contact-action';
 import s from './contact.module.css';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ContactFormProps {
   address: string;
@@ -16,7 +18,29 @@ const initialState: ContactFormState = { success: false, error: null };
 
 export default function ContactForm({ address, email, phone }: ContactFormProps) {
   const [state, action, pending] = useActionState(sendContactAction, initialState);
+  const [values, setValues] = useState({ name: '', email: '', message: '' });
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const formRef = useRef<HTMLFormElement>(null);
+
+  // validation زنده — خطا همان لحظه که فیلد پر/تغییر می‌شود نمایش داده می‌شود
+  const liveErrors = (() => {
+    const errs: Record<string, string> = {};
+    const { name, email, message } = values;
+    if (touched.name && name && name.trim().length < 2) errs.name = 'نام باید حداقل ۲ کاراکتر باشد';
+    if (touched.email && email && !EMAIL_RE.test(email.trim())) errs.email = 'ایمیل معتبر وارد کنید';
+    if (touched.message && message && message.trim().length < 5) {
+      errs.message = 'پیام باید حداقل ۵ کاراکتر باشد';
+    }
+    return errs;
+  })();
+
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const firstError = liveErrors[Object.keys(liveErrors)[0]];
+    if (firstError) {
+      e.preventDefault();
+      return;
+    }
+  }
 
   // Reset form on successful submission
   useEffect(() => {
@@ -86,7 +110,7 @@ export default function ContactForm({ address, email, phone }: ContactFormProps)
           <div className={s.formCard}>
             <h2 className={s.formTitle}>ارسال پیام</h2>
 
-            <form ref={formRef} action={action} noValidate>
+            <form ref={formRef} action={action} onSubmit={handleSubmit} noValidate>
               <div className={s.fieldset}>
                 <div className={s.fieldGroup}>
                   <label htmlFor="cf-name" className={s.label}>
@@ -101,7 +125,18 @@ export default function ContactForm({ address, email, phone }: ContactFormProps)
                     required
                     autoComplete="name"
                     aria-required="true"
+                    value={values.name}
+                    onChange={(e) => {
+                      setValues((v) => ({ ...v, name: e.target.value }));
+                      setTouched((t) => ({ ...t, name: true }));
+                    }}
+                    aria-invalid={!!liveErrors.name || undefined}
                   />
+                  {liveErrors.name && (
+                    <span className={s.fieldError} role="alert">
+                      {liveErrors.name}
+                    </span>
+                  )}
                 </div>
 
                 <div className={s.fieldGroup}>
@@ -118,7 +153,18 @@ export default function ContactForm({ address, email, phone }: ContactFormProps)
                     autoComplete="email"
                     aria-required="true"
                     dir="ltr"
+                    value={values.email}
+                    onChange={(e) => {
+                      setValues((v) => ({ ...v, email: e.target.value }));
+                      setTouched((t) => ({ ...t, email: true }));
+                    }}
+                    aria-invalid={!!liveErrors.email || undefined}
                   />
+                  {liveErrors.email && (
+                    <span className={s.fieldError} role="alert">
+                      {liveErrors.email}
+                    </span>
+                  )}
                 </div>
 
                 <div className={s.fieldGroup}>
@@ -133,7 +179,18 @@ export default function ContactForm({ address, email, phone }: ContactFormProps)
                     placeholder="پیام خود را بنویسید…"
                     required
                     aria-required="true"
+                    value={values.message}
+                    onChange={(e) => {
+                      setValues((v) => ({ ...v, message: e.target.value }));
+                      setTouched((t) => ({ ...t, message: true }));
+                    }}
+                    aria-invalid={!!liveErrors.message || undefined}
                   />
+                  {liveErrors.message && (
+                    <span className={s.fieldError} role="alert">
+                      {liveErrors.message}
+                    </span>
+                  )}
                 </div>
 
                 <button

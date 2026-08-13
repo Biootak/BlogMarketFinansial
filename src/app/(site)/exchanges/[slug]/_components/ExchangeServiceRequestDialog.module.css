@@ -273,6 +273,13 @@
 }
 
 /* ── Error box ─────────────────────────────────────────── */
+.fieldError {
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--ds-accent-rose);
+  margin-block-start: var(--ds-space-1);
+}
+
 .errorBox {
   display: flex;
   align-items: center;

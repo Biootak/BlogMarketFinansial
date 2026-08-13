@@ -19,11 +19,13 @@ interface CacheEntry<T> {
 // نرخ بازار) می‌توانند صدها KB بگیرند و ۱۰۰۰ تا از آن‌ها = صدها MB (دلیل
 // R14 روی dyno 512MB). هر entry هم وزن تخمینی دارد؛ وقتی مجموع از
 // SAFE_CACHE_MAX_BYTES گذشت، قدیمی‌ترین‌ها حذف می‌شوند.
-const MAX_CACHE_ENTRIES = Number(process.env.SAFE_CACHE_MAX_ENTRIES) || 1000;
-// 2026-08-12: 150MB → 100MB — روی dyno 512MB (RSS پایدار ~340-450MB)
-// سقف کوچک‌تر = margin بیشتر قبل از R14. قیمت: cache های بزرگ‌تر زودتر
-// evict می‌شوند که با SWR/stale-fallback قابل جبران است.
-const MAX_CACHE_BYTES = Number(process.env.SAFE_CACHE_MAX_BYTES) || 100 * 1024 * 1024;
+// 2026-08-13 mem-fix: پیش‌فرض‌ها برای Heroku Eco dyno (512MB) کاهش یافتند.
+// محیط‌های با RAM بیشتر می‌توانند با SAFE_CACHE_MAX_ENTRIES / SAFE_CACHE_MAX_BYTES
+// مقادیر بالاتر ست کنند.
+const MAX_CACHE_ENTRIES = Number(process.env.SAFE_CACHE_MAX_ENTRIES) || 300;
+// 2026-08-13: 100MB → 50MB — روی Eco dyno (512MB) RSS پایه Node + Next.js standalone
+// خودش ~250-300MB می‌گیرد؛ 50MB cache + سقف V8 heap 256MB = margin کافی قبل از R14.
+const MAX_CACHE_BYTES = Number(process.env.SAFE_CACHE_MAX_BYTES) || 50 * 1024 * 1024;
 const memoryStore = new Map<string, CacheEntry<unknown>>();
 
 /** وزن تخمینی یک entry (بایت) — برای سقف حجمی. */

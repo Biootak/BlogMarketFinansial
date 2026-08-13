@@ -23,6 +23,7 @@ scripts/*
 !scripts/dev-turbo.mjs
 !scripts/clear-dev-cache.mjs
 !scripts/setup-cron-jobs.mjs
+!scripts/playwright-open.mjs
 # cron-job.org browser automation (حاوی session/cookie کاربر — هرگز commit نشود)
 .cronjob-profile/
 .cronjob-mcp.log

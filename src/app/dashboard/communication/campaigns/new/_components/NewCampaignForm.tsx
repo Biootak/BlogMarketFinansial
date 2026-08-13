@@ -99,14 +99,37 @@ export function NewCampaignForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // validation زنده — خطا همان لحظه که فیلد پر/تغییر می‌شود نمایش داده می‌شود
+  const liveErrors = useMemo(() => {
+    if (!touched.name && !touched.body && !touched.channels && !touched.subject && !touched.audienceFilter) {
+      return {} as Record<string, string>;
+    }
+    const errs: Record<string, string> = {};
+    if (touched.name && !name.trim()) errs.name = `عنوان ${entityLabel} الزامی است`;
+    if (touched.body && !body.trim()) errs.body = `متن ${entityLabel} الزامی است`;
+    if (touched.channels && channels.length === 0) errs.channels = 'حداقل یک کانال انتخاب کنید';
+    if (campaignMode && channels[0] === 'email' && touched.subject && !subject.trim()) {
+      errs.subject = 'برای کمپین ایمیلی، موضوع الزامی است';
+    }
+    if (audience === 'role' && touched.audienceFilter && !audienceFilter.trim()) {
+      errs.audienceFilter = 'نقش مخاطب (مثلاً ADMIN) را وارد کنید';
+    }
+    return errs;
+  }, [touched, name, body, channels, subject, audience, audienceFilter, campaignMode, entityLabel]);
+
+  const touch = (key: string) => setTouched((prev) => ({ ...prev, [key]: true }));
 
   // ─── derived ────────────────────────────────────────────
   const toggleChannel = (id: Channel) => {
     if (campaignMode) {
       setChannels([id]);
+      touch('channels');
       return;
     }
     setChannels((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
+    touch('channels');
   };
 
   const bodyLimit = campaignMode ? 10_000 : 2_000;
@@ -122,24 +145,11 @@ export function NewCampaignForm({
   const submit = (mode: 'draft' | 'publish') => {
     setError(null);
     setOk(null);
-    if (!name.trim()) {
-      setError(`عنوان ${entityLabel} الزامی است`);
-      return;
-    }
-    if (!body.trim()) {
-      setError(`متن ${entityLabel} الزامی است`);
-      return;
-    }
-    if (channels.length === 0) {
-      setError('حداقل یک کانال انتخاب کنید');
-      return;
-    }
-    if (campaignMode && channels[0] === 'email' && !subject.trim()) {
-      setError('برای کمپین ایمیلی، موضوع الزامی است');
-      return;
-    }
-    if (audience === 'role' && !audienceFilter.trim()) {
-      setError('نقش مخاطب (مثلاً ADMIN) را وارد کنید');
+    // همهٔ فیلدها را touched کن تا خطاهای زنده نمایش داده شوند
+    setTouched({ name: true, body: true, channels: true, subject: true, audienceFilter: true });
+    const firstError = liveErrors[Object.keys(liveErrors)[0]];
+    if (firstError) {
+      setError(firstError);
       return;
     }
 
@@ -235,16 +245,20 @@ export function NewCampaignForm({
               </header>
 
               <div className={s.fields}>
-                <FormField label={`عنوان ${entityLabel}`} required>
+                <FormField label={`عنوان ${entityLabel}`} required error={liveErrors.name}>
                   <Input
                     id="name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      touch('name');
+                    }}
                     placeholder={
                       campaignMode ? 'مثلاً: خبرنامه هفتگی بازار' : 'مثلاً: به‌روزرسانی نرخ‌های ارزی'
                     }
                     maxLength={120}
                     required
+                    aria-invalid={!!liveErrors.name || undefined}
                   />
                 </FormField>
 
@@ -252,6 +266,7 @@ export function NewCampaignForm({
                   <FormField
                     label="موضوع ایمیل"
                     required={channels[0] === 'email'}
+                    error={liveErrors.subject}
                     hint={
                       channels[0] === 'email'
                         ? 'برای کمپین ایمیلی موضوع الزامی است.'
@@ -261,9 +276,13 @@ export function NewCampaignForm({
                     <Input
                       id="subject"
                       value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
+                      onChange={(e) => {
+                        setSubject(e.target.value);
+                        touch('subject');
+                      }}
                       placeholder="موضوع ایمیل…"
                       maxLength={150}
+                      aria-invalid={!!liveErrors.subject || undefined}
                     />
                   </FormField>
                 ) : null}
@@ -271,17 +290,22 @@ export function NewCampaignForm({
                 <FormField
                   label={`متن ${entityLabel}`}
                   required
+                  error={liveErrors.body}
                   hint={`${toPersianDigits(body.length)} از ${toPersianDigits(bodyLimit)} کاراکتر`}
                 >
                   <Textarea
                     id="body"
                     value={body}
-                    onChange={(e) => setBody(e.target.value)}
+                    onChange={(e) => {
+                      setBody(e.target.value);
+                      touch('body');
+                    }}
                     placeholder={campaignMode ? 'متن کامل کمپین…' : 'متن کامل پیام…'}
                     className={s.textarea}
                     rows={7}
                     maxLength={bodyLimit}
                     required
+                    aria-invalid={!!liveErrors.body || undefined}
                   />
                 </FormField>
               </div>
@@ -377,7 +401,10 @@ export function NewCampaignForm({
                         className={s.audienceCard}
                         data-tone={a.tone}
                         data-active={active}
-                        onClick={() => setAudience(a.id)}
+                        onClick={() => {
+                          setAudience(a.id);
+                          touch('audience');
+                        }}
                         role="radio"
                         aria-checked={active}
                       >
@@ -401,7 +428,10 @@ export function NewCampaignForm({
                     <Input
                       id="audienceFilter"
                       value={audienceFilter}
-                      onChange={(e) => setAudienceFilter(e.target.value.toUpperCase())}
+                      onChange={(e) => {
+                        setAudienceFilter(e.target.value.toUpperCase());
+                        touch('audienceFilter');
+                      }}
                       placeholder="مثلاً ADMIN یا MERCHANT"
                       maxLength={40}
                     />
@@ -412,7 +442,10 @@ export function NewCampaignForm({
                     <Input
                       id="audienceFilter"
                       value={audienceFilter}
-                      onChange={(e) => setAudienceFilter(e.target.value)}
+                      onChange={(e) => {
+                        setAudienceFilter(e.target.value);
+                        touch('audienceFilter');
+                      }}
                       placeholder="مثلاً segment:vip-customers"
                       maxLength={60}
                     />
@@ -475,10 +508,10 @@ export function NewCampaignForm({
               </div>
             </section>
 
-            {/* inline alert */}
-            {error ? (
+            {/* inline alert — خطای زندهٔ بخشی (کانال/مخاطب) + خطای submit */}
+            {(liveErrors.channels || liveErrors.audienceFilter || error) ? (
               <div className={s.alert} data-tone="rose" role="alert">
-                {error}
+                {error ?? liveErrors.channels ?? liveErrors.audienceFilter}
               </div>
             ) : null}
             {ok ? (

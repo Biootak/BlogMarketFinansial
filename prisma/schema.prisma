@@ -35,6 +35,10 @@ model User {
   monthlyActivityReport Boolean               @default(false)
   exchangePartnerId     String?
   tokenVersion          Int                   @default(0)
+  /// 2026-08-13: شمارندهٔ جدا برای تغییر رمز — وقتی زیاد شود همهٔ session های قبلی
+  /// باطل می‌شوند (jwt callback توکن را discard می‌کند). tokenVersion برای تغییر
+  /// نقش/مجوز استفاده می‌شود که فقط claims را refresh می‌کند و session زنده می‌ماند.
+  passwordVersion       Int                   @default(0)
   /// 2026-08-05: chat_id تلگرام کاربر برای تحویل OTP (رایگان — مخصوص بازار افغانستان)
   telegramChatId        String?               @unique
   /// 2026-08-09: شماره‌ای که کاربر می‌خواهد با تلگرام تأیید کند (auto-verify بدون OTP)

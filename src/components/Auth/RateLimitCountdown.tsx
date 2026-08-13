@@ -24,6 +24,8 @@ export interface RateLimitCountdownProps {
   onExpire?: () => void;
   /** کلاس اضافی برای container */
   className?: string;
+  /** حالت inline — بدون باکس/آیکون/نوار؛ فقط متن «می‌توانید دوباره تلاش کنید در X» */
+  inline?: boolean;
 }
 
 const formatFa = (n: number): string => n.toLocaleString('fa-IR', { useGrouping: false });
@@ -43,7 +45,12 @@ function formatDuration(ms: number): string {
   return `${formatFa(totalSec)} ثانیه`;
 }
 
-export function RateLimitCountdown({ initialMs, onExpire, className }: RateLimitCountdownProps) {
+export function RateLimitCountdown({
+  initialMs,
+  onExpire,
+  className,
+  inline,
+}: RateLimitCountdownProps) {
   const [ms, setMs] = useState(Math.max(0, initialMs));
 
   useEffect(() => {
@@ -71,6 +78,22 @@ export function RateLimitCountdown({ initialMs, onExpire, className }: RateLimit
 
   if (ms <= 0) return null;
 
+  const text = (
+    <>
+      می‌توانید دوباره تلاش کنید در{' '}
+      <strong className={inline ? undefined : styles.value}>{formatDuration(ms)}</strong>
+    </>
+  );
+
+  // حالت inline: فقط متن — داخل پیام اصلی قرار می‌گیرد (بدون باکس/آیکون/نوار)
+  if (inline) {
+    return (
+      <span role="status" aria-live="polite" aria-atomic="true" className={className}>
+        {text}
+      </span>
+    );
+  }
+
   // وقتی کمتر از ۱۰ ثانیه مانده، urgent class برای تاکید بصری
   const isUrgent = ms < 10_000;
   const isWarning = ms < 30_000 && !isUrgent;
@@ -93,15 +116,13 @@ export function RateLimitCountdown({ initialMs, onExpire, className }: RateLimit
       <span className={styles.icon} aria-hidden>
         <Clock size={14} />
       </span>
-      <span className={styles.text}>
-        می‌توانید دوباره تلاش کنید در <strong className={styles.value}>{formatDuration(ms)}</strong>
-      </span>
+      <span className={styles.text}>{text}</span>
       <span className={styles.bar} aria-hidden>
         <span
           className={styles.barFill}
           style={{
-            // فقط برای ۱۵ دقیقه (بیشینه rate-limit) درصد نمایش می‌دهیم
-            width: `${Math.min(100, (ms / (15 * 60 * 1000)) * 100)}%`,
+            // فقط برای ۳ دقیقه (بیشینهٔ rate-limit ورود) درصد نمایش می‌دهیم
+            width: `${Math.min(100, (ms / (3 * 60 * 1000)) * 100)}%`,
           }}
         />
       </span>

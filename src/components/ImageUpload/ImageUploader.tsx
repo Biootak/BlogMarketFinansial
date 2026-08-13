@@ -67,13 +67,11 @@ interface UploadApiResponse {
 // ---------- pre-upload validation (UX, not security) ----------------------
 // Same rules the server enforces. Checking here gives instant feedback and
 // saves a round-trip on the common case of "wrong file picked".
-const ALLOWED_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/svg+xml',
-] as const;
+// 2026-08-13: SVG removed from the allowlist to match the server (C5 fix —
+// SVG was dropped server-side because a sanitized regex blocklist is
+// trivially bypassable and SVG executes as a document). Keep client and
+// server allowlists identical.
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'] as const;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 interface ClientValidationError {
@@ -440,7 +438,6 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
     accept: {
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/png': ['.png'],
-      'image/svg+xml': ['.svg'],
       'image/gif': ['.gif'],
       'image/webp': ['.webp'],
     },
@@ -644,7 +641,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({
                   ? 'برای انتخاب تصاویر، فایل‌ها را اینجا بکشید و رها کنید یا کلیک کنید'
                   : 'برای انتخاب تصویر، فایل را اینجا بکشید و رها کنید یا کلیک کنید'}
             </p>
-            <p className={s.emptyHint}>فرمت‌های مجاز: JPG, PNG, GIF, WebP, SVG — حداکثر ۱۰MB</p>
+            <p className={s.emptyHint}>فرمت‌های مجاز: JPG, PNG, GIF, WebP — حداکثر ۱۰MB</p>
           </div>
         )}
       </div>

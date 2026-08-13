@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { useLiveValidation } from '@/hooks/useLiveValidation';
 import { cn } from '@/lib/utils';
 import {
   AlertCircle,
@@ -44,8 +45,26 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import { useCallback, useMemo, useState, useTransition } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { z } from 'zod';
 import s from './CustomerBeneficiaryManager.module.css';
+
+/** همان قوانین سمت سرور (customer-beneficiaries.ts) — تا کاربر قبل از submit خطا را ببیند */
+const BeneficiarySchema = z.object({
+  name: z
+    .string()
+    .min(2, 'نام باید حداقل ۲ کاراکتر باشد')
+    .max(80, 'نام نباید بیش از ۸۰ کاراکتر باشد'),
+  identifier: z
+    .string()
+    .min(1, 'شناسه الزامی است')
+    .regex(/^[A-Z0-9\-]+$/i, 'شناسه فقط می‌تواند شامل حروف، اعداد و خط تیره باشد'),
+  note: z.string().max(200, 'یادداشت نباید بیش از ۲۰۰ کاراکتر باشد'),
+});
+
+type BeneficiaryFormValues = z.infer<typeof BeneficiarySchema>;
+
+const EMPTY_FORM: BeneficiaryFormValues = { name: '', identifier: '', note: '' };
 
 const _faNum = new Intl.NumberFormat('fa-IR');
 
@@ -94,16 +113,23 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
     );
   }, [rows, search]);
 
-  function handleCreate(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const data = {
-      name: (fd.get('name') as string).trim(),
-      identifier: (fd.get('identifier') as string).trim(),
-      note: ((fd.get('note') as string) || '').trim() || undefined,
-    };
-    setError(null);
+  const form = useLiveValidation(BeneficiarySchema, EMPTY_FORM);
 
+  // هنگام باز شدن دیالوگ، فرم با مقدار اولیهٔ مناسب reset می‌شود
+  useEffect(() => {
+    if (modal.type === 'create') form.reset(EMPTY_FORM);
+    else if (modal.type === 'edit') {
+      form.reset({ name: modal.row.name, identifier: modal.row.identifier, note: modal.row.note ?? '' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modal.type]);
+
+  function handleCreate(v: BeneficiaryFormValues) {
+    const data = {
+      name: v.name.trim(),
+      identifier: v.identifier.trim(),
+      note: v.note.trim() || undefined,
+    };
     startTransition(async () => {
       const res = await createCustomerBeneficiary(data);
       if (res.success) {
@@ -111,19 +137,15 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
         setSaved(true);
         setTimeout(closeModal, 1200);
       } else {
-        setError(res.error.message);
+        form.setServerError(res.error.message);
       }
     });
   }
 
-  function handleEdit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  function handleEdit(v: BeneficiaryFormValues) {
     if (modal.type !== 'edit') return;
-    const fd = new FormData(e.currentTarget);
-    const name = (fd.get('name') as string).trim();
-    const note = (fd.get('note') as string).trim();
-    setError(null);
-
+    const name = v.name.trim();
+    const note = v.note.trim();
     startTransition(async () => {
       const res = await updateCustomerBeneficiary({
         id: modal.row.id,
@@ -137,7 +159,7 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
         setSaved(true);
         setTimeout(closeModal, 1200);
       } else {
-        setError(res.error.message);
+        form.setServerError(res.error.message);
       }
     });
   }
@@ -300,7 +322,7 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
             </DialogTitle>
           </DialogHeader>
           <form
-            onSubmit={modal.type === 'edit' ? handleEdit : handleCreate}
+            onSubmit={form.handleSubmit(modal.type === 'edit' ? handleEdit : handleCreate)}
             className={s.form}
             noValidate
           >
@@ -314,12 +336,19 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
                 required
                 minLength={2}
                 maxLength={80}
-                defaultValue={modal.type === 'edit' ? modal.row.name : ''}
+                value={form.values.name}
+                onChange={(e) => form.setField('name', e.target.value)}
                 placeholder="مثلاً: علی محمدی"
-                className={s.input}
+                className={cn(s.input, form.errors.name && s.inputError)}
+                aria-invalid={!!form.errors.name || undefined}
                 autoFocus
                 dir="rtl"
               />
+              {form.errors.name && (
+                <span className={s.fieldError} role="alert">
+                  {form.errors.name}
+                </span>
+              )}
             </div>
             <div className={s.field}>
               <label htmlFor="identifier" className={s.label}>
@@ -330,14 +359,21 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
                 name="identifier"
                 required
                 disabled={modal.type === 'edit'}
-                defaultValue={modal.type === 'edit' ? modal.row.identifier : ''}
+                value={form.values.identifier}
+                onChange={(e) => form.setField('identifier', e.target.value)}
                 placeholder="مثلاً: شماره شبا یا شماره کارت"
-                className={s.input}
+                className={cn(s.input, form.errors.identifier && s.inputError)}
+                aria-invalid={!!form.errors.identifier || undefined}
                 dir="ltr"
                 inputMode="text"
                 autoComplete="off"
               />
-              {modal.type === 'edit' && (
+              {form.errors.identifier && (
+                <span className={s.fieldError} role="alert">
+                  {form.errors.identifier}
+                </span>
+              )}
+              {!form.errors.identifier && modal.type === 'edit' && (
                 <span className={s.fieldHint}>شناسه بعد از ثبت قابل تغییر نیست</span>
               )}
             </div>
@@ -350,17 +386,18 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
                 name="note"
                 rows={2}
                 maxLength={200}
-                defaultValue={modal.type === 'edit' ? (modal.row.note ?? '') : ''}
+                value={form.values.note}
+                onChange={(e) => form.setField('note', e.target.value)}
                 placeholder="مثلاً: دایی، همسایه، تأمین‌کننده…"
                 className={s.textarea}
                 dir="rtl"
               />
             </div>
 
-            {error && (
+            {(form.serverError ?? error) && (
               <div className={s.errorBox} role="alert">
                 <AlertCircle size={14} aria-hidden />
-                {error}
+                {form.serverError ?? error}
               </div>
             )}
             {saved && (
