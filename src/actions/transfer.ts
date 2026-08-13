@@ -690,6 +690,27 @@ export async function executeConfirmTransfer(input: {
       return { ok: true, alreadyProcessed: true };
     }
     if (msg === 'INSUFFICIENT_BALANCE') {
+      // تراکنش PENDING می‌ماند — بهتر است FAILED شود تا کاربر در UI گیر نکند
+      // (best-effort — اگر این update هم fail کند، cron می‌تواند PENDING های قدیمی را پاک کند)
+      void prisma.transaction
+        .update({
+          where: { id: txnId },
+          data: { status: 'FAILED', updatedAt: new Date() },
+        })
+        .then(() =>
+          prisma.transactionStatusLog.create({
+            data: {
+              txnId,
+              fromStatus: 'PENDING',
+              toStatus: 'FAILED',
+              actorId,
+              actorRole: 'USER',
+              ip: ip ?? 'system',
+              note: 'TRANSFER_FAILED:INSUFFICIENT_BALANCE',
+            },
+          }),
+        )
+        .catch(() => {});
       return {
         ok: false,
         retryable: false,
@@ -698,6 +719,26 @@ export async function executeConfirmTransfer(input: {
       };
     }
     if (msg === 'RECIPIENT_NO_ACCOUNT') {
+      // گیرنده حساب ندارد → تراکنش باید FAILED شود (rollback نشده چون claim انجام نشد)
+      void prisma.transaction
+        .update({
+          where: { id: txnId },
+          data: { status: 'FAILED', updatedAt: new Date() },
+        })
+        .then(() =>
+          prisma.transactionStatusLog.create({
+            data: {
+              txnId,
+              fromStatus: 'PENDING',
+              toStatus: 'FAILED',
+              actorId,
+              actorRole: 'USER',
+              ip: ip ?? 'system',
+              note: 'TRANSFER_FAILED:RECIPIENT_NO_ACCOUNT',
+            },
+          }),
+        )
+        .catch(() => {});
       return {
         ok: false,
         retryable: false,

@@ -1136,12 +1136,16 @@ export async function cancelDeal(
   const prevStatus = deal.status as 'PENDING' | 'CONFIRMED' | 'PROCESSING';
 
   // F5-fix: همه write‌ها در یک $transaction — اگر هر کدام fail شود، همه rollback می‌شوند
+  // F5b-fix: atomic claim برای جلوگیری از race condition (دو درخواست cancel همزمان)
   const cancelIp = await getClientIp();
   await prisma.$transaction(async (tx) => {
-    await tx.currencyDeal.update({
-      where: { id: dealId },
+    const claim = await tx.currencyDeal.updateMany({
+      where: { id: dealId, status: prevStatus },
       data: { status: 'CANCELLED', internalNote: reason },
     });
+    // اگر claim.count===0، deal قبلاً توسط درخواست دیگری تغییر وضعیت داده — idempotent exit
+    if (claim.count === 0) return;
+
 
     await tx.dealStatusLog.create({
       data: {

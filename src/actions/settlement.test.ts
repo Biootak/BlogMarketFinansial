@@ -42,6 +42,7 @@ vi.mock('@/lib/db', () => ({
         },
         ledgerEntry: {
           create: vi.fn(),
+          findFirst: vi.fn().mockResolvedValue({ runningBalance: BigInt(0) }),
         },
       }),
     ),
@@ -59,6 +60,15 @@ vi.mock('@/lib/exchange-auth', () => ({
 
 vi.mock('@/lib/revalidate', () => ({
   revalidateTag: vi.fn(),
+}));
+
+vi.mock('next/headers', () => ({
+  headers: vi.fn().mockResolvedValue({ get: vi.fn().mockReturnValue('127.0.0.1') }),
+}));
+
+vi.mock('@/lib/fintech/txn-trail', () => ({
+  logTxnStatusChange: vi.fn().mockResolvedValue(undefined),
+  logFintechEvent: vi.fn().mockResolvedValue(undefined),
 }));
 
 // ─── Import ───────────────────────────────────────────────────────────────────

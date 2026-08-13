@@ -9,15 +9,18 @@
  *   ادمین → markSettlementPaid → PAID
  *
  * امنیت: همه write actions نیاز به requireAdmin دارند.
+ * ردیابی: هر تغییر وضعیت در FintechEventLog (append-only) ثبت می‌شود.
  */
 
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { logFintechEvent } from '@/lib/fintech/txn-trail';
 import { requireAdmin, requirePermission } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { headers } from 'next/headers';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
 
@@ -367,6 +370,11 @@ export async function approveSettlement(settlementId: string): Promise<FintechAc
 
   // ── Atomic claim: فقط یک approve هم‌زمان می‌تواند PENDING→APPROVED را اجرا کند
   // (دو ادمین هم‌زمان → یکی برنده، دیگری ALREADY_APPROVED → idempotent success).
+  const approveIp =
+    ((await headers()).get('x-forwarded-for') ?? '').split(',').pop()?.trim() ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
+
   const claim = await prisma.settlement.updateMany({
     where: { id: settlementId, status: 'PENDING' },
     data: {
@@ -379,6 +387,20 @@ export async function approveSettlement(settlementId: string): Promise<FintechAc
     // یا قبلاً توسط ادمین دیگر تأیید شده یا وضعیت تغییر کرده — idempotent success
     return { success: true, data: undefined };
   }
+
+  // ثبت تغییر وضعیت PENDING→APPROVED در FintechEventLog (append-only)
+  void logFintechEvent({
+    eventType: 'SETTLEMENT_APPROVED',
+    entityType: 'Settlement',
+    entityId: settlementId,
+    exchangeId: settlement.exchangeId,
+    actorId: auth.user.id,
+    actorRole: 'ADMIN',
+    ip: approveIp,
+    before: { status: 'PENDING' },
+    after: { status: 'APPROVED' },
+    note: 'SETTLEMENT_APPROVED',
+  });
 
   try {
     await logSettlementAudit({
@@ -521,6 +543,26 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
     }
     throw err;
   }
+
+  // ثبت تغییر وضعیت APPROVED→PAID در FintechEventLog (append-only)
+  void logFintechEvent({
+    eventType: 'SETTLEMENT_PAID',
+    entityType: 'Settlement',
+    entityId: settlementId,
+    exchangeId: paidSettlement.exchangeId,
+    actorId: auth.user.id,
+    actorRole: 'ADMIN',
+    before: { status: 'APPROVED' },
+    after: {
+      status: 'PAID',
+      platformFee: paidSettlement.platformFee.toString(),
+      exchangeNet: paidSettlement.exchangeNet.toString(),
+      currency: paidSettlement.currency,
+      totalVolume: paidSettlement.totalVolume.toString(),
+      dealCount: paidSettlement.dealCount,
+    },
+    note: 'SETTLEMENT_PAID',
+  });
 
   try {
     await logSettlementAudit({

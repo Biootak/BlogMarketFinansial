@@ -9,6 +9,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ─── Mock ─────────────────────────────────────────────────────────────────────
 
+vi.mock('@/lib/fintech/txn-trail', () => ({
+  logTxnStatusChange: vi.fn().mockResolvedValue(undefined),
+  logFintechEvent: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('@/lib/db', () => ({
   default: {
     customer: { findFirst: vi.fn().mockResolvedValue({ id: 'cust-1' }) },

@@ -16,7 +16,7 @@
  *   - OTP برای withdraw بیش از آستانه
  *   - AuditLog برای همه عملیات
  *   - TransactionStatusLog: هر تغییر وضعیت ردیابی می‌شود (append-only)
- *   - Fraud screening روی requestWithdraw
+ *   - Fraud screening روی requestDeposit + requestWithdraw
  */
 
 import { randomBytes } from 'node:crypto';
@@ -128,6 +128,25 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
   const account = senderCustomer.FintechAccount[0]!;
   const txnRef = randomBytes(8).toString('hex');
 
+  // Fraud screening روی deposit — مبالغ غیرعادی یا الگوهای مشکوک بلاک می‌شوند
+  const depositFraudRisk = await screenTransaction({
+    customerId: senderCustomer.id,
+    exchangeId: account.exchangeId,
+    amount: BigInt(amountCents),
+    currency,
+    ip,
+    kind: 'DEPOSIT',
+  });
+  if (depositFraudRisk.shouldBlock) {
+    return {
+      success: false,
+      error: {
+        code: 'FRAUD_BLOCKED',
+        message: 'این واریز به دلایل امنیتی مسدود شد. لطفاً با پشتیبانی تماس بگیرید.',
+      },
+    };
+  }
+
   const txn = await prisma.transaction.create({
     data: {
       id: createId(),
@@ -140,7 +159,12 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
       currency,
       idempotencyKey,
       note: note ?? null,
-      meta: { txnRef, source: 'user_request' } as Prisma.InputJsonValue,
+      meta: {
+        txnRef,
+        source: 'user_request',
+        fraudScore: depositFraudRisk.score,
+        fraudHeld: depositFraudRisk.shouldHold,
+      } as Prisma.InputJsonValue,
       updatedAt: new Date(),
     },
   });
@@ -153,7 +177,9 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
     actorId: auth.user.id,
     actorRole: 'USER',
     ip,
-    note: 'DEPOSIT_REQUESTED',
+    note: depositFraudRisk.shouldHold
+      ? `DEPOSIT_REQUESTED:HELD:score=${depositFraudRisk.score}`
+      : 'DEPOSIT_REQUESTED',
   });
 
   await prisma.auditLog.create({
@@ -166,7 +192,7 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
       entityType: 'Transaction',
       entityId: txn.id,
       ip,
-      meta: { amountCents, currency, txnRef } as Prisma.InputJsonValue,
+      meta: { amountCents, currency, txnRef, fraudScore: depositFraudRisk.score } as Prisma.InputJsonValue,
     },
   });
 

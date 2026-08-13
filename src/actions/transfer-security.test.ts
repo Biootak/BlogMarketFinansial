@@ -19,12 +19,9 @@ vi.mock('@/lib/db', () => ({
     transaction: { findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
     customer: { findFirst: vi.fn() },
     kycRecord: { findUnique: vi.fn().mockResolvedValue({ expiresAt: null }) },
-    fintechAccount: { update: vi.fn() },
+    fintechAccount: { findFirst: vi.fn(), update: vi.fn() },
     ledgerEntry: { create: vi.fn() },
     auditLog: { create: vi.fn() },
-    // High-value transaction queue (high-value-queue.ts): در مسیر high-value
-    // confirm، عملیات از صف زیرساختی عبور می‌کند. job با موفقیت پردازش شده
-    // فرض می‌شود (status=completed) تا confirm نتیجهٔ موفق برگرداند.
     highValueJob: {
       create: vi.fn().mockResolvedValue({ id: 'job-1' }),
       updateMany: vi.fn().mockResolvedValue({ count: 0 }),
@@ -43,6 +40,7 @@ vi.mock('@/lib/db', () => ({
         highValueJob: { updateMany: vi.fn().mockResolvedValue({ count: 0 }) },
         ledgerEntry: { create: vi.fn() },
         transaction: { update: vi.fn(), updateMany: vi.fn().mockResolvedValue({ count: 1 }) },
+        transactionStatusLog: { create: vi.fn() },
       }),
     ),
   },
@@ -56,6 +54,13 @@ vi.mock('@/lib/fintech/transaction-guard', () => ({
   isHighValueTransaction: vi.fn().mockReturnValue(false),
   requestTransactionOtp: vi.fn(),
   verifyTransactionOtp: vi.fn(),
+}));
+vi.mock('@/lib/fraud/screener', () => ({
+  screenTransaction: vi.fn().mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
+}));
+vi.mock('@/lib/fintech/txn-trail', () => ({
+  logTxnStatusChange: vi.fn().mockResolvedValue(undefined),
+  logFintechEvent: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue({ get: vi.fn().mockReturnValue('127.0.0.1') }),

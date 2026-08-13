@@ -70,7 +70,11 @@ export type FintechEventType =
   | 'OTP_FAILED'
   | 'TRANSFER_FRAUD_CHECKED'
   | 'WITHDRAWAL_FRAUD_CHECKED'
-  | 'FX_FRAUD_CHECKED';
+  | 'FX_FRAUD_CHECKED'
+  | 'SETTLEMENT_APPROVED'
+  | 'SETTLEMENT_PAID'
+  | 'SETTLEMENT_DISPUTED'
+  | 'SETTLEMENT_CANCELLED';
 
 export interface FintechEventLogParams {
   eventType: FintechEventType;

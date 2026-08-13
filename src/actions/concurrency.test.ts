@@ -19,7 +19,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/lib/db', () => ({
   default: {
     customer: { findFirst: vi.fn() },
-    transaction: { findFirst: vi.fn(), findUnique: vi.fn() },
+    transaction: {
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn().mockResolvedValue({ id: 'txn-1', status: 'FAILED' }),
+    },
+    transactionStatusLog: { create: vi.fn().mockResolvedValue({}) },
     fintechAccount: { findFirst: vi.fn() },
     ledgerEntry: { create: vi.fn() },
     auditLog: { create: vi.fn() },
@@ -48,6 +53,13 @@ vi.mock('@/lib/fintech/transaction-guard', () => ({
   isHighValueTransaction: vi.fn().mockReturnValue(false),
   requestTransactionOtp: vi.fn(),
   verifyTransactionOtp: vi.fn(),
+}));
+vi.mock('@/lib/fraud/screener', () => ({
+  screenTransaction: vi.fn().mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
+}));
+vi.mock('@/lib/fintech/txn-trail', () => ({
+  logTxnStatusChange: vi.fn().mockResolvedValue(undefined),
+  logFintechEvent: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue({ get: vi.fn().mockReturnValue('127.0.0.1') }),
@@ -86,7 +98,11 @@ function txClient(claimCount: number) {
       findUniqueOrThrow: vi.fn().mockResolvedValue({ balance: BigInt(400_000) }),
       update: vi.fn().mockResolvedValue({ balance: BigInt(500_000) }),
     },
-    ledgerEntry: { create: vi.fn() },
+    ledgerEntry: {
+      create: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue({ runningBalance: BigInt(0) }),
+    },
+    transactionStatusLog: { create: vi.fn() },
   };
 }
 
@@ -206,14 +222,20 @@ describe('markSettlementPaid — race double-pay', () => {
         updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         findUniqueOrThrow: vi.fn().mockResolvedValue(paidPayload),
       },
-      ledgerEntry: { create: vi.fn() },
+      ledgerEntry: {
+        create: vi.fn(),
+        findFirst: vi.fn().mockResolvedValue({ runningBalance: BigInt(0) }),
+      },
     };
     const loseTx = {
       settlement: {
         updateMany: vi.fn().mockResolvedValue({ count: 0 }),
         findUniqueOrThrow: vi.fn(),
       },
-      ledgerEntry: { create: vi.fn() },
+      ledgerEntry: {
+        create: vi.fn(),
+        findFirst: vi.fn().mockResolvedValue({ runningBalance: BigInt(0) }),
+      },
     };
     let idx = 0;
     mockTxn(() => (idx++ === 0 ? winTx : loseTx));

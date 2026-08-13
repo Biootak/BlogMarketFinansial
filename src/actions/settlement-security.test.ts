@@ -27,6 +27,7 @@ vi.mock('@/lib/db', () => ({
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) =>
       fn({
         settlement: {
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
           update: vi.fn().mockResolvedValue({
             exchangeId: 'exch-1',
             platformFee: BigInt(5000),
@@ -35,8 +36,19 @@ vi.mock('@/lib/db', () => ({
             totalVolume: BigInt(500000),
             dealCount: 10,
           }),
+          findUniqueOrThrow: vi.fn().mockResolvedValue({
+            exchangeId: 'exch-1',
+            platformFee: BigInt(5000),
+            exchangeNet: BigInt(45000),
+            currency: 'AFN',
+            totalVolume: BigInt(500000),
+            dealCount: 10,
+          }),
         },
-        ledgerEntry: { create: vi.fn() },
+        ledgerEntry: {
+          create: vi.fn(),
+          findFirst: vi.fn().mockResolvedValue({ runningBalance: BigInt(0) }),
+        },
       }),
     ),
   },
