@@ -25,6 +25,31 @@ import { NextResponse } from 'next/server';
 
 const TAGS = { ticker: 'market-rates:ticker', list: 'market-rates:list' };
 
+// B-06 fix: Zod schema برای validation ورودی rates — جلوگیری از rate manipulation.
+// قبلاً body فقط با `as MarketRateItem[]` cast می‌شد بدون هیچ validation.
+import { z } from 'zod';
+
+const RateItemSchema = z.object({
+  symbol: z.string().min(1).max(64).regex(/^[A-Z0-9_/]+$/i),
+  displayNameFa: z.string().min(1).max(100),
+  group: z.enum(['afghan', 'iran-forex', 'iran-coin', 'iran-gold', 'global', 'minor']),
+  unit: z.enum(['toman', 'rial', 'usd', 'eur', 'afn', 'pound']),
+  divisor: z.number().finite().positive(),
+  decimals: z.number().int().min(0).max(8),
+  priority: z.number().int().min(0),
+  value: z.number().finite().positive(),
+  buyValue: z.number().finite().positive().optional(),
+  sellValue: z.number().finite().positive().optional(),
+  spread: z.number().finite().optional(),
+  changePercent: z.number().finite(),
+  provider: z.enum(['auto', 'manual']),
+  updatedAt: z.coerce.date(),
+});
+
+const PushRatesBodySchema = z.object({
+  rates: z.array(RateItemSchema).min(1).max(500),
+});
+
 export async function POST(req: Request) {
   const authError = verifyCronSecret(req);
   if (authError) return authError;
@@ -32,10 +57,14 @@ export async function POST(req: Request) {
   let items: MarketRateItem[];
   try {
     const body = await req.json();
-    if (!Array.isArray(body?.rates) || body.rates.length === 0) {
-      return NextResponse.json({ error: 'INVALID_BODY', detail: 'rates array required' }, { status: 400 });
+    const parsed = PushRatesBodySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'INVALID_BODY', detail: parsed.error.errors[0]?.message ?? 'rates array required' },
+        { status: 400 },
+      );
     }
-    items = body.rates as MarketRateItem[];
+    items = parsed.data.rates;
   } catch {
     return NextResponse.json({ error: 'PARSE_ERROR' }, { status: 400 });
   }

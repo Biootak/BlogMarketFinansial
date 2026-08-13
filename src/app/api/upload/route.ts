@@ -388,26 +388,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Storage-abuse hardening: a plain USER may only manage their own avatar.
-    // Post/category/tag/general/ads writes require at least AUTHOR. Without
-    // this, any authenticated reader could fill S3 with arbitrary files.
-    //
-    // 'logos' و 'exchange' استثنا هستند: صراف‌ها (OWNER/MANAGER صرافی) باید بتوانند
-    // لوگو و مدارک صرافی را آپلود کنند. binding به Exchange.logoUrl در خود
-    // server action (updateExchangeSelf) بررسی می‌شود — upload API فقط فایل را
-    // ذخیره می‌کند. بنابراین فقط نیاز به authenticated user داریم (نه author-only).
-    // 'logos', 'exchange': صرافی‌ها لوگو/مدارک آپلود می‌کنند — فقط auth لازم است
-    // 'kyc': کاربر عادی (USER) مدارک احراز هویت آپلود می‌کند — فقط auth لازم است
+    // B-10 fix: دسترسی آپلود per-folder بر اساس نقش:
+    //   - 'kyc' / 'avatars': فقط authenticated user (USER, CUSTOMER, …)
+    //     هر کسی که لاگین کرده مدارک خودش را آپلود می‌کند.
+    //   - 'logos' / 'exchange': فقط staff صرافی یا ADMIN/OWNER/SUPERADMIN.
+    //     AUTHOR نمی‌تواند لوگو صرافی یا مدارک exchange آپلود کند.
+    //   - بقیه (posts, categories, tags, general): حداقل AUTHOR.
+    const isAdminRole =
+      role === 'ADMIN' || role === 'OWNER' || role === 'SUPERADMIN';
     const isExchangeFolder = folder === 'logos' || folder === 'exchange';
     const isUserFolder = folder === 'kyc' || folder === 'avatars';
-    if (
-      !isExchangeFolder &&
-      !isUserFolder &&
-      role !== 'AUTHOR' &&
-      role !== 'ADMIN' &&
-      role !== 'OWNER' &&
-      role !== 'SUPERADMIN'
-    ) {
+
+    if (isExchangeFolder && !isAdminRole) {
+      // صرافی‌ها (EXCHANGE role) هم می‌توانند لوگو/مدارک خودشان را آپلود کنند
+      if (role !== 'EXCHANGE') {
+        return NextResponse.json(
+          { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی برای آپلود در این بخش وجود ندارد' } },
+          { status: 403 },
+        );
+      }
+    } else if (!isUserFolder && !isAdminRole && role !== 'AUTHOR') {
       return NextResponse.json(
         {
           success: false,
@@ -437,15 +437,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process all files in parallel. Each file is independent (its own sharp
-    // pipeline, its own storage write), so Promise.allSettled lets us:
-    //   1. start them concurrently (no head-of-line blocking on a 10-image batch)
-    //   2. surface partial failures — one bad file doesn't poison the others
-    // Per-file outcomes are split into successes and failures; the response
-    // is a 200 with per-file status unless *every* file failed.
-    const outcomes = await Promise.all(
-      files.map((f) => processOneFile(f, folder as AllowedFolder, slotId)),
-    );
+    // B-04 fix: concurrency limit ۳ فایل هم‌زمان — جلوگیری از OOM.
+    // ۱۰ فایل ۱۰MB = ~۳۰۰MB pixel buffer در RAM. با chunk ۳تایی حداکثر
+    // ~۹۰MB همزمان استفاده می‌شود و dyno crash نمی‌کند.
+    // Promise.allSettled به جای Promise.all — یک فایل bad کل batch را reject نمی‌کند.
+    const CONCURRENCY = 3;
+    const allOutcomes: FileOutcome[] = [];
+    for (let i = 0; i < files.length; i += CONCURRENCY) {
+      const chunk = files.slice(i, i + CONCURRENCY);
+      const chunkResults = await Promise.allSettled(
+        chunk.map((f) => processOneFile(f, folder as AllowedFolder, slotId)),
+      );
+      for (const r of chunkResults) {
+        allOutcomes.push(
+          r.status === 'fulfilled'
+            ? r.value
+            : { ok: false, code: 'PROCESSING_FAILED', message: 'خطا در پردازش تصویر' },
+        );
+      }
+    }
+    const outcomes = allOutcomes;
 
     const successes = outcomes.filter((o): o is FileSuccess => o.ok);
     const failures = outcomes.filter((o): o is FileFailure => !o.ok);

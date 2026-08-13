@@ -413,9 +413,12 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
     };
   }
 
+  // B-07 fix: exchangeId را هم fetch کن تا audit log و future IDOR checks
+  // بتوانند از آن استفاده کنند. قبلاً فقط status بود و exchangeId
+  // فقط داخل $transaction دوباره fetch می‌شد.
   const settlement = await prisma.settlement.findUnique({
     where: { id: settlementId },
-    select: { status: true },
+    select: { status: true, exchangeId: true },
   });
 
   if (!settlement) {
@@ -461,6 +464,19 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
         },
       });
 
+      // B-13 fix: runningBalance = آخرین موجودی LedgerEntry همین exchange.
+      // قبلاً BigInt(0) بود — گزارش حسابداری تراز نمی‌داد.
+      // settlement-level entries accountId ندارند (exchange-level هستند)
+      // پس runningBalance را از آخرین entry همین exchange می‌گیریم.
+      const lastEntry = await tx.ledgerEntry.findFirst({
+        where: { exchangeId: updated.exchangeId },
+        orderBy: { createdAt: 'desc' },
+        select: { runningBalance: true },
+      });
+      const prevBalance = lastEntry?.runningBalance ?? BigInt(0);
+      const afterDebit = prevBalance - updated.platformFee;
+      const afterCredit = afterDebit + updated.exchangeNet;
+
       // ثبت کارمزد پلتفرم در LedgerEntry — double-entry: DEBIT از صرافی (پلتفرم fee می‌گیرد)
       // مثال: platformFee=5000 AFN → LedgerEntry DEBIT 5000 از صرافی
       // مثال: exchangeNet=45000 AFN → LedgerEntry CREDIT 45000 به صرافی
@@ -474,7 +490,7 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
           direction: 'DEBIT',
           amount: updated.platformFee,
           currency: updated.currency,
-          runningBalance: BigInt(0), // platform running-balance در این schema track نمی‌شود
+          runningBalance: afterDebit,
           description: `کارمزد پلتفرم — تسویه ${settlementId.slice(-8)}`,
           createdById: auth.user.id,
         },
@@ -490,7 +506,7 @@ export async function markSettlementPaid(settlementId: string): Promise<FintechA
           direction: 'CREDIT',
           amount: updated.exchangeNet,
           currency: updated.currency,
-          runningBalance: BigInt(0),
+          runningBalance: afterCredit,
           description: `خالص قابل پرداخت صرافی — تسویه ${settlementId.slice(-8)}`,
           createdById: auth.user.id,
         },

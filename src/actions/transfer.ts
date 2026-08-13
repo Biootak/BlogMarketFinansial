@@ -110,6 +110,18 @@ const InitiateSchema = z.object({
 });
 
 export async function initiateTransfer(raw: unknown): Promise<FintechActionResult<TransferResult>> {
+  // B-01 fix: CSRF guard — جلوگیری از cross-site transfer initiation.
+  // confirmTransfer قبلاً داشت ولی initiateTransfer نداشت؛ یک صفحه مخرب
+  // می‌توانست تراکنش PENDING بسازد و موجودی را قفل کند.
+  try {
+    await assertCsrf();
+  } catch {
+    return {
+      success: false,
+      error: { code: 'CSRF_FAILED', message: 'درخواست نامعتبر — لطفاً صفحه را refresh کنید' },
+    };
+  }
+
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
@@ -146,13 +158,7 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
   const { recipientUserId, amountCents, currency, note, idempotencyKey } = parsed.data;
   const senderCustomer = await prisma.customer.findFirst({
     where: { userId: auth.user.id },
-    select: {
-      id: true,
-      FintechAccount: {
-        where: { currency, status: 'ACTIVE' },
-        select: { id: true, balance: true, exchangeId: true },
-      },
-    },
+    select: { id: true },
   });
 
   if (!senderCustomer) {
@@ -184,24 +190,7 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
     };
   }
 
-  if (senderCustomer.FintechAccount.length === 0) {
-    return {
-      success: false,
-      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
-    };
-  }
-  const senderAccount = senderCustomer.FintechAccount[0];
-  if (!senderAccount) {
-    return {
-      success: false,
-      error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
-    };
-  }
-
-  if (senderAccount.balance < BigInt(amountCents)) {
-    return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
-  }
-
+  // ── validation گیرنده (بدون قفل DB — فقط read) ────────────────────────────
   const [recipientCustomer, recipientKycRecord] = await Promise.all([
     prisma.customer.findFirst({
       where: { userId: recipientUserId },
@@ -243,29 +232,62 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
     };
   }
 
-  const txnRef = randomBytes(8).toString('hex');
+  // B-02 fix: account fetch + balance check داخل transaction اتمیک.
+  // بررسی موجودی خارج از transaction (TOCTOU) حذف شد — دو درخواست هم‌زمان
+  // هر دو موجودی را کافی می‌دیدند و دو PENDING روی یک حساب می‌ساختند.
+  // حالا account داخل $transaction با READ COMMITTED خوانده می‌شود؛
+  // اگر موجودی ناکافی باشد داخل transaction rollback می‌شود.
   const amountBigInt = BigInt(amountCents);
-  const txn = await prisma.transaction.create({
-    data: {
-      id: createId(),
-      exchangeId: senderAccount.exchangeId,
-      customerId: senderCustomer.id,
-      accountId: senderAccount.id,
-      kind: 'TRANSFER',
-      status: 'PENDING',
-      amount: amountBigInt,
-      currency,
-      idempotencyKey,
-      note: note ?? null,
-      meta: { txnRef, recipientCustomerId: recipientCustomer.id } as Prisma.InputJsonValue,
-      updatedAt: new Date(),
-    },
-  });
+  const txnRef = randomBytes(8).toString('hex');
+
+  let txn: { id: string; accountId: string | null; exchangeId: string };
+  try {
+    txn = await prisma.$transaction(async (tx) => {
+      // account را داخل transaction بخوان — قفل READ اتفاق می‌افتد
+      const account = await tx.fintechAccount.findFirst({
+        where: {
+          customerId: senderCustomer.id,
+          currency,
+          status: 'ACTIVE',
+        },
+        select: { id: true, balance: true, exchangeId: true },
+      });
+      if (!account) throw new Error('NO_ACCOUNT');
+      if (account.balance < amountBigInt) throw new Error('INSUFFICIENT_BALANCE');
+
+      return tx.transaction.create({
+        data: {
+          id: createId(),
+          exchangeId: account.exchangeId,
+          customerId: senderCustomer.id,
+          accountId: account.id,
+          kind: 'TRANSFER',
+          status: 'PENDING',
+          amount: amountBigInt,
+          currency,
+          idempotencyKey,
+          note: note ?? null,
+          meta: { txnRef, recipientCustomerId: recipientCustomer.id } as Prisma.InputJsonValue,
+          updatedAt: new Date(),
+        },
+        select: { id: true, accountId: true, exchangeId: true },
+      });
+    });
+  } catch (err) {
+    const msg = (err as Error).message;
+    if (msg === 'NO_ACCOUNT') {
+      return { success: false, error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' } };
+    }
+    if (msg === 'INSUFFICIENT_BALANCE') {
+      return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
+    }
+    throw err;
+  }
 
   await prisma.auditLog.create({
     data: {
       id: createId(),
-      exchangeId: senderAccount.exchangeId,
+      exchangeId: txn.exchangeId,
       actorId: auth.user.id,
       actorRole: 'USER',
       action: 'TRANSFER_INITIATED',

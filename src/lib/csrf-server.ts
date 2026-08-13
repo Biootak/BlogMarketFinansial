@@ -47,6 +47,22 @@ function getAllowedHosts(): Set<string> {
   set.add('localhost');
   set.add('127.0.0.1');
   set.add('0.0.0.0');
+  // B-15 fix: دامنه را از AUTH_URL/NEXTAUTH_URL هم استخراج کن.
+  // اگر دامنه تغییر کند یا staging اضافه شود، بدون تغییر کد کار می‌کند.
+  for (const envKey of ['AUTH_URL', 'NEXTAUTH_URL']) {
+    const val = process.env[envKey];
+    if (val) {
+      try {
+        const host = new URL(val).hostname;
+        if (host) {
+          set.add(host);
+          set.add(`www.${host}`);
+        }
+      } catch {
+        // invalid URL — ignore
+      }
+    }
+  }
   // optional extra hosts via env (comma-separated) — e.g. CSRF_ALLOWED_HOSTS="staging.example.com"
   if (process.env.CSRF_ALLOWED_HOSTS) {
     for (const h of process.env.CSRF_ALLOWED_HOSTS.split(',')

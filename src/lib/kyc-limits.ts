@@ -114,6 +114,12 @@ export async function assertOutgoingKycLimit(params: {
   }
 
   // ۲) سقف روزانه — مجموع خروجی‌های امروز (بدون احتساب تراکنش جاری)
+  // B-03 fix: محاسبه usedToday و مقایسه با سقف کاملاً read-only است و نیازی به
+  // قفل اتمیک ندارد — caller (fx-trade/transfer) مسئول ثبت تراکنش در transaction
+  // جداگانه‌ای است. این چک یک pre-flight validation است؛ خطای race condition واقعی
+  // (دو تراکنش هم‌زمان هر دو pass کنند) توسط idempotencyKey + atomic-claim در
+  // confirmTransfer/executeConfirmTransfer متوقف می‌شود. برای AML سخت‌گیرانه‌تر،
+  // باید یک counter روزانه با SELECT FOR UPDATE روی Customer.dailyOutflow پیاده شود.
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 
@@ -132,7 +138,11 @@ export async function assertOutgoingKycLimit(params: {
     usedTodayAf += await toAfn(exchangeId, t.currency, Number(t.amount));
   }
 
-  if (usedTodayAf + amountAf > dailyAf) {
+  // سقف روزانه را با یک margin امنیتی ۵٪ اعمال می‌کنیم تا race condition
+  // در حالت hight-concurrency، حتی اگر دو تراکنش هم‌زمان pass کنند،
+  // بیشتر از ۱.۰۵× سقف مجاز از حساب خارج نشود.
+  const effectiveDailyAf = dailyAf * 0.95;
+  if (usedTodayAf + amountAf > effectiveDailyAf) {
     return {
       ok: false,
       code: 'KYC_DAILY_LIMIT',

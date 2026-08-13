@@ -144,10 +144,16 @@ const isStaticPath = (pathname: string): boolean => {
     pathname === '/site.webmanifest'
   )
     return true;
-  // 2026-08-09 fix: previously `pathname.includes('.')` let ANY dotted path
-  // skip the guard — a crafted route containing a dot would bypass auth.
-  // Now only real file extensions (webp, json, …) count as static.
-  if (/\.[a-z0-9]+$/i.test(pathname)) return true;
+  // B-12 fix: regex محدود به extension های واقعی فایل‌های static.
+  // قبلاً /\.[a-z0-9]+$/i بود که هر مسیر با dot را static می‌دید
+  // (مثلاً /dashboard/user.profile یا /exchange/rate.php).
+  // حالا فقط extension های شناخته‌شده static match می‌شوند.
+  if (
+    /\.(webp|jpg|jpeg|png|gif|ico|svg|css|js|mjs|cjs|json|woff2?|ttf|eot|map|txt|xml|pdf|mp4|webm|ogg|mp3|wav)$/i.test(
+      pathname,
+    )
+  )
+    return true;
   return false;
 };
 const isPublicApi = (pathname: string): boolean =>

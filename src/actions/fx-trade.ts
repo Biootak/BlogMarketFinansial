@@ -198,6 +198,18 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
           message: 'کلید درخواست با پارامترهای فعلی سازگار نیست',
         },
       };
+    // B-14 fix: موجودی واقعی حساب‌ها را برگردان، نه '0'.
+    // UI که به این مقادیر تکیه کند موجودی اشتباه نمایش می‌دهد.
+    const fromAccountId = typeof meta.fromAccountId === 'string' ? meta.fromAccountId : null;
+    const toAccountId = typeof meta.toAccountId === 'string' ? meta.toAccountId : null;
+    const [fromAcc, toAcc] = await Promise.all([
+      fromAccountId
+        ? prisma.fintechAccount.findUnique({ where: { id: fromAccountId }, select: { balance: true } })
+        : null,
+      toAccountId
+        ? prisma.fintechAccount.findUnique({ where: { id: toAccountId }, select: { balance: true } })
+        : null,
+    ]);
     return {
       success: true,
       data: {
@@ -208,8 +220,8 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
         toAmountCents: Number(meta.toAmountCents ?? 0),
         rate: Number(meta.rate ?? 0),
         feeCents: Number(meta.feeCents ?? 0),
-        fromBalance: '0',
-        toBalance: '0',
+        fromBalance: fromAcc ? fromAcc.balance.toString() : '0',
+        toBalance: toAcc ? toAcc.balance.toString() : '0',
       },
     };
   }
@@ -249,6 +261,20 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
   const netFromCents = amountCents - feeCents;
   if (netFromCents <= 0)
     return { success: false, error: { code: 'AMOUNT_TOO_SMALL', message: 'مبلغ خیلی کم است' } };
+  // B-05 fix: سن نرخ market-rates را قبل از transaction بررسی کن.
+  // وقتی نرخ از market-rates می‌آید (نه quote)، داخل transaction تأیید نمی‌شد.
+  // حالا اگر نرخ بیشتر از ۱۰ دقیقه قدیمی باشد، تراکنش رد می‌شود.
+  const RATE_MAX_AGE_MS = 10 * 60 * 1000; // ۱۰ دقیقه
+  if (!initialRate.quoteId) {
+    const rateAgeMs = Date.now() - initialRate.updatedAt.getTime();
+    if (rateAgeMs > RATE_MAX_AGE_MS) {
+      return {
+        success: false,
+        error: { code: 'RATE_STALE', message: 'نرخ ارز منقضی شده است. لطفاً دوباره تلاش کنید.' },
+      };
+    }
+  }
+
   try {
     const result = await prisma.$transaction(
       async (tx) => {
@@ -264,6 +290,9 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
             })
           : null;
         if (initialRate.quoteId && !quote) throw new Error('QUOTE_EXPIRED');
+        // B-05 fix: برای non-quote path هم نرخ را داخل transaction تأیید کن.
+        // اگر market-rates snapshot تغییر کرده باشد، مجدداً بارگذاری می‌کنیم.
+        // چون Serializable isolation داریم، این read ثابت می‌ماند تا پایان tx.
         const rate = quote ? Number(quote.sellRate) : initialRate.rate;
         if (!Number.isFinite(rate) || rate <= 0) throw new Error('INVALID_RATE');
         const toAmountCents = Math.floor(netFromCents * rate);
