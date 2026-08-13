@@ -1448,6 +1448,7 @@ model Transaction {
   updatedAt      DateTime          @updatedAt
   FraudReview    FraudReview[]
   LedgerEntry    LedgerEntry[]
+  StatusLogs     TransactionStatusLog[]
   FintechAccount FintechAccount?   @relation(fields: [accountId], references: [id], onDelete: Cascade)
   Customer       Customer?         @relation(fields: [customerId], references: [id], onDelete: Cascade)
   Exchange       Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
@@ -1458,6 +1459,65 @@ model Transaction {
   @@index([exchangeId])
   @@index([kind, status])
   @@index([status])
+}
+
+/// تاریخچه غیرقابل‌ویرایش تغییر وضعیت هر تراکنش — append-only audit trail.
+/// هر بار که status یک Transaction تغییر می‌کند یک رکورد اینجا ثبت می‌شود.
+/// این جدول هرگز update/delete نمی‌شود — کاملاً immutable.
+model TransactionStatusLog {
+  id         String    @id @default(cuid())
+  txnId      String
+  /// وضعیت قبل (null = ایجاد اولیه)
+  fromStatus String?
+  /// وضعیت جدید
+  toStatus   String
+  /// چه کسی این تغییر را ایجاد کرد (userId یا 'system' یا 'queue-worker')
+  actorId    String?
+  /// نقش انجام‌دهنده: USER | ADMIN | SARAFI | SYSTEM | QUEUE
+  actorRole  String?
+  /// IP درخواست (برای audit)
+  ip         String?
+  /// توضیح اختیاری (مثلاً دلیل رد، کد خطا)
+  note       String?
+  createdAt  DateTime  @default(now())
+
+  Transaction Transaction @relation(fields: [txnId], references: [id], onDelete: Cascade)
+
+  @@index([txnId, createdAt(sort: Desc)])
+  @@index([actorId])
+  @@index([toStatus])
+}
+
+/// رویدادهای غیر تراکنشی حساب‌های فینتک — append-only.
+/// موارد: فریز/آنفریز حساب یا کارت، تغییر سقف KYC، تغییر وضعیت FintechAccount،
+///        باز/بسته شدن حساب، تنظیم sectionPermission.
+/// هرگز delete یا update نمی‌شود.
+model FintechEventLog {
+  id         String   @id @default(cuid())
+  /// نوع رویداد — مثلاً ACCOUNT_FROZEN, CARD_FROZEN, LIMIT_CHANGED, ACCOUNT_CLOSED
+  eventType  String
+  /// نوع موجودیت تأثیرپذیر: FintechAccount | VirtualCard | Customer | FraudReview
+  entityType String
+  /// شناسه موجودیت
+  entityId   String
+  /// صرافی مرتبط (اگر موجود)
+  exchangeId String?
+  /// انجام‌دهنده (userId یا 'system')
+  actorId    String?
+  actorRole  String?
+  ip         String?
+  /// داده‌های قبل از تغییر (برای diff)
+  before     Json?
+  /// داده‌های بعد از تغییر
+  after      Json?
+  /// توضیح اختیاری
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt(sort: Desc)])
+  @@index([exchangeId, createdAt(sort: Desc)])
+  @@index([actorId])
+  @@index([eventType, createdAt(sort: Desc)])
 }
 
 model TwoFactorBackupCode {

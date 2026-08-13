@@ -15,6 +15,8 @@
  *   - idempotencyKey اجباری
  *   - OTP برای withdraw بیش از آستانه
  *   - AuditLog برای همه عملیات
+ *   - TransactionStatusLog: هر تغییر وضعیت ردیابی می‌شود (append-only)
+ *   - Fraud screening روی requestWithdraw
  */
 
 import { randomBytes } from 'node:crypto';
@@ -24,6 +26,8 @@ import {
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { logTxnStatusChange } from '@/lib/fintech/txn-trail';
+import { screenTransaction } from '@/lib/fraud/screener';
 import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
@@ -139,6 +143,17 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
       meta: { txnRef, source: 'user_request' } as Prisma.InputJsonValue,
       updatedAt: new Date(),
     },
+  });
+
+  // ثبت وضعیت اولیه تراکنش در تاریخچه
+  void logTxnStatusChange({
+    txnId: txn.id,
+    fromStatus: null,
+    toStatus: 'PENDING',
+    actorId: auth.user.id,
+    actorRole: 'USER',
+    ip,
+    note: 'DEPOSIT_REQUESTED',
   });
 
   await prisma.auditLog.create({
@@ -270,6 +285,25 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
 
   const txnRef = randomBytes(8).toString('hex');
 
+  // Fraud screening قبل از ثبت تراکنش
+  const fraudRisk = await screenTransaction({
+    customerId: customer.id,
+    exchangeId: account.exchangeId,
+    amount: BigInt(amountCents),
+    currency,
+    ip,
+    kind: 'WITHDRAWAL',
+  });
+  if (fraudRisk.shouldBlock) {
+    return {
+      success: false,
+      error: {
+        code: 'FRAUD_BLOCKED',
+        message: 'این برداشت به دلایل امنیتی مسدود شد. لطفاً با پشتیبانی تماس بگیرید.',
+      },
+    };
+  }
+
   const txn = await prisma.transaction.create({
     data: {
       id: createId(),
@@ -282,9 +316,26 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
       currency,
       idempotencyKey,
       note: note ?? null,
-      meta: { txnRef, destinationAccount, source: 'user_request' } as Prisma.InputJsonValue,
+      meta: {
+        txnRef,
+        destinationAccount,
+        source: 'user_request',
+        fraudScore: fraudRisk.score,
+        fraudHeld: fraudRisk.shouldHold,
+      } as Prisma.InputJsonValue,
       updatedAt: new Date(),
     },
+  });
+
+  // ثبت وضعیت اولیه در تاریخچه
+  void logTxnStatusChange({
+    txnId: txn.id,
+    fromStatus: null,
+    toStatus: 'PENDING',
+    actorId: auth.user.id,
+    actorRole: 'USER',
+    ip,
+    note: fraudRisk.shouldHold ? `WITHDRAWAL_REQUESTED:HELD:score=${fraudRisk.score}` : 'WITHDRAWAL_REQUESTED',
   });
 
   await prisma.auditLog.create({
@@ -297,7 +348,7 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
       entityType: 'Transaction',
       entityId: txn.id,
       ip,
-      meta: { amountCents, currency, txnRef } as Prisma.InputJsonValue,
+      meta: { amountCents, currency, txnRef, fraudScore: fraudRisk.score } as Prisma.InputJsonValue,
     },
   });
 
@@ -321,6 +372,15 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
             failedReason: 'OTP_SEND_FAILED',
           } as Prisma.InputJsonValue,
         },
+      });
+      void logTxnStatusChange({
+        txnId: txn.id,
+        fromStatus: 'PENDING',
+        toStatus: 'FAILED',
+        actorId: auth.user.id,
+        actorRole: 'USER',
+        ip,
+        note: 'OTP_SEND_FAILED',
       });
       return otpResult;
     }
@@ -458,7 +518,18 @@ export async function confirmWithdraw(
           createdAt: now,
         },
       });
-      // وضعیت قبلاً در atomic claim به COMPLETED رفته — به‌روزرسانی اضافه نیست.
+      // ثبت تغییر وضعیت PENDING→COMPLETED در تاریخچه داخل همان transaction
+      await tx.transactionStatusLog.create({
+        data: {
+          txnId: txn.id,
+          fromStatus: 'PENDING',
+          toStatus: 'COMPLETED',
+          actorId: auth.user.id,
+          actorRole: 'USER',
+          ip,
+          note: 'WITHDRAWAL_CONFIRMED',
+        },
+      });
     });
   } catch (err) {
     const msg = (err as Error).message;

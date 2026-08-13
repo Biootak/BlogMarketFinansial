@@ -20,6 +20,7 @@
 
 import { randomInt } from 'node:crypto';
 import prisma from '@/lib/db';
+import { logFintechEvent } from '@/lib/fintech/txn-trail';
 import { requireUser } from '@/lib/require-auth';
 import type { FintechActionResult } from '@/types/types';
 import { v4 as createId } from 'uuid';
@@ -228,9 +229,34 @@ export async function toggleFreezeCard(
     return { success: false, error: { code: 'INVALID_STATUS', message: 'کارت مسدود شده است' } };
   }
 
+  const newStatus = freeze ? 'FROZEN' : 'ACTIVE';
+
   await prisma.virtualCard.update({
     where: { id: cardId },
-    data: { status: freeze ? 'FROZEN' : 'ACTIVE', updatedAt: new Date() },
+    data: { status: newStatus, updatedAt: new Date() },
+  });
+
+  // AuditLog + FintechEventLog — فریز/آنفریز کارت باید کاملاً قابل ردیابی باشد
+  await prisma.auditLog.create({
+    data: {
+      id: createId(),
+      exchangeId: null,
+      actorId: auth.user.id,
+      actorRole: 'USER',
+      action: freeze ? 'VIRTUAL_CARD_FROZEN' : 'VIRTUAL_CARD_UNFROZEN',
+      entityType: 'VirtualCard',
+      entityId: cardId,
+    },
+  });
+
+  void logFintechEvent({
+    eventType: freeze ? 'CARD_FROZEN' : 'CARD_UNFROZEN',
+    entityType: 'VirtualCard',
+    entityId: cardId,
+    actorId: auth.user.id,
+    actorRole: 'USER',
+    before: { status: card.status },
+    after: { status: newStatus },
   });
 
   return { success: true, data: undefined };

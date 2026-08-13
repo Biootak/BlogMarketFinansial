@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { screenTransaction } from '@/lib/fraud/screener';
 import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
@@ -237,6 +238,25 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
   }
 
   const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+
+  // Fraud screening قبل از ثبت تراکنش تبدیل ارز
+  const fraudRisk = await screenTransaction({
+    customerId: customer.id,
+    exchangeId: customer.exchangeId,
+    amount: BigInt(amountCents),
+    currency: fromCurrency,
+    ip,
+    kind: 'EXCHANGE',
+  });
+  if (fraudRisk.shouldBlock) {
+    return {
+      success: false,
+      error: {
+        code: 'FRAUD_BLOCKED',
+        message: 'این تبدیل ارز به دلایل امنیتی مسدود شد. لطفاً با پشتیبانی تماس بگیرید.',
+      },
+    };
+  }
   const fromAccount = await prisma.fintechAccount.findFirst({
     where: { customerId: customer.id, currency: fromCurrency, status: 'ACTIVE' },
     select: { id: true, balance: true },
@@ -420,6 +440,18 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
               feeCents,
               quoteId: initialRate.quoteId ?? null,
             } as Prisma.InputJsonValue,
+          },
+        });
+        // ثبت وضعیت در تاریخچه داخل همان transaction — FX مستقیماً COMPLETED می‌شود
+        await tx.transactionStatusLog.create({
+          data: {
+            txnId: txn.id,
+            fromStatus: null,
+            toStatus: 'COMPLETED',
+            actorId: auth.user.id,
+            actorRole: 'USER',
+            ip,
+            note: `FX_EXCHANGE:${fromCurrency}->${toCurrency}:rate=${rate}:fee=${feeCents}`,
           },
         });
         return {

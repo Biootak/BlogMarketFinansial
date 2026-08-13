@@ -14,6 +14,8 @@ import {
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { logTxnStatusChange } from '@/lib/fintech/txn-trail';
+import { screenTransaction } from '@/lib/fraud/screener';
 import { notifyTelegramCustomer } from '@/lib/notifications/telegram-user';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
@@ -240,6 +242,32 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
   const amountBigInt = BigInt(amountCents);
   const txnRef = randomBytes(8).toString('hex');
 
+  // ── Fraud screening قبل از ثبت تراکنش ──────────────────────────────────────
+  // account را برای exchangeId نیاز داریم — یک read سریع قبل از transaction
+  const senderAccountForFraud = await prisma.fintechAccount.findFirst({
+    where: { customerId: senderCustomer.id, currency, status: 'ACTIVE' },
+    select: { exchangeId: true },
+  });
+  if (senderAccountForFraud) {
+    const fraudRisk = await screenTransaction({
+      customerId: senderCustomer.id,
+      exchangeId: senderAccountForFraud.exchangeId,
+      amount: amountBigInt,
+      currency,
+      ip,
+      kind: 'TRANSFER',
+    });
+    if (fraudRisk.shouldBlock) {
+      return {
+        success: false,
+        error: {
+          code: 'FRAUD_BLOCKED',
+          message: 'این انتقال به دلایل امنیتی مسدود شد. لطفاً با پشتیبانی تماس بگیرید.',
+        },
+      };
+    }
+  }
+
   let txn: { id: string; accountId: string | null; exchangeId: string };
   try {
     txn = await prisma.$transaction(async (tx) => {
@@ -255,7 +283,7 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
       if (!account) throw new Error('NO_ACCOUNT');
       if (account.balance < amountBigInt) throw new Error('INSUFFICIENT_BALANCE');
 
-      return tx.transaction.create({
+      const created = await tx.transaction.create({
         data: {
           id: createId(),
           exchangeId: account.exchangeId,
@@ -272,6 +300,19 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
         },
         select: { id: true, accountId: true, exchangeId: true },
       });
+      // ثبت وضعیت اولیه در تاریخچه داخل همان transaction
+      await tx.transactionStatusLog.create({
+        data: {
+          txnId: created.id,
+          fromStatus: null,
+          toStatus: 'PENDING',
+          actorId: auth.user.id,
+          actorRole: 'USER',
+          ip,
+          note: 'TRANSFER_INITIATED',
+        },
+      });
+      return created;
     });
   } catch (err) {
     const msg = (err as Error).message;
@@ -312,6 +353,16 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
           status: 'FAILED',
           meta: { txnRef, failedReason: 'OTP_SEND_FAILED' } as Prisma.InputJsonValue,
         },
+      });
+      // ثبت انتقال به FAILED در تاریخچه
+      void logTxnStatusChange({
+        txnId: txn.id,
+        fromStatus: 'PENDING',
+        toStatus: 'FAILED',
+        actorId: auth.user.id,
+        actorRole: 'USER',
+        ip,
+        note: 'OTP_SEND_FAILED',
       });
       return otpResult;
     }
@@ -619,7 +670,18 @@ export async function executeConfirmTransfer(input: {
           createdAt: now,
         },
       });
-      // وضعیت قبلاً در atomic claim به COMPLETED رفته — اینجا به‌روزرسانی اضافه نیست.
+      // ثبت تغییر وضعیت PENDING→COMPLETED در تاریخچه داخل همان transaction
+      await tx.transactionStatusLog.create({
+        data: {
+          txnId: txn.id,
+          fromStatus: 'PENDING',
+          toStatus: 'COMPLETED',
+          actorId,
+          actorRole: 'USER',
+          ip: ip ?? 'queue-worker',
+          note: 'TRANSFER_COMPLETED',
+        },
+      });
     });
   } catch (err) {
     const msg = (err as Error).message;

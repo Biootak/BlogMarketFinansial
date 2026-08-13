@@ -1,5 +1,7 @@
 'use server';
 
+// exchange-transactions — ثبت تراکنش توسط صراف + StatusLog ردیابی کامل
+
 /**
  * exchange-transactions — Server Actions ثبت و خواندن تراکنش‌های صراف.
  *
@@ -490,6 +492,18 @@ export async function createTransaction(
             description: `${kind} — ${note ?? ''}`.trim(),
             createdById: access.userId,
             createdAt: new Date(),
+          },
+        });
+
+        // ثبت وضعیت اولیه تراکنش در StatusLog داخل همان transaction
+        await tx.transactionStatusLog.create({
+          data: {
+            txnId: transaction.id,
+            fromStatus: null,
+            toStatus: 'COMPLETED',
+            actorId: access.userId,
+            actorRole: 'SARAFI',
+            note: `${kind}:by-staff`,
           },
         });
 
