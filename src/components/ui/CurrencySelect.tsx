@@ -132,6 +132,7 @@ export function CurrencySelect({
   const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
 
   const wrapRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const triggerId = useId();
@@ -145,20 +146,26 @@ export function CurrencySelect({
 
   const selected = useMemo(() => allItems.find((it) => it.value === value), [allItems, value]);
 
-  // ── Close on outside click ──────────────────────────────
+  // ── Close on outside click or scroll ──────────────────────────────
   useEffect(() => {
     if (!open) return;
-    const handler = (e: MouseEvent) => {
+    const handleClick = (e: MouseEvent) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    // Close on scroll so the fixed panel doesn't drift from the trigger
+    const handleScroll = () => setOpen(false);
+    document.addEventListener('mousedown', handleClick);
+    window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+    };
   }, [open]);
 
   // ── Focus search when opened + reset query when closed ──
-  // ── Also clamp panel to viewport (prevents overflow on mobile) ──
+  // ── Position panel with fixed coords to escape any stacking context ──
   useEffect(() => {
     if (!open) {
       setQuery('');
@@ -167,28 +174,37 @@ export function CurrencySelect({
     }
     const t = setTimeout(() => {
       searchRef.current?.focus();
-      // Clamp panel so it never overflows the viewport (horizontal + vertical)
-      if (panelRef.current) {
-        const rect = panelRef.current.getBoundingClientRect();
-        const pad = 8;
-        const style: CSSProperties = {};
-        if (rect.left < pad) {
-          // پنل از لبه‌ی چپ (inline-end در RTL) بیرون می‌زند — لبه‌ی چپ پنل را به wrap بچسبان
-          style.insetInlineStart = 'auto';
-          style.insetInlineEnd = 0;
-        } else if (rect.right > window.innerWidth - pad) {
-          // پنل از لبه‌ی راست (inline-start در RTL) بیرون می‌زند — لبه‌ی راست پنل را به wrap بچسبان
-          style.insetInlineStart = 0;
-          style.insetInlineEnd = 'auto';
-        }
-        if (rect.bottom > window.innerHeight - pad) {
-          // پایین trigger فضای کافی نیست — پنل را به سمت بالا باز کن
-          style.insetBlockStart = 'auto';
-          style.insetBlockEnd = 'calc(100% + 6px)';
-        }
-        setPanelStyle(style);
+      if (!triggerRef.current) return;
+      const trigRect = triggerRef.current.getBoundingClientRect();
+      const PANEL_W = Math.min(352, window.innerWidth - 16);
+      const PANEL_H = 336; // max-block-size approximate
+      const pad = 8;
+
+      // Default: open below trigger, aligned to inline-end (RTL: right edge)
+      let top = trigRect.bottom + 6;
+      // In RTL the panel's right edge aligns with the trigger's right edge
+      let left = trigRect.right - PANEL_W;
+
+      // Flip up if not enough space below
+      if (top + PANEL_H > window.innerHeight - pad) {
+        top = trigRect.top - PANEL_H - 6;
       }
-    }, 20);
+      // Clamp horizontally
+      if (left < pad) left = pad;
+      if (left + PANEL_W > window.innerWidth - pad) left = window.innerWidth - pad - PANEL_W;
+
+      setPanelStyle({
+        position: 'fixed',
+        top,
+        left,
+        width: PANEL_W,
+        // override inset-inline-start so the CSS default doesn't fight
+        insetInlineStart: 'unset',
+        insetInlineEnd: 'unset',
+        insetBlockStart: 'unset',
+        insetBlockEnd: 'unset',
+      });
+    }, 0);
     return () => clearTimeout(t);
   }, [open]);
 
@@ -250,6 +266,7 @@ export function CurrencySelect({
     <div ref={wrapRef} className={`${s.wrap}${className ? ` ${className}` : ''}`} dir="rtl">
       {/* ── Trigger ── */}
       <button
+        ref={triggerRef}
         id={triggerId}
         type="button"
         aria-haspopup="listbox"
