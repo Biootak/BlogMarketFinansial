@@ -318,6 +318,22 @@ const nextConfig: NextConfig = {
   // The `cpus: 1` workaround was also removed — proven unnecessary once
   // retryCount returned to default; the default `cpus` (os.cpus()-1) is fine.
   experimental: {
+    // 2026-08-13 mem-fix (official Next.js docs — guides/memory-usage):
+    // Next.js preloads ALL page JS modules into memory when the server
+    // starts. With 150+ routes on a 512MB dyno this held ~60-70MB of
+    // modules from the first second (measured on the standalone server:
+    // heapTotal 130MB at boot that only dropped to 64MB after GC + idle
+    // time). Disabling it shrinks the startup footprint — modules load on
+    // demand when first requested instead of all up front.
+    preloadEntriesOnStart: false,
+    // 2026-08-13 mem-fix (official Next.js image-optimizer memory controls):
+    // every concurrent sharp optimization holds input+output buffers in
+    // native memory (not counted in the V8 heap). Measured RSS hit 375MB
+    // under 30-concurrent requests; serializing the optimizer + sequential
+    // reads kills the R14 spikes. Images are cached 24h (minimumCacheTTL),
+    // so the throughput cost is negligible.
+    imgOptConcurrency: 1,
+    imgOptSequentialRead: true,
     // 2026-07-06: route handlers handle our image uploads (max 10MB).
     // Server Actions cap at 1MB by default; we don't use them for upload
     // today, but the setting future-proofs any action-based upload path

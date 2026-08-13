@@ -1,3 +1,12 @@
+# Deploy-to-Heroku manifest. `setup.addons` provisions the database when a
+# new app is created from this repo (1 GB Essential-0 plan). The production
+# app financial-market already has its DB on this plan — see
+# deploy/HEROKU.md for the live upgrade command.
+setup:
+  addons:
+    - plan: heroku-postgresql:essential-0
+      as: DATABASE
+
 build:
   docker:
     web: Dockerfile.heroku

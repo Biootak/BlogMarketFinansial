@@ -1,7 +1,7 @@
 # 🖥️ معماری هاستینگ — بازار صرافی افغانستان
 
 > **آخرین بروزرسانی:** ۱۳ آگوست ۲۰۲۶  
-> **معماری فعلی:** Render Free (اپ) + Heroku Essential-1 (DB) + GitHub Actions (scraping)
+> **معماری فعلی:** Heroku Basic (اپ) + Heroku Essential-0 (DB، ۱ گیگ) + GitHub Actions (scraping)
 
 ---
 
@@ -22,11 +22,11 @@
               └────────────┬────────────┘
                            │ Prisma (pool=3)
               ┌────────────▼────────────┐
-              │  Heroku Essential-1     │
-              │  PostgreSQL 17          │
+              │  Heroku Essential-0     │
+              │  PostgreSQL 18          │
               │  eu-west-1 (Ireland)    │
-              │  10 GB / 20 connections │
-              │  $9/ماه                 │
+              │  1 GB / 20 connections  │
+              │  $5/ماه                 │
               └─────────────────────────┘
 
               ┌─────────────────────────┐
@@ -47,12 +47,12 @@
 ### هزینه ماهانه
 | سرویس | پلن | هزینه |
 |-------|-----|-------|
-| **Render** | Free Web Service | **$0** |
-| **Heroku Postgres** | Essential-1 (10 GB) | **$9** (از $13 دانشجویی) |
+| **Heroku** | Basic web dyno | **$7** (داخل اعتبار دانشجویی) |
+| **Heroku Postgres** | Essential-0 (1 GB) | **$5** (از $13 دانشجویی) |
 | **GitHub Actions** | Free tier | **$0** |
 | **Uptime Robot** | Free (50 monitors) | **$0** |
 | **Cloudflare** | Free | **$0** |
-| **جمع** | | **$9/ماه** |
+| **جمع** | | **$12/ماه** |
 
 ---
 
@@ -128,7 +128,7 @@ heroku ps -a financial-market
 # باید نشان دهد: No dynos running
 ```
 
-> ⚠️ این کار $7/ماه صرفه‌جویی می‌کند (Basic dyno حذف می‌شود، فقط $9 Essential-1 می‌ماند)
+> ⚠️ این کار $7/ماه صرفه‌جویی می‌کند (Basic dyno حذف می‌شود، فقط $5 Essential-0 می‌ماند)
 
 ---
 
@@ -149,10 +149,14 @@ heroku ps -a financial-market
 
 | پلن | Storage | Connection Limit | قیمت/ماه |
 |-----|---------|-----------------|---------|
-| Essential-0 | 1 GB | 20 | $5 |
-| **Essential-1** ← فعلی | **10 GB** | **20** | **$9** |
+| **Essential-0** ← فعلی | **1 GB** | **20** | **$5** |
+| Essential-1 | 10 GB | 20 | $9 |
 | Essential-2 | 32 GB | 40 | $20 |
 | Standard-0 | 64 GB + 4GB RAM | 200 | $50 |
+
+> نکته: پلن‌های Essential جدید (از ۲۰۲۴) **سقف ردیف ندارند** — محدودیت فقط حجم
+> ذخیره‌سازی است (Essential-0 = 1 GB). دیتابیس فعلی فقط ~۱۸MB حجم دارد؛
+> downgrade از Essential-1 امن است.
 
 ---
 
@@ -198,9 +202,9 @@ heroku ps -a financial-market
     پرداخت: PayPal/کارت
 
 گزینه راحت‌ترین (با Heroku DB):
-  App: Render Starter ($7) یا Hetzner
-  DB:  Heroku Essential-1 ($9)
-  کل: ~$16/ماه
+  App: Heroku Basic ($7) یا Hetzner
+  DB:  Heroku Essential-0 ($5)
+  کل: ~$12/ماه
 ```
 
 ---
