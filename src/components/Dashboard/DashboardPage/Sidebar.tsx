@@ -25,11 +25,10 @@
    Split: menu definitions → sidebar-menu.ts | NavItem → NavItem.tsx
    -------------------------------------------------------------------------- */
 
-import { logout } from '@/actions/auth-actions';
+import { useSignOut } from '@/components/Auth/useSignOut';
 import Avatar from '@/components/Avatar/Avatar';
 import Logo from '@/components/Logo/Logo';
 import { ViewLink } from '@/components/ui/ViewLink';
-import { useToast } from '@/components/ui/use-toast';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { isAlwaysAllowedRoute, isSectionAllowed, sectionForRoute } from '@/lib/dashboard-sections';
@@ -59,19 +58,9 @@ interface SidebarProps {
   staffRole?: string;
 }
 
-function extractMessage(r: unknown): string | undefined {
-  if (r && typeof r === 'object') {
-    const record = r as Record<string, unknown>;
-    if (typeof record.error === 'string') return record.error;
-    if (typeof record.message === 'string') return record.message;
-  }
-  return undefined;
-}
-
 const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
-  const { toast } = useToast();
   const { logoUrl } = useSiteSettings();
   const { isOpen, setIsOpen, isMobile } = useSidebarStore();
   const [expandedItems, setExpandedItems] = useState<string[]>(defaultExpanded(userRole));
@@ -170,31 +159,11 @@ const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
     return () => window.removeEventListener('keydown', handler);
   }, [menu, router, isMobile, setIsOpen]);
 
-  const handleLogout = async () => {
-    try {
-      const result = await logout();
-      if (result.success) {
-        toast({
-          title: 'خروج موفق',
-          description: 'شما با موفقیت از حساب کاربری خود خارج شدید.',
-          variant: 'success',
-        });
-        router.refresh();
-        router.push('/auth');
-      } else {
-        toast({
-          title: 'خطا در خروج',
-          description: extractMessage(result) || 'مشکلی در خروج از حساب کاربری پیش آمد.',
-          variant: 'destructive',
-        });
-      }
-    } catch {
-      toast({
-        title: 'خطای سیستمی',
-        description: 'مشکلی در سیستم رخ داده است.',
-        variant: 'destructive',
-      });
-    }
+  // 2026-08-14: مسیر یکپارچه خروج — بدون router.refresh() (بعد از پاک شدن
+  // کوکی، refresh روی صفحهٔ محافظت‌شده لوپ رندر می‌ساخت — «هی رندر می‌شود»).
+  const { signOut: signOutUser } = useSignOut();
+  const handleLogout = () => {
+    void signOutUser();
   };
 
   const handleItemClick = () => {

@@ -1,66 +1,25 @@
 'use client';
 
-import {
-  invalidateDashboardCache,
-  invalidatePublicCache,
-  invalidateUserCache,
-} from '@/actions/cacheActions';
-import { useToast } from '@/components/ui/use-toast';
+import { useSignOut } from '@/components/Auth/useSignOut';
 import { cn } from '@/lib/utils';
-import { getSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
 import { IoExitOutline } from 'react-icons/io5';
 import Loading from '../Button/Loading';
 
+/**
+ * 2026-08-14: دکمه خروج سایت — از مسیر یکپارچه `useSignOut`.
+ * قبلاً `signOut` از next-auth/react صدا زده می‌شد (POST آهسته به
+ * /api/auth/signout — بعضی مواقع عملاً hang می‌کرد) و بعد `router.refresh()`
+ * + `router.push('/')` داشت که بعد از پاک شدن کوکی لوپ رندر می‌ساخت.
+ * حالا: action سرور logout() (کوکی + invalidation کش‌ها) + toast +
+ * router.replace — بدون refresh.
+ */
 const LogoutButton = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    setIsLoading(true);
-    try {
-      const session = await getSession();
-
-      await Promise.all([
-        session?.user?.id ? invalidateUserCache(session.user.id) : Promise.resolve(),
-        invalidatePublicCache(),
-        invalidateDashboardCache(),
-      ]);
-
-      // 2026-06-30: toast BEFORE signOut so it actually paints. The
-      // previous sequence called signOut({redirect:true}) first, which
-      // navigated before React could flush the toast render — users
-      // never saw the success message. Now we fire toast, then
-      // signOut({redirect:false}) to clear the session cookie, then
-      // router.push to navigate manually. The router push gives us
-      // full control over the destination and lets the toast's
-      // auto-close timer run before the page swap.
-      toast({
-        title: 'موفقیت',
-        description: 'شما با موفقیت خارج شدید',
-        variant: 'success',
-      });
-
-      await signOut({ redirect: false });
-      router.refresh();
-      router.push('/');
-    } catch (_error) {
-      toast({
-        title: 'خطا',
-        description: 'مشکلی در خروج رخ داد. لطفاً دوباره تلاش کنید.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { signOut, pending: isLoading } = useSignOut();
 
   return (
     <button
       type="button"
-      onClick={handleLogout}
+      onClick={() => void signOut()}
       disabled={isLoading}
       className={cn(
         'group flex items-center gap-3 w-full p-2.5 text-right',

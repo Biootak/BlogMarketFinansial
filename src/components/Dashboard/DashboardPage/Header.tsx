@@ -37,12 +37,12 @@
  * dropdown items so each product area shows only what belongs to it.
  */
 
-import { logout } from '@/actions/auth-actions';
 import {
   type NotificationRow,
   getNotifications,
   markAllNotificationsRead,
 } from '@/actions/notification-actions';
+import { useSignOut } from '@/components/Auth/useSignOut';
 import Avatar from '@/components/Avatar/Avatar';
 import SwitchDarkMode from '@/components/SwitchDarkMode/SwitchDarkMode';
 import {
@@ -332,12 +332,12 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch {
-      // best-effort; the server action redirects on success
-    }
+  const { signOut: signOutUser } = useSignOut();
+  const handleLogout = () => {
+    // 2026-08-14: قبلاً فقط action را صدا می‌زد و هیچ navigation/توست نداشت
+    // (کامنت «server action redirect می‌کند» نادرست بود — با redirect:false
+    // اجرا می‌شود) → دکمه عملاً مرده بود. حالا از مسیر یکپارچه خروج.
+    void signOutUser();
   };
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;

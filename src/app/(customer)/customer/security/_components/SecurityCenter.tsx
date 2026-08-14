@@ -19,6 +19,7 @@ import {
   requestAccountDeletion,
 } from '@/actions/customer-portal';
 import { SectionHeader } from '@/app/(customer)/customer/_lib/customer-ui';
+import { useSignOut } from '@/components/Auth/useSignOut';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import { useToast } from '@/components/ui/use-toast';
 import {
@@ -36,9 +37,7 @@ import {
   ShieldX,
   Trash2,
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 import s from './SecurityCenter.module.css';
 
@@ -70,8 +69,9 @@ function passwordStrength(pwd: string): { score: 0 | 1 | 2 | 3 | 4; label: strin
 }
 
 export function SecurityCenter({ overview }: Props) {
-  const router = useRouter();
   const { toast } = useToast();
+  // 2026-08-14: مسیر یکپارچه خروج (بدون router.refresh → بدون لوپ رندر)
+  const { signOut: signOutUser } = useSignOut();
 
   // ── Password form state ────────────────────────────────────────────
   const [pwd, setPwd] = useState<PasswordForm>(EMPTY_PASSWORD);
@@ -109,10 +109,8 @@ export function SecurityCenter({ overview }: Props) {
         });
         setPwd(EMPTY_PASSWORD);
         // session فعلی هم باطل شود و به صفحه ورود بریم
-        setTimeout(async () => {
-          await signOut({ redirect: false });
-          router.refresh();
-          router.push('/auth');
+        setTimeout(() => {
+          void signOutUser();
         }, 800);
       } else {
         toast({

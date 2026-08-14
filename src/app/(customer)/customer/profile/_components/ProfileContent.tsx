@@ -22,11 +22,6 @@
  *  - masking برای nationalId/phone (toggleable)
  */
 
-import {
-  invalidateDashboardCache,
-  invalidatePublicCache,
-  invalidateUserCache,
-} from '@/actions/cacheActions';
 import type { CustomerProfile } from '@/actions/customer-portal';
 import {
   CUSTOMER_STATUS_CSSKEY,
@@ -43,6 +38,7 @@ import {
   SectionHeader,
   StatusPill,
 } from '@/app/(customer)/customer/_lib/customer-ui';
+import { useSignOut } from '@/components/Auth/useSignOut';
 import { ViewLink } from '@/components/ui/ViewLink';
 import {
   Building2,
@@ -67,9 +63,7 @@ import {
   User,
   Wallet,
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import s from './ProfileContent.module.css';
 import ProfileEditForm from './ProfileEditForm';
@@ -135,25 +129,11 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
       : null,
   );
 
-  // خروج واقعی (به‌جای لینک مردهٔ /auth/signout)
-  const router = useRouter();
-  const [signingOut, setSigningOut] = useState(false);
-  const handleSignOut = async () => {
-    if (signingOut) return;
-    setSigningOut(true);
-    try {
-      const session = await import('next-auth/react').then((m) => m.getSession());
-      await Promise.all([
-        session?.user?.id ? invalidateUserCache(session.user.id) : Promise.resolve(),
-        invalidatePublicCache(),
-        invalidateDashboardCache(),
-      ]);
-      await signOut({ redirect: false });
-      router.refresh();
-      router.push('/auth');
-    } catch {
-      setSigningOut(false);
-    }
+  // 2026-08-14: مسیر یکپارچه خروج — invalidation کش‌ها داخل action سرور؛
+  // بدون router.refresh() (بعد از پاک شدن کوکی، refresh لوپ رندر می‌ساخت).
+  const { signOut: signOutUser, pending: signingOut } = useSignOut();
+  const handleSignOut = () => {
+    void signOutUser();
   };
 
   // Profile completion % — بر اساس فیلدهای اختیاری پرشده

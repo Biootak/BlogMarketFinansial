@@ -18,7 +18,12 @@
 //   4. Auth.js Credentials.authorize stays the single session gate:
 //      password → bcrypt + emailVerified; after_otp → trust pre-verified marker.
 
-import { signIn, signOut } from '@/auth';
+import {
+  invalidateDashboardCache,
+  invalidatePublicCache,
+  invalidateUserCache,
+} from '@/actions/cacheActions';
+import { auth, signIn, signOut } from '@/auth';
 import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
 import { type OtpEmailIntent, otpEmail, otpExpiresLabel } from '@/lib/email/templates';
@@ -1231,8 +1236,33 @@ export async function getEnabledSocialProviders(): Promise<string[]> {
   return providers;
 }
 
+/**
+ * خروج یکپارچه — 2026-08-14: این action منبع واحد خروج است.
+ *   - invalidation کش‌های کاربر/عمومی/داشبورد همین‌جا انجام می‌شود (قبلاً هر
+ *     دکمه‌ای جداگانه و با client-side call انجام می‌داد — و بعضی اصلاً
+ *     انجام نمی‌دادند).
+ *   - `signOut({redirect:false})` کوکی سشن را پاک می‌کند.
+ *   - caller سمت کلاینت فقط باید `router.replace(result.redirect)` کند —
+ *     بدون `router.refresh()` (refresh بعد از پاک شدن کوکی روی صفحهٔ
+ *     محافظت‌شده لوپ رندر/ریدایرکت می‌سازد).
+ */
 export async function logout(): Promise<AuthResult> {
   try {
+    // session را قبل از signOut می‌خوانیم تا id کاربر را برای invalidation داشته باشیم
+    const session = await auth().catch(() => null);
+    if (session?.user?.id) {
+      try {
+        await invalidateUserCache(session.user.id);
+      } catch {
+        // best-effort — نباید خروج را خراب کند
+      }
+    }
+    try {
+      await invalidateDashboardCache();
+      await invalidatePublicCache();
+    } catch {
+      // best-effort
+    }
     await signOut({ redirect: false });
     return {
       success: true,
