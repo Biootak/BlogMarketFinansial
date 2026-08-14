@@ -8774,8 +8774,8 @@
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    gap: 16px;
-    padding: 14px 14px 12px;
+    gap: 10px;
+    padding: 12px 14px 10px;
     border-bottom: 1px solid var(--at-line);
     background: radial-gradient(
       ellipse 80% 100% at 100% 0%,
@@ -8786,6 +8786,7 @@
   @media (min-width: 768px) {
     .at-rhythm__head {
       grid-template-columns: auto 1fr auto;
+      gap: 16px;
       padding: 26px 28px 22px;
     }
   }
@@ -8829,22 +8830,26 @@
     display: inline-flex;
     align-items: baseline;
     flex-wrap: wrap;
-    gap: 6px 12px;
-    justify-content: center;
-    text-align: center;
+    gap: 4px 8px;
+    justify-content: flex-start;
+    text-align: start;
   }
   .at-rhythm__metric-num {
-    font-size: 48px;
+    font-size: 28px;
     font-weight: 800;
-    line-height: 0.95;
+    line-height: 1;
     color: var(--at-fg);
     letter-spacing: -0.025em;
   }
-  /* Mobile: 48px rhythm numbers dominate a 360px viewport; drop to a
-     compact 26px so the 7-day row reads at a glance. */
-  @media (max-width: 480px) {
+  @media (min-width: 768px) {
+    .at-rhythm__metric {
+      gap: 6px 12px;
+      justify-content: center;
+      text-align: center;
+    }
     .at-rhythm__metric-num {
-      font-size: 26px;
+      font-size: 48px;
+      line-height: 0.95;
     }
   }
   @media (min-width: 768px) {
@@ -8939,8 +8944,8 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
-    padding: 10px 6px 8px;
+    gap: 5px;
+    padding: 6px 3px 5px;
     border-radius: var(--at-radius);
     background: transparent;
     border: 1px solid transparent;
@@ -8948,7 +8953,7 @@
     text-align: center;
     color: inherit;
     min-width: 0;
-    min-height: 130px;
+    min-height: 90px;
     transition: background var(--at-duration) var(--at-ease), border-color var(--at-duration)
       var(--at-ease), transform var(--at-duration) var(--at-ease), box-shadow var(--at-duration)
       var(--at-ease);
@@ -8957,6 +8962,7 @@
     .at-rhythm__col {
       min-height: 232px;
       padding: 12px 8px 10px;
+      gap: 8px;
     }
   }
   .at-rhythm__col:hover {
@@ -9037,7 +9043,7 @@
   }
 
   .at-rhythm__col-count {
-    font-size: 16px;
+    font-size: 11px;
     font-weight: 800;
     color: var(--at-fg);
     line-height: 1;
@@ -9057,7 +9063,7 @@
 
   .at-rhythm__col-track {
     flex: 1;
-    min-height: 110px;
+    min-height: 52px;
     display: flex;
     align-items: flex-end;
     justify-content: center;
@@ -9123,16 +9129,24 @@
     border-block-start: 1px solid var(--at-line);
   }
   .at-rhythm__col-name {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: var(--at-fg-muted);
     letter-spacing: 0.02em;
   }
   .at-rhythm__col-num {
-    font-size: 16px;
+    font-size: 12px;
     font-weight: 800;
     color: var(--at-fg);
     line-height: 1;
+  }
+  @media (min-width: 768px) {
+    .at-rhythm__col-name {
+      font-size: 11px;
+    }
+    .at-rhythm__col-num {
+      font-size: 16px;
+    }
   }
   .at-rhythm__col.is-empty .at-rhythm__col-num {
     color: var(--at-fg-faint);
@@ -9144,7 +9158,7 @@
 
   /* ── Spotlight (today's buckets) ───────────────────────────────────── */
   .at-rhythm__spotlight {
-    padding: 14px 14px 8px;
+    padding: 10px 12px 6px;
     background: var(--at-bg);
   }
   @media (min-width: 768px) {
@@ -9155,9 +9169,15 @@
   .at-rhythm__spotlight-head {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 6px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
+  }
+  @media (min-width: 768px) {
+    .at-rhythm__spotlight-head {
+      gap: 8px;
+      margin-bottom: 14px;
+    }
   }
   .at-rhythm__spotlight-eyebrow {
     display: inline-flex;
@@ -9185,8 +9205,8 @@
   }
   .at-rhythm__spot-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
   @media (min-width: 768px) {
     .at-rhythm__spot-grid {
@@ -9201,12 +9221,12 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 14px 14px 12px;
+    gap: 6px;
+    padding: 10px 10px 8px;
     border-radius: var(--at-radius-lg);
     background: var(--at-bg-elevated);
     border: 1px solid var(--at-line);
-    min-height: 132px;
+    min-height: 80px;
     transition: border-color var(--at-duration) var(--at-ease), transform var(--at-duration)
       var(--at-ease), box-shadow var(--at-duration) var(--at-ease);
     overflow: hidden;
@@ -9387,8 +9407,8 @@
   .at-rhythm__empty {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 14px 14px;
+    gap: 12px;
+    padding: 12px 12px;
     border: 1px dashed var(--at-line-strong);
     border-radius: var(--at-radius);
     background: repeating-linear-gradient(
@@ -9473,7 +9493,7 @@
   .at-rhythm__agenda {
     border-top: 1px solid var(--at-line);
     background: var(--at-bg-deep);
-    padding: 16px 22px 20px;
+    padding: 12px 14px 14px;
     animation: at-rhythm-agenda-in var(--at-duration) var(--at-ease);
   }
   @media (min-width: 768px) {
