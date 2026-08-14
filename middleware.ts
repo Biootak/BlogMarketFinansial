@@ -141,7 +141,10 @@ const isStaticPath = (pathname: string): boolean => {
     pathname === '/favicon.ico' ||
     pathname === '/robots.txt' ||
     pathname === '/manifest.json' ||
-    pathname === '/site.webmanifest'
+    pathname === '/site.webmanifest' ||
+    pathname === '/manifest.webmanifest' ||
+    pathname === '/sw.js' ||
+    pathname === '/offline.html'
   )
     return true;
   // B-12 fix: regex محدود به extension های واقعی فایل‌های static.

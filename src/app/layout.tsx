@@ -27,6 +27,7 @@ import './globals.css';
 import { DevScriptInjector } from '@/components/DevScriptInjector';
 import PageViewTracker from '@/components/PageViewTracker';
 import Providers from '@/components/providers';
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
 // فونت‌ها از `src/app/fonts/index.ts` مدیریت می‌شوند — تنها منبع حقیقت.
 // برای تعویض فونت فقط همان فایل را تغییر بده — CSS و کامپوننت‌ها بدون تغییر
@@ -133,6 +134,7 @@ export default function RootLayout({
             preconnect به آن‌ها بی‌فایده است. آواتارهای OAuth کاربران واقعی
             (Google/GitHub) هم مستقیم لود می‌شوند → dns-prefetch ارزان برای
             گرم نگه‌داشتن DNS. */}
+        <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="preconnect" href="https://i.pravatar.cc" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
@@ -165,6 +167,7 @@ export default function RootLayout({
           <PageViewTracker />
           {children}
         </Providers>
+        <ServiceWorkerRegister />
         <Toaster />
         {process.env.NODE_ENV === 'development' && <DevInspector />}
       </body>
