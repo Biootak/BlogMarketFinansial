@@ -153,7 +153,9 @@ export function SessionGuard({ children }: Props) {
 
   const handleReAuth = useCallback(() => {
     const callbackUrl = pathname ?? '/dashboard';
-    router.push(`/auth?callbackUrl=${encodeURIComponent(callbackUrl)}&reason=session-expired`);
+    // 2026-08-14: unified-flow fix — AuthFlow reads `expired=1` (not
+    // `reason=session-expired`) and shows the session-expired notice.
+    router.push(`/auth?step=login&expired=1&callbackUrl=${encodeURIComponent(callbackUrl)}`);
   }, [pathname, router]);
 
   // format mm:ss
