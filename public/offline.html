@@ -6,20 +6,47 @@
     <meta name="robots" content="noindex, nofollow" />
     <title>اتصال برقرار نیست | آفلاین</title>
     <style>
+      /* ==========================================================================
+         Financial Market — offline fallback (self-contained برای service worker)
+         زبان طراحی: StateHero (src/components/Dashboard/primitives/StateHero) —
+         توکن‌های --ds-* از src/components/ds/styles/tokens.css inline شده‌اند
+         چون این فایل مستقل است و CSS باندل‌شده در حالت آفلاین در دسترس نیست.
+         ========================================================================== */
+
+      /* ── Tokens (light) — tokens.css:root ───────────────────────────── */
       :root {
-        color-scheme: light dark;
-        --canvas: #f7f8fa;
-        --canvas-dark: #14171f;
-        --ink: #1f2430;
-        --ink-dark: #eef1f6;
-        --muted: #6b7280;
-        --muted-dark: #9aa3b2;
-        --accent: #06b6d4;
-        --card: #ffffff;
-        --card-dark: #1c212b;
-        --border: #e5e7eb;
-        --border-dark: #2a3040;
-        --ring: rgba(6, 182, 212, 0.35);
+        --ds-canvas: oklch(99% 0.003 240);
+        --ds-bg: oklch(99% 0.003 240);
+        --ds-fg: oklch(20% 0.01 240);
+        --ds-fg-muted: oklch(55% 0.01 240);
+        --ds-border-subtle: oklch(92% 0.005 240 / 0.6);
+        /* tone=cyan (StateHero.module.css) */
+        --ds-primary: oklch(62% 0.12 220);
+        --ds-space-1: 4px;
+        --ds-space-2: 8px;
+        --ds-space-3: 12px;
+        --ds-space-4: 16px;
+        --ds-space-5: 20px;
+        --ds-text-xs: 12px;
+        --ds-text-sm: 14px;
+        --ds-radius-md: 12px;
+        --ds-radius-lg: 16px;
+        --ds-radius-full: 9999px;
+        --ds-ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);
+        --ds-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+          "Liberation Mono", monospace;
+      }
+
+      /* ── Tokens (dark) — tokens.css .dark ───────────────────────────── */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --ds-canvas: oklch(15% 0.01 250);
+          --ds-bg: oklch(15% 0.01 250);
+          --ds-fg: oklch(95% 0.005 240);
+          --ds-fg-muted: oklch(55% 0.01 240);
+          --ds-border-subtle: oklch(92% 0.005 240 / 0.6);
+          --ds-primary: oklch(70% 0.13 200);
+        }
       }
 
       * {
@@ -33,172 +60,439 @@
       }
 
       body {
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
+        min-height: 100dvh;
         font-family: "Vazirmatn", "Segoe UI", Tahoma, Arial, sans-serif;
-        background: var(--canvas);
-        color: var(--ink);
-        padding: 1.5rem;
+        color: var(--ds-fg);
+        background: var(--ds-canvas);
+        -webkit-font-smoothing: antialiased;
       }
 
-      @media (prefers-color-scheme: dark) {
-        body {
-          background: var(--canvas-dark);
-          color: var(--ink-dark);
-        }
-        .card {
-          background: var(--card-dark);
-          border-color: var(--border-dark);
-        }
-        .muted {
-          color: var(--muted-dark);
-        }
-        .divider {
-          border-color: var(--border-dark);
-        }
-      }
-
-      .card {
-        width: 100%;
-        max-width: 26rem;
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: 1.25rem;
-        padding: 2rem 1.5rem;
+      /* ── Root — هماهنگ با StateHero.module.css .root ────────────────── */
+      .root {
+        position: relative;
+        isolation: isolate;
+        min-block-size: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(2rem, 5vw, 3rem);
+        padding: clamp(3rem, 8vw, 5rem) clamp(1rem, 4vw, 2rem);
         text-align: center;
-        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+        overflow: hidden;
       }
 
-      .mark {
-        width: 3.5rem;
-        height: 3.5rem;
-        margin: 0 auto 1.25rem;
-        border-radius: 1rem;
-        display: grid;
-        place-items: center;
-        background: rgba(6, 182, 212, 0.12);
-        color: var(--accent);
-        animation: pulse 2s ease-in-out infinite;
+      /* ── Ambient gradient orbs ──────────────────────────────────────── */
+      .ambients {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        filter: blur(80px) saturate(140%);
+        opacity: 0.7;
       }
 
-      @keyframes pulse {
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        mix-blend-mode: screen;
+      }
+
+      .orbA {
+        inset-block-start: 8%;
+        inset-inline-start: 12%;
+        inline-size: 320px;
+        block-size: 320px;
+        background: radial-gradient(circle, color-mix(in oklch, var(--ds-primary) 22%, transparent) 0%, transparent 70%);
+        animation: orb-drift-a 22s var(--ds-ease-out-quart) infinite;
+      }
+
+      .orbB {
+        inset-block-end: 10%;
+        inset-inline-end: 8%;
+        inline-size: 380px;
+        block-size: 380px;
+        background: radial-gradient(circle, color-mix(in oklch, var(--ds-primary) 14%, transparent) 0%, transparent 70%);
+        animation: orb-drift-b 28s var(--ds-ease-out-quart) infinite;
+      }
+
+      .orbC {
+        inset-block-start: 50%;
+        inset-inline-start: 50%;
+        inline-size: 240px;
+        block-size: 240px;
+        background: radial-gradient(circle, color-mix(in oklch, var(--ds-primary) 10%, transparent) 0%, transparent 70%);
+        transform: translate(-50%, -50%);
+        animation: orb-drift-c 18s var(--ds-ease-out-quart) infinite;
+      }
+
+      @keyframes orb-drift-a {
         0%,
         100% {
-          transform: scale(1);
-          opacity: 1;
+          transform: translate(0, 0);
         }
         50% {
-          transform: scale(0.94);
-          opacity: 0.75;
+          transform: translate(40px, 30px);
+        }
+      }
+      @keyframes orb-drift-b {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(-30px, -40px);
+        }
+      }
+      @keyframes orb-drift-c {
+        0%,
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.15);
         }
       }
 
-      .code {
-        display: inline-block;
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        padding: 0.25rem 0.6rem;
-        border-radius: 999px;
-        background: rgba(6, 182, 212, 0.12);
-        color: var(--accent);
-        margin-bottom: 0.75rem;
+      /* ── Stage (illustration) — هماهنگ با StateHero ─────────────────── */
+      .stage {
+        position: relative;
+        inline-size: min(360px, 72vw);
+        block-size: min(360px, 72vw);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
-      h1 {
-        font-size: 1.35rem;
-        margin: 0 0 0.5rem;
+      .illustration {
+        inline-size: 100%;
+        block-size: 100%;
+        overflow: visible;
+      }
+
+      .outerRing {
+        transform-origin: 200px 200px;
+        animation: ring-rotate 60s linear infinite;
+      }
+      @keyframes ring-rotate {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .outerRing2 {
+        transform-origin: 200px 200px;
+        animation: ring-rotate 90s linear infinite reverse;
+      }
+
+      .ticks {
+        transform-origin: 200px 200px;
+        animation: ring-rotate 120s linear infinite reverse;
+      }
+
+      .shieldGroup {
+        transform-origin: 200px 200px;
+        animation: shield-pulse 6s var(--ds-ease-out-quart) infinite;
+      }
+      @keyframes shield-pulse {
+        0%,
+        100% {
+          opacity: 0.4;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      .innerGlow {
+        animation: glow-pulse 4s var(--ds-ease-out-quart) infinite;
+      }
+      @keyframes glow-pulse {
+        0%,
+        100% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      .centerMark {
+        transform-origin: 200px 210px;
+        animation: center-pulse 3s var(--ds-ease-out-quart) infinite;
+      }
+      @keyframes center-pulse {
+        0%,
+        100% {
+          opacity: 0.7;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.06);
+        }
+      }
+
+      .stars circle {
+        animation: star-twinkle 3s var(--ds-ease-out-quart) infinite;
+      }
+      .stars circle:nth-child(2) {
+        animation-delay: 0.6s;
+      }
+      .stars circle:nth-child(3) {
+        animation-delay: 1.2s;
+      }
+      .stars circle:nth-child(4) {
+        animation-delay: 1.8s;
+      }
+      .stars circle:nth-child(5) {
+        animation-delay: 2.4s;
+      }
+      @keyframes star-twinkle {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 0.9;
+        }
+      }
+
+      /* ── Headline — StateHero .headBlock ────────────────────────────── */
+      .headBlock {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--ds-space-3);
+        max-inline-size: 540px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px var(--ds-space-3);
+        font-size: var(--ds-text-xs);
+        font-weight: 600;
+        color: var(--ds-primary);
+        background: color-mix(in oklch, var(--ds-primary) 8%, transparent);
+        border: 1px solid color-mix(in oklch, var(--ds-primary) 22%, transparent);
+        border-radius: var(--ds-radius-full);
+        letter-spacing: -0.01em;
+      }
+
+      .title {
+        margin: 0;
+        font-size: clamp(1.5rem, 4vw, 2rem);
         font-weight: 800;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        color: var(--ds-fg);
       }
 
-      p {
-        margin: 0 0 1.25rem;
-        line-height: 1.8;
-        color: var(--muted);
-        font-size: 0.9rem;
+      .lead {
+        margin: 0;
+        font-size: var(--ds-text-sm);
+        line-height: 1.7;
+        color: var(--ds-fg-muted);
+        max-inline-size: 460px;
       }
 
-      .muted {
-        color: var(--muted);
-        font-size: 0.8rem;
-        margin-top: 1rem;
-        margin-bottom: 0;
+      /* ── Actions — StateHero .actions ───────────────────────────────── */
+      .actions {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        gap: var(--ds-space-3);
+        flex-wrap: wrap;
+        justify-content: center;
       }
 
-      .divider {
-        border: none;
-        border-top: 1px solid var(--border);
-        margin: 1.25rem 0 1rem;
-      }
-
-      button {
-        font: inherit;
-        font-weight: 700;
-        font-size: 0.9rem;
-        width: 100%;
-        padding: 0.75rem 1rem;
-        border-radius: 0.75rem;
-        border: 1px solid transparent;
-        background: var(--accent);
-        color: #ffffff;
+      .primaryCta,
+      .ghostCta {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--ds-space-2);
+        padding: var(--ds-space-3) var(--ds-space-5);
+        border-radius: var(--ds-radius-md);
+        font-size: var(--ds-text-sm);
+        font-weight: 600;
+        text-decoration: none;
+        font-family: inherit;
         cursor: pointer;
+        border: 1px solid transparent;
         transition:
-          opacity 0.15s ease,
-          transform 0.15s ease;
+          transform 200ms var(--ds-ease-out-quart),
+          filter 200ms,
+          background 200ms;
+        white-space: nowrap;
       }
 
-      button:hover {
-        opacity: 0.9;
+      .primaryCta {
+        background: var(--ds-fg);
+        color: var(--ds-bg);
+        border-color: var(--ds-fg);
       }
-
-      button:active {
-        transform: scale(0.98);
+      .primaryCta:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.1);
       }
-
-      button:focus-visible {
-        outline: 3px solid var(--ring);
+      .primaryCta:focus-visible,
+      .ghostCta:focus-visible {
+        outline: 3px solid color-mix(in oklch, var(--ds-primary) 35%, transparent);
         outline-offset: 2px;
       }
 
-      .dot {
-        display: inline-block;
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 50%;
-        background: var(--accent);
-        vertical-align: middle;
-        margin-inline-start: 0.35rem;
-        animation: blink 1.4s ease-in-out infinite;
+      .ghostCta {
+        background: color-mix(in oklch, var(--ds-bg) 92%, transparent);
+        color: var(--ds-fg);
+        border-color: color-mix(in oklch, var(--ds-fg) 12%, transparent);
+        backdrop-filter: blur(4px);
+      }
+      .ghostCta:hover {
+        background: color-mix(in oklch, var(--ds-fg) 4%, transparent);
+        border-color: color-mix(in oklch, var(--ds-fg) 20%, transparent);
       }
 
-      @keyframes blink {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.3;
+      /* ── Support foot — StateHero .foot ─────────────────────────────── */
+      .foot {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: center;
+        font-size: var(--ds-text-xs);
+        color: var(--ds-fg-muted);
+      }
+
+      .status-dot {
+        display: inline-block;
+        inline-size: 6px;
+        block-size: 6px;
+        border-radius: 50%;
+        background: var(--ds-primary);
+        opacity: 0.8;
+      }
+
+      /* ── prefers-reduced-motion (StateHero.module.css) ──────────────── */
+      @media (prefers-reduced-motion: reduce) {
+        .orbA,
+        .orbB,
+        .orbC,
+        .outerRing,
+        .outerRing2,
+        .ticks,
+        .shieldGroup,
+        .innerGlow,
+        .centerMark,
+        .stars circle,
+        .primaryCta,
+        .ghostCta {
+          animation: none !important;
+          transition: none !important;
         }
       }
     </style>
   </head>
   <body>
-    <main class="card" role="status" aria-live="polite">
-      <div class="mark" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M5 12.55a11 11 0 0 1 14.08 0" />
-          <path d="M1.42 9a16 16 0 0 1 21.16 0" />
-          <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-          <line x1="12" y1="20" x2="12.01" y2="20" />
+    <main class="root" role="status" aria-live="polite">
+      <!-- Ambient gradient orbs -->
+      <div class="ambients" aria-hidden="true">
+        <span class="orb orbA" />
+        <span class="orb orbB" />
+        <span class="orb orbC" />
+      </div>
+
+      <!-- Illustration — بازسازی StateHero (mark=offline, tone=cyan) -->
+      <div class="stage" aria-hidden="true">
+        <svg class="illustration" viewBox="0 0 400 400" fill="none">
+          <defs>
+            <radialGradient id="off-glass" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="var(--ds-bg)" stop-opacity="0.95" />
+              <stop offset="100%" stop-color="var(--ds-bg)" stop-opacity="0.6" />
+            </radialGradient>
+            <linearGradient id="off-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="var(--ds-fg)" stop-opacity="0.7" />
+              <stop offset="100%" stop-color="var(--ds-fg)" stop-opacity="0.2" />
+            </linearGradient>
+            <radialGradient id="off-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="var(--ds-primary)" stop-opacity="0.12" />
+              <stop offset="100%" stop-color="var(--ds-primary)" stop-opacity="0" />
+            </radialGradient>
+            <linearGradient id="off-shield" x1="50%" y1="0%" x2="50%" y2="100%">
+              <stop offset="0%" stop-color="var(--ds-primary)" stop-opacity="0.15" />
+              <stop offset="100%" stop-color="var(--ds-primary)" stop-opacity="0.03" />
+            </linearGradient>
+            <filter id="off-shadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="var(--ds-fg)" flood-opacity="0.18" />
+            </filter>
+          </defs>
+
+          <g class="outerRing">
+            <circle cx="200" cy="200" r="170" stroke="url(#off-stroke)" stroke-width="1" stroke-dasharray="2 6" />
+          </g>
+          <g class="outerRing2">
+            <circle cx="200" cy="200" r="155" stroke="var(--ds-fg-muted)" stroke-width="0.5" stroke-dasharray="1 8" opacity="0.3" />
+          </g>
+          <g class="ticks" stroke="var(--ds-fg-muted)" stroke-width="1.5" stroke-linecap="round">
+            <line x1="200" y1="36" x2="200" y2="50" transform="rotate(0 200 200)" opacity="0.7" />
+            <line x1="200" y1="40" x2="200" y2="48" transform="rotate(30 200 200)" opacity="0.3" />
+            <line x1="200" y1="40" x2="200" y2="48" transform="rotate(60 200 200)" opacity="0.3" />
+            <line x1="200" y1="36" x2="200" y2="50" transform="rotate(90 200 200)" opacity="0.7" />
+            <line x1="200" y1="40" x2="200" y2="48" transform="rotate(120 200 200)" opacity="0.3" />
+            <line x1="200" y1="40" x2="200" y2="48" transform="rotate(150 200 200)" opacity="0.3" />
+            <line x1="200" y1="36" x2="200" y2="50" transform="rotate(180 200 200)" opacity="0.7" />
+            <line x1="200" y1="40" x2="200" y2="48" transform="rotate(210 200 200)" opacity="0.3" />
+            <line x1="200" y1="40" x2="200" y2="48" transform="rotate(240 200 200)" opacity="0.3" />
+            <line x1="200" y1="36" x2="200" y2="50" transform="rotate(270 200 200)" opacity="0.7" />
+            <line x1="200" y1="40" x2="200" y2="48" transform="rotate(300 200 200)" opacity="0.3" />
+            <line x1="200" y1="40" x2="200" y2="48" transform="rotate(330 200 200)" opacity="0.3" />
+          </g>
+          <g class="shieldGroup">
+            <path d="M200 70 L280 110 L280 200 C280 260 240 310 200 340 C160 310 120 260 120 200 L120 110 Z" fill="url(#off-shield)" stroke="var(--ds-border-subtle)" stroke-width="1" opacity="0.5" />
+          </g>
+          <g class="innerGlow">
+            <rect x="140" y="180" width="120" height="90" rx="16" fill="url(#off-glass)" stroke="var(--ds-border-subtle)" stroke-width="1" filter="url(#off-shadow)" />
+            <rect x="140" y="180" width="120" height="90" rx="16" fill="url(#off-glow)" />
+            <rect x="140" y="180" width="120" height="90" rx="16" stroke="var(--ds-fg-muted)" stroke-opacity="0.15" stroke-width="1" />
+          </g>
+          <g class="centerMark" stroke="var(--ds-primary)" stroke-width="3" stroke-linecap="round">
+            <path d="M168 224 a16 16 0 0 1 6 -30 a20 20 0 0 1 38 4 a14 14 0 0 1 16 26 z" fill="none" opacity="0.9" />
+            <line x1="176" y1="236" x2="228" y2="184" opacity="0.85" />
+          </g>
+          <text x="200" y="310" text-anchor="middle" font-size="34" font-weight="800" fill="var(--ds-fg)" font-family="var(--ds-font-mono)" style="letter-spacing: -0.04em; font-variant-numeric: tabular-nums">OFF</text>
+          <g class="stars" fill="var(--ds-primary)" opacity="0.5">
+            <circle cx="110" cy="130" r="2" />
+            <circle cx="310" cy="110" r="1.5" />
+            <circle cx="330" cy="230" r="2.5" />
+            <circle cx="90" cy="270" r="1.5" />
+            <circle cx="270" cy="90" r="1" />
+            <circle cx="130" cy="290" r="1.2" />
+          </g>
         </svg>
       </div>
-      <span class="code">OFFLINE</span>
-      <h1>اتصال برقرار نیست</h1>
-      <p>به نظر می‌رسد اتصال اینترنت شما قطع شده است. می‌توانید دوباره امتحان کنید؛ به محض برقراری اتصال، به‌طور خودکار به صفحهٔ قبلی برمی‌گردید.</p>
-      <button type="button" id="retry">تلاش مجدد</button>
-      <hr class="divider" />
-      <p class="muted"><span class="dot" aria-hidden="true"></span>در انتظار اتصال مجدد…</p>
+
+      <!-- Headline -->
+      <div class="headBlock">
+        <span class="eyebrow">حالت آفلاین</span>
+        <h1 class="title">اتصال برقرار نیست</h1>
+        <p class="lead">
+          به نظر می‌رسد اتصال اینترنت شما قطع شده یا سیگنال ضعیف است. می‌توانید
+          صفحاتی که قبلاً بازدید کرده‌اید را مرور کنید؛ به محض برقراری اتصال،
+          به‌طور خودکار به صفحهٔ قبلی برمی‌گردید.
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions">
+        <button type="button" class="primaryCta" id="retry">تلاش مجدد</button>
+      </div>
+
+      <!-- Foot -->
+      <div class="foot">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span>در انتظار اتصال مجدد…</span>
+      </div>
     </main>
     <script>
       // دکمهٔ تلاش مجدد — بازبارگذاری فوری.

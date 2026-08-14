@@ -236,6 +236,18 @@ Rules for new code:
 - **هر component جدید shared (سایت)** → باید یک `index.tsx` با named export داشته باشد، داخل `src/components/[نام]/`.
 - هرگز component سایت را در `Dashboard/primitives/` نگذار و بالعکس — دو namespace جداگانه‌اند.
 
+### 2.5 UI assets خارج از React (public/*.html و …) [یاد گرفته شد 2026-08-14]
+> **خطای واقعی:** `public/offline.html` با استایل اختصاصی ساخته شد به‌جای زبان طراحی پروژه.
+> فایل مستقل بودن ≠ حق طراحی دلخواه — هر UI باید از زبان StateHero/tokens پروژه پیروی کند.
+
+- **فایل‌های HTML مستقل در `public/`** (مثل offline.html برای service worker) هم UI هستند:
+  ۱. اول `StateHero` + `StateHero.module.css` + `tokens.css` را بخوان و زبان طراحی را استخراج کن
+  ۲. همان ساختار را بازسازی کن (پس‌زمینه canvas + orb، eyebrow pill، title/lead، CTA، prefers-reduced-motion)
+  ۳. مقادیر توکن‌ها (`--ds-*`) را inline کن — چون فایل مستقل است CSS باندل‌شده ندارد
+  ۴. mark و کد وضعیت (مثل `OFF`) از همان SVG StateHero استفاده شود
+  ۵. هرگز رنگ/فونت/چیدمان از سلیقه شخصی — همیشه از tokens پروژه
+- **قانون:** قبل از هر UI (حتی یک فایل HTML در public/) → UI VISION GATE + خواندن StateHero/tokens.
+
 ### 3. UI appearance (load `DESIGN.md` + `COMPONENTS.md` first) [فقط UI]
 - **Canonical:** `src/components/ui/*` (shadcn) + `src/components/Dashboard/primitives/*`.
 - `src/components/ds/*` is experimental — do NOT route new code to it except where already adopted.
