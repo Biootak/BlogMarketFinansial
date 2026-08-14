@@ -13,6 +13,8 @@
  */
 
 import { type MarketplaceRow, logServiceClick } from '@/actions/exchange-services';
+import Empty from '@/components/Empty';
+import { Button } from '@/components/ui/button';
 import { type ExchangeServiceMeta, SERVICE_GROUPS, getServiceMeta } from '@/lib/exchange-services';
 import { Banknote, Filter, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
@@ -261,7 +263,16 @@ export default function ServicesMarketplace({
       {/* ── Result ──────────────────────────────────────── */}
       <div className={s.resultWrap} id="services-grid">
         {filtered.length === 0 ? (
-          <EmptyState onReset={resetFilters} />
+          <Empty
+            icon={Search}
+            title="نتیجه‌ای پیدا نشد"
+            description="با فیلتر فعلی هیچ صرافی پیدا نشد. فیلتر را تغییر دهید یا جستجوی دیگری امتحان کنید."
+            action={
+              <Button variant="outline" size="sm" type="button" onClick={resetFilters}>
+                پاک کردن فیلترها
+              </Button>
+            }
+          />
         ) : (
           <div className={s.groups}>
             {groupByGroup(filtered).map((group) => (
@@ -355,23 +366,6 @@ function Chip({
     >
       {children}
     </button>
-  );
-}
-
-function EmptyState({ onReset }: { onReset: () => void }) {
-  return (
-    <div className={s.empty}>
-      <div className={s.emptyIcon} aria-hidden>
-        <Search size={28} strokeWidth={1.5} />
-      </div>
-      <h2 className={s.emptyTitle}>نتیجه‌ای پیدا نشد</h2>
-      <p className={s.emptyText}>
-        با فیلتر فعلی هیچ صرافی پیدا نشد. فیلتر را تغییر دهید یا جستجوی دیگری امتحان کنید.
-      </p>
-      <button type="button" className={s.emptyBtn} onClick={onReset}>
-        پاک کردن فیلترها
-      </button>
-    </div>
   );
 }
 

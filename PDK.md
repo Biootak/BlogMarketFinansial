@@ -4,6 +4,7 @@
 > **Stack:** Next.js 16 + Prisma 6 + PostgreSQL + NextAuth v5 + Tailwind v4  
 > **زبان UI:** فارسی (اصلی). کد/دستور/مسیر: انگلیسی.  
 > **Workflow:** AGENTS.md حاکم است — PDK مرجع فنی/دامنه است، نه جایگزین AGENTS.md.
+> **اجرای مکانیکی (2026-08-14):** `npm run rules:check` گام صفر هر تسک؛ مهر = `npm run rules:stamp -- --files "..."`؛ `npm run verify` شامل gate؛ بدون مهر تازه، کامیت هم بلاک می‌شود (pre-commit). جزئیات: AGENTS.md §Pre-Code Rule Reading.
 
 ---
 

@@ -28,7 +28,8 @@
 
 ### Dialog — `ui/dialog.tsx` (16 uses)
 - **Use:** modal surfaces (forms, confirm, detail). Radix = focus trap + Esc + scroll lock.
-- **NOT use:** bespoke `Modal*` / `*Drawer` / `*Dialog` copies — we have ~14 parallel ones; consolidate, don't add. Prefer `ui/dialog` or `ui/sheet` (side panel).
+- **NOT use:** bespoke `Modal*` / `*Drawer` / `*Dialog` copies — consolidate, don't add. Prefer `ui/dialog` or `ui/sheet` (side panel).
+- **2026-08-14:** `NcModal` (headlessui) حذف شد — ModalHideAuthor ×۲ و ModalReportItem به `ui/dialog` مهاجرت کردند. CommentCard + PostForm dialogs از قبل `ui/dialog` بودند.
 - **States:** open / close (animation) / focus-trap / Esc / backdrop-click / loading submit / error.
 
 ### Card — `ui/card.tsx` (6 uses)
@@ -64,7 +65,7 @@
 - **States:** active / keyboard arrow nav / disabled.
 
 ### Select / DropdownMenu / Popover / Sheet / Tooltip / Switch
-- **Use** the `ui/*` Radix versions. `ui/CustomSwitch` duplicates `ui/switch` — don't extend it.
+- **Use** the `ui/*` Radix versions. (CustomSwitch حذف شد 2026-08-14 — از `ui/switch` استفاده کنید.)
 - **Switch states:** on / off / disabled / focus.
 
 ### Date pickers (CONSOLIDATE — currently 4 overlapping)

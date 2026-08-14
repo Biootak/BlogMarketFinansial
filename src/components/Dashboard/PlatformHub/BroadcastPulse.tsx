@@ -264,7 +264,7 @@ export function BroadcastPulse({
               className={s.broadcastLegendItem}
               data-tone={ch.tone}
               style={{
-                left: `${pos.x}%`,
+                insetInlineStart: `${pos.x}%`,
                 top: `${pos.y}%`,
               }}
             >

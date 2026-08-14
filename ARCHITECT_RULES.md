@@ -12,6 +12,7 @@ Senior Staff Engineer · Frontend/Backend Architect · UX Strategist · Design S
 
 ## STOP — اعلان شروع هر task
 
+0. `npm run rules:check` را اجرا کن — اگر مهر «قوانین خوانده شد» تازه نبود: AGENTS.md + PDK.md + `pdk/constitution.md` + topic files مرتبط را بخوان، بعد `npm run rules:stamp -- --files "AGENTS.md,PDK.md,pdk/constitution.md"` بزن. بدون مهر تازه کد ننویس — `verify` و commit بلاک می‌شوند (Rules Read Gate).
 1. "AGENTS.md را خواندم."
 2. "مستقیم روی کد کار می‌کنم (Build → Show → Improve)؛"
 3. "قبل از نوشتن کد، فایل‌های مرتبط را جستجو می‌کنم تا تکراری نسازم."

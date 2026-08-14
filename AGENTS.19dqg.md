@@ -1,6 +1,8 @@
 # AGENTS.19dqg.md — Quality Gates (19DQG + Completion Checklist)
 
 > **بارگذاری:** قبل از هر اعلام «تمام».
+> **گیت صفر (همه سطوح):** `npm run rules:check` سبز باشد — مهر «قوانین خوانده شد» تازه
+> (AGENTS.md + PDK.md + `pdk/constitution.md` + topic files مرتبط). بدون آن `verify` قرمز است.
 > **انتخاب gate:** سطح تسک را از جدول `AGENTS.md §تعریف سطح تسک` بخوان، سپس gate متناسب را اینجا اجرا کن:
 > - Trivial → §Lite (10 چک)
 > - Standard → §Standard (25 چک)
@@ -11,6 +13,7 @@
 ## §Lite — تسک‌های Trivial (10 چک)
 
 ```
+[ ] L0. npm run rules:check → سبز (مهر «قوانین خوانده شد» تازه — بدون آن verify قرمز است)
 [ ] L1. کد واقعی نوشته شد (نه فقط توضیح)
 [ ] L2. فایل قبل از ویرایش re-read شد — نسخه stale نیست
 [ ] L3. بدون TODO / console.log / stub / any

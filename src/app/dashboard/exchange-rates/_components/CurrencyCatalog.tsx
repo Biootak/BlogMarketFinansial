@@ -4,6 +4,7 @@
 
 'use client';
 
+import { EmptyState } from '@/components/Dashboard/primitives';
 import type { MarketRateGroup } from '@/lib/market-rates';
 import { SYMBOL_REGISTRY } from '@/lib/market-rates/registry';
 import { CheckCircle, Download, Plus, Search, Sparkles, SquareStack } from 'lucide-react';
@@ -243,7 +244,11 @@ export default function CurrencyCatalog({ existingRows, onAdd, onEdit, initialLi
 
       <div className={s.body}>
         {filtered.length === 0 ? (
-          <EmptyState query={query} />
+          <EmptyState
+            icon={Search}
+            title={`نتیجه‌ای برای «${query}» پیدا نشد`}
+            description="کلمهٔ دیگری امتحان کنید یا فیلتر گروه را عوض کنید."
+          />
         ) : (
           filtered.slice(0, showLimit).map((entry) => {
             const existing = existingBySymbol.get(entry.symbol);
@@ -404,15 +409,3 @@ function CatalogCard({
 /* ──────────────────────────────────────────────────────────────────────
    Empty state
    ────────────────────────────────────────────────────────────────────── */
-
-function EmptyState({ query }: { query: string }) {
-  return (
-    <div className={s.emptyState}>
-      <div className={s.emptyIcon} aria-hidden>
-        <Search size={18} />
-      </div>
-      <p className={s.emptyTitle}>نتیجه‌ای برای «{query}» پیدا نشد</p>
-      <p className={s.emptyDesc}>کلمهٔ دیگری امتحان کنید یا فیلتر گروه را عوض کنید.</p>
-    </div>
-  );
-}

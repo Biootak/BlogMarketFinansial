@@ -13,7 +13,7 @@
 import type { ExchangeRow } from '@/actions/exchanges';
 import { upsertExchangeProvider } from '@/actions/transfer-providers';
 import type { TransferProviderRow } from '@/actions/transfer-providers';
-import { CustomSwitch } from '@/components/ui/CustomSwitch';
+import { Switch } from '@/components/ui/switch';
 import {
   AlertCircle,
   ArrowUpRight,
@@ -458,7 +458,7 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
                   </p>
                 </div>
               </div>
-              <CustomSwitch
+              <Switch
                 checked={form.active}
                 onCheckedChange={(v: boolean) => setForm((f) => ({ ...f, active: v }))}
                 aria-labelledby="sec-visibility"

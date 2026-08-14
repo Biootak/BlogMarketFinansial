@@ -45,6 +45,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { startRulesWatch } from './rules-watch.mjs';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDir, '..');
@@ -177,4 +178,22 @@ const handleSignal = (signal) => {
 process.on('SIGINT', () => handleSignal('SIGINT'));
 process.on('SIGTERM', () => handleSignal('SIGTERM'));
 
+// Rules Read Gate — non-blocking startup reminder (learned 2026-08-14).
+// اگر مهر «قوانین خوانده شد» کهنه/نباشد، قبل از استارت dev server هشدار می‌دهد
+// تا ایجنت قبل از نوشتن هر کد، AGENTS.md/PDK.md را دوباره بخواند.
+function warnIfRulesStale() {
+  if (process.env.CI === 'true' || process.env.CI === '1') return;
+  const r = spawnSync(
+    process.execPath,
+    [path.join(projectRoot, 'scripts', 'rules-gate.mjs'), 'check'],
+    { cwd: projectRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+  );
+  if (r.status === 0) return;
+  log('⚠️  Rules Read Gate: مهر «قوانین خوانده شد» تازه نیست — قبل از نوشتن کد:');
+  log('    npm run rules:check  ← لیست فایل‌های خواندنی را می‌دهد');
+  log('    npm run rules:stamp -- --files "AGENTS.md,PDK.md,pdk/constitution.md"');
+}
+
+warnIfRulesStale();
+startRulesWatch();
 startDevServer();

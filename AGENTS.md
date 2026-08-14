@@ -77,10 +77,11 @@
 | **خواندن قبل از اولین کد** | قبل از اولین خط کد هر تسک: AGENTS.md + PDK.md + `pdk/constitution.md` + topic files مرتبط با همان تسک خوانده شوند — نه فقط اول چت |
 | **حتی Trivial/یک خط** | «یک خط» از قوانین مستثنا نیست — Decision Ladder (grep→reuse→extend→compose) + tokens فقط + RTL همیشه اجرا شود |
 | **گیت شفاف در پیام** | هر تسک غیر-Trivial: جدول PRE-CODE GATE (و UI VISION GATE برای UI) با پاسخ واقعی داخل پاسخ بیاید — placeholder = تسک تمام‌شده نیست |
-| **اینترنت-اول** | هر تغییر UI/UX → حداقل یک `web_search` با تاریخ، حتی برای یک خط؛ منبع رسمی خوانده شود |
+| **اینترنت-اول (همه چیز — حتی یک خط)** | قبل از هر کد — UI/UX، فرانت، بک‌اند، معماری، انتخاب ابزار/کتابخانه: حداقل یک `web_search` با تاریخ (سال جاری) + خواندن منبع رسمی (docs.nextjs / MDN / shadcn / npm)؛ اگر ابزار/کتابخانه انتخاب می‌شود → مقایسهٔ جایگزین‌های 2026 قبل از تصمیم، تا دوباره‌کاری نشود |
 | **NO-REPEAT محدود** | NO-REPEAT فقط declaration را یک‌بار محدود می‌کند؛ خواندن فایل‌های قوانین قبل از هر تسک اجباری می‌ماند |
 | **حق کاربر (trigger)** | کاربر می‌تواند وسط هر تسک بگوید «قوانین را بخوان» / «گیت‌ها را پر کن» → trigger جدید برای re-load rules؛ هرگز مسدود نمی‌شود |
 | **گزارش پایانی** | انتهای هر تسک یک خط: «✅ قوانین: [گیت‌های اجراشده]» |
+| **قبل از هر write/edit ابزاری** | در همان پیام، قبل از اولین write/edit/delete: `npm run rules:check` اجرا شود و نتیجه در پاسخ بیاید؛ اگر FAIL → اول بخوان + مهر، بعد ویرایش |
 
 ### 🛡️ مکانیک اجباری — Rules Read Gate (hook — نه فقط قانون)
 
@@ -94,11 +95,14 @@
 | `npm run verify` | اکنون شامل `rules:check` است → بدون مهر تازه تسک «تمام» نمی‌شود |
 | pre-commit hook | `scripts/git-hooks/pre-commit` — بدون مهر تازه کامیت بلاک می‌شود |
 | `npm run rules:log` | audit trail — قابل دیدن است چه کسی/کی چه فایل‌هایی را خوانده |
+| `npm run rules:watch` | watcher زنده — در همان لحظهٔ اولین ویرایش فایل کد، اگر مهر کهنه باشد هشدار می‌دهد (داخل `npm run dev` خودکار فعال است؛ log: `.rules-violations.log`) |
 | `npm run setup:hooks` | `git config core.hooksPath scripts/git-hooks` — برای clone های تازه |
 
 - اگر AGENTS.md / PDK.md / `pdk/constitution.md` تغییر کنند (hash فرق کند) → مهر **خودکار باطل** می‌شود و خواندن دوباره اجباری است.
 - عمر مهر: `RULES_GATE_TTL_MINUTES` (پیش‌فرض ۱۲۰ دقیقه).
 - حد صادقانه: هیچ سیستمی «لحظهٔ نوشتن اولین خط» را رهگیری نمی‌کند؛ اما مسیر اتمام (verify) و کامیت (hook) بدون مهر تازه بسته است → کار بدون خواندن قوانین هرگز تمام/کامیت نمی‌شود.
+- **محدودیت پلتفرم (صادقانه — یاد گرفته شد 2026-08-14):** هوکِ «قبل از ابزار ویرایش» (pre-tool hook) از سمت ریپو قابل نصب نیست — ابزارهای write/edit متعلق به runtime ایجنت‌اند (`.freebuff/settings.json` در دسترس نیست). نزدیک‌ترین اجرای مکانیکی: (۱) `rules:check` قبل از هر ویرایش در همان پیام، (۲) watcher در لحظهٔ اولین ویرایش فایل کد، (۳) verify + pre-commit به‌عنوان بلاک سخت.
+- **پوشش IDE ها (همه):** همهٔ ابزارها (Trae، ZCode، Cursor، Codex، Gemini CLI، Copilot، Claude Code، **Bob Shell** و…) `AGENTS.md` ریشه را می‌خوانند → gate در همه اعمال می‌شود. اجرای مکانیکی در خود repo است → مستقل از IDE: `verify` + هر چهار hook ایجنت Bob (`scripts/git-hooks/` — pre-commit بلاک‌کننده، post-checkout/post-merge هشدار). برای ابزارهای قدیمی‌تر `CLAUDE.md` اشاره‌گر اضافه شد؛ `.kimchi/AGENTS.md` trigger را نگه می‌دارد؛ `.claude/role/SKILL.md` و `ARCHITECT_RULES.md` هم گام ۰ دارند.
 
 ---
 
@@ -171,12 +175,14 @@
 
 ## Directives — Editing / Creating / UI appearance
 
-### 0. Internet-first (non-trivial UI/UX — اجباری)
-1. `websearch` the current (2026) best practice for the pattern.
-2. Fetch 1–2 references from: `shadcn-ui/ui`, `Layered-UI/Layered-UI`, or similar. Read source, not marketing pages.
-3. Extract the pattern → adapt to OUR tokens/DS. Never copy their theme.
-4. Delete after use — never leave a `vendor/` copy or `npm install` the reference.
-5. **Mandate-challenge:** اگر AGENTS.md یک تکنیک را اجباری کرده، پیش از پیاده‌سازی با `websearch` چک کن که هنوز best practice است. اگر تضاد دارد → **قبل از کد به کاربر بگو**.
+### 0. Internet-first (همهٔ کد + انتخاب ابزار — اجباری، حتی برای یک خط)
+> یاد گرفته شد 2026-08-14 (گزارش کاربر): «قبل از حتی یک خط کد، اینترنت و داک رسمی 2026 چک شود تا بهترین انتخاب شود و دوباره‌کاری نشود — برای طراحی ظاهری، فرانت، بک‌اند، همه چیز.»
+1. قبل از هر کد (UI/UX، فرانت، بک‌اند، معماری، تصمیم DB/auth/security): `web_search` بزن (با **تاریخ امروز**) برای بهترین practice 2026 همان الگو.
+2. منبع رسمی را بخوان و adapt کن: `docs.nextjs.org` / MDN / `shadcn-ui/ui` / `Layered-UI` / docs کتابخانهٔ انتخابی — نه صفحات مارکتینگ.
+3. **انتخاب ابزار/کتابخانه:** قبل از افزودن هر dependency → گزینه‌های 2026 را مقایسه کن (نتیجه + منبع + تاریخ در پاسخ)؛ بهترینِ فعال و maintained را انتخاب کن.
+4. الگو را با tokens/DS خودمان adapt کن — هرگز theme رقیب را کپی نکن.
+5. بعد از استفاده، کپی `vendor/` یا `npm install` مرجع را نگه ندار.
+6. **Mandate-challenge:** اگر AGENTS.md تکنیکی را اجباری کرده → با `web_search` چک کن هنوز best practice 2026 است. اگر تضاد دارد → **قبل از کد به کاربر بگو**.
 
 ### 1. Editing existing code
 - Audit before change: grep for existing component/util; reuse before modifying.
@@ -221,7 +227,7 @@
 > **موجودی canonical داشبورد:**
 > - **Primitives:** `PageHeader`, `StatCard`, `StatGrid`, `DataTable`, `EmptyState`, `DashboardEmpty`, `Section`, `StatusBadge`, `TableToolbar`, `SearchInput` *(فیلد جستجوی controlled، RTL-safe — برای همه toolbar/filterbar)*, `FormField`, `PanelDrawer`, `ConfirmDialog`, `CountUp`, `Skeleton`, `AmbientBackground`, `GeometricAccent`, `NoiseTexture`, `Spotlight`, `MagneticButton`, `Breadcrumb`
 > - **UI (shadcn):** `Button`, `Input`, `Dialog`, `Card`, `Skeleton`, `Badge`, `Tabs`, `Select`, `DropdownMenu`, `Popover`, `Sheet`, `Tooltip`, `Switch`, `Toggle`, `Toolbar`, `Table`, `Progress`, `ScrollArea`, `Separator`, `Avatar`, `Alert`, `Textarea`, `Checkbox`
-> - **Custom controls:** `PersianDatePicker`, `PersianDateTimePicker`, `PersianDateRangePicker` *(range شمسی — canonical برای بازه تاریخ)*, `CurrencySelect`, `CustomSwitch`, `icon.tsx`, `typography.tsx`, `form-field.tsx`
+> - **Custom controls:** `PersianDatePicker`, `PersianDateTimePicker`, `PersianDateRangePicker` *(range شمسی — canonical برای بازه تاریخ)*, `CurrencySelect`, `icon.tsx`, `typography.tsx`, `form-field.tsx` *(CustomSwitch حذف شد 2026-08-14 — از `ui/switch` استفاده کنید، ر.ک COMPONENTS.md)*
 > - **⚠️ Deprecated:** `DatePickerWithRange` (`date-range-picker.tsx`) — از `PersianDateRangePicker` استفاده کنید
 >
 > **موجودی canonical سایت (site-level):**
@@ -535,6 +541,7 @@ interface RouteErrorProps {
 | 2026-08-13 | **Playwright MCP دائمی شد:** `scripts/playwright-open.mjs` (خودترمیم، SDK را خودش نصب می‌کند) + `npm run browser:open` + `AGENTS.playwright.md`. باز کردن مرورگر واقعی دیگر فقط یک فرمان است — هر AI باید این سند را بخواند و از صفر کانفیگ نکند. |
 | 2026-08 | **UI/UX Pro Max Skill تنظیم شد:** Skill local در `.claude/skills/ui-ux-pro-max/` نصب شده؛ Design System با `--variance 6 --density 8` برای fintech/RTL/dark در `design-system/afghanistan-exchange-market/MASTER.md` persist شد؛ `AGENTS.ui-ux-skill.md` با قوانین P1–P10 از SKILL.md و وضعیت انطباق پروژه ایجاد شد؛ `AUDIT.md` با gap report نوشته شد. در هر سشن UI باید `AGENTS.ui-ux-skill.md` خوانده شود. |
 | 2026-08-14 | **📖 Pre-Code Rule Reading اضافه شد:** خواندن قوانین قبل از هر کد (حتی یک خط) اجباری؛ گیت شفاف در پیام؛ اینترنت-اول برای هر تغییر UI؛ حق کاربر برای trigger «قوانین را بخوان». یاد گرفته شد از گزارش مستقیم کاربر. |
+| 2026-08-14 | **اینترنت-اول به همهٔ کد گسترش یافت:** قبل از هر کد (حتی یک خط) — UI/UX، فرانت، بک‌اند، معماری، انتخاب ابزار/کتابخانه — حداقل یک `web_search` با تاریخ (سال جاری) + منبع رسمی؛ مقایسهٔ جایگزین‌های 2026 قبل از انتخاب ابزار. یاد گرفته شد از گزارش کاربر. |
 
 ---
 
@@ -542,7 +549,7 @@ interface RouteErrorProps {
 
 - `ARCHITECT_RULES.md` — Role + workflow + non-negotiable rules.
 - `.claude/role/SKILL.md` — Role section mirror.
-- `.kimchi/AGENTS.md` — Trigger: when message starts with `قوانین` / `AGENTS` / `rules`, re-load rules first.
+- Trigger: هر پیامی که با `قوانین` / `AGENTS` / `rules` شروع شود → re-load rules first: `npm run rules:check` (گام صفر مکانیکی — AGENTS.md §Pre-Code Rule Reading).
 
 <!-- BEGIN:nextjs-agent-rules -->
 

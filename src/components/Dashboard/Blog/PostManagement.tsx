@@ -18,7 +18,9 @@
  *   • All numeric values use the .dash-num class for tabular alignment.
  */
 
+import { EmptyState } from '@/components/Dashboard/primitives';
 import { motion } from '@/lib/motion-shim';
+import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import type React from 'react';
 import {
@@ -265,7 +267,7 @@ const PopularPosts: React.FC<{ posts: PostManagementProps['popularPosts'] }> = (
     </header>
     <div className="p-3 flex-1">
       {posts.length === 0 ? (
-        <EmptyState label="هنوز پست محبوبی ثبت نشده است." />
+        <EmptyState icon={FileText} title="هنوز پست محبوبی ثبت نشده است." />
       ) : (
         <ul className="space-y-1.5">
           {posts.map((post, index) => (
@@ -330,7 +332,7 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
     </header>
     <div className="p-3 flex-1">
       {drafts.length === 0 ? (
-        <EmptyState label="پیش‌نویسی برای نمایش وجود ندارد." />
+        <EmptyState icon={FileText} title="پیش‌نویسی برای نمایش وجود ندارد." />
       ) : (
         <ul className="space-y-1.5">
           {drafts.map((draft, index) => (
@@ -368,15 +370,6 @@ const RecentDrafts: React.FC<{ drafts: PostManagementProps['recentDrafts'] }> = 
       )}
     </div>
   </article>
-);
-
-const EmptyState: React.FC<{ label: string }> = ({ label }) => (
-  <div className="flex flex-col items-center justify-center text-center py-10 px-4 text-sm text-slate-500 dark:text-slate-400">
-    <span className="dash-ico dash-ico--cyan w-12 h-12 mb-3 opacity-50" aria-hidden="true">
-      <HiOutlineDocumentText className="w-5 h-5" />
-    </span>
-    <p>{label}</p>
-  </div>
 );
 
 export default PostManagement;

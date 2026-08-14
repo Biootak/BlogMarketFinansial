@@ -35,6 +35,8 @@ npm run rules:check    # گام صفر هر تسک — بدون مهر تازه 
 npm run rules:stamp -- --files "AGENTS.md,PDK.md,pdk/constitution.md"
                        # بعد از خواندن واقعی فایل‌ها — مهر sha256 ثبت می‌کند
 npm run rules:log      # audit trail مهرها (کی/چه کسی چه فایل‌هایی را خوانده)
+npm run rules:watch    # watcher زنده — همان لحظهٔ اولین ویرایش فایل کد با مهر کهنه هشدار می‌دهد
+                       #   (داخل npm run dev هم خودکار فعال است؛ log: .rules-violations.log)
 npm run setup:hooks    # git config core.hooksPath scripts/git-hooks (clone تازه)
 ```
 

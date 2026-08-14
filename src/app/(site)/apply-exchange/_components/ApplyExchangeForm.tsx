@@ -11,7 +11,7 @@
  *  §5. CTA submit
  *
  * ویژگی‌ها:
- *  - CustomSwitch از @/components/ui به‌جای native checkbox
+ *  - Switch از @/components/ui به‌جای native checkbox
  *  - Input و Textarea از @/components/ui
  *  - useTransition → double-submit prevention
  *  - RTL-first · DS tokens · no hex
@@ -21,8 +21,8 @@
  */
 
 import { applyForExchange } from '@/actions/exchanges';
-import { CustomSwitch } from '@/components/ui/CustomSwitch';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import {
   AlertCircle,
@@ -441,7 +441,7 @@ export default function ApplyExchangeForm() {
                 name="requireKyc"
                 control={control}
                 render={({ field }) => (
-                  <CustomSwitch
+                  <Switch
                     checked={field.value}
                     onCheckedChange={field.onChange}
                     aria-label="الزام احراز هویت مشتریان"

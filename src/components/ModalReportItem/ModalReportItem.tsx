@@ -2,8 +2,8 @@
 
 import { RadioGroup } from '@/app/headlessui';
 import ButtonPrimary from '@/components/Button/ButtonPrimary';
-import NcModal from '@/components/NcModal/NcModal';
 import Textarea from '@/components/Textarea/Textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import twFocusClass from '@/utils/twFocusClass';
 import { type FC, useEffect, useRef, useState } from 'react';
 import ButtonThird from '../Button/ButtonThird';
@@ -133,19 +133,20 @@ const ModalReportItem: FC<ModalReportItemProps> = ({
     );
   };
 
-  const renderTrigger = () => {
-    return null;
-  };
-
   return (
-    <NcModal
-      isOpenProp={show}
-      onCloseModal={onCloseModalReportItem}
-      contentExtraClass="max-w-screen-md"
-      renderContent={renderContent}
-      renderTrigger={renderTrigger}
-      modalTitle="گزارش تخلف"
-    />
+    <Dialog
+      open={show}
+      onOpenChange={(open) => {
+        if (!open) onCloseModalReportItem();
+      }}
+    >
+      <DialogContent className="max-w-screen-md">
+        <DialogHeader>
+          <DialogTitle>گزارش تخلف</DialogTitle>
+        </DialogHeader>
+        {renderContent()}
+      </DialogContent>
+    </Dialog>
   );
 };
 

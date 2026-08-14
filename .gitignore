@@ -26,12 +26,14 @@ scripts/*
 !scripts/playwright-open.mjs
 !scripts/reencrypt-totp-secrets.ts
 !scripts/rules-gate.mjs
+!scripts/rules-watch.mjs
 !scripts/git-hooks/
 !scripts/git-hooks/pre-commit
 
 # Rules Read Gate — local state (machine/session-specific, never commit)
 .rules-read-stamp.json
 .rules-read-log.jsonl
+.rules-violations.log
 # cron-job.org browser automation (حاوی session/cookie کاربر — هرگز commit نشود)
 .cronjob-profile/
 .cronjob-mcp.log

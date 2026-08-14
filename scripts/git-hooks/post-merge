@@ -55,3 +55,15 @@ ALL_MODIFIED=$(printf '%s
 # Filter notes using shared function
 filter_notes_by_modified_files "$NOTES_FILE" "$ALL_MODIFIED"
 # END Bob Shell POST-MERGE HOOK
+
+# BEGIN RULES READ GATE hint (non-blocking — یاد گرفته شد 2026-08-14)
+# بعد از pull/merge ممکن است AGENTS/PDK/constitution عوض شده باشند → مهر باطل.
+# این فقط یادآوری است؛ enforce واقعی در pre-commit و verify انجام می‌شود.
+cd "$(git rev-parse --show-toplevel)" || exit 0
+if [ -z "$CI" ] && [ "$RULES_GATE_SKIP" != "1" ]; then
+  if ! node scripts/rules-gate.mjs check >/dev/null 2>&1; then
+    echo "⚠️  Rules Read Gate: قوانین بعد از آخرین مهر تغییر کرده‌اند (یا مهر کهنه است)."
+    echo "    قبل از نوشتن کد: npm run rules:check"
+  fi
+fi
+# END RULES READ GATE hint

@@ -136,51 +136,6 @@
   line-height: var(--ds-leading-relaxed);
 }
 
-/* ═══════════════ اتم‌ها ═══════════════ */
-
-/* متن لاتین/کد — شناسهٔ رخداد، کلید خام، پیام لاگ */
-.mono {
-  font-family: var(--obs-mono);
-  font-size: 0.72rem;
-  letter-spacing: -0.01em;
-  overflow-wrap: anywhere;
-}
-
-/* دکمهٔ خطی کوچک — برای اکشن‌های داخل سرصفحهٔ مدخل و مرز خطا */
-.ghostButton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-block-size: 2.75rem;
-  margin-block-start: var(--ds-space-2);
-  padding-inline: 0.8rem;
-  border: 1px solid var(--obs-rule-2);
-  border-radius: var(--ds-radius-sm);
-  background: transparent;
-  color: var(--obs-ink-2);
-  font-size: var(--ds-text-xs);
-  font-weight: var(--ds-weight-medium);
-  cursor: pointer;
-  transition: border-color var(--obs-fast) var(--obs-ease), color var(--obs-fast) var(--obs-ease),
-    background-color var(--obs-fast) var(--obs-ease);
-}
-
-.ghostButton:hover:not(:disabled) {
-  border-color: var(--obs-accent);
-  color: var(--obs-accent);
-  background: color-mix(in oklch, var(--obs-accent) 7%, transparent);
-}
-
-.ghostButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.ghostButton:focus-visible {
-  outline: 2px solid var(--obs-accent);
-  outline-offset: 2px;
-}
-
 /* ═══════════════ اسکلت بارگذاری ═══════════════ */
 
 /*
@@ -238,9 +193,5 @@
   .skelHero,
   .skelRow {
     animation: none;
-  }
-
-  .ghostButton {
-    transition: none;
   }
 }

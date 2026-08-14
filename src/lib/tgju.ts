@@ -3,7 +3,7 @@
  * ----------------------------------------------------------------------------
  * این فایل قبلاً scraper اصلی بود ولی به multi-page منتقل شد.
  * الان صرفاً re-export می‌کنه برای backward-compat با کدهای قدیمی مثل
- * `src/lib/freeMarketRates.ts` و `src/app/api/cron/sync-bazaar/route.ts`.
+ * `src/lib/freeMarketRates.ts` (sync-bazaar حذف شد — pipeline یکپارچه: `assembleMarketRates()`).
  *
  * استفاده‌ی جدید: از `@/lib/market-rates/tgju` ایمپورت کنید (multi-page).
  * ----------------------------------------------------------------------------
