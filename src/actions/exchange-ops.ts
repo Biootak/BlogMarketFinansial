@@ -15,9 +15,9 @@
 
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { revalidateTag } from '@/lib/revalidate';
 import type { FintechActionResult } from '@/types/types';
 import { headers } from 'next/headers';
-import { revalidateTag } from '@/lib/revalidate';
 import { v4 as createId } from 'uuid';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -372,7 +372,14 @@ export async function reviewExchangeRequest(input: {
 
   const req = await prisma.customerRequest.findUnique({
     where: { id: input.requestId },
-    select: { id: true, exchangeId: true, status: true, userId: true, type: true, trackingCode: true },
+    select: {
+      id: true,
+      exchangeId: true,
+      status: true,
+      userId: true,
+      type: true,
+      trackingCode: true,
+    },
   });
   if (!req) return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد' } };
 
@@ -418,7 +425,11 @@ export async function reviewExchangeRequest(input: {
     });
 
     // REQ-006: پاسخ صرافی (تأیید/رد) → اعلان فوری به مشتری
-    if (input.status === 'APPROVED' || input.status === 'REJECTED' || input.status === 'CANCELLED') {
+    if (
+      input.status === 'APPROVED' ||
+      input.status === 'REJECTED' ||
+      input.status === 'CANCELLED'
+    ) {
       const label = REQUEST_TYPE_LABEL[req.type] ?? 'درخواست';
       const message =
         input.status === 'APPROVED'

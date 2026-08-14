@@ -823,6 +823,9 @@
 .svcItem {
   background: var(--ds-surface);
   margin: 0;
+  /* H1-fix (2026-08-14): سمت راست (اکشن‌ها) دیگر داخل لینک آیتم نیست؛
+     این li الآن container position اکشن‌های absolute است. */
+  position: relative;
 }
 
 .svcItemLink {
@@ -834,7 +837,6 @@
   padding: 0.7rem var(--ds-space-4);
   text-decoration: none;
   color: inherit;
-  position: relative;
   transition: background var(--ds-duration-fast);
 }
 

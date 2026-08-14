@@ -620,7 +620,7 @@ export async function getServiceRequests(params?: {
     pagination: { page: number; limit: number; total: number; totalPages: number };
   }>
 > {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success) {
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   }
@@ -670,7 +670,7 @@ export async function updateServiceRequestStatus(
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
   adminNotes?: string,
 ): Promise<FintechActionResult<void>> {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
 
@@ -798,7 +798,7 @@ export async function deleteServiceRequest(id: string): Promise<FintechActionRes
 export async function getServiceRequestRecentActivity(
   limit = 10,
 ): Promise<FintechActionResult<unknown[]>> {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   try {
@@ -881,7 +881,7 @@ export async function bulkUpdateServiceRequestStatus(
   ids: string[],
   status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
 ): Promise<FintechActionResult<{ count: number }>> {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   if (ids.length === 0)
@@ -929,7 +929,7 @@ export async function exportServiceRequestsCsv(params?: {
   status?: string;
   search?: string;
 }): Promise<FintechActionResult<string>> {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   const where: Record<string, unknown> = {};
@@ -1018,7 +1018,7 @@ export async function getServiceRequestStats(): Promise<
     pendingUrgent: number;
   }>
 > {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   try {
@@ -1344,7 +1344,7 @@ export async function claimGuestRequest(
 
 // ─── Admin: Get full request detail ──────────────────────────────────────── //
 export async function getServiceRequestDetail(id: string): Promise<FintechActionResult<unknown>> {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   try {
@@ -1372,7 +1372,7 @@ export async function addServiceRequestNote(
   content: string,
   isPrivate = true,
 ): Promise<FintechActionResult<void>> {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   const trimmed = content.trim().replace(/[<>]/g, '');
@@ -1415,7 +1415,7 @@ export async function addServiceRequestAttachment(input: {
   fileHash?: string;
   label?: string;
 }): Promise<FintechActionResult<void>> {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPPORT]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
   const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'];
@@ -1467,7 +1467,7 @@ export async function addServiceRequestAttachment(input: {
 export async function deleteServiceRequestAttachment(
   attachmentId: string,
 ): Promise<FintechActionResult<void>> {
-  const authCheck = await requireRole([Role.ADMIN, Role.OWNER]);
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN]);
   if (!authCheck.success)
     return {
       success: false,

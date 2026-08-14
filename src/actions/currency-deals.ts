@@ -1146,7 +1146,6 @@ export async function cancelDeal(
     // اگر claim.count===0، deal قبلاً توسط درخواست دیگری تغییر وضعیت داده — idempotent exit
     if (claim.count === 0) return;
 
-
     await tx.dealStatusLog.create({
       data: {
         dealId,

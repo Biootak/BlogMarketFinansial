@@ -629,6 +629,11 @@ function ServicesPanel({
             const detailHref = `/track/${encodeURIComponent(r.trackingCode)}`;
             return (
               <li key={r.id} className={s.svcItem}>
+                {/* H1-fix (2026-08-14): قبلاً دکمه‌های تأیید/رد/جزئیات (لینک‌های
+                    داخلی) داخل خودِ لینک آیتم قرار داشتند → <a> تو در تو → HTML
+                    نامعتبر + hydration error برای همه نقش‌های cockpit. حالا لینک
+                    آیتم فقط avatar + title را می‌گیرد و سمت راست (اکشن‌ها) به‌عنوان
+                    هم‌ردیف sibling است. */}
                 <Link href={detailHref} className={s.svcItemLink}>
                   <span className={s.svcAvatar} aria-hidden>
                     {getInitial(r.fullName)}
@@ -651,42 +656,42 @@ function ServicesPanel({
                       </span>
                     </span>
                   </span>
-                  <span className={s.svcItemSide}>
-                    <span className={s.svcItemAmount}>
-                      <span dir="ltr">{formatIntFa(Number(r.amount))}</span>
-                      <span className={s.svcItemCurrency}>{r.currency}</span>
-                    </span>
-                    <span className={`${s.svcStatus} ${s[statusMod] ?? ''}`}>
-                      <span className={s.svcStatusDot} aria-hidden />
-                      <span>{statusLabel}</span>
-                    </span>
-                    <span className={s.svcItemTime}>{formatRelDate(r.createdAt)}</span>
-                    {isPending && (
-                      <span className={s.svcItemActions}>
-                        <Link
-                          href={`/dashboard/approvals?action=approve&id=${r.id}`}
-                          className={`${s.svcActionBtn} ${s.svcActionBtn_approve}`}
-                          title="تأیید درخواست"
-                        >
-                          <Check size={12} aria-hidden />
-                          <span>تأیید</span>
-                        </Link>
-                        <Link
-                          href={`/dashboard/approvals?action=reject&id=${r.id}`}
-                          className={`${s.svcActionBtn} ${s.svcActionBtn_reject}`}
-                          title="رد درخواست"
-                        >
-                          <X size={12} aria-hidden />
-                          <span>رد</span>
-                        </Link>
-                      </span>
-                    )}
-                    <Link href={detailHref} className={`${s.svcActionBtn}`} title="مشاهده جزئیات">
-                      <Eye size={12} aria-hidden />
-                      <span>جزئیات</span>
-                    </Link>
-                  </span>
                 </Link>
+                <span className={s.svcItemSide}>
+                  <span className={s.svcItemAmount}>
+                    <span dir="ltr">{formatIntFa(Number(r.amount))}</span>
+                    <span className={s.svcItemCurrency}>{r.currency}</span>
+                  </span>
+                  <span className={`${s.svcStatus} ${s[statusMod] ?? ''}`}>
+                    <span className={s.svcStatusDot} aria-hidden />
+                    <span>{statusLabel}</span>
+                  </span>
+                  <span className={s.svcItemTime}>{formatRelDate(r.createdAt)}</span>
+                  {isPending && (
+                    <span className={s.svcItemActions}>
+                      <Link
+                        href={`/dashboard/approvals?action=approve&id=${r.id}`}
+                        className={`${s.svcActionBtn} ${s.svcActionBtn_approve}`}
+                        title="تأیید درخواست"
+                      >
+                        <Check size={12} aria-hidden />
+                        <span>تأیید</span>
+                      </Link>
+                      <Link
+                        href={`/dashboard/approvals?action=reject&id=${r.id}`}
+                        className={`${s.svcActionBtn} ${s.svcActionBtn_reject}`}
+                        title="رد درخواست"
+                      >
+                        <X size={12} aria-hidden />
+                        <span>رد</span>
+                      </Link>
+                    </span>
+                  )}
+                  <Link href={detailHref} className={`${s.svcActionBtn}`} title="مشاهده جزئیات">
+                    <Eye size={12} aria-hidden />
+                    <span>جزئیات</span>
+                  </Link>
+                </span>
               </li>
             );
           })
