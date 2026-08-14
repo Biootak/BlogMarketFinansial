@@ -24,8 +24,8 @@
  * browser_take_screenshot, ...). If a future release breaks tools/call, pin the
  * version below to a known-good one (e.g. @playwright/mcp@0.0.78).
  */
-import { spawnSync, spawn } from 'node:child_process';
-import { writeFileSync, mkdirSync, existsSync, readFileSync, unlinkSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -51,7 +51,9 @@ if (!existsSync(path.join(sdkPkgDir, 'package.json'))) {
     { cwd: sdkDir, stdio: 'inherit', shell: process.platform === 'win32' },
   );
   if (r.status !== 0) {
-    console.error('[pw] failed to install MCP SDK — run: cd .playwright-mcp/sdk && npm i @modelcontextprotocol/sdk');
+    console.error(
+      '[pw] failed to install MCP SDK — run: cd .playwright-mcp/sdk && npm i @modelcontextprotocol/sdk',
+    );
     process.exit(1);
   }
 }
@@ -60,7 +62,9 @@ if (!existsSync(path.join(sdkPkgDir, 'package.json'))) {
 // are relative or bare (zod/events), so they resolve from the file's own dir.
 const sdkDist = path.join(sdkPkgDir, 'dist', 'esm');
 const { Client } = await import(pathToFileURL(path.join(sdkDist, 'client', 'index.js')).href);
-const { StdioClientTransport } = await import(pathToFileURL(path.join(sdkDist, 'client', 'stdio.js')).href);
+const { StdioClientTransport } = await import(
+  pathToFileURL(path.join(sdkDist, 'client', 'stdio.js')).href
+);
 
 // ---- 2. Friendly check that the dev server is reachable --------------------
 try {
@@ -83,8 +87,12 @@ try {
   log('connected to Playwright MCP');
 
   const tools = await client.listTools();
-  const navName = tools.tools.some((t) => t.name === 'browser_navigate') ? 'browser_navigate' : 'playwright_navigate';
-  const shotName = tools.tools.some((t) => t.name === 'browser_take_screenshot') ? 'browser_take_screenshot' : 'playwright_screenshot';
+  const navName = tools.tools.some((t) => t.name === 'browser_navigate')
+    ? 'browser_navigate'
+    : 'playwright_navigate';
+  const shotName = tools.tools.some((t) => t.name === 'browser_take_screenshot')
+    ? 'browser_take_screenshot'
+    : 'playwright_screenshot';
 
   await client.callTool({ name: navName, arguments: { url: URL } });
   log('navigated to', URL);
