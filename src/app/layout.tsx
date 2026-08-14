@@ -14,6 +14,7 @@
  */
 import { Toaster } from '@/components/ui/toaster';
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 
 import './globals.css';
 // 2026-08-05 perf: `index.scss` (22KB SCSS → ~35KB compiled CSS) moved from
@@ -138,7 +139,15 @@ export default function RootLayout({
         <link rel="preconnect" href="https://i.pravatar.cc" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
-        <script
+        {/* 2026-08-14 fix: `<Script strategy="beforeInteractive">` به‌جای
+            `<script>` خام — اسکریپت از سمت سرور مستقیم داخل HTML اولیهٔ head
+            تزریق می‌شود (دقیقاً همان رفتاری که Speculation Rules نیاز دارد) و
+            چون در درخت hydration ریاکت نیست، هشدار React 19 «Encountered a
+            script tag» را تولید نمی‌کند. قبل‌تر یک <script> خام بود که همین
+            هشدار را می‌داد. */}
+        <Script
+          id="speculation-rules"
+          strategy="beforeInteractive"
           type="speculationrules"
           // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON استاتیک از regex ثابت — هیچ ورودی کاربری ندارد (Speculation Rules رسمی Chrome)
           dangerouslySetInnerHTML={{
