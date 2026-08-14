@@ -26,7 +26,15 @@ import {
   UpdateSocialSettingsSchema,
 } from '@/schemas';
 
-const ok = <T>(data?: T) => ({ success: true as const, ...(data === undefined ? {} : { data }) });
+// 2026-08-14: دو overload تا وقتی `data` پاس داده می‌شود، در نوع خروجی
+// اختیاری نباشد. با امضای قبلی (`data?: T`) هر مصرف‌کننده — و همهٔ تست‌ها —
+// مجبور بودند با `!` آن را narrow کنند، که biome (noNonNullAssertion) رد
+// می‌کند.
+function ok(): { success: true };
+function ok<T>(data: T): { success: true; data: T };
+function ok<T>(data?: T) {
+  return { success: true as const, ...(data === undefined ? {} : { data }) };
+}
 const fail = (error: string) => ({ success: false as const, error });
 
 /**

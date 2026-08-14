@@ -28,7 +28,9 @@ vi.mock('@/lib/db', () => ({
         },
         ledgerEntry: { create: vi.fn() },
         transaction: {
-          create: vi.fn().mockResolvedValue({ id: 'txn-new', accountId: 'acc-1', exchangeId: 'exch-1' }),
+          create: vi
+            .fn()
+            .mockResolvedValue({ id: 'txn-new', accountId: 'acc-1', exchangeId: 'exch-1' }),
           update: vi.fn(),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
         },
@@ -48,7 +50,9 @@ vi.mock('@/lib/fintech/transaction-guard', () => ({
   verifyTransactionOtp: vi.fn(),
 }));
 vi.mock('@/lib/fraud/screener', () => ({
-  screenTransaction: vi.fn().mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
+  screenTransaction: vi
+    .fn()
+    .mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
 }));
 vi.mock('@/lib/fintech/txn-trail', () => ({
   logTxnStatusChange: vi.fn().mockResolvedValue(undefined),
@@ -259,11 +263,14 @@ describe('initiateTransfer', () => {
       exchangeId: 'exch-1',
     } as never);
     // $transaction داخلی: account موجودی ناکافی دارد
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(prisma.$transaction).mockImplementationOnce((fn: (tx: any) => Promise<unknown>) =>
+    vi.mocked(prisma.$transaction).mockImplementationOnce(((
+      fn: (tx: Record<string, unknown>) => Promise<unknown>,
+    ) =>
       fn({
         fintechAccount: {
-          findFirst: vi.fn().mockResolvedValue({ id: 'acc-1', balance: BigInt(100), exchangeId: 'exch-1' }),
+          findFirst: vi
+            .fn()
+            .mockResolvedValue({ id: 'acc-1', balance: BigInt(100), exchangeId: 'exch-1' }),
           update: vi.fn(),
           updateMany: vi.fn(),
           findUniqueOrThrow: vi.fn(),
@@ -275,8 +282,7 @@ describe('initiateTransfer', () => {
           updateMany: vi.fn(),
         },
         transactionStatusLog: { create: vi.fn() },
-      }),
-    );
+      })) as never);
 
     const result = await initiateTransfer({
       recipientUserId: 'u2',
