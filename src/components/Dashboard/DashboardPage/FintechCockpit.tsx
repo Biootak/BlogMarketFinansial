@@ -701,18 +701,22 @@ function ServicesPanel({
                   </span>
                 </Link>
                 <span className={s.svcItemSide}>
-                  <span className={s.svcItemAmount}>
-                    <span dir="ltr">{formatIntFa(Number(r.amount))}</span>
-                    <span className={s.svcItemCurrency}>{r.currency}</span>
+                  {/* ردیف ۱: مبلغ + وضعیت */}
+                  <span className={s.svcItemSideTop}>
+                    <span className={s.svcItemAmount}>
+                      <span dir="ltr">{formatIntFa(Number(r.amount))}</span>
+                      <span className={s.svcItemCurrency}>{r.currency}</span>
+                    </span>
+                    <span className={`${s.svcStatus} ${s[statusMod] ?? ''}`}>
+                      <span
+                        className={s.svcStatusDot}
+                        data-pulse={isPending ? 'true' : undefined}
+                        aria-hidden
+                      />
+                      <span>{statusLabel}</span>
+                    </span>
                   </span>
-                  <span className={`${s.svcStatus} ${s[statusMod] ?? ''}`}>
-                    <span
-                      className={s.svcStatusDot}
-                      data-pulse={isPending ? 'true' : undefined}
-                      aria-hidden
-                    />
-                    <span>{statusLabel}</span>
-                  </span>
+                  {/* ردیف ۲: اکشن‌ها (فقط PENDING) */}
                   {isPending && (
                     <span className={s.svcItemActions}>
                       <Link

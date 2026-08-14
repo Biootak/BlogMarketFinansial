@@ -52,8 +52,10 @@ export function TimePicker({
     return () => window.clearTimeout(t);
   }, [open]);
 
-  const selectHour = (h: string) => onChange(`${h}:${minute ?? '00'}`);
-  const selectMinute = (m: string) => onChange(`${hour ?? '00'}:${m}`);
+  // مقدار خالی با '--:--' نمایش داده می‌شود؛ وقتی هنوز ساعتی ست نشده،
+  // طرف مقابل باید به '00' سقوط کند تا onChange همیشه 'HH:MM' معتبر بدهد.
+  const selectHour = (h: string) => onChange(`${h}:${minute === '--' ? '00' : minute}`);
+  const selectMinute = (m: string) => onChange(`${hour === '--' ? '00' : hour}:${m}`);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

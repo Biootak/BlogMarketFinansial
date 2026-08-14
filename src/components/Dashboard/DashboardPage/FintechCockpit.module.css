@@ -1085,39 +1085,61 @@
   color: var(--ds-text-muted);
 }
 
+/* ردیف راست هر آیتم:
+   ردیف ۱ → مبلغ  +  وضعیت (در یک خط)
+   ردیف ۲ → اکشن‌ها (فقط وقتی PENDING هستند)
+   این layout مانع wrap شدن عناصر در کنار هم می‌شود */
 .svcItemSide {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-rows: auto auto;
+  grid-template-columns: 1fr;
+  align-items: end;
+  justify-items: end;
+  gap: 0.35rem;
   padding-inline-end: var(--ds-space-4);
   min-inline-size: 0;
 }
 
-/* Inline action buttons inside service items */
+.svcItemSideTop {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* اکشن‌ها پیش‌فرض ghost — در hover آیتم ظاهر می‌شوند */
 .svcItemActions {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.svcItem:hover .svcItemActions,
+.svcItem:focus-within .svcItemActions {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .svcActionBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  padding: 0.25rem 0.5rem;
+  gap: 0.25rem;
+  padding: 0.22rem 0.55rem;
   border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-sm);
   background: var(--ds-surface);
   color: var(--ds-text-secondary);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
   transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), color
     var(--ds-duration-fast), transform 120ms var(--ds-ease-spring);
   white-space: nowrap;
   text-decoration: none;
+  line-height: 1.4;
 }
 
 .svcActionBtn:hover {
@@ -1133,6 +1155,9 @@
 .svcActionBtn:focus-visible {
   outline: 2px solid var(--ds-brand-500);
   outline-offset: 1px;
+  /* focus-visible → اکشن‌ها همیشه نمایان باشند */
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .svcActionBtn_approve {
@@ -1248,8 +1273,19 @@
     grid-column: 2;
     grid-row: 3;
     padding-inline-start: 0;
+    padding-inline-end: var(--ds-space-3);
     margin-block-start: 0.4rem;
-    justify-content: flex-start;
+    justify-items: start;
+  }
+
+  .svcItemSideTop {
+    flex-wrap: wrap;
+  }
+
+  /* در موبایل اکشن‌ها همیشه نمایان باشند (hover وجود ندارد) */
+  .svcItemActions {
+    opacity: 1;
+    transform: none;
   }
 
   .svcItemLink {
@@ -1954,9 +1990,11 @@
   .svcFootLink {
     font-size: 0.75rem;
   }
-  /* Inline actions — mobile with depth */
+  /* Inline actions — موبایل: همیشه نمایان */
   .svcItemActions {
     gap: 0.3rem;
+    opacity: 1;
+    transform: none;
   }
   .svcActionBtn {
     padding: 0.2rem 0.35rem;
@@ -2212,6 +2250,8 @@
   }
   .svcItemActions {
     gap: 0.25rem;
+    opacity: 1;
+    transform: none;
   }
   .svcActionBtn {
     padding: 0.15rem 0.3rem;

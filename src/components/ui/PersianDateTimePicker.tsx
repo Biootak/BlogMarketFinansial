@@ -7,7 +7,8 @@
  * جایگزین `<Input type="datetime-local">` میلادی در فرم پست شده.
  *
  *   - تقویم از `react-multi-date-picker` با calendar=persian و locale=persian_fa
- *   - زمان از plugin `time_picker` (hStep=1, mStep=5)
+ *   - زمان از TimePicker اختصاصی پروژه (`@/components/ui/time-picker`) —
+ *     جایگزین plugin ثالث `time_picker` (قانون P0 native-never / custom-first)
  *   - نمایش انتخاب به دو خط: تاریخ شمسی (روز هفته + روز + ماه + سال) + ساعت
  *   - quick presets: «۱ ساعت بعد» / «فردا همین ساعت» / «۱ هفتهٔ بعد»
  *   - value: `Date | null` (UTC-agnostic؛ تاریخ+ساعت محلی ذخیره می‌شود)
@@ -20,6 +21,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { TimePicker } from '@/components/ui/time-picker';
 import { cn } from '@/lib/utils';
 import * as React from 'react';
 import persian from 'react-date-object/calendars/persian';
@@ -27,7 +29,6 @@ import persian_fa from 'react-date-object/locales/persian_fa';
 import { FiClock, FiX } from 'react-icons/fi';
 import { HiCalendar } from 'react-icons/hi2';
 import DatePicker, { DateObject } from 'react-multi-date-picker';
-import TimePicker from 'react-multi-date-picker/plugins/time_picker';
 
 const FA_WEEKDAYS = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
 
@@ -73,8 +74,11 @@ interface PersianDateTimePickerProps {
  */
 function formatLongFa(date: Date): { dateLine: string; timeLine: string } {
   const obj = new DateObject({ date, calendar: persian, locale: persian_fa });
-  const ymd = obj.format('YYYY-MM-DD').split('-').map(Number) as [number, number, number];
-  const [jYear, jMonth, jDay] = ymd;
+  // خواص عددی DateObject را مستقیم می‌گیریم — نه از `format()` که با locale
+  // شمسی ارقام فارسی برمی‌گرداند و `Number('۱۴۰۵')` → NaN می‌شود (باگ قبلی).
+  const jYear = obj.year;
+  const jMonth = obj.month.number;
+  const jDay = obj.day;
   const monthName = FA_MONTHS[jMonth - 1] ?? '';
   // Date#getDay: 0=Sun..6=Sat. ما شنبه را شروع هفته می‌خواهیم → شنبه=0.
   const faIdx = (date.getDay() + 1) % 7;
@@ -99,12 +103,37 @@ export function PersianDateTimePicker({
     return new DateObject({ date: value, calendar: persian, locale: persian_fa });
   }, [value]);
 
+  // انتخاب روز در تقویم، ساعت انتخاب‌شده را حفظ می‌کند (اگر قبلاً
+  // ساعتی ست شده باشد)؛ وگرنه ساعت فعلی سیستم پیش‌فرض می‌شود.
   const handleChange = React.useCallback(
     (d: DateObject | null) => {
-      const next = d?.toDate ? d.toDate() : null;
+      if (!d) {
+        onChange(null);
+        return;
+      }
+      const next = d.toDate();
+      const keep = value ?? new Date();
+      next.setHours(keep.getHours(), keep.getMinutes(), 0, 0);
       onChange(next);
     },
-    [onChange],
+    [onChange, value],
+  );
+
+  // مقدار نمایشی برای TimePicker اختصاصی — وقتی تاریخ انتخاب نشده '--:--'.
+  const timeValue = value ? `${pad(value.getHours())}:${pad(value.getMinutes())}` : '--:--';
+
+  // تغییر ساعت/دقیقه از TimePicker → روی همان روز (یا امروز اگر روزی
+  // انتخاب نشده) اعمال می‌شود.
+  const handleTimeChange = React.useCallback(
+    (t: string) => {
+      const [h, m] = t.split(':').map(Number);
+      if (Number.isNaN(h) || Number.isNaN(m)) return;
+      const base = value ?? new Date();
+      const next = new Date(base);
+      next.setHours(h, m, 0, 0);
+      onChange(next);
+    },
+    [onChange, value],
   );
 
   const handleClear = React.useCallback(
@@ -255,16 +284,25 @@ export function PersianDateTimePicker({
               locale={persian_fa}
               calendarPosition="bottom-right"
               format="YYYY/MM/DD HH:mm"
-              plugins={[
-                <TimePicker key="time" position="bottom" hStep={1} mStep={5} hideSeconds />,
-              ]}
               minDate={minDate ?? undefined}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-700">
+            <span className="inline-flex shrink-0 items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+              <FiClock className="h-3.5 w-3.5" />
+              ساعت انتشار
+            </span>
+            <TimePicker
+              value={timeValue}
+              onChange={handleTimeChange}
+              aria-label="انتخاب ساعت انتشار"
+              className="h-9 min-w-28 rounded-lg border border-slate-300 bg-white px-3 text-sm font-medium text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
             />
           </div>
           <div className="flex items-center justify-between border-t border-slate-200 px-4 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
             <span className="inline-flex items-center gap-1">
               <FiClock className="h-3.5 w-3.5" />
-              ساعت با پلهٔ ۵ دقیقه
+              ساعت با پلهٔ ۱ دقیقه
             </span>
             <span className="tabular-nums">
               {value
