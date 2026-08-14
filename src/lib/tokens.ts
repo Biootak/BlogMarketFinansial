@@ -274,6 +274,98 @@ export async function generateLoginToken(email: string): Promise<{
   return { token, expiresAt };
 }
 
+// 2026-08-14: P0 fix — the TOTP second-factor challenge.
+//
+// `loginWithPassword` (and the OAuth signIn callback) mint this row *after*
+// the first factor is proven — bcrypt password match, or a provider-verified
+// OAuth identity. Its mere presence is therefore the proof that the first
+// factor was cleared for this email within the last TWO_FACTOR_CHALLENGE_-
+// EXPIRES_MS. `verifyOtp({intent:'2fa'})` MUST claim it before accepting a
+// TOTP/backup code.
+//
+// The bug this closes: verifyOtp only ever ran `deleteMany` on the challenge
+// and ignored the returned count, so it never verified the row existed and
+// never honoured `expires`. Any caller who could produce a valid TOTP (or a
+// leaked backup code) for a known email could mint a session with NO password
+// at all — every 2FA-enabled account was silently downgraded from two factors
+// to one, and the 2-minute challenge window was unbounded.
+//
+// The row's `token` column is @unique across the whole table, so we store a
+// high-entropy hex secret here rather than a 6-digit code: the challenge is
+// never typed by a human (the real code comes from the authenticator app), and
+// a 6-digit value could collide with a live e-mail OTP and make `create` throw.
+export const TWO_FACTOR_CHALLENGE_EXPIRES_MS = 2 * 60 * 1000;
+export const TWO_FACTOR_MAX_ATTEMPTS = 5;
+
+const TWO_FACTOR_INTENT: VerificationEmailIntent = '2fa';
+
+/** Mint a fresh 2FA challenge, replacing any prior one for this email. */
+export async function createTwoFactorChallenge(email: string): Promise<{ expiresAt: Date }> {
+  const normalizedEmail = email.trim().toLowerCase();
+  await prisma.verificationToken.deleteMany({
+    where: { email: normalizedEmail, intent: TWO_FACTOR_INTENT },
+  });
+  const expiresAt = new Date(Date.now() + TWO_FACTOR_CHALLENGE_EXPIRES_MS);
+  await prisma.verificationToken.create({
+    data: {
+      email: normalizedEmail,
+      token: generateResetSecret(),
+      intent: TWO_FACTOR_INTENT,
+      expires: expiresAt,
+      attempts: 0,
+    },
+  });
+  return { expiresAt };
+}
+
+export type BeginTwoFactorChallengeResult =
+  | { ok: true; challengeId: string; attemptsLeft: number }
+  | { ok: false; reason: 'not-found' | 'expired' | 'too-many-attempts' };
+
+/**
+ * Gate the TOTP step: assert a live challenge exists for this email and book
+ * the attempt against it. Called BEFORE the code is verified so a crash or an
+ * abandoned request still burns an attempt (fail-safe against brute force).
+ *
+ * Runs in a transaction and increments `attempts` under it, so N concurrent
+ * guesses can't all slip past the cap. Returns the row id; the caller passes
+ * it to `finishTwoFactorChallenge` once the code checks out.
+ */
+export async function beginTwoFactorChallenge(args: {
+  email: string;
+}): Promise<BeginTwoFactorChallengeResult> {
+  const normalizedEmail = args.email.trim().toLowerCase();
+
+  return prisma.$transaction(async (tx) => {
+    const challenge = await tx.verificationToken.findFirst({
+      where: { email: normalizedEmail, intent: TWO_FACTOR_INTENT },
+    });
+    if (!challenge) return { ok: false, reason: 'not-found' };
+    if (challenge.expires.getTime() <= Date.now()) {
+      await tx.verificationToken.delete({ where: { id: challenge.id } });
+      return { ok: false, reason: 'expired' };
+    }
+    if (challenge.attempts >= TWO_FACTOR_MAX_ATTEMPTS) {
+      await tx.verificationToken.delete({ where: { id: challenge.id } });
+      return { ok: false, reason: 'too-many-attempts' };
+    }
+    const updated = await tx.verificationToken.update({
+      where: { id: challenge.id },
+      data: { attempts: { increment: 1 } },
+    });
+    return {
+      ok: true,
+      challengeId: challenge.id,
+      attemptsLeft: Math.max(0, TWO_FACTOR_MAX_ATTEMPTS - updated.attempts),
+    };
+  });
+}
+
+/** Burn the challenge after a valid code — the session is about to be minted. */
+export async function finishTwoFactorChallenge(challengeId: string): Promise<void> {
+  await prisma.verificationToken.deleteMany({ where: { id: challengeId } });
+}
+
 export type ConsumeLoginResult = { ok: true } | { ok: false; reason: 'not-found' | 'expired' };
 
 export async function consumeLoginToken(args: {

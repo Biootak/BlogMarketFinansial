@@ -26,12 +26,14 @@ import { checkRateLimit, resetRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
 import {
   type VerificationEmailIntent,
+  beginTwoFactorChallenge,
   consumeOtpToken,
   consumePasswordResetToken,
+  createTwoFactorChallenge,
+  finishTwoFactorChallenge,
   generateLoginToken,
   generateOtpToken,
   generatePasswordResetToken,
-  generateSixDigitCode,
   invalidateOtpTokens,
 } from '@/lib/tokens';
 import { verifyTotp } from '@/lib/totp';
@@ -120,11 +122,70 @@ function handleAuthError(error: unknown, context: string): AuthResult {
         };
     }
   }
+  // 2026-08-14: خطاهای اتصال/اعتبارسنجی دیتابیس → پیام واضح، نه «خطای موقتی»
+  // مبهم. (این شاخه فقط بعد از withDbRetry می‌رسد — تلاش مجدد قبلاً انجام شده.)
+  if (isDbConnectivityError(error)) {
+    serverLog.error('auth-actions', `${context}-db-connectivity`, error);
+    return {
+      success: false,
+      error: 'ارتباط با سرور برقرار نشد. لطفاً چند لحظه دیگر دوباره تلاش کنید',
+    };
+  }
   // Unknown / internal — log with context, return generic.
   serverLog.error('auth-actions', context, error);
   return {
     success: false,
     error: 'خطای موقتی در سامانه. لطفاً لحظاتی دیگر دوباره تلاش کنید',
+  };
+}
+
+// ─── DB Connectivity hardening (2026-08-14) ──────────────────────────────────
+// مشکل گزارش‌شده: کاربر هنگام ورود/2FA «خطای موقتی در سامانه» می‌گرفت. ریشهٔ
+// واقعی، خطاهای اتصال به دیتابیس بود (ConnectionReset از سمت RDS، pool timeout
+// در connection_limit=1، یا اعتبارنامهٔ کهنه) که به‌صورت error نامشخص به
+// handleAuthError می‌رسید. اینجا دو رفتار اضافه می‌کنیم:
+//   ۱. خطاهای گذرای اتصال → یک بار دیگر با تأخیر کوتاه تلاش می‌شود (اتصال تازه
+//      معمولاً موفق است).
+//   ۲. هر خطای اتصال/اعتبارسنجی DB که باز هم رخ دهد → پیام واضح «ارتباط با
+//      سرور برقرار نشد» به‌جای «خطای موقتی» مبهم + لاگ مشخص برای ops.
+
+// گذرا — تلاش مجدد منطقی است (Prisma بعد از reset با اتصال جدید دوباره وصل می‌شود)
+const TRANSIENT_DB_ERROR_RE =
+  /P1001|P1008|P1017|can't reach database|timed out fetching|connectionreset|connection (reset|closed|pool)|pool (timeout|timed out)|connect(_|-)?timeout|ECONNRESET|ETIMEDOUT/i;
+
+// هر خطای ارتباط/اعتبارسنجی دیتابیس — تلاش مجدد فایده ندارد ولی پیام باید واضح باشد
+const DB_CONNECTIVITY_ERROR_RE =
+  /database|postgres|connection|pool|authentication|timed out|P1001|P1008|P1017/i;
+
+function isTransientDbError(error: unknown): boolean {
+  return error instanceof Error && TRANSIENT_DB_ERROR_RE.test(error.message);
+}
+
+function isDbConnectivityError(error: unknown): boolean {
+  return error instanceof Error && DB_CONNECTIVITY_ERROR_RE.test(error.message);
+}
+
+/**
+ * یک بار تلاش مجدد برای خطاهای گذرای اتصال به دیتابیس.
+ * اگر تلاش دوم هم به خطای گذرا بخورد، به‌جای throw (که 500 می‌سازد)
+ * نتیجهٔ واضح «ارتباط با سرور برقرار نشد» برمی‌گردانیم.
+ */
+async function withDbRetry(fn: () => Promise<AuthResult>): Promise<AuthResult> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (!isTransientDbError(error)) throw error;
+      serverLog.warn('auth-actions', 'db-transient-retry', error);
+      if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 800));
+    }
+  }
+  serverLog.error('auth-actions', 'db-connectivity-after-retry', lastError);
+  return {
+    success: false,
+    error: 'ارتباط با سرور برقرار نشد. لطفاً چند لحظه دیگر دوباره تلاش کنید',
   };
 }
 
@@ -218,6 +279,10 @@ async function issueOtp(
  * - known, verified, no password (OAuth-only) → login via OTP
  */
 export async function lookupEmail(formData: FormData): Promise<AuthResult> {
+  return withDbRetry(() => lookupEmailImpl(formData));
+}
+
+async function lookupEmailImpl(formData: FormData): Promise<AuthResult> {
   try {
     const { email } = await EmailLookupSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -275,6 +340,7 @@ export async function lookupEmail(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
+    if (isTransientDbError(error)) throw error; // withDbRetry یک بار دیگر تلاش می‌کند
     return handleAuthError(error, 'lookupEmail');
   }
 }
@@ -294,6 +360,10 @@ export async function lookupEmail(formData: FormData): Promise<AuthResult> {
  *     attackers can't squat on them by spamming register calls.
  */
 export async function registerUser(formData: FormData): Promise<AuthResult> {
+  return withDbRetry(() => registerUserImpl(formData));
+}
+
+async function registerUserImpl(formData: FormData): Promise<AuthResult> {
   try {
     const input = await RegisterSchema.parseAsync({
       name: getFormString(formData, 'name'),
@@ -371,6 +441,7 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
+    if (isTransientDbError(error)) throw error;
     return handleAuthError(error, 'registerUser');
   }
 }
@@ -382,6 +453,10 @@ export async function registerUser(formData: FormData): Promise<AuthResult> {
  * write happens in one place.
  */
 export async function loginWithPassword(formData: FormData): Promise<AuthResult> {
+  return withDbRetry(() => loginWithPasswordImpl(formData));
+}
+
+async function loginWithPasswordImpl(formData: FormData): Promise<AuthResult> {
   try {
     const input = await LoginSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -456,23 +531,14 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
         return { success: false, error: 'ایمیل شما هنوز تأیید نشده است' };
       }
 
-      // challenge یکبارمصرف — فقط با کد TOTP معتبر قابل مصرف.
+      // challenge یکبارمصرف — گواهی اینکه عامل اول (رمز) همین حالا تأیید شد.
       // 2026-08-09 fix: توکن قبلی (email,intent) را اول حذف می‌کنیم —
       // در غیر این صورت وقتی کاربر ورود را نیمه‌کاره رها کند یا دوبار
       // submit کند، create با unique constraint (email,intent) fail
       // می‌شود و خطای عمومی «خطای موقتی در سامانه» نشان داده می‌شود.
-      await prisma.verificationToken.deleteMany({
-        where: { email: input.email.toLowerCase(), intent: '2fa' },
-      });
-      await prisma.verificationToken.create({
-        data: {
-          email: input.email.toLowerCase(),
-          token: generateSixDigitCode(),
-          intent: '2fa',
-          expires: new Date(Date.now() + 2 * 60 * 1000),
-          attempts: 0,
-        },
-      });
+      // 2026-08-14: منطق به createTwoFactorChallenge منتقل شد تا مرحلهٔ
+      // verify هم بتواند با beginTwoFactorChallenge همان row را claim کند.
+      await createTwoFactorChallenge(input.email);
 
       if (twoFaUser.role === Role.OWNER || twoFaUser.role === Role.SUPERADMIN) {
         await logOwnerSecurityEvent('OWNER_LOGIN_2FA_CHALLENGE', twoFaUser.id, await getClientIp());
@@ -594,6 +660,7 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
         error: 'ایمیل یا رمز عبور اشتباه است. لطفاً دوباره تلاش کنید',
       };
     }
+    if (isTransientDbError(error)) throw error;
     return handleAuthError(error, 'loginWithPassword');
   }
 }
@@ -609,6 +676,10 @@ export async function loginWithPassword(formData: FormData): Promise<AuthResult>
  * row.
  */
 export async function verifyOtp(formData: FormData): Promise<AuthResult> {
+  return withDbRetry(() => verifyOtpImpl(formData));
+}
+
+async function verifyOtpImpl(formData: FormData): Promise<AuthResult> {
   try {
     const input = await VerifyOtpSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -666,27 +737,60 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       if (!twoFaUser.emailVerified) {
         return { success: false, error: 'ایمیل شما تأیید نشده است' };
       }
+
+      // ── گارد عامل اول (P0 fix — 2026-08-14) ──
+      // challenge باید از قبل توسط loginWithPassword (یا callback OAuth)
+      // ساخته شده باشد؛ وجودش تنها گواهیِ این است که رمز/هویت provider همین
+      // حالا تأیید شده. قبلاً این تابع فقط `deleteMany` می‌زد و count را
+      // نادیده می‌گرفت — یعنی هرکس با یک کد TOTP معتبر (یا کد پشتیبانِ لو
+      // رفته) و بدون هیچ رمزی می‌توانست سشن بسازد: احراز دو‌عاملی در عمل
+      // یک‌عاملی می‌شد و پنجرهٔ ۲ دقیقه‌ای هم اعمال نمی‌شد.
+      // claim قبل از بررسی کد انجام می‌شود تا هر تلاش — حتی تلاشی که وسط
+      // راه crash کند — از سهمیهٔ attempts کم شود.
+      const challenge = await beginTwoFactorChallenge({ email: input.email });
+      if (!challenge.ok) {
+        serverLog.warn('auth-actions', '2fa-challenge-missing', {
+          email: input.email,
+          reason: challenge.reason,
+        });
+        return {
+          success: false,
+          error:
+            challenge.reason === 'too-many-attempts'
+              ? 'تعداد تلاش‌های اشتباه به حد مجاز رسید. لطفاً از ابتدا وارد شوید'
+              : 'مهلت ورود دو مرحله‌ای به پایان رسیده است. لطفاً دوباره با رمز عبور وارد شوید',
+        };
+      }
+
       // C2-fix: decrypt secret رمزنگاری‌شده قبل از verify
       // G1-fix: اگر AUTH_SECRET اشتباه باشد یا secret خراب شده باشد،
       // decryptTotpSecret خطا می‌دهد و به handleAuthError می‌رود → «خطای موقتی».
       // اینجا صریحاً catch می‌کنیم تا پیام مناسب بدهیم.
-      let totpSecret: string;
+      // G3-fix (2026-08-14): خرابی decrypt نباید ورود را کامل قفل کند —
+      // کد پشتیبان (bcrypt، مستقل از AUTH_SECRET) هنوز می‌تواند کاربر را
+      // وارد کند. قبلاً اینجا return می‌شد و مسیر کد پشتیبان هرگز اجرا
+      // نمی‌شد؛ حساب با secret خراب/نامنطبق برای همیشه قفل می‌ماند.
+      let totpSecret: string | null = null;
+      let decryptFailed = false;
       try {
         totpSecret = decryptTotpSecret(twoFaUser.twoFactorSecretEnc);
       } catch (decryptErr) {
         serverLog.error('auth-actions', 'decrypt-totp-secret', decryptErr);
-        return {
-          success: false,
-          error: 'خطای داخلی در احراز هویت. لطفاً با پشتیبانی تماس بگیرید (کد: TOTP-DEC)',
-        };
+        decryptFailed = true;
       }
-      const totpOk = await verifyTotp(totpSecret, input.code);
+
+      let totpOk = false;
+      if (totpSecret !== null) {
+        totpOk = await verifyTotp(totpSecret, input.code);
+      }
 
       // ── کد پشتیبان (backup code) ──
       // اگر TOTP درست نبود، کد پشتیبان ۸ کاراکتری (هگز) را هم امتحان کن.
       // کاربری که اپ Authenticator را گم/عوض کرده باشد با کد پشتیبان
       // (که هنگام فعال‌سازی دریافت کرده) باید بتواند وارد شود؛ در غیر این
-      // صورت حسابش برای همیشه قفل می‌ماند. کد پشتیبان یک‌بارمصرف است.
+      // صورت حسابش برای همیشه قفل می‌ماند. کد پشتیبان یک‌بارمصرف است و به
+      // AUTH_SECRET وابسته نیست — پس حتی وقتی decrypt شکست می‌خورد هم اجرا
+      // می‌شود (G3-fix).
       let backupCodeId: string | null = null;
       if (!totpOk) {
         const normalized = input.code.trim().toUpperCase();
@@ -705,20 +809,25 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       }
 
       if (!totpOk && !backupCodeId) {
-        // consume challenge را به‌گونه‌ای انجام می‌دهیم که brute-force محدود بماند
-        await prisma.verificationToken.deleteMany({
-          where: { email: input.email.toLowerCase(), intent: '2fa' },
-        });
+        // 2026-08-14: challenge را حذف نمی‌کنیم — attempts در
+        // beginTwoFactorChallenge افزایش یافته و سقف ۵ تلاش، brute-force را
+        // (۵ حدس از ۱٫۰۰۰٫۰۰۰ حالت) محدود می‌کند. قبلاً یک اشتباه تایپی کل
+        // challenge را می‌سوزاند و کاربر باید از ابتدا رمز می‌زد.
+        if (twoFaUser.role === Role.OWNER || twoFaUser.role === Role.SUPERADMIN) {
+          await logOwnerSecurityEvent('OWNER_LOGIN_FAILED', twoFaUser.id, await getClientIp());
+        }
         return {
           success: false,
-          error: 'کد احراز هویت نادرست است. دوباره امتحان کنید',
+          error: decryptFailed
+            ? 'خطای داخلی در احراز هویت. لطفاً با پشتیبانی تماس بگیرید (کد: TOTP-DEC)'
+            : challenge.attemptsLeft > 0
+              ? `کد احراز هویت نادرست است. ${challenge.attemptsLeft} تلاش باقی مانده است`
+              : 'کد احراز هویت نادرست است. لطفاً دوباره با رمز عبور وارد شوید',
         };
       }
 
       // challenge را مصرف کن — یکبارمصرف
-      await prisma.verificationToken.deleteMany({
-        where: { email: input.email.toLowerCase(), intent: '2fa' },
-      });
+      await finishTwoFactorChallenge(challenge.challengeId);
 
       // کد پشتیبان را یک‌بارمصرف کن
       if (backupCodeId) {
@@ -800,6 +909,28 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
       };
     }
 
+    // ── 2FA در مسیر OTP ایمیلی هم اجباری است (P0 fix — 2026-08-14) ──
+    // قبلاً فقط loginWithPassword عامل دوم را می‌گرفت. مسیرهای
+    // login/reverify/register/service-verify مستقیم signIn می‌کردند، یعنی
+    // هرکس به ایمیل قربانی دسترسی داشت (یا یک OTP نشت‌کرده داشت) کل TOTP را
+    // دور می‌زد — حسابی که 2FA فعال کرده بود در این مسیرها هیچ حفاظت اضافه‌ای
+    // نداشت. کد ایمیلیِ مصرف‌شده اینجا نقش عامل اول را دارد و challenge
+    // یکبارمصرف TOTP ساخته می‌شود.
+    const twoFaCheck = await prisma.user.findFirst({
+      where: { email: { equals: input.email, mode: 'insensitive' } },
+      select: { twoFactorEnabled: true, twoFactorSecretEnc: true },
+    });
+    if (twoFaCheck?.twoFactorEnabled && twoFaCheck.twoFactorSecretEnc) {
+      await createTwoFactorChallenge(input.email);
+      return {
+        success: true,
+        step: 'verify',
+        email: input.email,
+        intent: '2fa',
+        message: 'کد احراز هویت دو مرحله‌ای (Authenticator) را وارد کنید',
+      };
+    }
+
     // B1: signIn can fail after OTP was consumed (DB blip in
     // events.signIn). Wrap and surface a clear error; the user will
     // need to request a new code, but that's an acceptable cost vs.
@@ -831,6 +962,7 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
+    if (isTransientDbError(error)) throw error;
     return handleAuthError(error, 'verifyOtp');
   }
 }
@@ -845,6 +977,10 @@ export async function verifyOtp(formData: FormData): Promise<AuthResult> {
  * with register tokens).
  */
 export async function resendOtp(formData: FormData): Promise<AuthResult> {
+  return withDbRetry(() => resendOtpImpl(formData));
+}
+
+async function resendOtpImpl(formData: FormData): Promise<AuthResult> {
   try {
     const input = await ResendOtpSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -878,6 +1014,7 @@ export async function resendOtp(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
+    if (isTransientDbError(error)) throw error;
     return handleAuthError(error, 'resendOtp');
   }
 }
@@ -887,6 +1024,10 @@ export async function resendOtp(formData: FormData): Promise<AuthResult> {
  * but with intent=recover so consumeOtpToken matches the right code.
  */
 export async function recoverPassword(formData: FormData): Promise<AuthResult> {
+  return withDbRetry(() => recoverPasswordImpl(formData));
+}
+
+async function recoverPasswordImpl(formData: FormData): Promise<AuthResult> {
   try {
     const { email } = await EmailLookupSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -950,6 +1091,7 @@ export async function recoverPassword(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
+    if (isTransientDbError(error)) throw error;
     return handleAuthError(error, 'recoverPassword');
   }
 }
@@ -964,6 +1106,10 @@ export async function recoverPassword(formData: FormData): Promise<AuthResult> {
  * ownership by submitting a valid OTP).
  */
 export async function setNewPassword(formData: FormData): Promise<AuthResult> {
+  return withDbRetry(() => setNewPasswordImpl(formData));
+}
+
+async function setNewPasswordImpl(formData: FormData): Promise<AuthResult> {
   try {
     const input = await SetPasswordSchema.parseAsync({
       email: getFormString(formData, 'email'),
@@ -1051,6 +1197,7 @@ export async function setNewPassword(formData: FormData): Promise<AuthResult> {
     };
   } catch (error) {
     if (error instanceof z.ZodError) return handleZodError(error);
+    if (isTransientDbError(error)) throw error;
     return handleAuthError(error, 'setNewPassword');
   }
 }
