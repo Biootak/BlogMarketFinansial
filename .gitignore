@@ -281,3 +281,4 @@ terraform.tfvars
 /.next-bundle-audit/
 # Isolated production build for perf measurement (NEXT_DIST_DIR=.next-audit)
 /.next-audit/
+public/data/market-rates.json

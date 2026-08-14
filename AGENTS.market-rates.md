@@ -25,7 +25,11 @@
   `IRAN_*` · `AFGHANI_*` · `SARA_*` · `BONBAST_*` · `HERAT_*` · `GLOBAL_*`
   هر symbol جدید باید هم در `registry.ts` و هم در `seed-market-rates.ts` اضافه شود.
 
-- **Snapshot JSON:** `public/data/market-rates.json` توسط cron `refresh-market-rates` هر ۶۰ ثانیه نوشته می‌شود. `sync-bazaar` deprecated است — در vercel.json فقط `refresh-market-rates` فعال باشد.
+- **Snapshot JSON:** `public/data/market-rates.json` (runtime، untracked — داخل Docker نمی‌رود) توسط دو مسیر تازه‌سازی نوشته می‌شود:
+  1. `/api/cron/push-rates` — GitHub Actions scrape می‌کند و push می‌کند (خارج از dyno).
+  2. `/api/cron/refresh-market-rates` — cron-job.org هر ۵ دقیقه صدا می‌زند؛ dyno با lock + throttle + sequential + pageCache (TTL 6 دقیقه) assemble می‌کند (memory-safe).
+  هر دو به `persistMarketRates` می‌رسند. `sync-bazaar` deprecated است.
+  ⚠️ GitHub Actions schedule در این repo throttle می‌شود (رن‌ها هر ۶۰-۹۰ دقیقه می‌آیند) — پس مسیر قابل‌اعتماد برای تازگی ۵ دقیقه‌ای، cron-job.org → refresh-market-rates است، نه GitHub schedule.
 
 - **comments در cron files:** هر جایی که auth mechanism در comment ذکر می‌شود (`x-cron-secret`، `?secret=`) باید با آنچه `cron-auth.ts` واقعاً می‌پذیرد (فقط `Authorization: Bearer`) مطابق باشد.
 

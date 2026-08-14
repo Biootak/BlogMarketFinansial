@@ -3,6 +3,8 @@
 
 import prisma from '@/lib/db';
 import type { MarketRateItem } from '@/lib/market-rates';
+import { updateChangePercentBatch } from '@/lib/market-rates/change-cache';
+import { writeMarketRatesSnapshot } from '@/lib/market-rates/snapshot';
 import { type SnapshotItem, readMarketRatesSnapshot } from '@/lib/market-rates/snapshot-reader';
 import { requireAdmin } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
@@ -187,6 +189,72 @@ export async function primeMarketRatesCache(items: MarketRateItem[]): Promise<vo
   // ⚠️ این فایل 'use server' است — همهٔ export ها باید async باشند
   // (Turbopack: "Server Actions must be async functions").
   safeSet('market-rates', items, MARKET_RATES_TTL);
+}
+
+/**
+ * 2026-08-14: ذخیرهٔ نرخ‌های assemble شده — یک مسیر مشترک برای هر دو cron
+ * (push-rates از GitHub Actions و refresh-market-rates از cron-job.org).
+ * قبلاً این منطق در push-rates تکراری بود؛ حالا هر دو مسیر همین را صدا می‌زنند:
+ *   prime cache → snapshot → DB update (auto rows) → change cache → revalidate.
+ */
+export async function persistMarketRates(
+  items: MarketRateItem[],
+): Promise<{ updated: number; snapshotCount: number | null }> {
+  await primeMarketRatesCache(items);
+
+  // snapshot برای getMarketRates (file read — بدون DB)
+  let snapshotCount: number | null = null;
+  try {
+    const snap = await writeMarketRatesSnapshot({ items });
+    snapshotCount = snap.count;
+  } catch {
+    /* best-effort — DB update و cache هنوز انجام می‌شوند */
+  }
+
+  // DB update (فقط provider='auto')
+  let updated = 0;
+  const changeUpdates: { symbol: string; changePercent: number }[] = [];
+  const toUpdate = items
+    .filter((item) => item.provider === 'auto')
+    .map((item) => ({ item, rawValue: item.value * item.divisor }))
+    .filter(({ rawValue }) => Number.isFinite(rawValue) && rawValue > 0);
+
+  if (toUpdate.length > 0) {
+    try {
+      const results = await prisma.$transaction(
+        toUpdate.map(({ item, rawValue }) =>
+          prisma.exchangeRate.updateMany({
+            where: { symbol: item.symbol, provider: 'auto', active: true },
+            data: {
+              singleRate: rawValue.toString(),
+              lastChangePercent: item.changePercent,
+              lastChangeAt: new Date(),
+            },
+          }),
+        ),
+      );
+      results.forEach((r, i) => {
+        const entry = toUpdate[i];
+        if (!entry) return;
+        if (r.count > 0) {
+          updated++;
+          changeUpdates.push({
+            symbol: entry.item.symbol,
+            changePercent: entry.item.changePercent,
+          });
+        }
+      });
+    } catch {
+      /* ignore — snapshot و cache قبلاً نوشته شده‌اند */
+    }
+  }
+
+  if (changeUpdates.length > 0) updateChangePercentBatch(changeUpdates);
+
+  revalidateTag(TAGS.ticker);
+  revalidateTag(TAGS.list);
+
+  return { updated, snapshotCount };
 }
 
 /**

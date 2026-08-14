@@ -6,3 +6,4 @@ README.md
 .env
 .env.*
 !.env.example
+public/data/market-rates.json
