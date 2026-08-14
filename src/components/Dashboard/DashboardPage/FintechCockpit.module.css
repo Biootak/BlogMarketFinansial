@@ -1268,28 +1268,15 @@
 }
 
 @media (max-width: 720px) {
-  .svcItemSide {
-    position: static;
-    grid-column: 2;
-    grid-row: 3;
-    padding-inline-start: 0;
-    padding-inline-end: var(--ds-space-3);
-    margin-block-start: 0.4rem;
-    justify-items: start;
-  }
-
-  .svcItemSideTop {
-    flex-wrap: wrap;
-  }
-
-  /* در موبایل اکشن‌ها همیشه نمایان باشند (hover وجود ندارد) */
+  /* در این breakpoint grid والد هنوز دو ستون است — side در ستون ۲ می‌ماند
+     ولی اکشن‌ها ghost نباشند (touch device) */
   .svcItemActions {
     opacity: 1;
     transform: none;
   }
 
-  .svcItemLink {
-    grid-template-rows: auto auto auto;
+  .svcItemSideTop {
+    flex-wrap: wrap;
   }
 }
 
@@ -1943,12 +1930,18 @@
   .svcItem {
     grid-template-columns: 1fr;
   }
+  /* در موبایل: side زیر link می‌آید — indent برابر avatar + gap */
   .svcItemSide {
-    justify-content: flex-start;
+    grid-column: 1;
+    justify-items: start;
     gap: 0.4rem;
     padding-block-end: 0.55rem;
-    padding-inline-start: calc(1.85rem + var(--ds-space-3) + 0.7rem);
+    padding-inline-start: calc(1.85rem + 0.5rem + 0.7rem);
     padding-inline-end: 0.7rem;
+  }
+  .svcItemSideTop {
+    flex-wrap: wrap;
+    gap: 0.4rem;
   }
   .svcItemAmount {
     font-size: 0.8rem;
@@ -2414,6 +2407,11 @@
     height: 1.4rem;
     flex: 0 0 1.4rem;
     font-size: 0.65rem;
+  }
+  /* indent متناسب با avatar 1.4rem */
+  .svcItemSide {
+    padding-inline-start: calc(1.4rem + 0.5rem + 0.4rem);
+    padding-inline-end: 0.4rem;
   }
   .svcItemName {
     font-size: 0.7rem;
