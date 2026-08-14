@@ -40,7 +40,7 @@ import {
   ArrowLeft,
   ArrowUpRight,
   Check,
-  Eye,
+  Inbox,
   type LucideIcon,
   Plus,
   Radio,
@@ -578,46 +578,86 @@ function ServicesPanel({
   stats: FintechCockpitServiceStats;
   recent: FintechCockpitService[];
 }) {
+  const closedCount = Math.max(0, stats.total - stats.pending);
+  const hasQueue = stats.total > 0;
+
+  const queueSegs = [
+    { key: 'pending', label: 'در انتظار', value: stats.pending },
+    { key: 'urgent', label: 'فوری', value: stats.pendingUrgent },
+    { key: 'closed', label: 'تکمیل/بسته', value: closedCount },
+  ] as const;
+
   return (
-    <section className={s.svcPanel} aria-label="درخواست‌های خدمات">
+    <section className={s.svcPanel} aria-label="درخواست‌های در جریان">
       <header className={s.panelHeader}>
         <div className={s.panelHeaderMain}>
           <span className={s.panelEyebrow}>
-            <Plus aria-hidden size={12} />
+            <Inbox aria-hidden size={12} />
             <span>خدمات</span>
           </span>
           <h2 className={s.panelTitle}>درخواست‌های در جریان</h2>
         </div>
-        <Link href="/dashboard/service-requests" className={s.panelMore}>
-          <span>مشاهده همه</span>
-          <ArrowLeft aria-hidden size={14} />
-        </Link>
+        <div className={s.svcHeaderTools}>
+          <span className={s.svcLiveBadge}>
+            <span className={s.svcLiveBadgeDot} aria-hidden />
+            <span>زنده</span>
+          </span>
+          <span className={s.svcToday}>
+            <span>ثبت امروز</span>
+            <b className={s.svcTodayNum}>{formatIntFa(stats.todayCount)}</b>
+          </span>
+          <Link href="/dashboard/service-requests" className={s.panelMore}>
+            <span>مشاهده همه</span>
+            <ArrowLeft aria-hidden size={14} />
+          </Link>
+        </div>
       </header>
 
-      <div className={s.svcKpis}>
-        <div className={`${s.svcKpi} ${s.svcKpi_pending}`}>
-          <span className={s.svcKpiLabel}>در انتظار</span>
-          <span className={s.svcKpiValue}>{formatIntFa(stats.pending)}</span>
+      {/* Queue pulse — ترکیب زندهٔ صف به‌صورت نوار پالس */}
+      <div
+        className={s.queueBlock}
+        role="img"
+        aria-label={`ترکیب صف درخواست‌ها: ${formatIntFa(stats.pending)} در انتظار، ${formatIntFa(stats.pendingUrgent)} فوری، ${formatIntFa(closedCount)} تکمیل یا بسته`}
+      >
+        <div className={s.queueTrack}>
+          {hasQueue ? (
+            queueSegs.map((seg) =>
+              seg.value > 0 ? (
+                <span
+                  key={seg.key}
+                  className={s.queueSeg}
+                  data-tone={seg.key}
+                  style={{ flexGrow: seg.value }}
+                  title={`${seg.label}: ${formatIntFa(seg.value)}`}
+                />
+              ) : null,
+            )
+          ) : (
+            <span className={s.queueTrackEmpty} />
+          )}
         </div>
-        <div className={`${s.svcKpi} ${s.svcKpi_today}`}>
-          <span className={s.svcKpiLabel}>ثبت امروز</span>
-          <span className={s.svcKpiValue}>{formatIntFa(stats.todayCount)}</span>
-        </div>
-        <div className={`${s.svcKpi} ${s.svcKpi_urgent}`}>
-          <span className={s.svcKpiLabel}>فوری</span>
-          <span className={s.svcKpiValue}>{formatIntFa(stats.pendingUrgent)}</span>
-        </div>
-        <div className={s.svcKpi}>
-          <span className={s.svcKpiLabel}>کل</span>
-          <span className={s.svcKpiValue}>{formatIntFa(stats.total)}</span>
-        </div>
+        <ul className={s.queueLegend}>
+          {queueSegs.map((seg) => (
+            <li key={seg.key} className={s.queueLegendItem}>
+              <i className={s.queueLegendDot} data-tone={seg.key} aria-hidden />
+              <span>{seg.label}</span>
+              <b>{formatIntFa(seg.value)}</b>
+            </li>
+          ))}
+          <li className={s.queueLegendTotal}>
+            <span>کل</span>
+            <b>{formatIntFa(stats.total)}</b>
+          </li>
+        </ul>
       </div>
 
       <ul className={s.svcList}>
         {recent.length === 0 ? (
           <li className={s.svcEmpty}>
-            <Sparkles aria-hidden size={16} />
-            <span>درخواست در انتظاری وجود ندارد</span>
+            <span className={s.svcEmptyIcon} aria-hidden>
+              <Sparkles size={16} />
+            </span>
+            <span>صف درخواست‌ها خالی است — همه‌چیز زیر کنترل است</span>
           </li>
         ) : (
           recent.map((r) => {
@@ -628,13 +668,15 @@ function ServicesPanel({
             const isPending = r.status === 'PENDING';
             const detailHref = `/track/${encodeURIComponent(r.trackingCode)}`;
             return (
-              <li key={r.id} className={s.svcItem}>
-                {/* H1-fix (2026-08-14): قبلاً دکمه‌های تأیید/رد/جزئیات (لینک‌های
-                    داخلی) داخل خودِ لینک آیتم قرار داشتند → <a> تو در تو → HTML
-                    نامعتبر + hydration error برای همه نقش‌های cockpit. حالا لینک
-                    آیتم فقط avatar + title را می‌گیرد و سمت راست (اکشن‌ها) به‌عنوان
-                    هم‌ردیف sibling است. */}
-                <Link href={detailHref} className={s.svcItemLink}>
+              <li key={r.id} className={s.svcItem} data-status={r.status}>
+                {/* H1-fix (2026-08-14): لینک آیتم فقط avatar + title را می‌گیرد؛
+                    اکشن‌ها (تأیید/رد) sibling خارج از <a> هستند تا HTML معتبر بماند.
+                    «جزئیات» حذف شد چون کل ردیف لینک است (noise کمتر). */}
+                <Link
+                  href={detailHref}
+                  className={s.svcItemLink}
+                  aria-label={`${r.fullName} — ${typeLabel} — ${statusLabel}`}
+                >
                   <span className={s.svcAvatar} aria-hidden>
                     {getInitial(r.fullName)}
                   </span>
@@ -647,13 +689,14 @@ function ServicesPanel({
                           <span>فوری</span>
                         </span>
                       ) : null}
+                      <span className={s.svcItemTime}>{formatRelDate(r.createdAt)}</span>
                     </span>
                     <span className={s.svcItemMeta}>
                       <span>{typeLabel}</span>
                       <span aria-hidden>·</span>
-                      <span className={s.svcItemCode} dir="ltr">
+                      <code className={s.svcItemCode} dir="ltr">
                         {r.trackingCode}
-                      </span>
+                      </code>
                     </span>
                   </span>
                 </Link>
@@ -663,10 +706,13 @@ function ServicesPanel({
                     <span className={s.svcItemCurrency}>{r.currency}</span>
                   </span>
                   <span className={`${s.svcStatus} ${s[statusMod] ?? ''}`}>
-                    <span className={s.svcStatusDot} aria-hidden />
+                    <span
+                      className={s.svcStatusDot}
+                      data-pulse={isPending ? 'true' : undefined}
+                      aria-hidden
+                    />
                     <span>{statusLabel}</span>
                   </span>
-                  <span className={s.svcItemTime}>{formatRelDate(r.createdAt)}</span>
                   {isPending && (
                     <span className={s.svcItemActions}>
                       <Link
@@ -687,10 +733,6 @@ function ServicesPanel({
                       </Link>
                     </span>
                   )}
-                  <Link href={detailHref} className={`${s.svcActionBtn}`} title="مشاهده جزئیات">
-                    <Eye size={12} aria-hidden />
-                    <span>جزئیات</span>
-                  </Link>
                 </span>
               </li>
             );

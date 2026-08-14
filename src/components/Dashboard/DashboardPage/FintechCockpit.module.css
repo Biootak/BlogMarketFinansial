@@ -756,49 +756,182 @@
   outline-offset: 2px;
 }
 
-/* Service panel sub-strip */
-.svcKpis {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  border-block-end: 1px solid var(--ds-border-subtle);
-  background: var(--ds-surface-2, color-mix(in oklch, var(--ds-text-muted) 3%, var(--ds-surface)));
+/* ─── Header tools: live badge + today count ───────────────── */
+
+.svcHeaderTools {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-inline-size: 0;
 }
 
-.svcKpi {
-  display: grid;
-  gap: 0.2rem;
-  padding: 0.7rem 0.8rem;
-  border-inline-start: 1px dashed var(--ds-border-subtle);
-  min-width: 0;
-}
-
-.svcKpi:first-child {
-  border-inline-start: 0;
-}
-
-.svcKpiLabel {
+.svcLiveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
   font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ds-accent-emerald, var(--ds-text-primary));
+  background: color-mix(in oklch, var(--ds-accent-emerald) 10%, var(--ds-surface));
+  border: 1px solid color-mix(in oklch, var(--ds-accent-emerald) 28%, var(--ds-border-subtle));
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.svcLiveBadgeDot {
+  inline-size: 0.45rem;
+  block-size: 0.45rem;
+  flex: 0 0 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in oklch, currentColor 22%, transparent);
+  /* System-breath — همان ریتم زندهٔ hero */
+  animation: fc-breath 2.4s ease-in-out infinite;
+}
+
+.svcToday {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 0.72rem;
   font-weight: 600;
   color: var(--ds-text-muted);
-  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
 
-.svcKpiValue {
+.svcTodayNum {
   font-size: var(--ds-text-base);
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   color: var(--ds-text-primary);
 }
 
-.svcKpi_pending .svcKpiValue {
-  color: var(--ds-accent-amber, var(--ds-text-primary));
+/* ─── Queue pulse — ترکیب زندهٔ صف (signature moment) ─────────── */
+
+.queueBlock {
+  display: grid;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+  background: color-mix(in oklch, var(--ds-text-muted) 3%, var(--ds-surface));
 }
-.svcKpi_today .svcKpiValue {
-  color: var(--ds-brand-600);
+
+.queueTrack {
+  display: flex;
+  block-size: 6px;
+  gap: 3px;
+  border-radius: 999px;
+  overflow: hidden;
 }
-.svcKpi_urgent .svcKpiValue {
-  color: var(--ds-accent-rose, var(--ds-text-primary));
+
+.queueSeg {
+  display: block;
+  block-size: 100%;
+  min-inline-size: 3px;
+  border-radius: 999px;
+  transform-origin: center;
+  animation: qBarIn 520ms var(--ds-ease-out-expo) both;
+}
+
+.queueSeg:nth-child(2) {
+  animation-delay: 70ms;
+}
+.queueSeg:nth-child(3) {
+  animation-delay: 140ms;
+}
+
+.queueSeg[data-tone="pending"] {
+  background: var(--ds-accent-amber, var(--ds-brand-500));
+}
+.queueSeg[data-tone="urgent"] {
+  background: var(--ds-accent-rose, var(--ds-accent-amber));
+}
+.queueSeg[data-tone="closed"] {
+  background: var(--ds-accent-emerald, var(--ds-brand-500));
+}
+
+.queueTrackEmpty {
+  display: block;
+  block-size: 100%;
+  inline-size: 100%;
+  background: var(--ds-border-subtle);
+  border-radius: 999px;
+}
+
+.queueLegend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+}
+
+.queueLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}
+
+.queueLegendItem b {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: var(--ds-text-primary);
+}
+
+.queueLegendDot {
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  flex: 0 0 0.5rem;
+  border-radius: 50%;
+}
+
+.queueLegendDot[data-tone="pending"] {
+  background: var(--ds-accent-amber, var(--ds-brand-500));
+}
+.queueLegendDot[data-tone="urgent"] {
+  background: var(--ds-accent-rose, var(--ds-accent-amber));
+}
+.queueLegendDot[data-tone="closed"] {
+  background: var(--ds-accent-emerald, var(--ds-brand-500));
+}
+
+.queueLegendTotal {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-inline-start: auto;
+  padding-inline-start: 1.1rem;
+  border-inline-start: 1px solid var(--ds-border-subtle);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  white-space: nowrap;
+}
+
+.queueLegendTotal b {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: var(--ds-text-primary);
+}
+
+@keyframes qBarIn {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
+  }
 }
 
 /* Service list */
@@ -821,27 +954,49 @@
 }
 
 .svcItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--ds-space-3);
   background: var(--ds-surface);
   margin: 0;
-  /* H1-fix (2026-08-14): سمت راست (اکشن‌ها) دیگر داخل لینک آیتم نیست؛
-     این li الآن container position اکشن‌های absolute است. */
-  position: relative;
+  transition: background 180ms var(--ds-ease-out-quart);
+}
+
+.svcItem:hover {
+  background: color-mix(in oklch, var(--ds-brand-500) 4%, var(--ds-surface));
+}
+
+/* Avatar tint per status — رنگ تنها نشانگر نیست؛ پیل وضعیت هم هست */
+.svcItem[data-status="PENDING"] .svcAvatar {
+  background: color-mix(in oklch, var(--ds-accent-amber) 16%, var(--ds-surface));
+  color: var(--ds-accent-amber, var(--ds-text-primary));
+  border-color: color-mix(in oklch, var(--ds-accent-amber) 30%, var(--ds-border-subtle));
+}
+.svcItem[data-status="IN_PROGRESS"] .svcAvatar {
+  background: color-mix(in oklch, var(--ds-brand-500) 14%, var(--ds-surface));
+  color: var(--ds-brand-600);
+  border-color: color-mix(in oklch, var(--ds-brand-500) 28%, var(--ds-border-subtle));
+}
+.svcItem[data-status="COMPLETED"] .svcAvatar {
+  background: color-mix(in oklch, var(--ds-accent-emerald) 14%, var(--ds-surface));
+  color: var(--ds-accent-emerald, var(--ds-text-primary));
+  border-color: color-mix(in oklch, var(--ds-accent-emerald) 28%, var(--ds-border-subtle));
+}
+.svcItem[data-status="CANCELLED"] .svcAvatar {
+  background: color-mix(in oklch, var(--ds-text-muted) 10%, var(--ds-surface));
+  color: var(--ds-text-muted);
+  border-color: var(--ds-border-subtle);
 }
 
 .svcItemLink {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  column-gap: 0.75rem;
+  display: flex;
   align-items: center;
+  gap: var(--ds-space-3);
   padding: 0.7rem var(--ds-space-4);
+  min-inline-size: 0;
   text-decoration: none;
   color: inherit;
-  transition: background var(--ds-duration-fast);
-}
-
-.svcItemLink:hover {
-  background: color-mix(in oklch, var(--ds-brand-500) 4%, var(--ds-surface));
 }
 
 .svcItemLink:focus-visible {
@@ -850,7 +1005,6 @@
 }
 
 .svcAvatar {
-  grid-row: 1 / 3;
   width: 2.25rem;
   height: 2.25rem;
   flex: 0 0 2.25rem;
@@ -862,21 +1016,25 @@
   font-size: var(--ds-text-sm);
   font-weight: 800;
   border: 1px solid color-mix(in oklch, var(--ds-brand-500) 25%, var(--ds-border-subtle));
+  transition: transform 180ms var(--ds-ease-spring);
+}
+
+.svcItem:hover .svcAvatar {
+  transform: scale(1.06);
 }
 
 .svcItemMain {
-  grid-column: 2;
-  grid-row: 1;
   display: grid;
   gap: 0.1rem;
-  min-width: 0;
+  min-inline-size: 0;
 }
 
 .svcItemTitle {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  min-width: 0;
+  flex-wrap: wrap;
+  min-inline-size: 0;
 }
 
 .svcItemName {
@@ -905,14 +1063,12 @@
 }
 
 .svcItemMeta {
-  grid-column: 2;
-  grid-row: 2;
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.72rem;
   color: var(--ds-text-muted);
-  min-width: 0;
+  min-inline-size: 0;
 }
 
 .svcItemMeta > span:nth-child(1) {
@@ -930,22 +1086,13 @@
 }
 
 .svcItemSide {
-  grid-column: 2;
-  grid-row: 1 / 3;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: flex-end;
   gap: 0.6rem;
   flex-wrap: wrap;
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: var(--ds-space-4);
-  pointer-events: none;
-  padding-inline-start: 3rem;
-}
-
-.svcItemSide > * {
-  pointer-events: auto;
+  padding-inline-end: var(--ds-space-4);
+  min-inline-size: 0;
 }
 
 /* Inline action buttons inside service items */
@@ -953,7 +1100,6 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  pointer-events: auto;
 }
 
 .svcActionBtn {
@@ -969,7 +1115,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), color
-    var(--ds-duration-fast);
+    var(--ds-duration-fast), transform 120ms var(--ds-ease-spring);
   white-space: nowrap;
   text-decoration: none;
 }
@@ -978,6 +1124,10 @@
   background: color-mix(in oklch, var(--ds-brand-500) 6%, var(--ds-surface));
   border-color: color-mix(in oklch, var(--ds-brand-500) 30%, var(--ds-border-default));
   color: var(--ds-text-primary);
+}
+
+.svcActionBtn:active {
+  transform: scale(0.97);
 }
 
 .svcActionBtn:focus-visible {
@@ -1058,6 +1208,11 @@
   flex: 0 0 0.4rem;
 }
 
+/* در انتظار → نقطهٔ زندهٔ پالس‌دار (همان ریتم hero) */
+.svcStatusDot[data-pulse="true"] {
+  animation: fc-pulse 1.8s ease-in-out infinite;
+}
+
 .isPending {
   color: var(--ds-accent-amber, var(--ds-text-primary));
   background: color-mix(in oklch, var(--ds-accent-amber) 14%, var(--ds-surface));
@@ -1084,6 +1239,7 @@
   color: var(--ds-text-muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  padding-inline-start: 0.1rem;
 }
 
 @media (max-width: 720px) {
@@ -1103,15 +1259,26 @@
 
 .svcEmpty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 1.4rem var(--ds-space-4);
+  gap: 0.6rem;
+  padding: 1.8rem var(--ds-space-4);
   font-size: var(--ds-text-sm);
   color: var(--ds-text-muted);
   font-weight: 600;
   background: var(--ds-surface);
   text-align: center;
+}
+
+.svcEmptyIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, var(--ds-surface));
+  color: var(--ds-brand-600);
 }
 
 .svcFoot {
@@ -1698,23 +1865,16 @@
     font-size: 0.75rem;
     padding: 0.2rem 0.35rem;
   }
-  .svcKpis {
-    grid-template-columns: repeat(2, 1fr);
+  .queueBlock {
+    padding: var(--ds-space-2) 0.7rem;
   }
-  .svcKpi {
-    padding: 0.5rem 0.6rem;
+  .queueLegend {
+    gap: 0.35rem 0.8rem;
   }
-  .svcKpi:nth-child(odd) {
+  .queueLegendTotal {
+    margin-inline-start: 0;
+    padding-inline-start: 0;
     border-inline-start: 0;
-  }
-  .svcKpi:nth-child(-n + 2) {
-    border-block-end: 1px dashed var(--ds-border-subtle);
-  }
-  .svcKpiLabel {
-    font-size: 0.75rem;
-  }
-  .svcKpiValue {
-    font-size: 0.85rem;
   }
   .svcList {
     padding: 0.3rem 0;
@@ -1722,7 +1882,7 @@
   }
   .svcItemLink {
     padding: 0.55rem 0.7rem;
-    column-gap: 0.5rem;
+    gap: 0.5rem;
     border-radius: var(--ds-radius-md);
     box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
@@ -1744,17 +1904,15 @@
   .svcItemCode {
     font-size: 0.75rem;
   }
+  .svcItem {
+    grid-template-columns: 1fr;
+  }
   .svcItemSide {
-    position: static;
-    grid-column: 2;
-    grid-row: 3;
-    padding-inline-start: 0;
-    margin-block-start: 0.25rem;
     justify-content: flex-start;
     gap: 0.4rem;
-  }
-  .svcItemLink {
-    grid-template-rows: auto auto auto;
+    padding-block-end: 0.55rem;
+    padding-inline-start: calc(1.85rem + var(--ds-space-3) + 0.7rem);
+    padding-inline-end: 0.7rem;
   }
   .svcItemAmount {
     font-size: 0.8rem;
@@ -2035,12 +2193,6 @@
   .svcFlag {
     font-size: 0.65rem;
   }
-  .svcKpiLabel {
-    font-size: 0.7rem;
-  }
-  .svcKpiValue {
-    font-size: 0.8rem;
-  }
   .svcEmpty {
     padding: 0.8rem 0.5rem;
     font-size: 0.75rem;
@@ -2206,17 +2358,12 @@
   .livePanel {
     border-radius: var(--ds-radius-md);
   }
-  .svcKpis {
-    grid-template-columns: repeat(2, 1fr);
+  .queueBlock {
+    padding: var(--ds-space-2) 0.5rem;
   }
-  .svcKpi {
-    padding: 0.35rem 0.4rem;
-  }
-  .svcKpiLabel {
+  .queueLegendItem,
+  .queueLegendTotal {
     font-size: 0.65rem;
-  }
-  .svcKpiValue {
-    font-size: 0.75rem;
   }
   .svcItemLink {
     padding: 0.4rem 0.4rem;
