@@ -722,13 +722,15 @@
 /* Tablet breakpoint */
 @media (max-width: 720px) {
   .root {
-    --uh-gap: 0.6rem;
-    --uh-pad: 0.6rem;
+    /* ↑ breathing room — matches FintechCockpit mobile premium spacing */
+    --uh-gap: 0.75rem;
+    --uh-pad: 0.75rem;
   }
 
   .header {
     grid-template-columns: 1fr;
     align-items: stretch;
+    padding-block-end: var(--ds-space-3);
   }
 
   .headerAction {
@@ -738,24 +740,24 @@
   .primaryCta {
     width: 100%;
     justify-content: center;
-    padding: 0.6rem 0.9rem;
-    font-size: 0.85rem;
-    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-brand-500) 15%, transparent), 0 1px 3px
+    padding: 0.7rem 1rem;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 10px color-mix(in oklch, var(--ds-brand-500) 16%, transparent), 0 1px 3px
       color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
 
   .welcome {
     grid-template-columns: auto 1fr;
-    padding: var(--ds-space-3);
-    border-radius: var(--ds-radius-lg);
-    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-brand-500) 8%, transparent), 0 1px 3px
+    padding: var(--ds-space-4);
+    border-radius: var(--ds-radius-xl);
+    box-shadow: 0 3px 12px color-mix(in oklch, var(--ds-brand-500) 9%, transparent), 0 1px 3px
       color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
 
   .welcomeIcon {
-    width: 2.5rem;
-    height: 2.5rem;
-    flex: 0 0 2.5rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    flex: 0 0 2.6rem;
   }
 
   .welcomeTitle {
@@ -763,39 +765,41 @@
   }
 
   .welcomeDesc {
-    font-size: 0.8rem;
+    font-size: 0.825rem;
+    line-height: 1.5;
   }
 
   .welcomeSteps {
     flex-direction: row;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 
   .welcomeStep {
-    padding: 0.4rem 0.6rem;
+    padding: 0.45rem 0.7rem;
     font-size: 0.8rem;
-    border-radius: var(--ds-radius-sm);
-    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-brand-500) 8%, transparent);
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 1px 5px color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
   }
 
   .welcomeStepIndex {
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 1.25rem;
+    height: 1.25rem;
     font-size: 0.7rem;
   }
 
   .kycBanner {
     grid-template-columns: auto 1fr;
-    padding: var(--ds-space-3);
-    border-radius: var(--ds-radius-lg);
-    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-accent-amber) 8%, transparent), 0 1px 3px
+    padding: var(--ds-space-4);
+    border-radius: var(--ds-radius-xl);
+    gap: var(--ds-space-3);
+    box-shadow: 0 3px 12px color-mix(in oklch, var(--ds-accent-amber) 9%, transparent), 0 1px 3px
       color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
 
   .kycIcon {
-    width: 2rem;
-    height: 2rem;
-    flex: 0 0 2rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    flex: 0 0 2.2rem;
   }
 
   .kycTitle {
@@ -803,21 +807,23 @@
   }
 
   .kycDesc {
-    font-size: 0.75rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
   }
 
   .kycCta {
     grid-column: 1 / -1;
     justify-content: center;
     justify-self: stretch;
-    padding: 0.5rem 0.8rem;
-    font-size: 0.8rem;
-    border-radius: var(--ds-radius-sm);
-    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-accent-amber) 12%, transparent);
+    padding: 0.6rem 0.9rem;
+    font-size: 0.825rem;
+    border-radius: var(--ds-radius-md);
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-accent-amber) 14%, transparent);
+    min-height: 44px;
   }
 
   .name {
-    font-size: clamp(1.15rem, 0.8rem + 1.5vw, 1.4rem);
+    font-size: clamp(1.2rem, 0.85rem + 1.5vw, 1.5rem);
   }
 
   .greeting {
@@ -831,7 +837,7 @@
   .badge {
     font-size: 0.7rem;
     padding-inline: 0.4rem;
-    padding-block: 0.1rem;
+    padding-block: 0.12rem;
   }
 
   .sectionTitle {
@@ -847,32 +853,32 @@
   }
 
   .actionsGrid {
-    gap: 0.5rem;
+    gap: 0.55rem;
   }
 
   .actionCard {
-    min-height: 48px;
-    padding: 0.5rem 0.6rem;
-    gap: 0.5rem;
-    border-radius: var(--ds-radius-md);
-    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-text-primary) 5%, transparent), 0 1px 2px
+    min-height: 52px;
+    padding: 0.6rem 0.7rem;
+    gap: 0.55rem;
+    border-radius: var(--ds-radius-lg);
+    box-shadow: 0 1px 5px color-mix(in oklch, var(--ds-text-primary) 5%, transparent), 0 1px 2px
       color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
   }
 
   .actionCard:hover {
-    box-shadow: 0 4px 12px color-mix(in oklch, var(--ds-brand-500) 12%, transparent), 0 2px 4px
+    box-shadow: 0 4px 14px color-mix(in oklch, var(--ds-brand-500) 13%, transparent), 0 2px 4px
       color-mix(in oklch, var(--ds-text-primary) 6%, transparent);
   }
 
   .actionIcon {
-    width: 1.7rem;
-    height: 1.7rem;
-    flex: 0 0 1.7rem;
+    width: 1.8rem;
+    height: 1.8rem;
+    flex: 0 0 1.8rem;
     border-radius: var(--ds-radius-sm);
   }
 
   .actionLabel {
-    font-size: 0.8rem;
+    font-size: 0.825rem;
   }
 
   .actionHint {
@@ -880,149 +886,155 @@
   }
 
   .statsGrid {
-    gap: 0.5rem;
+    gap: 0.55rem;
   }
 
   .requestLink {
-    padding: 0.5rem 0.6rem;
-    border-radius: var(--ds-radius-md);
-    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+    padding: 0.6rem 0.75rem;
+    border-radius: var(--ds-radius-lg);
+    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
 
   .requestLink:hover {
-    box-shadow: 0 4px 10px color-mix(in oklch, var(--ds-brand-500) 10%, transparent), 0 1px 3px
+    box-shadow: 0 4px 12px color-mix(in oklch, var(--ds-brand-500) 11%, transparent), 0 1px 3px
       color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
 
   .requestType {
-    font-size: 0.8rem;
+    font-size: 0.825rem;
   }
 
   .requestCode {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .requestAmount {
-    font-size: 0.8rem;
+    font-size: 0.825rem;
   }
 
   .requestDate {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .activityItem {
-    padding: 0.5rem 0.6rem;
-    gap: 0.5rem;
-    border-radius: var(--ds-radius-md);
-    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+    padding: 0.6rem 0.75rem;
+    gap: 0.55rem;
+    border-radius: var(--ds-radius-lg);
+    box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
   }
 
   .activityMessage {
-    font-size: 0.8rem;
+    font-size: 0.825rem;
   }
 
   .activityTime {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .activityDot {
-    width: 0.4rem;
-    height: 0.4rem;
-    flex: 0 0 0.4rem;
+    width: 0.42rem;
+    height: 0.42rem;
+    flex: 0 0 0.42rem;
   }
 
   .emptyCta {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.8rem;
-    border-radius: var(--ds-radius-sm);
-    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
+    padding: 0.6rem 0.9rem;
+    font-size: 0.825rem;
+    border-radius: var(--ds-radius-md);
+    min-height: 44px;
+    box-shadow: 0 2px 8px color-mix(in oklch, var(--ds-brand-500) 13%, transparent);
   }
 }
 
-/* Mobile — compact with premium depth */
+/* Mobile — still breathable, slight density increase */
 @media (max-width: 480px) {
   .root {
-    --uh-gap: 0.5rem;
-    --uh-pad: 0.5rem;
+    /* Keep breathing room — never drop below 0.65rem */
+    --uh-gap: 0.65rem;
+    --uh-pad: 0.65rem;
   }
 
   .header {
-    padding-block-end: 0.5rem;
+    padding-block-end: 0.55rem;
   }
 
   .name {
-    font-size: clamp(1.05rem, 0.7rem + 1.2vw, 1.25rem);
+    font-size: clamp(1.1rem, 0.75rem + 1.2vw, 1.3rem);
   }
 
   .greeting {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
   }
 
   .subtitle {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
   }
 
   .primaryCta {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
-    border-radius: var(--ds-radius-sm);
+    padding: 0.6rem 0.85rem;
+    font-size: 0.825rem;
+    border-radius: var(--ds-radius-md);
+    min-height: 44px;
   }
 
   .welcome {
-    padding: 0.6rem;
-    gap: 0.5rem;
-    border-radius: var(--ds-radius-md);
+    padding: 0.75rem;
+    gap: 0.55rem;
+    border-radius: var(--ds-radius-lg);
   }
 
   .welcomeIcon {
-    width: 2rem;
-    height: 2rem;
-    flex: 0 0 2rem;
+    width: 2.1rem;
+    height: 2.1rem;
+    flex: 0 0 2.1rem;
   }
 
   .welcomeTitle {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
   }
 
   .welcomeDesc {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
+    line-height: 1.5;
   }
 
   .welcomeStep {
-    padding: 0.35rem 0.5rem;
-    font-size: 0.75rem;
-    gap: 0.3rem;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.775rem;
+    gap: 0.35rem;
   }
 
   .welcomeStepIndex {
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1.15rem;
+    height: 1.15rem;
     font-size: 0.65rem;
   }
 
   .kycBanner {
-    padding: 0.6rem;
-    gap: 0.5rem;
-    border-radius: var(--ds-radius-md);
+    padding: 0.75rem;
+    gap: 0.55rem;
+    border-radius: var(--ds-radius-lg);
   }
 
   .kycIcon {
-    width: 1.8rem;
-    height: 1.8rem;
-    flex: 0 0 1.8rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    flex: 0 0 1.9rem;
   }
 
   .kycTitle {
-    font-size: 0.8rem;
+    font-size: 0.825rem;
   }
 
   .kycDesc {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
+    line-height: 1.5;
   }
 
   .kycCta {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.75rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.775rem;
+    min-height: 44px;
   }
 
   .kycBadge {
@@ -1030,27 +1042,27 @@
   }
 
   .sectionTitle {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
   }
 
   .seeAll {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .sectionMeta {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
   }
 
   .badge {
     font-size: 0.65rem;
-    padding-inline: 0.35rem;
+    padding-inline: 0.38rem;
   }
 
   .requestLink {
     grid-template-columns: 1fr;
-    gap: 0.3rem;
-    padding: 0.45rem 0.5rem;
-    border-radius: var(--ds-radius-sm);
+    gap: 0.35rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: var(--ds-radius-md);
   }
 
   .requestBody {
@@ -1059,41 +1071,41 @@
   }
 
   .requestType {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
   }
 
   .requestCode {
-    font-size: 0.65rem;
+    font-size: 0.67rem;
   }
 
   .requestAmount {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
   }
 
   .requestDate {
-    font-size: 0.65rem;
+    font-size: 0.67rem;
   }
 
   .actionsGrid {
     grid-template-columns: 1fr 1fr;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 
   .actionCard {
-    min-height: 44px;
-    padding: 0.4rem 0.45rem;
-    gap: 0.4rem;
-    border-radius: var(--ds-radius-sm);
+    min-height: 48px;
+    padding: 0.5rem 0.55rem;
+    gap: 0.45rem;
+    border-radius: var(--ds-radius-md);
   }
 
   .actionIcon {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex: 0 0 1.5rem;
+    width: 1.6rem;
+    height: 1.6rem;
+    flex: 0 0 1.6rem;
   }
 
   .actionLabel {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
   }
 
   .actionHint {
@@ -1102,125 +1114,129 @@
 
   .statsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 
   .activityItem {
-    padding: 0.4rem 0.5rem;
-    gap: 0.4rem;
-    border-radius: var(--ds-radius-sm);
+    padding: 0.5rem 0.65rem;
+    gap: 0.45rem;
+    border-radius: var(--ds-radius-md);
   }
 
   .activityMessage {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
   }
 
   .activityTime {
-    font-size: 0.65rem;
+    font-size: 0.67rem;
   }
 
   .activityDot {
-    width: 0.35rem;
-    height: 0.35rem;
-    flex: 0 0 0.35rem;
+    width: 0.38rem;
+    height: 0.38rem;
+    flex: 0 0 0.38rem;
   }
 
   .emptyCta {
-    padding: 0.4rem 0.6rem;
-    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.775rem;
+    min-height: 44px;
   }
 }
 
 /* Ultra-small mobile */
 @media (max-width: 360px) {
   .root {
-    --uh-gap: 0.4rem;
-    --uh-pad: 0.4rem;
+    /* minimum viable breathing room */
+    --uh-gap: 0.55rem;
+    --uh-pad: 0.55rem;
   }
 
   .name {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 
   .greeting {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .primaryCta {
-    padding: 0.45rem 0.65rem;
-    font-size: 0.75rem;
+    padding: 0.5rem 0.7rem;
+    font-size: 0.775rem;
+    min-height: 44px;
   }
 
   .welcome {
-    padding: 0.5rem;
+    padding: 0.6rem;
   }
 
   .welcomeTitle {
-    font-size: 0.8rem;
+    font-size: 0.825rem;
   }
 
   .welcomeDesc {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .welcomeStep {
-    padding: 0.3rem 0.4rem;
-    font-size: 0.7rem;
+    padding: 0.35rem 0.45rem;
+    font-size: 0.72rem;
   }
 
   .kycBanner {
-    padding: 0.5rem;
+    padding: 0.6rem;
   }
 
   .kycTitle {
-    font-size: 0.75rem;
+    font-size: 0.775rem;
   }
 
   .kycDesc {
-    font-size: 0.65rem;
+    font-size: 0.67rem;
   }
 
   .kycCta {
-    padding: 0.35rem 0.5rem;
-    font-size: 0.7rem;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.72rem;
+    min-height: 44px;
   }
 
   .sectionTitle {
-    font-size: 0.8rem;
+    font-size: 0.825rem;
   }
 
   .actionCard {
-    min-height: 40px;
-    padding: 0.35rem 0.4rem;
+    min-height: 44px;
+    padding: 0.4rem 0.45rem;
   }
 
   .actionIcon {
-    width: 1.4rem;
-    height: 1.4rem;
-    flex: 0 0 1.4rem;
+    width: 1.45rem;
+    height: 1.45rem;
+    flex: 0 0 1.45rem;
   }
 
   .actionLabel {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .statsGrid {
-    gap: 0.3rem;
+    gap: 0.4rem;
   }
 
   .requestLink {
-    padding: 0.4rem 0.4rem;
+    padding: 0.45rem 0.5rem;
   }
 
   .activityItem {
-    padding: 0.35rem 0.4rem;
+    padding: 0.4rem 0.5rem;
   }
 
   .activityMessage {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
 
   .activityTime {
-    font-size: 0.6rem;
+    font-size: 0.62rem;
   }
 }
