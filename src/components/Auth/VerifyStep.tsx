@@ -128,7 +128,9 @@ export default function VerifyStep({
           }}
           invalid={invalid}
           disabled={isPending}
-          autoSubmit={false}
+          // 2026-08-14: با ۶ رقم کامل (یا ۸ کاراکتر کد پشتیبان) خودکار تأیید
+          // شود — دکمه «تأیید و ادامه» همچنان به‌عنوان fallback فعال است.
+          autoSubmit
           allowBackupCode={is2FA}
           describedBy="otp-help"
         />

@@ -1040,7 +1040,7 @@
 .auth-otp-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 0.4rem;
+  gap: 0.45rem;
   direction: ltr;
 }
 /* حالت کد پشتیبان 2FA: ۸ سلول — در موبایل کمی جمع‌تر تا جا نشود */
@@ -1048,64 +1048,56 @@
   grid-template-columns: repeat(8, 1fr);
   gap: 0.3rem;
 }
-.auth-otp-grid--backup .auth-otp-cell {
+.auth-otp-grid--backup .auth-otp-input {
   min-block-size: clamp(2.4rem, 8.5vw, 2.9rem);
-  border-radius: 0.6rem;
-  font-size: 0.95em;
+  border-radius: 0.65rem;
+  font-size: 0.95rem;
 }
-.auth-otp-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-block-size: clamp(2.75rem, 10vw, 3.125rem);
-  border-radius: 0.75rem;
+/* 2026-08-14: خانه‌ها input واقعی هستند (نه div نمایشی + input مخفی).
+   الگوی استاندارد OTP (Stripe / GOV.UK / بانک‌ها): هر خانه یک input با
+   maxLength=1، auto-advance، backspace-to-previous و paste. این ساختار
+   باگ‌های نسخه قبل (caret نامربوط روی موبایل، حذف رقم اشتباه، مشکل صفر)
+   را از اساس حذف می‌کند چون فوکوس/caret را خود مرورگر مدیریت می‌کند. */
+.auth-otp-input {
+  inline-size: 100%;
+  min-block-size: clamp(3rem, 11vw, 3.5rem);
+  border-radius: 0.85rem;
   border: 1px solid var(--a-input-bd);
   background: var(--a-input-bg);
   color: var(--a-fg-1);
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  text-align: center;
+  caret-color: var(--a-accent);
   box-shadow: inset 0 1px 0 var(--a-input-inset);
-  transition: border-color var(--a-r) var(--a-ease), background var(--a-r) var(--a-ease), scale
-    var(--a-r) var(--a-spring);
+  outline: none;
+  transition: border-color var(--a-r) var(--a-ease), background var(--a-r) var(--a-ease),
+    box-shadow var(--a-r) var(--a-ease), scale var(--a-r) var(--a-spring);
 }
-.auth-otp-shell:focus-within .auth-otp-cell {
-  border-color: var(--a-input-bd-f);
-}
-.auth-otp-cell--filled {
-  background: var(--a-input-bg-f);
+.auth-otp-input:hover {
   border-color: var(--a-input-bd-h);
-  scale: 1.03;
-}
-.auth-otp-cell--invalid {
-  border-color: var(--a-err);
-  box-shadow: 0 0 0 3px var(--a-err-bg);
-  animation: a-shake 0.32s var(--a-ease);
-}
-.auth-otp-input {
-  /* 2026-08-12: visually hidden 1px — cells forward clicks to it so the
-     caret can be placed on any digit (each cell is individually editable).
-     pointer-events:none keeps cell clicks from hitting the input. */
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  opacity: 0;
-  border: 0;
-  background: transparent;
-  caret-color: transparent;
-  pointer-events: none;
+  background: var(--a-input-bg-h);
 }
 .auth-otp-input:focus {
-  outline: none;
-}
-/* سلول فعال = جایگاه caret — کاربر می‌داند الان روی کدام خانه است */
-.auth-otp-cell--active,
-.auth-otp-shell:focus-within .auth-otp-cell--active {
   border-color: var(--a-input-bd-f);
-  box-shadow: 0 0 0 2px var(--a-focus-ring);
+  background: var(--a-input-bg-f);
+  box-shadow: 0 0 0 3px var(--a-focus-ring), inset 0 1px 0 var(--a-input-inset);
 }
-.auth-otp-grid {
-  cursor: text;
+.auth-otp-input--filled {
+  background: var(--a-input-bg-f);
+  border-color: var(--a-input-bd-f);
+  scale: 1.04;
+  animation: a-otp-pop 0.2s var(--a-spring);
+}
+.auth-otp-input--invalid {
+  border-color: var(--a-err);
+  box-shadow: 0 0 0 3px var(--a-err-bg), inset 0 1px 0 var(--a-input-inset);
+  animation: a-shake 0.32s var(--a-ease);
+}
+.auth-otp-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 .auth-otp-toolbar {
   display: flex;
@@ -1201,9 +1193,9 @@
   .auth-social-stack {
     grid-template-columns: 1fr;
   }
-  .auth-otp-cell {
-    min-block-size: 2.5rem;
-    font-size: 1rem;
+  .auth-otp-input {
+    min-block-size: 2.6rem;
+    font-size: 1.05rem;
   }
 }
 
@@ -1229,6 +1221,15 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes a-otp-pop {
+  from {
+    scale: 0.86;
+  }
+  to {
+    scale: 1.04;
   }
 }
 
@@ -1269,7 +1270,8 @@
   .auth-card,
   .auth-fade-in,
   .auth-stage-form,
-  .auth-otp-cell--invalid {
+  .auth-otp-input--filled,
+  .auth-otp-input--invalid {
     animation: none;
   }
   .auth-page-root::before {
