@@ -12127,9 +12127,33 @@
     .at-eng-hero__value {
       font-size: 22px;
     }
+    /* Rate card — موبایل: layout عمودی head→viz→body */
     .at-eng-rate-card {
-      padding: 12px 16px 14px;
-      gap: 10px;
+      padding: 12px 14px 14px;
+      gap: 8px;
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "head"
+        "viz"
+        "body";
+    }
+    .at-eng-rate-card__viz {
+      justify-self: center;
+    }
+    .at-eng-rate-gauge {
+      width: 76px;
+      height: 76px;
+    }
+    .at-eng-rate-gauge__text {
+      font-size: 20px;
+    }
+    .at-eng-rate-card__body {
+      align-items: center;
+      text-align: center;
+    }
+    .at-eng-rate-card__narrative {
+      font-size: 11px;
+      text-align: center;
     }
   }
   @media (max-width: 480px) {
