@@ -1698,6 +1698,232 @@
   flex: 0 0 auto;
 }
 
+/* ──────────────────────── Desktop-only wrapper ──────────────────────── */
+
+/* روی دسکتاپ/تبلت: معمولی. روی موبایل: مخفی (نسخه داخل hero نمایش داده می‌شود) */
+.desktopOnly {
+  display: contents;
+}
+
+@media (max-width: 720px) {
+  .desktopOnly {
+    display: none;
+  }
+}
+
+/* ──────────────────────── Hero mobile KPI mini strip ─────────────────── */
+
+/* پیش‌فرض: مخفی (فقط موبایل) */
+.heroMobileKpi {
+  display: none;
+}
+
+.heroMobileDeadlines {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  /* Hero layout: 2-col روی موبایل — heroMain چپ، heroSide (ring) راست */
+  .hero {
+    grid-template-columns: 1fr auto !important;
+    grid-template-rows: auto auto auto;
+    column-gap: 0.75rem;
+    row-gap: 0.6rem;
+    align-items: start;
+  }
+
+  /* heroMain و heroSide: ردیف اول */
+  .heroMain {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .heroSide {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    border-block-start: 0 !important;
+    padding-block-start: 0 !important;
+    gap: 0.3rem;
+    /* عرض ثابت برای ring */
+    width: 90px;
+    flex-shrink: 0;
+  }
+
+  /* heroSideLabel (نقش) — compact */
+  .heroSideLabel {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+  }
+
+  /* KPI mini strip — ردیف دوم، کل عرض */
+  .heroMobileKpi {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    background: color-mix(in oklch, var(--ds-text-primary) 5%, var(--ds-surface));
+    border-radius: var(--ds-radius-md);
+    overflow: hidden;
+    border: 1px solid color-mix(in oklch, var(--ds-brand-500) 20%, var(--ds-border-subtle));
+  }
+
+  /* Deadlines — ردیف سوم، کل عرض */
+  .heroMobileDeadlines {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    gap: 0.35rem;
+    padding-block-start: 0.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroMobileKpi {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* ردیف ۴و۵ را با 3+2 نشون بده */
+  .heroMiniKpiCell:nth-child(n + 4) {
+    border-block-start: 1px solid
+      color-mix(in oklch, var(--ds-brand-500) 15%, var(--ds-border-subtle));
+  }
+
+  .heroMiniKpiCell:nth-child(4) {
+    border-inline-start: 0;
+  }
+}
+
+/* ── Hero mini KPI cells ─────────────────────────────────── */
+
+.heroMiniKpiCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  padding: 0.55rem 0.3rem;
+  text-decoration: none;
+  color: inherit;
+  border-inline-start: 1px solid
+    color-mix(in oklch, var(--ds-brand-500) 15%, var(--ds-border-subtle));
+  transition: background var(--ds-duration-fast);
+  min-width: 0;
+  position: relative;
+}
+
+.heroMiniKpiCell:first-child {
+  border-inline-start: 0;
+}
+
+.heroMiniKpiCell:active {
+  background: color-mix(in oklch, var(--ds-brand-500) 8%, var(--ds-surface));
+}
+
+.heroMiniKpiCell_pending .heroMiniKpiIcon {
+  color: var(--ds-accent-amber, var(--ds-brand-600));
+}
+
+.heroMiniKpiCell_alert .heroMiniKpiValue {
+  color: var(--ds-accent-rose, #f43f5e);
+}
+
+.heroMiniKpiIcon {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: var(--ds-radius-sm);
+  background: color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+  color: var(--ds-brand-600);
+  flex: 0 0 auto;
+}
+
+.heroMiniKpiValue {
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+
+.heroMiniKpiLabel {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ── Hero mobile deadline chips ───────────────────────────── */
+
+.heroDeadlineChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: var(--ds-radius-md);
+  text-decoration: none;
+  border: 1px solid transparent;
+  font-size: 0.68rem;
+  transition: background var(--ds-duration-fast);
+}
+
+.heroDeadlineChip:active {
+  opacity: 0.8;
+}
+
+.heroDeadlineChip_ok {
+  border-color: color-mix(in oklch, var(--fc-accent) 30%, transparent);
+  background: color-mix(in oklch, var(--fc-accent) 6%, var(--ds-surface));
+}
+
+.heroDeadlineChip_warn {
+  border-color: color-mix(in oklch, oklch(0.65 0.18 85) 35%, transparent);
+  background: oklch(0.65 0.18 85 / 0.07);
+}
+
+.heroDeadlineChip_critical {
+  border-color: color-mix(in oklch, oklch(0.55 0.22 25) 35%, transparent);
+  background: oklch(0.55 0.22 25 / 0.07);
+}
+
+.heroDeadlineLabel {
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  white-space: nowrap;
+}
+
+.heroDeadlineDays {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.heroDeadlineDays_ok {
+  color: var(--fc-accent);
+}
+
+.heroDeadlineDays_warn {
+  color: oklch(0.65 0.18 85);
+}
+
+.heroDeadlineDays_critical {
+  color: oklch(0.55 0.22 25);
+}
+
 /* ──────────────────────── Market Intelligence Panel ──────────────────── */
 
 .marketPanel {
@@ -1913,16 +2139,16 @@
     --fc-gap: 0.75rem;
     --fc-pad: 0.75rem;
   }
-  /* Hero — premium mobile depth + spacious */
+  /* Hero — premium mobile: 2-col + kpi + deadlines inside */
   .hero {
-    padding: 1.1rem;
-    gap: var(--ds-space-4);
+    padding: 1rem;
+    gap: 0.6rem;
     border-radius: var(--ds-radius-xl);
     box-shadow: 0 4px 16px color-mix(in oklch, var(--ds-brand-500) 10%, transparent), 0 1px 4px
       color-mix(in oklch, var(--ds-text-primary) 5%, transparent);
   }
   .heroMain {
-    gap: 0.65rem;
+    gap: 0.5rem;
   }
   .heroTitle {
     font-size: clamp(1.3rem, 1rem + 2vw, 1.7rem);
@@ -1972,19 +2198,25 @@
   .heroVitalFlag {
     box-shadow: 0 1px 4px color-mix(in oklch, var(--ds-accent-amber) 12%, transparent);
   }
-  /* Hero side: collapse on mobile — max 2 zones */
+  /* Hero side: side-by-side با heroMain روی موبایل */
   .heroSide {
-    border-inline-start: 0;
-    padding-inline-start: 0;
-    border-block-start: 1px solid color-mix(in oklch, var(--ds-border-subtle) 70%, transparent);
-    padding-block-start: 0.75rem;
-    gap: 0.5rem;
+    border-inline-start: 0 !important;
+    padding-inline-start: 0 !important;
+    border-block-start: 0 !important;
+    padding-block-start: 0 !important;
+    gap: 0.3rem;
+    width: 90px;
+    flex-shrink: 0;
+    align-self: start;
   }
   .heroSideLabel {
-    font-size: 0.75rem;
+    font-size: 0.68rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
   }
   .heroSideRole {
-    font-size: 0.75rem;
+    font-size: 0.68rem;
   }
   .ambientGlow {
     opacity: 0.35;

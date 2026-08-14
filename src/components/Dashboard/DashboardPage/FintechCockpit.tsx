@@ -349,6 +349,8 @@ function CockpitHero({
   activeCustomers,
   dealsVolume,
   dealsCurrency,
+  kpi,
+  deadlines,
 }: {
   userName: string;
   userRole: string;
@@ -361,6 +363,8 @@ function CockpitHero({
   activeCustomers: number;
   dealsVolume: number;
   dealsCurrency: string;
+  kpi?: FintechCockpitProps['kpi'];
+  deadlines?: FintechCockpitProps['deadlines'];
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -473,6 +477,78 @@ function CockpitHero({
           liveEventCount={liveCount}
         />
       </div>
+
+      {/* Mobile-only: KPI mini strip + Deadlines embedded inside hero */}
+      {kpi ? (
+        <div className={s.heroMobileKpi}>
+          <Link
+            href="/dashboard/service-requests"
+            className={`${s.heroMiniKpiCell} ${s.heroMiniKpiCell_pending}`}
+          >
+            <span className={s.heroMiniKpiIcon} aria-hidden>
+              <Zap size={13} />
+            </span>
+            <span className={s.heroMiniKpiValue}>{formatIntFa(kpi.pendingRequests)}</span>
+            <span className={s.heroMiniKpiLabel}>در انتظار</span>
+          </Link>
+          <Link href="/dashboard/settlements" className={s.heroMiniKpiCell}>
+            <span className={s.heroMiniKpiIcon} aria-hidden>
+              <Wallet size={13} />
+            </span>
+            <span className={s.heroMiniKpiValue}>
+              {formatVolume(kpi.dealsVolume, kpi.dealsCurrency)}
+            </span>
+            <span className={s.heroMiniKpiLabel}>حجم ۳۰ روز</span>
+          </Link>
+          <Link href="/dashboard/customers" className={s.heroMiniKpiCell}>
+            <span className={s.heroMiniKpiIcon} aria-hidden>
+              <Users size={13} />
+            </span>
+            <span className={s.heroMiniKpiValue}>{formatIntFa(kpi.activeCustomers)}</span>
+            <span className={s.heroMiniKpiLabel}>مشتری فعال</span>
+          </Link>
+          <Link href="/dashboard/audit-log" className={s.heroMiniKpiCell}>
+            <span className={s.heroMiniKpiIcon} aria-hidden>
+              <TrendingUp size={13} />
+            </span>
+            <span className={s.heroMiniKpiValue}>{formatIntFa(kpi.txn24h)}</span>
+            <span className={s.heroMiniKpiLabel}>تراکنش ۲۴ ساعت</span>
+          </Link>
+          <Link
+            href="/dashboard/fraud-review"
+            className={`${s.heroMiniKpiCell} ${kpi.openFraudCases > 0 ? s.heroMiniKpiCell_alert : ''}`}
+          >
+            <span className={s.heroMiniKpiIcon} aria-hidden>
+              <ShieldAlert size={13} />
+            </span>
+            <span className={s.heroMiniKpiValue}>{formatIntFa(kpi.openFraudCases)}</span>
+            <span className={s.heroMiniKpiLabel}>هشدار باز</span>
+          </Link>
+        </div>
+      ) : null}
+
+      {deadlines && deadlines.length > 0 ? (
+        <div className={s.heroMobileDeadlines}>
+          {deadlines.slice(0, 3).map((item) => {
+            const dl = item.daysLeft;
+            const tone = dl < 0 ? 'critical' : dl <= 3 ? 'warn' : 'ok';
+            const text =
+              dl < 0 ? `${formatIntFa(Math.abs(dl))} روز معوق` : `${formatIntFa(dl)} روز دیگر`;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`${s.heroDeadlineChip} ${s[`heroDeadlineChip_${tone}`]}`}
+              >
+                <span className={s.heroDeadlineLabel}>{item.label}</span>
+                <span className={`${s.heroDeadlineDays} ${s[`heroDeadlineDays_${tone}`]}`}>
+                  {text}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
     </section>
   );
 }
@@ -988,7 +1064,7 @@ export function FintechCockpit({
 }: FintechCockpitProps) {
   return (
     <div className={s.root} dir="rtl">
-      {/* Cockpit hero */}
+      {/* Cockpit hero — passes kpi+deadlines for mobile-embedded layout */}
       <CockpitHero
         userName={userName}
         userRole={userRole}
@@ -1001,13 +1077,19 @@ export function FintechCockpit({
         activeCustomers={kpi.activeCustomers}
         dealsVolume={kpi.dealsVolume}
         dealsCurrency={kpi.dealsCurrency}
+        kpi={kpi}
+        deadlines={deadlines}
       />
 
-      {/* KPI strip — single horizontal row, no card repetition */}
-      <KpiStrip kpi={kpi} />
+      {/* KPI strip — desktop/tablet only; mobile version is inside hero */}
+      <div className={s.desktopOnly}>
+        <KpiStrip kpi={kpi} />
+      </div>
 
-      {/* Upcoming deadlines — slim bar */}
-      <UpcomingDeadlines items={deadlines} />
+      {/* Upcoming deadlines — desktop/tablet only; mobile version is inside hero */}
+      <div className={s.desktopOnly}>
+        <UpcomingDeadlines items={deadlines} />
+      </div>
 
       {/* Quick actions row */}
       <QuickActionsRow />
