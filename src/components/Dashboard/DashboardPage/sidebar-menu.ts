@@ -28,6 +28,7 @@ import {
   HiOutlineHome,
   HiOutlineInboxArrowDown,
   HiOutlineKey,
+  HiOutlineLink,
   HiOutlineMap,
   HiOutlineMapPin,
   HiOutlineMegaphone,
@@ -354,6 +355,15 @@ export function getMenu(role: UserRole): NavSection[] {
     icon: HiOutlineDevicePhoneMobile({ className: ICON_CLASS }),
     label: 'دستگاه‌های من',
     title: 'مدیریت دستگاه‌های متصل',
+  };
+
+  // 2026-08-14: اتصال حساب‌های OAuth (گوگل/گیت‌هاب) — پیوند و لغو پیوند امن
+  const connectedAccounts: MenuItem = {
+    id: 'connectedAccounts',
+    href: '/dashboard/connected-accounts',
+    icon: HiOutlineLink({ className: ICON_CLASS }),
+    label: 'اتصال حساب‌ها',
+    title: 'اتصال گوگل/گیت‌هاب به حساب',
   };
 
   // ── Admin: credit-rates, billing-address, subscription ────
@@ -889,6 +899,7 @@ export function getMenu(role: UserRole): NavSection[] {
             myDeals,
             transfer,
             devices,
+            connectedAccounts,
             notifications,
             myRequests,
             profile,
@@ -952,6 +963,7 @@ export function getMenu(role: UserRole): NavSection[] {
             myDeals,
             transfer,
             devices,
+            connectedAccounts,
             notifications,
             myRequests,
             profile,
@@ -975,7 +987,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۳',
           label: 'حساب',
-          items: [notifications, myDeals, myRequests, devices, profile],
+          items: [notifications, myDeals, myRequests, devices, connectedAccounts, profile],
         },
       ];
     case 'AUTHOR':
@@ -986,7 +998,17 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۵',
           label: 'حساب',
-          items: [wallet, virtualCards, kyc, myDeals, transfer, devices, myRequests, profile],
+          items: [
+            wallet,
+            virtualCards,
+            kyc,
+            myDeals,
+            transfer,
+            devices,
+            connectedAccounts,
+            myRequests,
+            profile,
+          ],
         },
       ];
     default:
@@ -1004,7 +1026,7 @@ export function getMenu(role: UserRole): NavSection[] {
           id: 'account',
           index: '۰۳',
           label: 'حساب',
-          items: [devices, notifications, myRequests, profile],
+          items: [devices, connectedAccounts, notifications, myRequests, profile],
         },
       ];
   }

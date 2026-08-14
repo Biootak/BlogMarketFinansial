@@ -1,0 +1,190 @@
+/* ConnectedAccountsClient — اتصال حساب‌ها (dashboard)
+ * Tokens فقط: --ds-* / --at-* — logical properties — RTL */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-5);
+  max-inline-size: 46rem;
+}
+
+/* ── Notices ── */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2-5);
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  font-size: var(--ds-text-sm, 0.875rem);
+  line-height: 1.7;
+}
+
+.notice svg {
+  flex-shrink: 0;
+  margin-block-start: 0.2rem;
+}
+
+.noticeError {
+  color: var(--ds-status-error-fg);
+  background: var(--ds-status-error-bg);
+  border: 1px solid var(--ds-status-error-border);
+}
+
+.noticeWarn {
+  color: var(--at-fg);
+  background: var(--at-surface-2);
+  border: 1px solid var(--at-line);
+}
+
+/* ── Provider cards ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: var(--ds-space-4);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  border: 1px solid var(--at-line);
+  border-radius: var(--ds-radius-2xl);
+  background: var(--at-surface);
+  padding: var(--ds-space-5);
+  transition:
+    border-color var(--ds-duration-base) var(--ds-ease-out-quart),
+    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.cardLinked {
+  border-color: color-mix(in srgb, var(--at-accent) 35%, var(--at-line));
+}
+
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-3-5);
+}
+
+.brandIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  flex-shrink: 0;
+  border-radius: var(--ds-radius-xl);
+  background: var(--at-surface-2);
+  border: 1px solid var(--at-line);
+  color: var(--at-fg-muted);
+  font-size: 1.35rem;
+}
+
+.brandIconLinked {
+  color: var(--at-accent);
+  background: color-mix(in srgb, var(--at-accent) 10%, var(--at-surface-2));
+  border-color: color-mix(in srgb, var(--at-accent) 30%, var(--at-line));
+}
+
+.providerName {
+  font-size: var(--ds-text-base);
+  font-weight: 600;
+  color: var(--at-fg);
+  margin: 0;
+}
+
+.providerDesc {
+  font-size: var(--ds-text-sm, 0.8125rem);
+  color: var(--at-fg-muted);
+  margin-block-start: 0.15rem;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline-start: auto;
+  border-radius: var(--ds-radius-full);
+  padding: 0.15rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.statusLinked {
+  color: var(--ds-status-success-fg);
+  background: var(--ds-status-success-bg);
+}
+
+.statusUnlinked {
+  color: var(--at-fg-subtle);
+  background: var(--at-surface-2);
+}
+
+.cardFoot {
+  margin-block-start: auto;
+  border-block-start: 1px dashed var(--at-line);
+  padding-block-start: var(--ds-space-3-5);
+}
+
+.linkBtn,
+.unlinkBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  inline-size: 100%;
+  border-radius: var(--ds-radius-lg);
+  padding: var(--ds-space-2-5) var(--ds-space-4);
+  font-size: var(--ds-text-sm, 0.875rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--ds-duration-base) var(--ds-ease-out-quart),
+    color var(--ds-duration-base) var(--ds-ease-out-quart),
+    border-color var(--ds-duration-base) var(--ds-ease-out-quart);
+}
+
+.linkBtn {
+  background: var(--at-accent);
+  color: var(--at-surface);
+  border: 1px solid transparent;
+}
+
+.linkBtn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.linkBtn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.unlinkBtn {
+  background: transparent;
+  color: var(--at-fg-muted);
+  border: 1px solid var(--at-line);
+}
+
+.unlinkBtn:hover:not(:disabled) {
+  color: var(--ds-status-error-fg);
+  border-color: var(--ds-status-error-border);
+  background: var(--ds-status-error-bg);
+}
+
+/* ── ایمیل حساب ── */
+.emailRow {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2-5);
+  color: var(--at-fg-muted);
+  font-size: var(--ds-text-sm, 0.8125rem);
+}
+
+.emailRow svg {
+  flex-shrink: 0;
+}
+
+.emailStrong {
+  color: var(--at-fg);
+  font-weight: 600;
+}

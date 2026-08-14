@@ -65,9 +65,22 @@ export default function AuthFlow() {
     '1': 'نشست شما منقضی شده است. لطفاً دوباره وارد شوید.',
     unauthenticated: 'برای دسترسی به این بخش، لطفاً وارد حساب خود شوید.',
   };
+  // 2026-08-14: خطاهای برگشتی از callbacks.signIn OAuth (رد مستقیم قبل از
+  // ساخت session) — مثل ایمیلِ تأییدنشده در گوگل/گیت‌هاب یا حساب مسدود.
+  const oauthError = searchParams.get('error');
+  const errorMessages: Record<string, string> = {
+    'oauth-email-unverified':
+      'ورود با گوگل/گیت‌هاب ممکن نیست: ایمیل این حساب در سرویس‌دهنده تأیید نشده است. از ورود با ایمیل و رمز عبور استفاده کنید.',
+    'account-blocked':
+      'دسترسی به این حساب غیرفعال شده است. برای اطلاعات بیشتر با پشتیبانی تماس بگیرید.',
+    'oauth-email-mismatch':
+      'این حساب گوگل/گیت‌هاب به ایمیل دیگری متصل است. ابتدا از حساب خود خارج شوید و با همان ایمیل وارد شوید.',
+  };
   const initialNotice: AuthNotice | null = expiredReason
     ? { tone: 'info', message: reasonMessages[expiredReason] ?? reasonMessages['1'] }
-    : null;
+    : oauthError && errorMessages[oauthError]
+      ? { tone: 'error', message: errorMessages[oauthError] }
+      : null;
 
   // 2026-08-10: اگر کاربر قبلاً login کرده است (مثلاً بعد از OAuth callback)،
   // مستقیماً به مقصد نهایی بروید — بدون نمایش دوبارهٔ مرحلهٔ ایمیل.
@@ -216,7 +229,9 @@ export default function AuthFlow() {
 
         {/* ── Step content ── */}
         <Suspense fallback={<StepFallback />}>
-          {step === 'email' && <EmailStep initialEmail={email} onResult={handleResult} onMoveTo={moveTo} />}
+          {step === 'email' && (
+            <EmailStep initialEmail={email} onResult={handleResult} onMoveTo={moveTo} />
+          )}
           {step === 'register' && (
             <RegisterStep
               initialEmail={email}
@@ -250,8 +265,17 @@ export default function AuthFlow() {
               onCooldownChange={setCooldownMs}
               onInvalidChange={setOtpInvalid}
               onBack={() => {
+                // 2026-08-14: چالش 2FA می‌تواند از ورود با رمز یا از ورود OAuth
+                // (گوگل/گیت‌هاب) آمده باشد — در هر دو حالت مسیر برگشت امن، مرحلهٔ
+                // ایمیل است نه ثبت‌نام.
                 const fallback: InternalStep =
-                  intent === 'recover' ? 'recover' : intent === 'login' ? 'login' : 'register';
+                  intent === '2fa'
+                    ? 'email'
+                    : intent === 'recover'
+                      ? 'recover'
+                      : intent === 'login'
+                        ? 'login'
+                        : 'register';
                 moveTo(fallback, { notice: null, intent });
               }}
             />
