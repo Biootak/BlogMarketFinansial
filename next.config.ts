@@ -68,6 +68,15 @@ const nextConfig: NextConfig = {
         source: '/uploads/:path*',
         destination: '/api/uploads/:path*',
       },
+      // 2026-08-14: snapshot به‌صورت runtime در public/data نوشته می‌شود ولی
+      // Next standalone فقط فایل‌هایی را سرو می‌کند که در build-time وجود داشته‌اند
+      // → /data/market-rates.json بعد از deploy های جدید 404 می‌شد. shape خروجی
+      // /api/market-rates دقیقاً همان snapshot است ({success,data,meta})؛ این
+      // rewrite قرارداد URL قبلی را برای مصرف‌کنندگان خارجی حفظ می‌کند.
+      {
+        source: '/data/market-rates.json',
+        destination: '/api/market-rates',
+      },
     ];
   },
 
