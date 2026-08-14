@@ -230,6 +230,30 @@
   color: var(--ds-text-secondary);
 }
 
+/* Role pill inside eyebrow — visible on mobile only */
+.heroEyebrowRolePill {
+  display: none;
+  margin-inline-start: auto;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: color-mix(in oklch, var(--ds-brand-500) 14%, var(--ds-surface));
+  color: var(--ds-brand-600);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-500) 28%, var(--ds-border-subtle));
+  white-space: nowrap;
+  text-transform: none;
+  line-height: 1.6;
+}
+
+@media (max-width: 720px) {
+  .heroEyebrowRolePill {
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
 .heroTitle {
   margin: 0;
   font-size: clamp(1.6rem, 1rem + 2.5vw, 2.4rem);
@@ -1750,11 +1774,9 @@
     flex-shrink: 0;
   }
 
-  /* heroSideLabel (نقش) — compact */
+  /* heroSideLabel (نقش) — مخفی روی موبایل چون role pill داخل eyebrow نشان داده می‌شود */
   .heroSideLabel {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
+    display: none;
   }
 
   /* KPI mini strip — ردیف دوم، کل عرض */
@@ -2210,10 +2232,7 @@
     align-self: start;
   }
   .heroSideLabel {
-    font-size: 0.68rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
+    display: none;
   }
   .heroSideRole {
     font-size: 0.68rem;
@@ -2559,7 +2578,7 @@
     font-size: 0.7rem;
   }
   .heroSideLabel {
-    font-size: 0.7rem;
+    display: none;
   }
   .heroSideRole {
     font-size: 0.7rem;

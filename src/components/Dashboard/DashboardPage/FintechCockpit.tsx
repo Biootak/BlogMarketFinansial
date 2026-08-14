@@ -403,6 +403,10 @@ function CockpitHero({
             ·
           </span>
           <span className={s.heroEyebrowDate}>{date}</span>
+          {/* Mobile-inline role badge — hidden on desktop via CSS */}
+          <span className={s.heroEyebrowRolePill} aria-label="نقش کاربر">
+            {ROLE_LABELS[userRole as keyof typeof ROLE_LABELS] ?? userRole}
+          </span>
         </div>
 
         <h1 className={s.heroTitle}>
