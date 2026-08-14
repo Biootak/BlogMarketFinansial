@@ -1900,26 +1900,44 @@
     border-inline-start: 0;
   }
   .svcList {
-    padding: 0.3rem 0;
-    max-height: 280px;
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem 0.7rem;
+    background: transparent;
+    max-height: none;
+    overflow-y: visible;
+  }
+  /* موبایل: هر درخواست = کارت معلق پرمیوم — هویت بالا، مبلغ/وضعیت وسط، اکشن آخر */
+  .svcItem {
+    grid-template-columns: 1fr;
+    grid-template-areas: "link" "side";
+    background: var(--ds-surface);
+    border: 1px solid var(--ds-border-subtle);
+    border-radius: var(--ds-radius-lg);
+    box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 4%, transparent), 0 4px 12px
+      color-mix(in oklch, var(--ds-brand-500) 6%, transparent);
+    overflow: hidden;
+    transition: border-color var(--ds-duration-fast), box-shadow var(--ds-duration-fast), transform
+      var(--ds-duration-fast) var(--ds-ease-out-quart);
+  }
+  .svcItem:active {
+    transform: scale(0.99);
   }
   .svcItemLink {
-    padding: 0.55rem 0.7rem;
-    gap: 0.5rem;
-    border-radius: var(--ds-radius-md);
-    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
-  }
-  .svcItemLink:hover {
-    box-shadow: 0 3px 10px color-mix(in oklch, var(--ds-brand-500) 10%, transparent);
+    grid-area: link;
+    padding: 0.6rem 0.7rem 0.45rem;
+    gap: 0.55rem;
+    border-radius: 0;
+    box-shadow: none;
   }
   .svcAvatar {
-    width: 1.85rem;
-    height: 1.85rem;
-    flex: 0 0 1.85rem;
+    width: 1.9rem;
+    height: 1.9rem;
+    flex: 0 0 1.9rem;
     font-size: 0.75rem;
   }
   .svcItemName {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
   .svcItemMeta {
     font-size: 0.75rem;
@@ -1927,72 +1945,82 @@
   .svcItemCode {
     font-size: 0.75rem;
   }
-  .svcItem {
-    grid-template-columns: 1fr;
-  }
-  /* در موبایل: side زیر link می‌آید — indent برابر avatar + gap */
-  .svcItemSide {
-    grid-column: 1;
-    justify-items: start;
-    gap: 0.4rem;
-    padding-block-end: 0.55rem;
-    padding-inline-start: calc(1.85rem + 0.5rem + 0.7rem);
-    padding-inline-end: 0.7rem;
-  }
-  .svcItemSideTop {
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  .svcItemAmount {
-    font-size: 0.8rem;
-  }
-  .svcItemCurrency {
-    font-size: 0.75rem;
-  }
-  .svcStatus {
-    font-size: 0.75rem;
-    padding: 0.15rem 0.35rem;
-  }
   .svcItemTime {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
   }
   .svcFlag {
-    font-size: 0.7rem;
-    padding: 0.05rem 0.3rem;
+    font-size: 0.68rem;
+    padding: 0.08rem 0.35rem;
+  }
+  /* ناحیهٔ پول + وضعیت — تمام‌عرض، جدا از هویت با خط مورّب */
+  .svcItemSide {
+    grid-area: side;
+    grid-template-rows: auto auto;
+    gap: 0.5rem;
+    align-items: center;
+    justify-items: stretch;
+    padding: 0.45rem 0.7rem 0.6rem;
+    border-block-start: 1px dashed var(--ds-border-subtle);
+  }
+  .svcItemSideTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    flex-wrap: nowrap;
+  }
+  .svcItemAmount {
+    font-size: clamp(0.95rem, 0.85rem + 0.8vw, 1.15rem);
+  }
+  .svcItemCurrency {
+    font-size: 0.72rem;
+  }
+  .svcStatus {
+    font-size: 0.72rem;
+    padding: 0.25rem 0.55rem;
+    flex: 0 0 auto;
+  }
+  /* اکشن‌ها — دو دکمهٔ تمام‌عرض، تارگت لمسی ≥44px */
+  .svcItemActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    width: 100%;
+    opacity: 1;
+    transform: none;
+  }
+  .svcActionBtn {
+    justify-content: center;
+    min-height: 44px;
+    font-size: 0.8rem;
+    border-radius: var(--ds-radius-md);
   }
   .svcEmpty {
     padding: 1rem 0.7rem;
     font-size: 0.8rem;
+    border-radius: var(--ds-radius-lg);
   }
+  /* Footer — دو کنترل هم‌ارتفاع فشرده؛ CTA دیگر تمام‌عرض نیست */
   .svcFoot {
-    padding: 0.5rem 0.7rem;
-    gap: 0.35rem;
-    justify-content: stretch;
+    padding: 0.4rem 0.7rem;
+    gap: 0.4rem;
+  }
+  .svcFootCta,
+  .svcFootLink {
+    min-height: 44px;
   }
   .svcFootCta {
-    flex: 1;
-    justify-content: center;
-    padding: 0.45rem 0.6rem;
+    padding: 0 0.95rem;
     font-size: 0.8rem;
-    border-radius: var(--ds-radius-sm);
+    border-radius: var(--ds-radius-md);
     box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
   }
   .svcFootCta:hover {
     box-shadow: 0 4px 12px color-mix(in oklch, var(--ds-brand-500) 16%, transparent);
   }
   .svcFootLink {
+    padding: 0 0.4rem;
     font-size: 0.75rem;
-  }
-  /* Inline actions — موبایل: همیشه نمایان */
-  .svcItemActions {
-    gap: 0.3rem;
-    opacity: 1;
-    transform: none;
-  }
-  .svcActionBtn {
-    padding: 0.2rem 0.35rem;
-    font-size: 0.7rem;
-    box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 3%, transparent);
   }
   /* Live panel — tighter with depth */
   .healthPill {
@@ -2189,34 +2217,32 @@
     font-size: 0.7rem;
   }
   .svcItemLink {
-    padding: 0.45rem 0.5rem;
-    border-radius: var(--ds-radius-sm);
-    box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-text-primary) 4%, transparent);
+    padding: 0.55rem 0.6rem 0.4rem;
   }
   .svcItemName {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
   .svcAvatar {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex: 0 0 1.5rem;
-    font-size: 0.7rem;
+    width: 1.65rem;
+    height: 1.65rem;
+    flex: 0 0 1.65rem;
+    font-size: 0.72rem;
   }
   .svcItemMeta {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
   .svcItemCode {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
   }
   .svcItemAmount {
-    font-size: 0.75rem;
+    font-size: 0.95rem;
   }
   .svcItemCurrency {
     font-size: 0.7rem;
   }
   .svcStatus {
     font-size: 0.7rem;
-    padding: 0.1rem 0.3rem;
+    padding: 0.2rem 0.45rem;
   }
   .svcItemTime {
     font-size: 0.7rem;
@@ -2233,22 +2259,17 @@
     gap: 0.3rem;
   }
   .svcFootCta {
-    padding: 0.4rem 0.5rem;
+    padding: 0 0.8rem;
     font-size: 0.75rem;
-    border-radius: var(--ds-radius-sm);
-    box-shadow: 0 2px 6px color-mix(in oklch, var(--ds-brand-500) 12%, transparent);
   }
   .svcFootLink {
     font-size: 0.7rem;
   }
   .svcItemActions {
-    gap: 0.25rem;
-    opacity: 1;
-    transform: none;
+    gap: 0.4rem;
   }
   .svcActionBtn {
-    padding: 0.15rem 0.3rem;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
   }
   .healthPill {
     padding: 0.2rem 0.4rem;
@@ -2438,7 +2459,7 @@
     padding: 0.35rem 0.4rem;
   }
   .svcFootCta {
-    padding: 0.35rem 0.45rem;
+    padding: 0 0.65rem;
     font-size: 0.7rem;
   }
   .healthPill {
