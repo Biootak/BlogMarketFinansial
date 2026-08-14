@@ -19,6 +19,7 @@ import {
   setup2FA,
 } from '@/actions/twoFactorActions';
 import { ConfirmDialog, EmptyState, FormField, Spotlight } from '@/components/Dashboard/primitives';
+import CellCodeInput, { type CellCodeInputHandle } from '@/components/ui/CellCodeInput';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertTriangle,
@@ -99,7 +100,7 @@ export default function TwoFactorCenter({ initial, redirectTo, canDisable = true
   const [pending, startTransition] = useTransition();
   const [copied, setCopied] = useState(false);
   const [confirmDisable, setConfirmDisable] = useState(false);
-  const tokenInputRef = useRef<HTMLInputElement | null>(null);
+  const tokenInputRef = useRef<CellCodeInputHandle | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(10);
   const submittingRef = useRef(false);
@@ -369,27 +370,23 @@ export default function TwoFactorCenter({ initial, redirectTo, canDisable = true
             </header>
             <p className={s.cardLead}>کد ۶ رقمی نمایش‌داده‌شده در اپلیکیشن را وارد کنید.</p>
             <FormField label="کد ۶ رقمی" htmlFor="totp-token">
-              <input
+              <CellCodeInput
                 ref={tokenInputRef}
                 id="totp-token"
-                type="text"
-                inputMode="numeric"
-                pattern="\d{6}"
-                maxLength={6}
-                placeholder="••••••"
                 value={token}
-                onChange={(e) => {
-                  const v = e.target.value.replace(/\D/g, '').slice(0, 6);
+                onChange={(v) => {
                   setToken(v);
                   setError(null);
-                  // کد کامل شد → سابمیت خودکار
-                  if (v.length === 6) confirm(v);
                 }}
+                onComplete={(code) => confirm(code)}
                 disabled={pending}
-                className={s.tokenInput}
-                dir="ltr"
+                invalid={!!error}
                 autoComplete="one-time-code"
-                aria-invalid={error ? 'true' : 'false'}
+                ariaLabel="کد ۶ رقمی"
+                className={s.tokenCells}
+                cellClassName={s.tokenCell}
+                filledClassName={s.tokenCellFilled}
+                invalidClassName={s.tokenCellInvalid}
               />
             </FormField>
             <div className={s.verifyActions}>
@@ -547,20 +544,21 @@ export default function TwoFactorCenter({ initial, redirectTo, canDisable = true
         onConfirm={performDisable}
         body={
           <FormField label="کد تأیید" htmlFor="disable-token">
-            <input
+            <CellCodeInput
               id="disable-token"
-              type="text"
-              inputMode="numeric"
-              pattern="\d{6}"
-              maxLength={6}
               value={token}
-              onChange={(e) => {
-                setToken(e.target.value.replace(/\D/g, '').slice(0, 6));
+              onChange={(v) => {
+                setToken(v);
                 setError(null);
               }}
-              className={s.tokenInput}
-              dir="ltr"
-              placeholder="••••••"
+              disabled={pending}
+              invalid={!!error}
+              autoComplete="one-time-code"
+              ariaLabel="کد تأیید"
+              className={s.tokenCells}
+              cellClassName={s.tokenCell}
+              filledClassName={s.tokenCellFilled}
+              invalidClassName={s.tokenCellInvalid}
             />
           </FormField>
         }

@@ -13,6 +13,7 @@
 
 import { verifyPhoneOtp } from '@/actions/phone-verify';
 import { requestPhoneOtpOrTelegramLink } from '@/actions/telegram-otp';
+import CellCodeInput, { type CellCodeInputHandle } from '@/components/ui/CellCodeInput';
 import { AlertCircle, ArrowRight, Phone, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import { type FC, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -37,7 +38,7 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
   const [countdown, setCountdown] = useState(0);
   const [devCode, _setDevCode] = useState<string | undefined>();
 
-  const otpInputRef = useRef<HTMLInputElement>(null);
+  const otpInputRef = useRef<CellCodeInputHandle | null>(null);
   const phoneInputRef = useRef<HTMLInputElement>(null);
   const formId = useId();
 
@@ -83,21 +84,25 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
     }
   }, [phone]);
 
-  const handleVerify = useCallback(async () => {
-    setOtpErr('');
-    if (otpCode.trim().length !== 6) {
-      setOtpErr('کد باید ۶ رقمی باشد.');
-      return;
-    }
-    setLoading(true);
-    const res = await verifyPhoneOtp({ phone: phone.trim(), code: otpCode.trim() });
-    setLoading(false);
-    if (!res.success) {
-      setOtpErr(res.message);
-      return;
-    }
-    onVerified(phone.trim());
-  }, [phone, otpCode, onVerified]);
+  const handleVerify = useCallback(
+    async (codeOverride?: string) => {
+      setOtpErr('');
+      const code = (codeOverride ?? otpCode).trim();
+      if (code.length !== 6) {
+        setOtpErr('کد باید ۶ رقمی باشد.');
+        return;
+      }
+      setLoading(true);
+      const res = await verifyPhoneOtp({ phone: phone.trim(), code });
+      setLoading(false);
+      if (!res.success) {
+        setOtpErr(res.message);
+        return;
+      }
+      onVerified(phone.trim());
+    },
+    [phone, otpCode, onVerified],
+  );
 
   const handleResend = useCallback(async () => {
     if (countdown > 0 || loading) return;
@@ -208,26 +213,23 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
               <label className={s.fieldLabel} htmlFor={`${formId}-otp`}>
                 کد تأیید
               </label>
-              <input
-                id={`${formId}-otp`}
+              <CellCodeInput
                 ref={otpInputRef}
-                type="text"
-                inputMode="numeric"
-                maxLength={6}
-                dir="ltr"
+                id={`${formId}-otp`}
                 value={otpCode}
-                onChange={(e) => {
-                  setOtpCode(e.target.value.replace(/\D/g, ''));
+                onChange={(v) => {
+                  setOtpCode(v);
                   setOtpErr('');
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleVerify();
-                }}
-                placeholder="_ _ _ _ _ _"
-                className={`${s.otpInput} ${otpErr ? s.inputErr : ''}`}
-                aria-describedby={otpErr ? `${formId}-otp-err` : undefined}
-                autoComplete="one-time-code"
+                onComplete={(code) => void handleVerify(code)}
                 disabled={loading}
+                invalid={!!otpErr}
+                autoComplete="one-time-code"
+                ariaLabel="کد تأیید"
+                className={s.otpCells}
+                cellClassName={s.otpCell}
+                filledClassName={s.otpCellFilled}
+                invalidClassName={s.otpCellInvalid}
               />
               {otpErr && (
                 <p id={`${formId}-otp-err`} className={s.fieldErr} role="alert">
@@ -295,7 +297,7 @@ const PhoneVerifyModal: FC<Props> = ({ onVerified, onClose }) => {
           {modalStep === 'otp' && (
             <button
               type="button"
-              onClick={handleVerify}
+              onClick={() => void handleVerify()}
               disabled={loading || otpCode.length !== 6}
               className={s.primaryBtn}
             >

@@ -295,29 +295,37 @@
   color: var(--at-fg);
 }
 
-.tokenInput {
-  display: block;
+/* سلول‌های کد ۶ رقمی — طراحی سلولی (همان الگوی OtpDialPad احراز هویت) */
+.tokenCells {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+  direction: ltr;
+}
+.tokenCell {
   inline-size: 100%;
-  padding: var(--ds-space-3) var(--ds-space-4);
-  font-size: 22px;
-  font-weight: 700;
-  text-align: center;
-  letter-spacing: 0.5em;
+  min-block-size: 3rem;
+  border-radius: var(--ds-radius-md, 10px);
+  border: 1px solid var(--at-line);
   background: var(--at-bg);
   color: var(--at-fg);
-  border: 1px solid var(--at-line);
-  border-radius: var(--ds-radius-md, 10px);
+  font-size: 1.25rem;
+  font-weight: 700;
   font-family: var(--ds-font-mono, ui-monospace);
-  transition: border-color 0.2s var(--nova-ease), box-shadow 0.2s var(--nova-ease);
-}
-
-.tokenInput:focus {
+  caret-color: var(--at-accent, var(--nova-primary));
   outline: none;
+  transition: border-color 0.2s var(--nova-ease), box-shadow 0.2s var(--nova-ease),
+    background 0.2s var(--nova-ease);
+}
+.tokenCell:focus {
   border-color: var(--at-accent, var(--nova-primary));
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent, var(--nova-primary)) 18%, transparent);
 }
-
-.tokenInput[aria-invalid="true"] {
+.tokenCellFilled {
+  border-color: var(--at-accent, var(--nova-primary));
+  background: var(--at-surface);
+}
+.tokenCellInvalid {
   border-color: var(--nova-rose);
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--nova-rose) 18%, transparent);
 }
