@@ -15,6 +15,7 @@ import {
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
 import { logTxnStatusChange } from '@/lib/fintech/txn-trail';
+import { serverLog } from '@/lib/server-logger';
 import { screenTransaction } from '@/lib/fraud/screener';
 import { notifyTelegramCustomer } from '@/lib/notifications/telegram-user';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -710,7 +711,9 @@ export async function executeConfirmTransfer(input: {
             },
           }),
         )
-        .catch(() => {});
+        .catch((e) => {
+          serverLog.error('transfer', 'mark-failed:insufficient-balance', e);
+        });
       return {
         ok: false,
         retryable: false,
@@ -738,7 +741,9 @@ export async function executeConfirmTransfer(input: {
             },
           }),
         )
-        .catch(() => {});
+        .catch((e) => {
+          serverLog.error('transfer', 'mark-failed:recipient-no-account', e);
+        });
       return {
         ok: false,
         retryable: false,

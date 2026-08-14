@@ -4,8 +4,15 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   // Rate limiting for public API
+  const xff = request.headers.get('x-forwarded-for');
   const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    (xff
+      ? xff
+          .split(',')
+          .map((p) => p.trim())
+          .filter(Boolean)
+          .at(-1)
+      : null) ??
     request.headers.get('x-real-ip') ??
     '127.0.0.1';
   const rateLimit = await checkRateLimit(`tags:${ip}`, 'api');

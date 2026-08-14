@@ -19,15 +19,14 @@ export default function ServiceWorkerRegister() {
     if (typeof window === 'undefined') return;
 
     const register = () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {
-        // ثبت‌نام نباید هرگز تجربهٔ کاربر را خراب کند — فقط log.
-        // eslint-disable-next-line no-console
-        console.warn('[sw] registration failed');
-      });
+      // ثبت‌نام نباید هرگز تجربهٔ کاربر را خراب کند — fail silently.
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
     };
 
     window.addEventListener('load', register, { once: true });
-    return () => window.removeEventListener('load', register);
+    return () => {
+      window.removeEventListener('load', register);
+    };
   }, []);
 
   return null;

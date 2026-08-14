@@ -275,7 +275,7 @@ async function processOneFile(
     return {
       ok: false,
       code: 'FILE_TOO_LARGE',
-      message: 'حجم فایل بیشتر از 10MB است',
+      message: 'حجم فایل بیشتر از 5MB است',
       filename: file.name,
     };
   }

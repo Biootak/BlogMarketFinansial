@@ -386,8 +386,16 @@ export async function reviewExchangeRequest(input: {
   const access = await requireExchangeAccess(req.exchangeId, true);
   if (!access.ok) return { success: false, error: access.error };
 
-  const xff = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (xff.split(',')[0] ?? '').trim() || ((await headers()).get('x-real-ip')?.trim() ?? '');
+  const headersList = await headers();
+  const xff = headersList.get('x-forwarded-for') ?? '';
+  const ip =
+    xff
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .at(-1) ??
+    headersList.get('x-real-ip')?.trim() ??
+    'unknown';
 
   await prisma.$transaction(async (tx) => {
     await tx.customerRequest.update({
@@ -534,8 +542,16 @@ export async function resolveExchangeFraud(input: {
   const access = await requireExchangeAccess(review.exchangeId, true);
   if (!access.ok) return { success: false, error: access.error };
 
-  const xff = (await headers()).get('x-forwarded-for') ?? '';
-  const ip = (xff.split(',')[0] ?? '').trim() || ((await headers()).get('x-real-ip')?.trim() ?? '');
+  const headersList2 = await headers();
+  const xff2 = headersList2.get('x-forwarded-for') ?? '';
+  const ip =
+    xff2
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .at(-1) ??
+    headersList2.get('x-real-ip')?.trim() ??
+    'unknown';
 
   await prisma.$transaction(async (tx) => {
     await tx.fraudReview.update({

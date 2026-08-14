@@ -83,11 +83,13 @@ async function handleSync(req: Request) {
   // Next.js Data Cache (unstable_cache)
   revalidateTag('rate-lists');
   revalidateTag('ticker');
+  revalidateTag('exchange-rates');
   // safeCache in-memory store — باید جداگانه bust شود وگرنه
   // getRateLists (ttl=300s) و getActiveRateListsOrCryptoFallback (ttl=60s)
   // تا TTL خود stale می‌مانند و نرخ جدید در اسلایدر نمایش داده نمی‌شود.
   safeRevalidateTag('rate-lists');
   safeRevalidateTag('ticker');
+  safeRevalidateTag('exchange-rates');
 
   return NextResponse.json({
     success: true,

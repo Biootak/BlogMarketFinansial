@@ -83,8 +83,15 @@ export async function SetupShell({
   let clientIp: string | undefined;
   try {
     const headerList = await headers();
+    const xff = headerList.get('x-forwarded-for');
     clientIp =
-      headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      (xff
+        ? xff
+            .split(',')
+            .map((p) => p.trim())
+            .filter(Boolean)
+            .at(-1)
+        : null) ??
       headerList.get('x-real-ip') ??
       undefined;
   } catch {
