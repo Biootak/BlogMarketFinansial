@@ -207,8 +207,9 @@ async function readBackupFromS3(filename: string): Promise<string | null> {
     const body = result.value.Body;
     if (!body) continue;
     const chunks: Uint8Array[] = [];
-    // @ts-expect-error — Body is a Node stream at runtime
-    for await (const chunk of body) chunks.push(chunk);
+    // Body در runtime یک Node Readable است؛ تایپ اتحاد SDK آن را پوشش نمی‌دهد
+    const stream = body as unknown as AsyncIterable<Uint8Array>;
+    for await (const chunk of stream) chunks.push(chunk);
     return Buffer.concat(chunks).toString('utf8');
   }
   return null;

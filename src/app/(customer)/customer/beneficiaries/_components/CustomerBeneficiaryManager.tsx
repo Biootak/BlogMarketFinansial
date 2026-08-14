@@ -119,7 +119,11 @@ export function CustomerBeneficiaryManager({ initialBeneficiaries }: Props) {
   useEffect(() => {
     if (modal.type === 'create') form.reset(EMPTY_FORM);
     else if (modal.type === 'edit') {
-      form.reset({ name: modal.row.name, identifier: modal.row.identifier, note: modal.row.note ?? '' });
+      form.reset({
+        name: modal.row.name,
+        identifier: modal.row.identifier,
+        note: modal.row.note ?? '',
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modal.type]);

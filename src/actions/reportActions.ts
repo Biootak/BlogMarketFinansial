@@ -95,8 +95,7 @@ interface ActionResult<T = unknown> {
 // 2026-07-28: Use session role directly instead of a redundant DB roundtrip.
 // The JWT-based session already carries the role — no need to re-fetch from DB.
 export async function checkReportAccess(): Promise<
-  | { ok: true }
-  | { ok: false; status: 401 | 403; message: string }
+  { ok: true } | { ok: false; status: 401 | 403; message: string }
 > {
   const session = await auth();
 

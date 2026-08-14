@@ -15,12 +15,12 @@ import {
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
 import { logTxnStatusChange } from '@/lib/fintech/txn-trail';
-import { serverLog } from '@/lib/server-logger';
 import { screenTransaction } from '@/lib/fraud/screener';
 import { notifyTelegramCustomer } from '@/lib/notifications/telegram-user';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
+import { serverLog } from '@/lib/server-logger';
 import type { FintechActionResult } from '@/types/types';
 import type { Prisma } from '@prisma/client';
 import { headers } from 'next/headers';
@@ -318,10 +318,16 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
   } catch (err) {
     const msg = (err as Error).message;
     if (msg === 'NO_ACCOUNT') {
-      return { success: false, error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' } };
+      return {
+        success: false,
+        error: { code: 'NO_ACCOUNT', message: 'حساب فعالی برای این ارز یافت نشد' },
+      };
     }
     if (msg === 'INSUFFICIENT_BALANCE') {
-      return { success: false, error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' } };
+      return {
+        success: false,
+        error: { code: 'INSUFFICIENT_BALANCE', message: 'موجودی کافی نیست' },
+      };
     }
     throw err;
   }

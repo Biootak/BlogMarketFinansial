@@ -171,7 +171,10 @@ describe('requestDeposit', () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
     // B-DEPOSIT-IDMP fix: اکنون customer اول فچ می‌شود، سپس transaction
-    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({ id: 'cust-1', FintechAccount: [] } as never);
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
+      id: 'cust-1',
+      FintechAccount: [],
+    } as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
       id: 'txn-exist',
       meta: { txnRef: 'ref-abc' },
@@ -299,7 +302,10 @@ describe('requestWithdraw', () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
     // B-IDMP-01 fix: اکنون customer اول فچ می‌شود، سپس transaction
-    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({ id: 'cust-1', FintechAccount: [] } as never);
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({
+      id: 'cust-1',
+      FintechAccount: [],
+    } as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
       id: 'txn-w-exist',
       meta: { txnRef: 'ref-w' },

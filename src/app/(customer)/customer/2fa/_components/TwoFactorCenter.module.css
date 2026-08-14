@@ -314,8 +314,8 @@
   font-family: var(--ds-font-mono, ui-monospace);
   caret-color: var(--at-accent, var(--nova-primary));
   outline: none;
-  transition: border-color 0.2s var(--nova-ease), box-shadow 0.2s var(--nova-ease),
-    background 0.2s var(--nova-ease);
+  transition: border-color 0.2s var(--nova-ease), box-shadow 0.2s var(--nova-ease), background 0.2s
+    var(--nova-ease);
 }
 .tokenCell:focus {
   border-color: var(--at-accent, var(--nova-primary));

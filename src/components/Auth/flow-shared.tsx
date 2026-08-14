@@ -237,7 +237,7 @@ export function LockedEmailChip({
 /** Notice / alert banner — با پشتیبانی از rate-limit countdown */
 export function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
   if (!notice) return null;
-  const hasCooldown = Boolean(notice.cooldownMs && notice.cooldownMs > 0);
+  const hasCooldown = notice.cooldownMs != null && notice.cooldownMs > 0;
   const cls =
     notice.tone === 'error'
       ? 'auth-alert'
@@ -259,10 +259,10 @@ export function NoticeBanner({ notice }: { notice: AuthNotice | null }) {
           {hasCooldown
             ? notice.message.replace(/لحظاتی دیگر دوباره تلاش کنید\.?/, '').trim()
             : notice.message}
-          {hasCooldown ? (
+          {notice.cooldownMs != null && notice.cooldownMs > 0 ? (
             <>
               {' '}
-              <RateLimitCountdown initialMs={notice.cooldownMs!} inline />
+              <RateLimitCountdown initialMs={notice.cooldownMs} inline />
             </>
           ) : null}
         </span>

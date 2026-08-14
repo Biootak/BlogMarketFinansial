@@ -208,10 +208,16 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
     const toAccountId = typeof meta.toAccountId === 'string' ? meta.toAccountId : null;
     const [fromAcc, toAcc] = await Promise.all([
       fromAccountId
-        ? prisma.fintechAccount.findUnique({ where: { id: fromAccountId }, select: { balance: true } })
+        ? prisma.fintechAccount.findUnique({
+            where: { id: fromAccountId },
+            select: { balance: true },
+          })
         : null,
       toAccountId
-        ? prisma.fintechAccount.findUnique({ where: { id: toAccountId }, select: { balance: true } })
+        ? prisma.fintechAccount.findUnique({
+            where: { id: toAccountId },
+            select: { balance: true },
+          })
         : null,
     ]);
     return {

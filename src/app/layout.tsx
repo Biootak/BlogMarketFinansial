@@ -26,8 +26,8 @@ import './globals.css';
 
 import { DevScriptInjector } from '@/components/DevScriptInjector';
 import PageViewTracker from '@/components/PageViewTracker';
-import Providers from '@/components/providers';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
+import Providers from '@/components/providers';
 import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
 // فونت‌ها از `src/app/fonts/index.ts` مدیریت می‌شوند — تنها منبع حقیقت.
 // برای تعویض فونت فقط همان فایل را تغییر بده — CSS و کامپوننت‌ها بدون تغییر

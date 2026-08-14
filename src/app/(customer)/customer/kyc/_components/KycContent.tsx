@@ -151,25 +151,19 @@ export default function KycContent({ profile, records }: Props) {
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
   const [addressDocUrl, setAddressDocUrl] = useState('');
-  const handleAddressDocUpload = useCallback(
-    (urls: string[]) => {
-      setAddressDocUrl(urls[0] ?? '');
-      setInteracted(true);
-    },
-    [],
-  );
+  const handleAddressDocUpload = useCallback((urls: string[]) => {
+    setAddressDocUrl(urls[0] ?? '');
+    setInteracted(true);
+  }, []);
   const handleAddressDocRemove = useCallback(() => {
     setAddressDocUrl('');
     setInteracted(true);
   }, []);
   const [bankStatementUrl, setBankStatementUrl] = useState('');
-  const handleBankStatementUpload = useCallback(
-    (urls: string[]) => {
-      setBankStatementUrl(urls[0] ?? '');
-      setInteracted(true);
-    },
-    [],
-  );
+  const handleBankStatementUpload = useCallback((urls: string[]) => {
+    setBankStatementUrl(urls[0] ?? '');
+    setInteracted(true);
+  }, []);
   const handleBankStatementRemove = useCallback(() => {
     setBankStatementUrl('');
     setInteracted(true);

@@ -116,8 +116,8 @@ describe('safeCache byte budget', () => {
     expect(value).toEqual({ payload });
     expect(fn).toHaveBeenCalledTimes(0);
 
-    delete process.env.SAFE_CACHE_MAX_BYTES;
-    delete process.env.SAFE_CACHE_MAX_ENTRIES;
+    Reflect.deleteProperty(process.env, 'SAFE_CACHE_MAX_BYTES');
+    Reflect.deleteProperty(process.env, 'SAFE_CACHE_MAX_ENTRIES');
   });
 
   it('evicts the oldest entries when the total byte budget is exceeded', async () => {
@@ -133,7 +133,7 @@ describe('safeCache byte budget', () => {
     const fn = vi.fn(async (n: number) => ({ n, payload: 'x'.repeat(200) }));
     const cached = safeCache(fn, null, { key: 'byte-budget:a', ttl: 60 });
 
-    const first = await cached(1);
+    await cached(1);
     expect(fn).toHaveBeenCalledTimes(1);
 
     // same key is cached — no second call
@@ -148,7 +148,7 @@ describe('safeCache byte budget', () => {
     await cached(1);
     expect(fn).toHaveBeenCalledTimes(3);
 
-    delete process.env.SAFE_CACHE_MAX_BYTES;
-    delete process.env.SAFE_CACHE_MAX_ENTRIES;
+    Reflect.deleteProperty(process.env, 'SAFE_CACHE_MAX_BYTES');
+    Reflect.deleteProperty(process.env, 'SAFE_CACHE_MAX_ENTRIES');
   });
 });

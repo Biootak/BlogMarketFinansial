@@ -151,7 +151,12 @@ async function install(rt: SwRuntime): Promise<void> {
   await new Promise<void>((resolveInstall) => {
     rt.emit('install', {
       waitUntil: (promise: Promise<unknown>) => {
-        void promise.then(() => resolveInstall());
+        // fail-open: اگر precache خطا بدهد (مثلاً در تستِ fallback آفلاین)،
+        // install هنوز تمام شود و rejection بدون handler نماند.
+        void promise.then(
+          () => resolveInstall(),
+          () => resolveInstall(),
+        );
         return promise;
       },
     });
@@ -168,7 +173,7 @@ describe('public/sw.js — offline fallback + runtime caching', () => {
 
   it('fallback: خطای شبکه در navigation → نسخهٔ کش‌شدهٔ همین صفحه', async () => {
     const rt = createSwRuntime({
-      fetchImpl: async (req) => {
+      fetchImpl: async () => {
         throw new TypeError('Failed to fetch');
       },
     });
@@ -283,7 +288,9 @@ describe('public/sw.js — offline fallback + runtime caching', () => {
     await install(rt);
 
     // درخواست اول — از شبکه، در cache می‌ماند
-    const first = await rt.runFetch('http://localhost:3000/_next/static/css/app.css', { mode: 'cors' });
+    const first = await rt.runFetch('http://localhost:3000/_next/static/css/app.css', {
+      mode: 'cors',
+    });
     expect(await first.text()).toBe('fresh css');
 
     // درخواست دوم با شبکهٔ قطع — باید از cache بیاید (نه 504)
@@ -293,7 +300,9 @@ describe('public/sw.js — offline fallback + runtime caching', () => {
       },
     });
     await install(offlineRt);
-    const second = await offlineRt.runFetch('http://localhost:3000/_next/static/css/app.css', { mode: 'cors' });
+    const second = await offlineRt.runFetch('http://localhost:3000/_next/static/css/app.css', {
+      mode: 'cors',
+    });
     // بدون cache قبلی در runtime دوم → 504 (اولین بار آفلاین)
     expect(second.status).toBe(504);
   });

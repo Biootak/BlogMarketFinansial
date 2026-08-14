@@ -28,7 +28,9 @@ vi.mock('@/lib/db', () => ({
     $transaction: vi.fn((fn: (tx: unknown) => Promise<unknown>) =>
       fn({
         fintechAccount: {
-          findFirst: vi.fn().mockResolvedValue({ id: 'acc-to-1', status: 'ACTIVE', balance: BigInt(0) }),
+          findFirst: vi
+            .fn()
+            .mockResolvedValue({ id: 'acc-to-1', status: 'ACTIVE', balance: BigInt(0) }),
           updateMany: vi.fn().mockResolvedValue({ count: 1 }),
           update: vi.fn().mockResolvedValue({ balance: BigInt(10_000) }),
           findUniqueOrThrow: vi.fn().mockResolvedValue({ balance: BigInt(500_000) }),
@@ -39,7 +41,14 @@ vi.mock('@/lib/db', () => ({
           update: vi.fn().mockResolvedValue({}),
         },
         transactionStatusLog: { create: txStatusLogCreate },
-        exchangeRateQuote: { findFirst: vi.fn().mockResolvedValue({ id: 'q-1', sellRate: '89.5', approvedAt: new Date(), expiresAt: null }) },
+        exchangeRateQuote: {
+          findFirst: vi.fn().mockResolvedValue({
+            id: 'q-1',
+            sellRate: '89.5',
+            approvedAt: new Date(),
+            expiresAt: null,
+          }),
+        },
         auditLog: { create: txAuditLogCreate },
       }),
     ),
@@ -50,7 +59,9 @@ vi.mock('@/lib/require-auth', () => ({ requireUser: vi.fn() }));
 vi.mock('@/lib/rate-limiter', () => ({ checkRateLimit: vi.fn() }));
 vi.mock('@/lib/revalidate', () => ({ revalidateTag: vi.fn() }));
 vi.mock('@/lib/fraud/screener', () => ({
-  screenTransaction: vi.fn().mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
+  screenTransaction: vi
+    .fn()
+    .mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
 }));
 vi.mock('@/lib/kyc-limits', () => ({
   assertOutgoingKycLimit: vi.fn().mockResolvedValue({ ok: true }),
@@ -82,7 +93,12 @@ import { requireUser } from '@/lib/require-auth';
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
 const AUTH_OK = { success: true as const, user: { id: 'user-1', role: 'USER' as const } };
-const AUTH_FAIL = { success: false as const, status: 401 as const, code: 'UNAUTHENTICATED' as const, message: '' };
+const AUTH_FAIL = {
+  success: false as const,
+  status: 401 as const,
+  code: 'UNAUTHENTICATED' as const,
+  message: '',
+};
 const RL_OK = { success: true as const, reset: Date.now() + 60000 };
 const RL_FAIL = { success: false as const, reset: Date.now() + 30000 };
 
@@ -90,7 +106,11 @@ const CUSTOMER_ACTIVE = { id: 'cust-1', exchangeId: 'exch-1', status: 'ACTIVE' }
 const CUSTOMER_FROZEN = { id: 'cust-1', exchangeId: 'exch-1', status: 'FROZEN' };
 
 const RATE_QUOTE = {
-  id: 'q-1', sellRate: '89.5', approvedAt: new Date(), createdAt: new Date(), expiresAt: null,
+  id: 'q-1',
+  sellRate: '89.5',
+  approvedAt: new Date(),
+  createdAt: new Date(),
+  expiresAt: null,
 };
 
 const VALID_TRADE = {
@@ -215,7 +235,13 @@ describe('executeFxTrade', () => {
       currency: 'USD',
       destCurrency: 'AFN',
       amount: BigInt(100_00),
-      meta: { toAmountCents: 895000, rate: 89.5, feeCents: 450, fromAccountId: null, toAccountId: null },
+      meta: {
+        toAmountCents: 895000,
+        rate: 89.5,
+        feeCents: 450,
+        fromAccountId: null,
+        toAccountId: null,
+      },
     } as never);
     const r = await executeFxTrade(VALID_TRADE);
     expect(r.success).toBe(true);
@@ -230,7 +256,7 @@ describe('executeFxTrade', () => {
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
       id: 'txn-conflict',
       status: 'COMPLETED',
-      currency: 'EUR',    // متفاوت از fromCurrency=USD
+      currency: 'EUR', // متفاوت از fromCurrency=USD
       destCurrency: 'AFN',
       amount: BigInt(100_00),
       meta: {},
@@ -245,7 +271,11 @@ describe('executeFxTrade', () => {
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER_ACTIVE as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
-    vi.mocked(assertOutgoingKycLimit).mockResolvedValueOnce({ ok: false, code: 'KYC_DAILY_LIMIT', error: 'سقف روزانه' } as never);
+    vi.mocked(assertOutgoingKycLimit).mockResolvedValueOnce({
+      ok: false,
+      code: 'KYC_DAILY_LIMIT',
+      error: 'سقف روزانه',
+    } as never);
     const r = await executeFxTrade(VALID_TRADE);
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('KYC_DAILY_LIMIT');
@@ -257,7 +287,12 @@ describe('executeFxTrade', () => {
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER_ACTIVE as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(assertOutgoingKycLimit).mockResolvedValueOnce({ ok: true } as never);
-    vi.mocked(screenTransaction).mockResolvedValueOnce({ score: 88, reasons: [], shouldBlock: true, shouldHold: false });
+    vi.mocked(screenTransaction).mockResolvedValueOnce({
+      score: 88,
+      reasons: [],
+      shouldBlock: true,
+      shouldHold: false,
+    });
     const r = await executeFxTrade(VALID_TRADE);
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('FRAUD_BLOCKED');

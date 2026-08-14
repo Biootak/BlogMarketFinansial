@@ -129,8 +129,8 @@ export default function SafeImage({
   // "has both width and fill properties" می‌دهد (مثلاً SearchResult با width={88}).
   const imageProps = { ...props };
   if (fill) {
-    delete imageProps.width;
-    delete imageProps.height;
+    Reflect.deleteProperty(imageProps, 'width');
+    Reflect.deleteProperty(imageProps, 'height');
   }
 
   // وقتی src تغییر می‌کنه، error state رو reset کن

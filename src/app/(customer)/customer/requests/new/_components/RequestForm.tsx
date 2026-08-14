@@ -33,7 +33,12 @@ import { useMemo, useState, useTransition } from 'react';
 import s from './RequestForm.module.css';
 
 /** خطای زندهٔ هر فیلد — هم‌زمان با تایپ نمایش داده می‌شود */
-type FieldErrors = Partial<Record<'fromAccount' | 'toAccount' | 'amount' | 'unfreezeAccount' | 'requestedLimit' | 'note', string>>;
+type FieldErrors = Partial<
+  Record<
+    'fromAccount' | 'toAccount' | 'amount' | 'unfreezeAccount' | 'requestedLimit' | 'note',
+    string
+  >
+>;
 
 interface Props {
   initialType: CustomerRequestType;
@@ -136,7 +141,8 @@ export default function RequestForm({
     if (type === 'TRANSFER_INITIATE') {
       if (!fromAccount) errs.fromAccount = 'انتخاب حساب مبدأ الزامی است';
       if (!toAccount.trim()) errs.toAccount = 'شناسه مقصد الزامی است';
-      else if (toAccount.trim() === fromAccount) errs.toAccount = 'مبدأ و مقصد نمی‌توانند یکسان باشند';
+      else if (toAccount.trim() === fromAccount)
+        errs.toAccount = 'مبدأ و مقصد نمی‌توانند یکسان باشند';
       if (!amount || Number(amount) <= 0) errs.amount = 'مبلغ باید بزرگ‌تر از صفر باشد';
     }
     if (type === 'ACCOUNT_UNFREEZE' && !unfreezeAccount) {
@@ -151,9 +157,10 @@ export default function RequestForm({
     return errs;
   }, [type, fromAccount, toAccount, amount, unfreezeAccount, requestedLimit, note]);
 
-  const liveError = useMemo(() => validate(), [
-    type, note, fromAccount, toAccount, amount, unfreezeAccount, requestedLimit, isFrozen,
-  ]);
+  const liveError = useMemo(
+    () => validate(),
+    [type, note, fromAccount, toAccount, amount, unfreezeAccount, requestedLimit, isFrozen],
+  );
 
   function handleTypeChange(next: CustomerRequestType) {
     setType(next);
@@ -338,7 +345,12 @@ export default function RequestForm({
 
       {type === 'TRANSFER_INITIATE' && (
         <FormSection title="جزئیات انتقال" description="از کدام حساب، به کجا، چه مبلغ">
-          <FormField label="از حساب" htmlFor="t-from" required error={interacted ? fieldErrors.fromAccount : undefined}>
+          <FormField
+            label="از حساب"
+            htmlFor="t-from"
+            required
+            error={interacted ? fieldErrors.fromAccount : undefined}
+          >
             <Select
               value={fromAccount}
               onValueChange={(v) => {
@@ -379,7 +391,12 @@ export default function RequestForm({
             />
           </FormField>
 
-          <FormField label="مبلغ" htmlFor="t-amount" required error={interacted ? fieldErrors.amount : undefined}>
+          <FormField
+            label="مبلغ"
+            htmlFor="t-amount"
+            required
+            error={interacted ? fieldErrors.amount : undefined}
+          >
             <Input
               id="t-amount"
               type="number"
@@ -400,7 +417,12 @@ export default function RequestForm({
 
       {type === 'ACCOUNT_UNFREEZE' && (
         <FormSection title="انتخاب حساب منجمد" description="صرافی پس از بررسی حساب را باز می‌کند">
-          <FormField label="حساب منجمد" htmlFor="u-acc" required error={interacted ? fieldErrors.unfreezeAccount : undefined}>
+          <FormField
+            label="حساب منجمد"
+            htmlFor="u-acc"
+            required
+            error={interacted ? fieldErrors.unfreezeAccount : undefined}
+          >
             <Select
               value={unfreezeAccount}
               onValueChange={(v) => {
@@ -432,7 +454,12 @@ export default function RequestForm({
 
       {type === 'LIMIT_INCREASE' && (
         <FormSection title="سقف درخواستی" description="پیشنهاد شما برای limit روزانه (AFN)">
-          <FormField label="سقف روزانه پیشنهادی" htmlFor="lim-amount" required error={interacted ? fieldErrors.requestedLimit : undefined}>
+          <FormField
+            label="سقف روزانه پیشنهادی"
+            htmlFor="lim-amount"
+            required
+            error={interacted ? fieldErrors.requestedLimit : undefined}
+          >
             <Input
               id="lim-amount"
               type="number"
@@ -452,24 +479,26 @@ export default function RequestForm({
       )}
 
       {/* ─── Note (common) ─── */}
-      <FormSection title="توضیحات" description="هر اطلاعات اضافی که صرافی باید بداند">          <FormField
-            label="یادداشت (اختیاری)"
-            htmlFor="note"
-            helper={`${note.length} / ۵۰۰ کاراکتر`}
-            error={type === 'OTHER' && interacted ? fieldErrors.note : undefined}
-          >
-            <Textarea
-              id="note"
-              value={note}
-              onChange={(e) => {
-                setNote(e.target.value);
-                setInteracted(true);
-              }}
-              placeholder="مثلاً: لطفاً زودتر بررسی شود. با تشکر"
-              rows={4}
-              maxLength={500}
-            />
-          </FormField>
+      <FormSection title="توضیحات" description="هر اطلاعات اضافی که صرافی باید بداند">
+        {' '}
+        <FormField
+          label="یادداشت (اختیاری)"
+          htmlFor="note"
+          helper={`${note.length} / ۵۰۰ کاراکتر`}
+          error={type === 'OTHER' && interacted ? fieldErrors.note : undefined}
+        >
+          <Textarea
+            id="note"
+            value={note}
+            onChange={(e) => {
+              setNote(e.target.value);
+              setInteracted(true);
+            }}
+            placeholder="مثلاً: لطفاً زودتر بررسی شود. با تشکر"
+            rows={4}
+            maxLength={500}
+          />
+        </FormField>
       </FormSection>
 
       {/* ─── Error / Submit ─── */}

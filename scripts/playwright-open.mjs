@@ -126,9 +126,9 @@ try {
   const resolveName = (name) => {
     if (toolNames.has(name)) return name;
     const alt = name.startsWith('browser_')
-      ? 'playwright_' + name.slice(8)
+      ? `playwright_${name.slice(8)}`
       : name.startsWith('playwright_')
-        ? 'browser_' + name.slice(11)
+        ? `browser_${name.slice(11)}`
         : null;
     return alt && toolNames.has(alt) ? alt : name;
   };

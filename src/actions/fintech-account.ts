@@ -20,8 +20,8 @@
  */
 
 import { randomBytes } from 'node:crypto';
-import prisma from '@/lib/db';
 import { assertCsrf } from '@/lib/csrf-server';
+import prisma from '@/lib/db';
 import {
   isHighValueTransaction,
   requestTransactionOtp,
@@ -198,7 +198,12 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
       entityType: 'Transaction',
       entityId: txn.id,
       ip,
-      meta: { amountCents, currency, txnRef, fraudScore: depositFraudRisk.score } as Prisma.InputJsonValue,
+      meta: {
+        amountCents,
+        currency,
+        txnRef,
+        fraudScore: depositFraudRisk.score,
+      } as Prisma.InputJsonValue,
     },
   });
 
@@ -373,7 +378,9 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
     actorId: auth.user.id,
     actorRole: 'USER',
     ip,
-    note: fraudRisk.shouldHold ? `WITHDRAWAL_REQUESTED:HELD:score=${fraudRisk.score}` : 'WITHDRAWAL_REQUESTED',
+    note: fraudRisk.shouldHold
+      ? `WITHDRAWAL_REQUESTED:HELD:score=${fraudRisk.score}`
+      : 'WITHDRAWAL_REQUESTED',
   });
 
   await prisma.auditLog.create({

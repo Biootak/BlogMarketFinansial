@@ -103,7 +103,13 @@ export function NewCampaignForm({
 
   // validation زنده — خطا همان لحظه که فیلد پر/تغییر می‌شود نمایش داده می‌شود
   const liveErrors = useMemo(() => {
-    if (!touched.name && !touched.body && !touched.channels && !touched.subject && !touched.audienceFilter) {
+    if (
+      !touched.name &&
+      !touched.body &&
+      !touched.channels &&
+      !touched.subject &&
+      !touched.audienceFilter
+    ) {
       return {} as Record<string, string>;
     }
     const errs: Record<string, string> = {};
@@ -509,7 +515,7 @@ export function NewCampaignForm({
             </section>
 
             {/* inline alert — خطای زندهٔ بخشی (کانال/مخاطب) + خطای submit */}
-            {(liveErrors.channels || liveErrors.audienceFilter || error) ? (
+            {liveErrors.channels || liveErrors.audienceFilter || error ? (
               <div className={s.alert} data-tone="rose" role="alert">
                 {error ?? liveErrors.channels ?? liveErrors.audienceFilter}
               </div>

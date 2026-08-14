@@ -198,14 +198,15 @@ export async function resetRateLimit(
 
 /** SCAN + DEL همهٔ کلیدهای دارای یک پیشوند (برای ریست rate-limit). */
 async function scanDeleteKeys(prefix: string): Promise<void> {
+  if (!redis) return;
   let cursor = '0';
   do {
-    const result: [string, string[]] = await redis!.scan(cursor, {
+    const result: [string, string[]] = await redis.scan(cursor, {
       match: `${prefix}*`,
       count: 200,
     });
     for (const key of result[1]) {
-      await redis!.del(key);
+      await redis.del(key);
     }
     cursor = result[0];
   } while (cursor !== '0');

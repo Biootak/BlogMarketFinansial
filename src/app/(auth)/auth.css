@@ -1072,8 +1072,8 @@
   caret-color: var(--a-accent);
   box-shadow: inset 0 1px 0 var(--a-input-inset);
   outline: none;
-  transition: border-color var(--a-r) var(--a-ease), background var(--a-r) var(--a-ease),
-    box-shadow var(--a-r) var(--a-ease), scale var(--a-r) var(--a-spring);
+  transition: border-color var(--a-r) var(--a-ease), background var(--a-r) var(--a-ease), box-shadow
+    var(--a-r) var(--a-ease), scale var(--a-r) var(--a-spring);
 }
 .auth-otp-input:hover {
   border-color: var(--a-input-bd-h);

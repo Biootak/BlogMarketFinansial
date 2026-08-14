@@ -107,7 +107,11 @@ describe('getRoleStats', () => {
     await getRoleStats();
     expect(prisma.user.groupBy).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { role: { in: expect.arrayContaining([Role.USER, Role.ADMIN, Role.OWNER, Role.SUPERADMIN]) } },
+        where: {
+          role: {
+            in: expect.arrayContaining([Role.USER, Role.ADMIN, Role.OWNER, Role.SUPERADMIN]),
+          },
+        },
       }),
     );
   });

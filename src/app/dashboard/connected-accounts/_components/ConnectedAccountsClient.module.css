@@ -51,9 +51,8 @@
   border-radius: var(--ds-radius-2xl);
   background: var(--at-surface);
   padding: var(--ds-space-5);
-  transition:
-    border-color var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-base) var(--ds-ease-out-quart), transform
+    var(--ds-duration-base) var(--ds-ease-out-quart);
 }
 
 .cardLinked {
@@ -138,10 +137,9 @@
   font-size: var(--ds-text-sm, 0.875rem);
   font-weight: 600;
   cursor: pointer;
-  transition:
-    background var(--ds-duration-base) var(--ds-ease-out-quart),
-    color var(--ds-duration-base) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-base) var(--ds-ease-out-quart);
+  transition: background var(--ds-duration-base) var(--ds-ease-out-quart), color
+    var(--ds-duration-base) var(--ds-ease-out-quart), border-color var(--ds-duration-base)
+    var(--ds-ease-out-quart);
 }
 
 .linkBtn {

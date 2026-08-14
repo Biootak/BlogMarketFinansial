@@ -56,7 +56,9 @@ vi.mock('@/lib/fintech/transaction-guard', () => ({
   verifyTransactionOtp: vi.fn(),
 }));
 vi.mock('@/lib/fraud/screener', () => ({
-  screenTransaction: vi.fn().mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
+  screenTransaction: vi
+    .fn()
+    .mockResolvedValue({ score: 0, reasons: [], shouldBlock: false, shouldHold: false }),
 }));
 vi.mock('@/lib/fintech/txn-trail', () => ({
   logTxnStatusChange: vi.fn().mockResolvedValue(undefined),

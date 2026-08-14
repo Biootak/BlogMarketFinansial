@@ -397,8 +397,7 @@ export async function POST(request: NextRequest) {
     //   - 'logos' / 'exchange': فقط staff صرافی یا ADMIN/OWNER/SUPERADMIN.
     //     AUTHOR نمی‌تواند لوگو صرافی یا مدارک exchange آپلود کند.
     //   - بقیه (posts, categories, tags, general): حداقل AUTHOR.
-    const isAdminRole =
-      role === 'ADMIN' || role === 'OWNER' || role === 'SUPERADMIN';
+    const isAdminRole = role === 'ADMIN' || role === 'OWNER' || role === 'SUPERADMIN';
     const isExchangeFolder = folder === 'logos' || folder === 'exchange';
     const isUserFolder = folder === 'kyc' || folder === 'avatars';
 
@@ -406,7 +405,10 @@ export async function POST(request: NextRequest) {
       // صرافی‌ها (EXCHANGE role) هم می‌توانند لوگو/مدارک خودشان را آپلود کنند
       if (role !== 'EXCHANGE') {
         return NextResponse.json(
-          { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی برای آپلود در این بخش وجود ندارد' } },
+          {
+            success: false,
+            error: { code: 'FORBIDDEN', message: 'دسترسی برای آپلود در این بخش وجود ندارد' },
+          },
           { status: 403 },
         );
       }

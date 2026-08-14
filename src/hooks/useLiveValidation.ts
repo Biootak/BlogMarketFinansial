@@ -20,10 +20,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { z } from 'zod';
 
-export function useLiveValidation<S extends z.ZodTypeAny>(
-  schema: S,
-  initial: z.input<S>,
-) {
+export function useLiveValidation<S extends z.ZodTypeAny>(schema: S, initial: z.input<S>) {
   const [values, setValues] = useState<z.input<S>>(initial);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -52,7 +49,7 @@ export function useLiveValidation<S extends z.ZodTypeAny>(
   const isValid = useMemo(() => Object.keys(allErrors).length === 0, [allErrors]);
 
   const setField = useCallback((name: string, value: unknown) => {
-    setValues((prev) => ({ ...(prev as object), [name]: value } as z.input<S>));
+    setValues((prev) => ({ ...(prev as object), [name]: value }) as z.input<S>);
     // به محض شروع تایپ، فیلد touched می‌شود → خطا live
     setTouched((prev) => ({ ...prev, [name]: true }));
     setServerError(null);
@@ -66,11 +63,14 @@ export function useLiveValidation<S extends z.ZodTypeAny>(
     });
   }, [values]);
 
-  const reset = useCallback((next?: z.input<S>) => {
-    setValues(next ?? initial);
-    setTouched({});
-    setServerError(null);
-  }, [initial]);
+  const reset = useCallback(
+    (next?: z.input<S>) => {
+      setValues(next ?? initial);
+      setTouched({});
+      setServerError(null);
+    },
+    [initial],
+  );
 
   const handleSubmit =
     (onValid: (v: z.infer<S>) => void) => (e: React.FormEvent<HTMLFormElement>) => {

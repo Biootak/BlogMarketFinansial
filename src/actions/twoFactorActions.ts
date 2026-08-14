@@ -69,7 +69,10 @@ export async function confirmEnable2FA(
   try {
     secret = decryptTotpSecret(user.twoFactorSecretEnc.slice('pending:'.length));
   } catch {
-    return { success: false, error: { code: 'DECRYPT_FAILED', message: 'خطای رمزگشایی. لطفاً با پشتیبانی تماس بگیرید' } };
+    return {
+      success: false,
+      error: { code: 'DECRYPT_FAILED', message: 'خطای رمزگشایی. لطفاً با پشتیبانی تماس بگیرید' },
+    };
   }
   if (!(await verifyTotp(secret, token)))
     return { success: false, error: { code: 'INVALID_TOKEN', message: 'کد وارد شده نادرست است' } };

@@ -18,8 +18,8 @@
  * خاموشی: CI=true یا RULES_GATE_SKIP=1.
  */
 
-import { appendFileSync, watch } from 'node:fs';
 import { spawnSync } from 'node:child_process';
+import { appendFileSync, watch } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,7 +27,17 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
 
 const VIOLATION_LOG = join(root, '.rules-violations.log');
-const CODE_EXT = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.css', '.scss', '.prisma']);
+const CODE_EXT = new Set([
+  '.ts',
+  '.tsx',
+  '.js',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.css',
+  '.scss',
+  '.prisma',
+]);
 const WATCH_DIRS = ['src', 'prisma', 'scripts'];
 
 // gate را حداکثر هر ۵ ثانیه یک بار دوباره صدا بزن تا spawn اضافه نشود
@@ -38,11 +48,11 @@ function gateFresh() {
   const now = Date.now();
   if (now - lastGateCheck < 5000) return !gateStale;
   lastGateCheck = now;
-  const r = spawnSync(
-    process.execPath,
-    [join(root, 'scripts', 'rules-gate.mjs'), 'check'],
-    { cwd: root, stdio: 'ignore', encoding: 'utf8' },
-  );
+  const r = spawnSync(process.execPath, [join(root, 'scripts', 'rules-gate.mjs'), 'check'], {
+    cwd: root,
+    stdio: 'ignore',
+    encoding: 'utf8',
+  });
   gateStale = r.status !== 0;
   return !gateStale;
 }
@@ -53,7 +63,8 @@ const warnedFiles = new Set();
 export function onChange(file) {
   if (!file) return;
   if (!CODE_EXT.has(extname(file).toLowerCase())) return;
-  if (process.env.CI === 'true' || process.env.CI === '1' || process.env.RULES_GATE_SKIP === '1') return;
+  if (process.env.CI === 'true' || process.env.CI === '1' || process.env.RULES_GATE_SKIP === '1')
+    return;
   if (gateFresh()) {
     warnedFiles.clear();
     return;
@@ -63,11 +74,7 @@ export function onChange(file) {
 
   const ts = new Date().toISOString();
   console.error(
-    `\n\x1b[1m\x1b[31m⛔ RULES READ GATE — داری بدون مهر «قوانین خوانده شد» کد می‌نویسی!\x1b[0m\n` +
-      `   فایل: ${file} (${ts})\n` +
-      `   → همین‌جا بایست: npm run rules:check  (لیست فایل‌ها را می‌دهد)\n` +
-      `   → بعد از خواندن: npm run rules:stamp -- --files "AGENTS.md,PDK.md,pdk/constitution.md"\n` +
-      `   → بعد ادامه بده. بدون مهر تازه verify/commit بلاک می‌شوند.\n`,
+    `\n\x1b[1m\x1b[31m⛔ RULES READ GATE — داری بدون مهر «قوانین خوانده شد» کد می‌نویسی!\x1b[0m\n   فایل: ${file} (${ts})\n   → همین‌جا بایست: npm run rules:check  (لیست فایل‌ها را می‌دهد)\n   → بعد از خواندن: npm run rules:stamp -- --files "AGENTS.md,PDK.md,pdk/constitution.md"\n   → بعد ادامه بده. بدون مهر تازه verify/commit بلاک می‌شوند.\n`,
   );
   try {
     appendFileSync(VIOLATION_LOG, `${ts} ${file}\n`);

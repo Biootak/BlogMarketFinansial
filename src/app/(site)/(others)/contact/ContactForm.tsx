@@ -27,7 +27,8 @@ export default function ContactForm({ address, email, phone }: ContactFormProps)
     const errs: Record<string, string> = {};
     const { name, email, message } = values;
     if (touched.name && name && name.trim().length < 2) errs.name = 'نام باید حداقل ۲ کاراکتر باشد';
-    if (touched.email && email && !EMAIL_RE.test(email.trim())) errs.email = 'ایمیل معتبر وارد کنید';
+    if (touched.email && email && !EMAIL_RE.test(email.trim()))
+      errs.email = 'ایمیل معتبر وارد کنید';
     if (touched.message && message && message.trim().length < 5) {
       errs.message = 'پیام باید حداقل ۵ کاراکتر باشد';
     }
