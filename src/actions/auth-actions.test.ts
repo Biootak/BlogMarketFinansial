@@ -797,7 +797,7 @@ describe('verifyOtp — intent=2fa', () => {
     );
   });
 
-  it('decrypt خطا می‌دهد → خطای TOTP-DEC (نه "خطای موقتی")', async () => {
+  it('decrypt خطا می‌دهد → پیام کاربرپسند (بدون کد داخلی، راهنمای کد پشتیبان)', async () => {
     vi.mocked(checkRateLimit).mockResolvedValue(RL_OK as never);
     vi.mocked(prisma.user.findFirst).mockResolvedValueOnce(USER_2FA as never);
     vi.mocked(decryptTotpSecret).mockImplementationOnce(() => {
@@ -808,7 +808,9 @@ describe('verifyOtp — intent=2fa', () => {
     );
     expect(r.success).toBe(false);
     if (!r.success) {
-      expect(r.error).toContain('TOTP-DEC');
+      // کد داخلی به کاربر درز نکند؛ کاربر به مسیر کد پشتیبان راهنمایی شود
+      expect(r.error).not.toContain('TOTP-DEC');
+      expect(r.error).toContain('کد پشتیبان');
       // نباید پیام «خطای موقتی» باشد
       expect(r.error).not.toContain('موقتی');
     }
