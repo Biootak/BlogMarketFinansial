@@ -2,7 +2,6 @@
 'use server';
 
 import prisma from '@/lib/db';
-import { assembleMarketRates } from '@/lib/market-rates';
 import type { MarketRateItem } from '@/lib/market-rates';
 import { type SnapshotItem, readMarketRatesSnapshot } from '@/lib/market-rates/snapshot-reader';
 import { requireAdmin } from '@/lib/require-auth';
@@ -50,7 +49,8 @@ function snapToItem(s: SnapshotItem): MarketRateItem {
 }
 
 /**
- * کش برای assemble.
+ * کش برای نرخ‌ها — مسیر request هرگز scrape نمی‌کند.
+ *
  * 2026-08-01: unstable_cache → safeCache. assembleMarketRates خودش
  * try/catch دارد ولی unstable_cache خطا را از طریق cache boundary
  * re-throw می‌کرد. safeCache fallback به [] می‌دهد.
@@ -58,26 +58,71 @@ function snapToItem(s: SnapshotItem): MarketRateItem {
  * مسیر SWR دادهٔ خوبِ قبلی را حفظ کند — نه اینکه [] جای آن را بگیرد.
  * 2026-08-08-perf²: snapshot-first — مسیر request هرگز scrape نمی‌کند:
  * cron هر دقیقه snapshot می‌نویسد؛ اگر تازه باشد همان خوانده می‌شود (فایل IO ~ms).
+ * 2026-08-14 mem-fix: fallback scrape حذف شد. قبلاً وقتی snapshot کهنه بود،
+ * dyno خودش `assembleMarketRates()` اجرا می‌کرد (scrape کامل TGJU/bonbast/
+ * sarafi — هر کدام تا ۵MB HTML) → V8 heap ratchet + R14 مداوم روی 512MB.
+ * حالا به‌جای scrape، «last-known-good» سرو می‌شود: snapshot با هر سنی
+ * (برچسب freshness در UI دیده می‌شود) و اگر snapshot نبود → مقادیر
+ * ذخیره‌شدهٔ push قبلی از DB (یک query ارزان). تازه‌سازی فقط از طریق
+ * GitHub Actions → push-rates انجام می‌شود.
  */
+
+// آخرین زمان هشدار snapshot کهنه — هشدار حداکثر یک‌بار در ساعت (serverLog با
+// SYSTEM_LOG_PERSIST در DB ذخیره می‌شود؛ اسپم نکنیم).
+let lastStaleWarnAt = 0;
+const STALE_WARN_INTERVAL_MS = 60 * 60 * 1000;
+
 export const getMarketRates = safeCache(
   async (): Promise<MarketRateItem[]> => {
-    // 1) snapshot-first (بدون scrape) — فقط اگر تازه باشد
+    // 1) snapshot-first (بدون scrape) — هر سنی قابل قبول است (last-known-good)
     const snap = await readMarketRatesSnapshot();
     if (snap && snap.items.length > 0) {
       const ageMs = snap.generatedAt
         ? Date.now() - snap.generatedAt.getTime()
         : Number.POSITIVE_INFINITY;
-      if (ageMs <= SNAPSHOT_MAX_AGE_MS) {
-        return snap.items.map(snapToItem);
+      if (ageMs > SNAPSHOT_MAX_AGE_MS) {
+        const now = Date.now();
+        if (now - lastStaleWarnAt > STALE_WARN_INTERVAL_MS) {
+          lastStaleWarnAt = now;
+          serverLog.warn(
+            'market-rates',
+            `snapshot stale (${Math.round(ageMs / 60000)}m) — serving last-known-good; push-rates باید هر ۵ دقیقه snapshot را تازه کند`,
+          );
+        }
       }
+      return snap.items.map(snapToItem);
     }
-    // 2) fallback: assemble واقعی (snapshot نیست/کهنه است) — cron را چک کن
-    serverLog.warn(
-      'market-rates',
-      `snapshot miss/stale → assemble fallback (age=${snap?.generatedAt ? Math.round((Date.now() - snap.generatedAt.getTime()) / 1000) : 'n/a'}s) — cron refresh-market-rates باید هر دقیقه snapshot بنویسد`,
-    );
-    const items = await assembleMarketRates();
+    // 2) fallback: DB last-known-good (مقادیر push قبلی) — بدون scrape
+    const rows = await prisma.exchangeRate.findMany({
+      where: { active: true },
+      orderBy: { priority: 'asc' },
+      select: {
+        symbol: true,
+        currency: true,
+        name: true,
+        displayNameFa: true,
+        group: true,
+        unit: true,
+        divisor: true,
+        decimals: true,
+        priority: true,
+        provider: true,
+        singleRate: true,
+        lastChangePercent: true,
+        lastChangeAt: true,
+        updatedAt: true,
+      },
+    });
+    const items = rows.map(rowToItem).filter((item): item is MarketRateItem => item !== null);
     if (items.length === 0) throw new Error('ALL_SOURCES_FAILED');
+    const now = Date.now();
+    if (now - lastStaleWarnAt > STALE_WARN_INTERVAL_MS) {
+      lastStaleWarnAt = now;
+      serverLog.warn(
+        'market-rates',
+        `snapshot missing → DB last-known-good (${items.length} items)`,
+      );
+    }
     return items;
   },
   [] as MarketRateItem[],
@@ -88,12 +133,50 @@ export const getMarketRates = safeCache(
     //    (با timeout های قدیمی تا ۱۵ ثانیه). حالا فقط هر ۳ دقیقه.
     //  - swr: بعد از انقضا، hero مقدار قبلی را فوراً می‌گیرد و refresh در
     //    پس‌زمینه اجرا می‌شود — request دیگر هیچ‌وقت روی scrape بلاک نمی‌شود.
-    //  - cron refresh-market-rates با primeMarketRatesCache کش را هم تازه می‌کند.
+    //  - push-rates با primeMarketRatesCache کش را هم تازه می‌کند.
+    //  - refresh پس‌زمینه هم بدون scrape است (snapshot/DB read — ارزان).
     ttl: MARKET_RATES_TTL,
     swr: true,
     tags: [TAGS.ticker, TAGS.list],
   },
 );
+
+/** تبدیل ردیف DB (مقادیر push قبلی) به MarketRateItem — بدون هیچ scrape. */
+function rowToItem(row: {
+  symbol: string | null;
+  currency: string;
+  name: string | null;
+  displayNameFa: string | null;
+  group: string | null;
+  unit: string | null;
+  divisor: number | null;
+  decimals: number | null;
+  priority: number | null;
+  provider: string | null;
+  singleRate: string | null;
+  lastChangePercent: number | null;
+  lastChangeAt: Date | null;
+  updatedAt: Date;
+}): MarketRateItem | null {
+  const symbol = row.symbol ?? row.currency;
+  const raw = row.singleRate ? Number.parseFloat(row.singleRate) : Number.NaN;
+  if (!Number.isFinite(raw) || raw <= 0) return null;
+  const divisor = row.divisor && row.divisor > 0 ? row.divisor : 1;
+  const provider = row.provider === 'manual' ? ('manual' as const) : ('auto' as const);
+  return {
+    symbol,
+    displayNameFa: row.displayNameFa ?? row.name ?? symbol,
+    group: (row.group ?? 'iran-forex') as MarketRateItem['group'],
+    unit: (row.unit ?? 'toman') as MarketRateItem['unit'],
+    divisor,
+    decimals: row.decimals ?? 0,
+    priority: row.priority ?? 50,
+    value: raw / divisor,
+    changePercent: row.lastChangePercent ?? 0,
+    provider,
+    updatedAt: row.lastChangeAt ?? row.updatedAt,
+  };
+}
 
 /**
  * 2026-08-08-perf: cron نرخ‌های تازه‌ی assemble را مستقیم در safeCache صفحات

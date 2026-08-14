@@ -52,6 +52,15 @@ const tagRegistry = new Map<string, Set<string>>();
 // scrape دوباره را trigger کنند (ضد stampede).
 const inflightRefresh = new Set<string>();
 
+// 2026-08-14 mem-fix: single-flight برای مسیر سرد (cache خالی/منقضی).
+// قبلاً وقتی cache سرد بود، هر request هم‌زمان fn را جدا اجرا می‌کرد → مثلاً
+// چند assemble/scrape موازی هم‌زمان (spike حافظه روی dyno 512MB). حالا همه‌ی
+// request های هم‌زمان یک کلید، منتظر یک fn می‌مانند و نتیجه را share می‌کنند.
+const coldInflight = new Map<string, Promise<unknown>>();
+// سقف امنیتی — اگر fn هرگز settle نشود، entry نشت نکند؛ بالای سقف single-flight
+// غیرفعال می‌شود (همان رفتار قبلی) نه اینکه Map نامحدود رشد کند.
+const COLD_INFLIGHT_MAX = 256;
+
 let totalBytes = 0;
 
 function evictIfNeeded(): void {
@@ -165,25 +174,36 @@ export function safeCache<TArgs extends unknown[], T>(
       return cached.value;
     }
 
-    // 2) cache تازه نیست → fn را فراخوانی کن
-    try {
-      const value = await fn(...args);
-      trackSet(fullKey, { value, expiresAt: now + ttl * 1000, storedAt: now });
-      if (isDev && tags.length > 0) {
-        // فقط برای dev observability
+    // 2) cache تازه نیست → fn را فراخوانی کن (single-flight ضد stampede)
+    const inFlight = coldInflight.get(fullKey);
+    if (inFlight) return inFlight as Promise<T>;
+
+    const run: Promise<T> = (async () => {
+      try {
+        const value = await fn(...args);
+        trackSet(fullKey, { value, expiresAt: now + ttl * 1000, storedAt: now });
+        if (isDev && tags.length > 0) {
+          // فقط برای dev observability
+        }
+        return value;
+      } catch {
+        // 3) خطا رخ داد:
+        //    - اگر قبلاً value موفق داشتیم (stale) → آن را برگردان
+        //    - در غیر این صورت → fallback
+        if (cached) {
+          // TTL را تمدید کن تا request بعدی دوباره امتحان کند
+          cached.expiresAt = now + Math.min(ttl, 30) * 1000;
+          return cached.value;
+        }
+        return fallback;
       }
-      return value;
-    } catch {
-      // 3) خطا رخ داد:
-      //    - اگر قبلاً value موفق داشتیم (stale) → آن را برگردان
-      //    - در غیر این صورت → fallback
-      if (cached) {
-        // TTL را تمدید کن تا request بعدی دوباره امتحان کند
-        cached.expiresAt = now + Math.min(ttl, 30) * 1000;
-        return cached.value;
-      }
-      return fallback;
+    })();
+
+    if (coldInflight.size < COLD_INFLIGHT_MAX) {
+      coldInflight.set(fullKey, run);
+      void run.finally(() => coldInflight.delete(fullKey));
     }
+    return run;
   };
 }
 

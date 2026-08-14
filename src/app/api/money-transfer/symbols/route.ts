@@ -1,4 +1,4 @@
-import { assembleMarketRates } from '@/lib/market-rates';
+import { getMarketRates } from '@/actions/market-rates';
 import { safeCache } from '@/lib/safe-cache';
 import { NextResponse } from 'next/server';
 
@@ -14,7 +14,8 @@ const FALLBACK: { items: SymbolItem[]; updatedAt: string } = {
 };
 const EXCLUDED_GROUPS = new Set(['global']);
 async function buildSymbols(): Promise<{ items: SymbolItem[]; updatedAt: string }> {
-  const rates = await assembleMarketRates();
+  // getMarketRates — بدون scrape روی dyno (snapshot/DB last-known-good)
+  const rates = await getMarketRates();
   return {
     items: rates
       .filter((r) => !EXCLUDED_GROUPS.has(r.group) && r.unit === 'toman')

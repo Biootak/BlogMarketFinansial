@@ -1,4 +1,4 @@
-import { assembleMarketRates } from '@/lib/market-rates';
+import { getMarketRates } from '@/actions/market-rates';
 import { convertSourceToToman } from '@/lib/money-transfer/calculator';
 import { type TransferProvider, loadActiveTransferProviders } from '@/lib/money-transfer/providers';
 import type { ProviderQuote, TransferApiResponse } from '@/lib/money-transfer/types';
@@ -28,7 +28,8 @@ function toSymbol(raw: string | null): string {
   return symbol;
 }
 async function buildQuotes({ symbol, amount }: BuildArgs): Promise<TransferApiResponse> {
-  const rates = await assembleMarketRates();
+  // getMarketRates — بدون scrape روی dyno (snapshot/DB last-known-good)
+  const rates = await getMarketRates();
   const item =
     rates.find((r) => r.symbol === symbol) ??
     rates.find((r) => r.symbol === `IRAN_${symbol}`) ??

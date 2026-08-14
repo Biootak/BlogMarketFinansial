@@ -71,8 +71,11 @@ async function loadRate(
       expiresAt: quote.expiresAt,
     };
   const inversePair = `${to}/${from}`;
-  const { assembleMarketRates } = await import('@/lib/market-rates/assembler');
-  const items = await assembleMarketRates();
+  // getMarketRates — بدون scrape روی dyno (snapshot/DB last-known-good).
+  // قبلاً assembleMarketRates مستقیم صدا زده می‌شد → هر معامله بدون کوئت
+  // فعال، scrape کامل TGJU روی dyno اجرا می‌کرد (spike حافظه).
+  const { getMarketRates } = await import('@/actions/market-rates');
+  const items = await getMarketRates();
   const item = items.find(
     (candidate) => candidate.symbol === pair || candidate.symbol === inversePair,
   );
