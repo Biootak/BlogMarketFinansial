@@ -16,6 +16,13 @@
 import type { CustomerRow } from '@/actions/exchange-customers';
 import { type TransactionRow, createTransaction } from '@/actions/exchange-transactions';
 import { FormField, PanelDrawer } from '@/components/Dashboard/primitives';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { EXCHANGE_CURRENCIES, TX_KIND_FA } from '@/lib/exchange-labels';
 import { faNum, formatAmount } from '@/lib/exchange-tx-formatters';
 import {
@@ -30,7 +37,6 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { type CSSProperties, useEffect, useId, useMemo, useState } from 'react';
-import { SelectField } from './SelectField';
 import s from './TransactionDrawer.module.css';
 
 const KIND_ICON: Record<string, LucideIcon> = {
@@ -206,18 +212,18 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
 
         {/* ── Customer select ──────────────────────────────────────────── */}
         <FormField label="مشتری" required>
-          <SelectField
-            id={customerId$}
-            value={customerId}
-            onChange={(e) => setCustomerId(e.target.value)}
-          >
-            <option value="">انتخاب مشتری…</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.fullName} — {c.phone}
-              </option>
-            ))}
-          </SelectField>
+          <Select value={customerId || undefined} onValueChange={setCustomerId}>
+            <SelectTrigger id={customerId$} aria-label="مشتری">
+              <SelectValue placeholder="انتخاب مشتری…" />
+            </SelectTrigger>
+            <SelectContent>
+              {customers.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.fullName} — {c.phone}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </FormField>
 
         {/* ── Source amount + currency ────────────────────────────────── */}
@@ -234,11 +240,18 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
             />
           </FormField>
           <FormField label="ارز">
-            <SelectField value={currency} onChange={(e) => setCurrency(e.target.value)}>
-              {EXCHANGE_CURRENCIES.map((c) => (
-                <option key={c}>{c}</option>
-              ))}
-            </SelectField>
+            <Select value={currency} onValueChange={setCurrency}>
+              <SelectTrigger aria-label="ارز">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {EXCHANGE_CURRENCIES.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </FormField>
         </div>
 
@@ -279,11 +292,18 @@ export function TransactionDrawer({ open, onClose, exchangeId, customers, onCrea
                 />
               </FormField>
               <FormField label="ارز مقصد">
-                <SelectField value={destCurrency} onChange={(e) => setDestCurrency(e.target.value)}>
-                  {EXCHANGE_CURRENCIES.map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-                </SelectField>
+                <Select value={destCurrency} onValueChange={setDestCurrency}>
+                  <SelectTrigger aria-label="ارز مقصد">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EXCHANGE_CURRENCIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FormField>
             </div>
 

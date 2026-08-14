@@ -12,6 +12,13 @@ import type { CustomerRow } from '@/actions/exchange-customers';
 import { createCustomerAction } from '@/actions/exchange-customers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import { AlertCircle, ArrowLeft, Loader2, UserPlus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -126,6 +133,13 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
     [],
   );
 
+  // قانون P0 (native-never): Radix Select فیلدهای form را با همین شکل می‌گیرد
+  const handleSelectChange = useCallback((name: string, value: string) => {
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    setError(null);
+  }, []);
+
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
@@ -173,12 +187,7 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
             <h2 className={s.cardTitle}>اطلاعات هویتی</h2>
           </div>
           <div className={s.grid2}>
-            <Field
-              id="cc-fullName"
-              label="نام کامل"
-              required
-              error={liveErrors.fullName}
-            >
+            <Field id="cc-fullName" label="نام کامل" required error={liveErrors.fullName}>
               <Input
                 id="cc-fullName"
                 name="fullName"
@@ -274,20 +283,23 @@ export function CustomerCreateWorkspace({ exchangeId, primaryCurrency }: Props) 
           </div>
           <div className={s.grid2}>
             <Field id="cc-kycLevel" label="سطح KYC">
-              <select
-                id="cc-kycLevel"
+              <Select
                 name="kycLevel"
                 value={form.kycLevel}
-                onChange={handleChange}
-                className={s.select}
+                onValueChange={(v) => handleSelectChange('kycLevel', v)}
                 disabled={isPending}
               >
-                {KYC_LEVELS.map((l) => (
-                  <option key={l.value} value={l.value}>
-                    {l.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger id="cc-kycLevel" className={s.select} aria-label="سطح KYC">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {KYC_LEVELS.map((l) => (
+                    <SelectItem key={l.value} value={l.value}>
+                      {l.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
             <Field id="cc-riskScore" label="امتیاز ریسک" hint="۰ تا ۱۰۰ — پایین‌تر بهتر">
               <Input

@@ -36,6 +36,13 @@ import { PanelDrawer } from '@/components/Dashboard/primitives/PanelDrawer';
 import { ExchangeKpiRibbon, type ExchangeKpiTile } from '@/components/Exchange/ExchangeKpiRibbon';
 import { ExchangePageHero } from '@/components/Exchange/ExchangePageHero';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   ArrowLeftRight,
   CheckCircle2,
   ChevronLeft,
@@ -790,14 +797,18 @@ function CreateDealDrawer({
         {error && <div className={s.error}>{error}</div>}
         <label>
           <span>نرخ پایه (quote فعال)</span>
-          <select value={quoteId} onChange={(e) => setQuoteId(e.target.value)}>
-            <option value="">انتخاب کنید…</option>
-            {quotes.map((q) => (
-              <option key={q.id} value={q.id}>
-                {q.currencyPair} — فروش {faNum.format(Number(q.sellRate))}
-              </option>
-            ))}
-          </select>
+          <Select value={quoteId || undefined} onValueChange={setQuoteId}>
+            <SelectTrigger>
+              <SelectValue placeholder="انتخاب کنید…" />
+            </SelectTrigger>
+            <SelectContent>
+              {quotes.map((q) => (
+                <SelectItem key={q.id} value={q.id}>
+                  {q.currencyPair} — فروش {faNum.format(Number(q.sellRate))}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {quotes.length === 0 && (
             <small className={s.hint}>
               هیچ quote فعالی ندارید — اول از صفحهٔ «قیمت‌گذاری» یک quote تأیید کنید.

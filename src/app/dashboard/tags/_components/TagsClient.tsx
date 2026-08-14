@@ -58,6 +58,7 @@ import {
   useTableDensity,
 } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { generateSlug } from '@/lib/slug';
@@ -229,11 +230,11 @@ function TagListView({
                   <Copy size={10} strokeWidth={2} className={s.slugCopyIcon} aria-hidden />
                 </button>
               </div>
-              <label className={s.cardCheck}>
-                <input
-                  type="checkbox"
+              <label className={s.cardCheck} htmlFor={`tag-check-${tag.id}`}>
+                <Checkbox
+                  id={`tag-check-${tag.id}`}
                   checked={checked}
-                  onChange={() => toggleCard(key)}
+                  onCheckedChange={() => toggleCard(key)}
                   aria-label={`انتخاب ${tag.name}`}
                 />
               </label>

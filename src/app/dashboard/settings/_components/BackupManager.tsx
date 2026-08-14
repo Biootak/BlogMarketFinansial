@@ -18,6 +18,7 @@ import {
   updateBackupSettings,
 } from '@/actions/settingsActions';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useActionToast } from '@/hooks/useActionToast';
 import type { BackupConfig, BackupFileInfo } from '@/lib/backup';
 import {
@@ -559,28 +560,15 @@ function CheckField({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className={s.checkLabel} htmlFor={id}>
-      <input
-        id={id}
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className={s.checkBox}
-      />
-      <span className={s.checkBoxView} data-on={checked} aria-hidden>
-        {checked && (
-          <svg
-            viewBox="0 0 16 16"
-            width="11"
-            height="11"
-            strokeWidth="2.5"
-            stroke="currentColor"
-            fill="none"
-          >
-            <polyline points="3,8 7,12 13,4" />
-          </svg>
-        )}
-      </span>
+    <label
+      className={s.checkLabel}
+      htmlFor={id}
+      onClick={(e) => {
+        if ((e.target as HTMLElement).closest('button')) return;
+        onChange(!checked);
+      }}
+    >
+      <Checkbox id={id} checked={checked} onCheckedChange={(c) => onChange(c === true)} />
       <span>{label}</span>
     </label>
   );

@@ -25,6 +25,7 @@ import {
   markNotificationRead,
 } from '@/actions/notification-actions';
 import { MillionDollarEmpty, PageHeader } from '@/components/Dashboard/primitives';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Bell,
@@ -423,11 +424,10 @@ export default function NotificationsClient({ notifications: initial }: Props) {
 
           {/* Select All checkbox */}
           {displayed.length > 0 && (
-            <input
-              type="checkbox"
+            <Checkbox
               className={s.itemCheckbox}
               checked={allSelected}
-              onChange={toggleSelectAll}
+              onCheckedChange={toggleSelectAll}
               aria-label="انتخاب همه"
               title="انتخاب همه"
             />
@@ -533,15 +533,11 @@ export default function NotificationsClient({ notifications: initial }: Props) {
                       <span className={s.unreadDot} aria-hidden={n.isRead || undefined} />
 
                       {/* Bulk checkbox */}
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         className={s.itemCheckbox}
                         checked={isSelected}
-                        onChange={(e) => {
-                          e.stopPropagation();
-                          toggleSelect(n.id);
-                        }}
                         onClick={(e) => e.stopPropagation()}
+                        onCheckedChange={() => toggleSelect(n.id)}
                         aria-label={`انتخاب: ${n.message}`}
                       />
 

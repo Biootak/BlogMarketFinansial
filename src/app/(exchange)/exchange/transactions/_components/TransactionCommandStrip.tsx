@@ -12,6 +12,13 @@
 
 'use client';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { TX_KIND_FA, TX_STATUS_FA } from '@/lib/exchange-labels';
 import { faNum } from '@/lib/exchange-tx-formatters';
 import {
@@ -29,7 +36,6 @@ import {
   X,
 } from 'lucide-react';
 import { type ReactNode, useId } from 'react';
-import { SelectField } from './SelectField';
 import s from './TransactionCommandStrip.module.css';
 
 const KIND_ICON: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
@@ -136,17 +142,17 @@ export function TransactionCommandStrip({
 
         <div className={s.sortWrap}>
           <ArrowUpDown size={12} aria-hidden className={s.sortIcon} />
-          <SelectField
-            className={s.sortSelect}
-            value={sort}
-            onChange={(e) => onSortChange(e.target.value as SortKey)}
-            aria-label="مرتب‌سازی"
-          >
-            <option value="newest">جدیدترین</option>
-            <option value="oldest">قدیمی‌ترین</option>
-            <option value="amount">بیشترین مبلغ</option>
-            <option value="customer">نام مشتری</option>
-          </SelectField>
+          <Select value={sort} onValueChange={(v) => onSortChange(v as SortKey)}>
+            <SelectTrigger className={s.sortSelect} aria-label="مرتب‌سازی">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">جدیدترین</SelectItem>
+              <SelectItem value="oldest">قدیمی‌ترین</SelectItem>
+              <SelectItem value="amount">بیشترین مبلغ</SelectItem>
+              <SelectItem value="customer">نام مشتری</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {canAdd && (

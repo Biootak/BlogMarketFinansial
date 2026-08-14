@@ -17,6 +17,14 @@ import {
   StickySaveBar,
 } from '@/components/Dashboard/primitives';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import {
   Banknote,
   CircleDollarSign,
   Eye,
@@ -304,11 +312,10 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
               hint="با اسلایدر مقدار را به سرعت تغییر دهید"
               span={1}
             >
-              <input
+              <Slider
                 className={s.slider}
-                type="range"
-                value={dailyLimit}
-                onChange={(e) => setDailyLimit(Number(e.target.value))}
+                value={[Math.min(dailyLimit, 1_000_000)]}
+                onValueChange={(v) => setDailyLimit(v[0] ?? 0)}
                 disabled={!canEdit}
                 min={0}
                 max={1_000_000}
@@ -368,22 +375,25 @@ export default function OperationsWorkspace({ exchange, canEdit }: Props) {
             </SettingsField>
 
             <SettingsField label="ارز پایه" hint="ارز اصلی محاسبات آماری" span={1}>
-              <select
-                className={`${s.input} ${s.inputLtr}`}
+              <Select
                 value={primaryCurrency}
-                onChange={(e) => setPrimaryCurrency(e.target.value)}
+                onValueChange={setPrimaryCurrency}
                 disabled={!canEdit}
-                aria-label="ارز پایه"
               >
-                {KNOWN_CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.code} — {c.label}
-                  </option>
-                ))}
-                {!KNOWN_CURRENCIES.some((c) => c.code === primaryCurrency) && (
-                  <option value={primaryCurrency}>{primaryCurrency}</option>
-                )}
-              </select>
+                <SelectTrigger className={`${s.input} ${s.inputLtr}`} aria-label="ارز پایه">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {KNOWN_CURRENCIES.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {c.code} — {c.label}
+                    </SelectItem>
+                  ))}
+                  {!KNOWN_CURRENCIES.some((c) => c.code === primaryCurrency) && (
+                    <SelectItem value={primaryCurrency}>{primaryCurrency}</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
             </SettingsField>
           </div>
 

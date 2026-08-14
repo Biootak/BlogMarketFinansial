@@ -2195,6 +2195,10 @@
     /* block-size: auto lets the absolute wrapper stretch to the shell
        height (top+bottom 0) so the dropdown sits vertically centered. */
     block-size: auto;
+    /* Use physical `left` (not inset-inline-start) so the dial-code select
+       always pins to the physical left edge regardless of page direction.
+       The CountryCodeSelect wrapper itself is dir="ltr", so the digits and
+       chevron read left-to-right in every context. */
     left: var(--space-4);
     inline-size: auto;
     justify-content: flex-start;
@@ -2204,9 +2208,13 @@
   }
   .setup-field--country .setup-field__input {
     padding-inline-start: 72px;
+    /* Physical left padding ensures the text never slides under the dial code
+       button regardless of RTL context. */
+    padding-left: 72px;
   }
   .setup-field--country .setup-field__label {
-    inset-inline-start: auto;
+    /* Physical left offset keeps the floating label aligned with the input
+       text (which always starts right of the dial code button). */
     left: calc(var(--space-4) + 72px);
   }
 

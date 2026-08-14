@@ -29,6 +29,7 @@
 
 import type { ExchangeRow } from '@/actions/exchanges';
 import { FormField } from '@/components/Dashboard/primitives';
+import { Switch } from '@/components/ui/switch';
 import {
   ArrowLeft,
   Building2,
@@ -536,15 +537,26 @@ export default function ExchangeDrawer({ open, initialData, saving, onClose, onS
                 </FormField>
 
                 <FormField label="الزام KYC" hint="تأیید هویت اجباری باشد؟">
-                  <label className={s.toggle}>
-                    <input
-                      type="checkbox"
+                  <label
+                    className={s.toggle}
+                    htmlFor="exchange-require-kyc"
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('button')) return;
+                      setRequireKyc((v) => !v);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setRequireKyc((v) => !v);
+                      }
+                    }}
+                  >
+                    <Switch
+                      id="exchange-require-kyc"
                       checked={requireKyc}
-                      onChange={(e) => setRequireKyc(e.target.checked)}
+                      onCheckedChange={(c) => setRequireKyc(c === true)}
+                      aria-label="الزام KYC"
                     />
-                    <span className={s.toggleTrack} aria-hidden>
-                      <span className={s.toggleThumb} />
-                    </span>
                     <span className={s.toggleText}>
                       {requireKyc ? 'بله — اجباری' : 'خیر — اختیاری'}
                     </span>

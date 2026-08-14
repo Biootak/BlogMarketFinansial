@@ -13,6 +13,13 @@
  */
 
 import { queryAuditLogs } from '@/actions/settingsActions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useActionToast } from '@/hooks/useActionToast';
 import { ChevronRight, Filter, Loader2, RefreshCw, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -110,17 +117,23 @@ export function AuditLog() {
             className={s.filterInput}
             dir="ltr"
           />
-          <select
-            value={severityFilter}
-            onChange={(e) => setSeverityFilter(e.target.value as typeof severityFilter)}
-            className={s.filterSelect}
+          <Select
+            value={severityFilter || 'all'}
+            onValueChange={(v) =>
+              setSeverityFilter(v === 'all' ? '' : (v as typeof severityFilter))
+            }
           >
-            <option value="">همه سطوح</option>
-            <option value="info">معمولی</option>
-            <option value="warn">هشدار</option>
-            <option value="error">خطا</option>
-            <option value="critical">بحرانی</option>
-          </select>
+            <SelectTrigger className={s.filterSelect} aria-label="فیلتر سطح">
+              <SelectValue placeholder="همه سطوح" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">همه سطوح</SelectItem>
+              <SelectItem value="info">معمولی</SelectItem>
+              <SelectItem value="warn">هشدار</SelectItem>
+              <SelectItem value="error">خطا</SelectItem>
+              <SelectItem value="critical">بحرانی</SelectItem>
+            </SelectContent>
+          </Select>
           <button type="button" onClick={onSearch} className={s.searchBtn}>
             <Search size={13} strokeWidth={2.2} />
             <span>اعمال</span>

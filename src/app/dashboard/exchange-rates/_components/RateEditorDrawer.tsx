@@ -5,6 +5,13 @@
 'use client';
 
 import { createMarketRate, updateMarketRate } from '@/actions/market-rates';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
 import type { MarketRateGroup, MarketRateUnit } from '@/lib/market-rates';
 import { cn } from '@/lib/utils';
@@ -384,30 +391,38 @@ export default function RateEditorDrawer({
             >
               <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: 'var(--ds-space-3)' }}>
                 <Field label="گروه">
-                  <select
+                  <Select
                     value={form.group}
-                    onChange={(e) => setForm({ ...form, group: e.target.value as MarketRateGroup })}
-                    style={selectBase}
+                    onValueChange={(v) => setForm({ ...form, group: v as MarketRateGroup })}
                   >
-                    {GROUPS.map((g) => (
-                      <option key={g.value} value={g.value}>
-                        {g.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger style={selectBase} aria-label="گروه">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GROUPS.map((g) => (
+                        <SelectItem key={g.value} value={g.value}>
+                          {g.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
                 <Field label="واحد">
-                  <select
+                  <Select
                     value={form.unit}
-                    onChange={(e) => setForm({ ...form, unit: e.target.value as MarketRateUnit })}
-                    style={selectBase}
+                    onValueChange={(v) => setForm({ ...form, unit: v as MarketRateUnit })}
                   >
-                    {UNITS.map((u) => (
-                      <option key={u.value} value={u.value}>
-                        {u.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger style={selectBase} aria-label="واحد">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {UNITS.map((u) => (
+                        <SelectItem key={u.value} value={u.value}>
+                          {u.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
                 <Field label="ضریب (Divisor)" hint="مقدار خام ÷ این عدد = مقدار نمایش">
                   <input

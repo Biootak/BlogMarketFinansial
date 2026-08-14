@@ -32,9 +32,8 @@ export const Link = BaseLink.extend({
   },
 
   addInputRules() {
-    const urlSyntaxRegExp =
-      //@ts-ignore
-      /(?:^|\s)(?<href>(?:https?:\/\/|www\.)[\S]+)(?:\s|\n)$/gim;
+    // named group نیاز به target >= ES2018 دارد (tsconfig: ES2020)
+    const urlSyntaxRegExp = /(?:^|\s)(?<href>(?:https?:\/\/|www\.)[\S]+)(?:\s|\n)$/gim;
 
     return [
       markInputRule({

@@ -1,13 +1,18 @@
 import { findChildren } from '@tiptap/core';
 import type { Node as ProsemirrorNode } from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
+import type { Step } from '@tiptap/pm/transform';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
-// @ts-ignore
 import highlight from 'highlight.js/lib/core';
 import { CODE_BLOCK_LANGUAGUE_SYNTAX_DEFAULT } from '../../constants/code_block_languages';
 import { loadLanguage } from '../../lib/code-block-language-loader';
 
 export const LowlightPluginKey = new PluginKey('lowlight');
+
+/** Step پایه from/to ندارد؛ فقط زیرکلاس‌های دارای محدوده آن‌ها را دارند. */
+function hasStepRange(step: Step): step is Step & { from: number; to: number } {
+  return 'from' in step && 'to' in step;
+}
 
 export function LowlightPlugin({
   name,
@@ -48,21 +53,12 @@ export function LowlightPlugin({
             // (for example, a transaction that affects the entire document).
             // Such transactions can happen during collab syncing via y-prosemirror, for example.
             tr.steps.some((step) => {
-              // @ts-ignore
+              // Step پایه from/to ندارد؛ فقط زیرکلاس‌های دارای محدوده
               return (
-                // @ts-ignore
-                step.from !== undefined &&
-                // @ts-ignore
-                step.to !== undefined &&
-                oldNodes.some((node) => {
-                  // @ts-ignore
-                  return (
-                    // @ts-ignore
-                    node.pos >= step.from &&
-                    // @ts-ignore
-                    node.pos + node.node.nodeSize <= step.to
-                  );
-                })
+                hasStepRange(step) &&
+                oldNodes.some(
+                  (node) => node.pos >= step.from && node.pos + node.node.nodeSize <= step.to,
+                )
               );
             }));
 

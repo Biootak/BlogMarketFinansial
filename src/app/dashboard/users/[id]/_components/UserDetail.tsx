@@ -20,6 +20,7 @@ import {
 } from '@/actions/userActions';
 import { ConfirmDialog, PageHeader } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/components/ui/use-toast';
 import {
   ACTION_LABELS,
@@ -1095,6 +1096,7 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
                     return (
                       <label
                         key={action}
+                        htmlFor={`grant-${section.key}-${action}`}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -1110,11 +1112,21 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
                           fontWeight: on ? 700 : 500,
                           color: on ? 'var(--at-fg)' : 'var(--at-fg-muted)',
                         }}
+                        onClick={(e) => {
+                          if ((e.target as HTMLElement).closest('button')) return;
+                          if (!isPending && !denied) toggleGrant(section.key, action);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            if (!isPending && !denied) toggleGrant(section.key, action);
+                          }
+                        }}
                       >
-                        <input
-                          type="checkbox"
+                        <Checkbox
+                          id={`grant-${section.key}-${action}`}
                           checked={on}
-                          onChange={() => toggleGrant(section.key, action)}
+                          onCheckedChange={() => toggleGrant(section.key, action)}
                           disabled={isPending || denied}
                         />
                         {ACTION_LABELS[action]}
@@ -1135,15 +1147,26 @@ function SectionAccessEditor({ user }: { user: UserDetailPayload }) {
                   </button>
                   <label
                     className={s.accessDenyLabel}
+                    htmlFor={`deny-${section.key}`}
                     style={{
                       fontWeight: denied ? 700 : 500,
                       color: denied ? 'var(--at-danger)' : 'var(--at-fg-muted)',
                     }}
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('button')) return;
+                      if (!isPending) toggleDeny(section.key);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (!isPending) toggleDeny(section.key);
+                      }
+                    }}
                   >
-                    <input
-                      type="checkbox"
+                    <Checkbox
+                      id={`deny-${section.key}`}
                       checked={denied}
-                      onChange={() => toggleDeny(section.key)}
+                      onCheckedChange={() => toggleDeny(section.key)}
                       disabled={isPending}
                     />
                     مسدود

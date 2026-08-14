@@ -5,6 +5,7 @@
  */
 
 import type { TransferProviderRow } from '@/actions/transfer-providers';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -331,14 +332,26 @@ export default function ProviderDrawer({ open, editRow, onClose, onSave }: Props
 
           {/* فعال */}
           <div className={s.drawerCheckRow}>
-            <input
+            <Checkbox
               id="p-active"
-              type="checkbox"
               className={s.drawerCheckbox}
               checked={form.active}
-              onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
+              onCheckedChange={(c) => setForm((f) => ({ ...f, active: c === true }))}
             />
-            <label htmlFor="p-active" className={s.drawerCheckLabel}>
+            <label
+              htmlFor="p-active"
+              className={s.drawerCheckLabel}
+              onClick={(e) => {
+                if ((e.target as HTMLElement).closest('button')) return;
+                setForm((f) => ({ ...f, active: !f.active }));
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setForm((f) => ({ ...f, active: !f.active }));
+                }
+              }}
+            >
               فعال (نمایش در سایت)
             </label>
           </div>

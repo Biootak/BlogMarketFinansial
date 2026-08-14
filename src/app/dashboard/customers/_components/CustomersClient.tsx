@@ -35,6 +35,7 @@ import {
 } from '@/components/Dashboard/primitives';
 import { CustomerBulkBar } from '@/components/Exchange/customers/CustomerBulkBar';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
@@ -709,15 +710,15 @@ export default function CustomersClient({
                   <thead>
                     <tr>
                       <th scope="col" className={s.checkCell}>
-                        <span className={s.rowCheckbox} aria-hidden>
-                          <input
-                            type="checkbox"
+                        <span className={s.rowCheckbox}>
+                          <Checkbox
                             className={s.checkInput}
-                            checked={allVisibleSelected}
-                            ref={(el) => {
-                              if (el) el.indeterminate = someVisibleSelected;
-                            }}
-                            onChange={toggleAll}
+                            checked={
+                              someVisibleSelected && !allVisibleSelected
+                                ? 'indeterminate'
+                                : allVisibleSelected
+                            }
+                            onCheckedChange={toggleAll}
                             aria-label="انتخاب همه مشتریان این صفحه"
                           />
                         </span>
@@ -754,12 +755,11 @@ export default function CustomersClient({
                         >
                           {/* انتخاب */}
                           <td className={s.checkCell} onClick={(e) => e.stopPropagation()}>
-                            <span className={s.rowCheckbox} aria-hidden>
-                              <input
-                                type="checkbox"
+                            <span className={s.rowCheckbox}>
+                              <Checkbox
                                 className={s.checkInput}
                                 checked={selectedIds.has(c.id)}
-                                onChange={() => toggleOne(c.id)}
+                                onCheckedChange={() => toggleOne(c.id)}
                                 aria-label={`انتخاب ${c.fullName}`}
                               />
                             </span>

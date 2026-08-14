@@ -1,6 +1,13 @@
 'use client';
 
 import { createApproval } from '@/actions/approvals-actions';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { ApprovalType } from '@/lib/approvals';
 import {
   AlertCircle,
@@ -314,21 +321,28 @@ export function CreateApprovalPanel({ open, onClose, onCreated }: Props) {
                     <div className={s.stepRowNum}>{i + 1}</div>
                     <div className={s.stepRowBody}>
                       <span className={s.stepRowLabel}>مرحله {i + 1}</span>
-                      <select
+                      <Select
                         value={st.approverRole}
-                        onChange={(e) => {
+                        onValueChange={(v) => {
                           const next = [...stepsList];
-                          next[i] = { ...next[i]!, approverRole: e.target.value };
+                          next[i] = { ...next[i]!, approverRole: v };
                           setStepsList(next);
                         }}
-                        className={s.select}
                       >
-                        {ROLE_OPTIONS.map((r) => (
-                          <option key={r} value={r}>
-                            {r}
-                          </option>
-                        ))}
-                      </select>
+                        <SelectTrigger
+                          className={s.select}
+                          aria-label={`نقش تأییدکننده مرحله ${i + 1}`}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ROLE_OPTIONS.map((r) => (
+                            <SelectItem key={r} value={r}>
+                              {r}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <button
                       type="button"

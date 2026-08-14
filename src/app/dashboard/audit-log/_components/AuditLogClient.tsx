@@ -22,6 +22,7 @@ import {
   PageHeader,
   useTableDensity,
 } from '@/components/Dashboard/primitives';
+import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -53,7 +54,6 @@ import {
   Activity,
   AlertTriangle,
   ArrowUpDown,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   ClipboardCopy,
@@ -163,6 +163,17 @@ function formatDate(iso: string) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function toLocalDate(iso: string): Date {
+  return new Date(`${iso}T00:00:00`);
+}
+
+function toIsoParam(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function isToday(iso: string) {
@@ -457,25 +468,20 @@ export function AuditLogClient({
               </SelectContent>
             </Select>
 
-            {/* Date range */}
+            {/* Date range — PersianDatePicker شمسی (قانون native-never) */}
             <div className={s.dateWrap}>
-              <Calendar size={13} className={s.dateIcon} aria-hidden />
-              <input
-                type="date"
-                className={s.dateInput}
-                value={currentDateFrom}
-                aria-label="از تاریخ"
-                onChange={(e) => updateParams({ dateFrom: e.target.value })}
+              <PersianDatePicker
+                value={currentDateFrom ? toLocalDate(currentDateFrom) : null}
+                onChange={(d) => updateParams({ dateFrom: d ? toIsoParam(d) : '' })}
+                className={s.datePicker}
               />
               <span className={s.dateSep} aria-hidden>
                 —
               </span>
-              <input
-                type="date"
-                className={s.dateInput}
-                value={currentDateTo}
-                aria-label="تا تاریخ"
-                onChange={(e) => updateParams({ dateTo: e.target.value })}
+              <PersianDatePicker
+                value={currentDateTo ? toLocalDate(currentDateTo) : null}
+                onChange={(d) => updateParams({ dateTo: d ? toIsoParam(d) : '' })}
+                className={s.datePicker}
               />
             </div>
 

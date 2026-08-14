@@ -32,6 +32,7 @@ import {
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
 import SubmitButton from '@/components/SubmitButton';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -40,11 +41,18 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import { HiOutlinePencil, HiOutlinePlus, HiOutlineSparkles, HiOutlineTrash } from 'react-icons/hi2';
 
 type Theme = 'PRIMARY' | 'ACCENT' | 'NEUTRAL' | 'DARK' | 'GRADIENT';
@@ -104,6 +112,12 @@ export default function HeaderAdsClient({
   const [isPending, startTransition] = useTransition();
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; text: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+
+  // همگام‌سازی با ویرایش — وقتی dialog با دادهٔ دیگری باز می‌شود
+  useEffect(() => {
+    setIsActive(editing?.isActive ?? false);
+  }, [editing]);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -267,13 +281,26 @@ export default function HeaderAdsClient({
                     type="number"
                     defaultValue={editing?.priority ?? 0}
                   />
-                </div>
-                <label className="flex items-center gap-3 rounded-xl border border-neutral-200/60 bg-white/50 p-4 dark:border-neutral-700/50 dark:bg-neutral-800/50">
-                  <input
-                    type="checkbox"
-                    name="isActive"
-                    defaultChecked={editing?.isActive ?? false}
-                    className="h-5 w-5 rounded-md border-neutral-300 focus:ring-2 focus:ring-offset-2 [accent-color:var(--at-accent)]"
+                </div>{' '}
+                <label
+                  className="flex items-center gap-3 rounded-xl border border-neutral-200/60 bg-white/50 p-4 dark:border-neutral-700/50 dark:bg-neutral-800/50"
+                  htmlFor="ha-isactive"
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest('button')) return;
+                    setIsActive((v) => !v);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setIsActive((v) => !v);
+                    }
+                  }}
+                >
+                  <input type="hidden" name="isActive" value={isActive ? 'on' : 'off'} />
+                  <Checkbox
+                    id="ha-isactive"
+                    checked={isActive}
+                    onCheckedChange={(c) => setIsActive(c === true)}
                   />
                   <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                     فعال باشد (فقط یک تبلیغ می‌تواند فعال باشد)
@@ -457,18 +484,21 @@ function SelectField({
       >
         {label}
       </label>
-      <select
-        id={name}
-        name={name}
-        defaultValue={defaultValue}
-        className="h-11 w-full rounded-xl border border-neutral-200/60 bg-white/80 px-3 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
+      <Select name={name} defaultValue={defaultValue}>
+        <SelectTrigger
+          id={name}
+          className="h-11 w-full rounded-xl border border-neutral-200/60 bg-white/80 px-3 text-sm transition-colors focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((o) => (
+            <SelectItem key={o.value} value={o.value}>
+              {o.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

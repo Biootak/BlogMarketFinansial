@@ -4,6 +4,7 @@ import BannerADS from '@/components/BannerADS/BannerADS';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
 import SubmitButton from '@/components/SubmitButton';
 import { PersianDatePicker } from '@/components/ui/PersianDatePicker';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
   FormControl,
@@ -436,11 +437,9 @@ export function AdvertisementForm({ form, onSubmit }: AdvertisementFormProps) {
                     render={({ field }) => (
                       <FormItem className="flex items-center gap-3 rounded-xl border border-neutral-200/60 bg-white/50 p-4 dark:bg-neutral-800/50">
                         <FormControl>
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={field.value}
-                            onChange={field.onChange}
-                            className="size-5"
+                            onCheckedChange={(c) => field.onChange(c === true)}
                           />
                         </FormControl>
                         <FormLabel className="!mt-0">فعال بودن تبلیغ</FormLabel>

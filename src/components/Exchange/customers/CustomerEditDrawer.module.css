@@ -95,50 +95,8 @@
   gap: var(--ds-space-3);
 }
 
-.range {
+.riskSlider {
   flex: 1;
-  appearance: none;
-  -webkit-appearance: none;
-  height: 6px;
-  border-radius: 999px;
-  background: linear-gradient(
-    to end,
-    var(--at-accent) 0%,
-    var(--at-gold) 50%,
-    var(--at-danger) 100%
-  );
-  outline: none;
-  cursor: pointer;
-}
-
-.range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--at-bg);
-  border: 2px solid var(--at-accent);
-  cursor: pointer;
-  box-shadow: var(--at-shadow);
-  transition: transform var(--ds-duration-fast) var(--ds-ease-spring);
-}
-
-.range::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-}
-
-.range::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--at-bg);
-  border: 2px solid var(--at-accent);
-  cursor: pointer;
-  box-shadow: var(--at-shadow);
-}
-
-.range:focus-visible {
-  box-shadow: 0 0 0 3px var(--at-accent-soft);
 }
 
 .riskValue {

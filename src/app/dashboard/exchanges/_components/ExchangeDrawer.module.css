@@ -651,45 +651,6 @@
 .toggle:hover {
   border-color: var(--at-line-strong);
 }
-.toggle input {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  inline-size: 1px;
-  block-size: 1px;
-}
-.toggleTrack {
-  position: relative;
-  inline-size: 36px;
-  block-size: 20px;
-  border-radius: 9999px;
-  background: var(--at-surface);
-  border: 1px solid var(--at-line);
-  transition: all 180ms var(--at-ease);
-  flex-shrink: 0;
-}
-.toggleThumb {
-  position: absolute;
-  inset-block-start: 1px;
-  inset-inline-start: 1px;
-  inline-size: 16px;
-  block-size: 16px;
-  border-radius: 50%;
-  background: var(--at-fg-faint);
-  transition: all 220ms var(--at-ease);
-}
-.toggle input:checked + .toggleTrack {
-  background: color-mix(in oklch, var(--at-accent) 22%, var(--at-surface));
-  border-color: var(--at-accent);
-}
-.toggle input:checked + .toggleTrack .toggleThumb {
-  transform: translateX(-17px);
-  background: var(--at-accent);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 24%, transparent);
-}
-.toggle input:focus-visible + .toggleTrack {
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--at-accent) 18%, transparent);
-}
 .toggleText {
   font-size: var(--ds-text-sm);
   color: var(--at-fg);

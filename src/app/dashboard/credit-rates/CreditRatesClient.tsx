@@ -19,6 +19,13 @@ import {
   StatCard,
   useTableDensity,
 } from '@/components/Dashboard/primitives';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { TYPE_FA } from '@/lib/credit-rate-constants';
 import type { CreditRateType } from '@prisma/client';
 import {
@@ -318,33 +325,35 @@ export default function CreditRatesClient({
             <div className={s.filterFields}>
               <div className={s.filterField}>
                 <label className={s.filterLabel}>نوع محصول اعتباری</label>
-                <select
-                  value={filterType}
-                  onChange={(e) => setFilterType(e.target.value)}
-                  className={s.filterSelect}
-                >
-                  <option value="ALL">همه انواع تسهیلات</option>
-                  {Object.entries(TYPE_FA).map(([k, v]) => (
-                    <option key={k} value={k}>
-                      {v}
-                    </option>
-                  ))}
-                </select>
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger className={s.filterSelect} aria-label="فیلتر نوع محصول اعتباری">
+                    <SelectValue placeholder="همه انواع تسهیلات" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">همه انواع تسهیلات</SelectItem>
+                    {Object.entries(TYPE_FA).map(([k, v]) => (
+                      <SelectItem key={k} value={k}>
+                        {v}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className={s.filterField}>
                 <label className={s.filterLabel}>بانک صادرکننده</label>
-                <select
-                  value={filterBank}
-                  onChange={(e) => setFilterBank(e.target.value)}
-                  className={s.filterSelect}
-                >
-                  <option value="ALL">همه بانک‌ها</option>
-                  {banks.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.displayName || b.name}
-                    </option>
-                  ))}
-                </select>
+                <Select value={filterBank} onValueChange={setFilterBank}>
+                  <SelectTrigger className={s.filterSelect} aria-label="فیلتر بانک صادرکننده">
+                    <SelectValue placeholder="همه بانک‌ها" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL">همه بانک‌ها</SelectItem>
+                    {banks.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.displayName || b.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <p className={s.rateCount}>
@@ -678,27 +687,32 @@ export default function CreditRatesClient({
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>وضعیت</label>
-                  <select
-                    name="status"
-                    defaultValue={bankModal.data?.status || 'ACTIVE'}
-                    className={s.fieldSelect}
-                  >
-                    <option value="ACTIVE">فعال</option>
-                    <option value="PENDING">در انتظار تایید</option>
-                    <option value="SUSPENDED">تعلیق شده</option>
-                    <option value="CLOSED">غیرفعال / تعطیل</option>
-                  </select>
+                  <Select name="status" defaultValue={bankModal.data?.status || 'ACTIVE'}>
+                    <SelectTrigger className={s.fieldSelect} aria-label="وضعیت">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">فعال</SelectItem>
+                      <SelectItem value="PENDING">در انتظار تایید</SelectItem>
+                      <SelectItem value="SUSPENDED">تعلیق شده</SelectItem>
+                      <SelectItem value="CLOSED">غیرفعال / تعطیل</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>نمایش در سایت</label>
-                  <select
+                  <Select
                     name="isVisible"
                     defaultValue={bankModal.data?.isVisible === false ? 'false' : 'true'}
-                    className={s.fieldSelect}
                   >
-                    <option value="true">بله</option>
-                    <option value="false">خیر</option>
-                  </select>
+                    <SelectTrigger className={s.fieldSelect} aria-label="نمایش در سایت">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">بله</SelectItem>
+                      <SelectItem value="false">خیر</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -756,34 +770,33 @@ export default function CreditRatesClient({
               <div className={s.fieldGroup}>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>بانک مربوطه</label>
-                  <select
-                    name="bankId"
-                    required
-                    defaultValue={rateModal.data?.bankId}
-                    className={s.fieldSelect}
-                  >
-                    <option value="">انتخاب کنید…</option>
-                    {banks.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.displayName || b.name}
-                      </option>
-                    ))}
-                  </select>
+                  <Select name="bankId" required defaultValue={rateModal.data?.bankId}>
+                    <SelectTrigger className={s.fieldSelect} aria-label="بانک مربوطه">
+                      <SelectValue placeholder="انتخاب کنید…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {banks.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>
+                          {b.displayName || b.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>نوع محصول اعتباری</label>
-                  <select
-                    name="type"
-                    required
-                    defaultValue={rateModal.data?.type || 'DEPOSIT'}
-                    className={s.fieldSelect}
-                  >
-                    {Object.entries(TYPE_FA).map(([k, v]) => (
-                      <option key={k} value={k}>
-                        {v}
-                      </option>
-                    ))}
-                  </select>
+                  <Select name="type" required defaultValue={rateModal.data?.type || 'DEPOSIT'}>
+                    <SelectTrigger className={s.fieldSelect} aria-label="نوع محصول اعتباری">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(TYPE_FA).map(([k, v]) => (
+                        <SelectItem key={k} value={k}>
+                          {v}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -816,15 +829,16 @@ export default function CreditRatesClient({
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>ارز مورد معامله</label>
-                  <select
-                    name="currency"
-                    defaultValue={rateModal.data?.currency || 'AFN'}
-                    className={s.fieldSelect}
-                  >
-                    <option value="AFN">AFN (افغانی)</option>
-                    <option value="USD">USD (دلار)</option>
-                    <option value="IRR">IRR (ریال)</option>
-                  </select>
+                  <Select name="currency" defaultValue={rateModal.data?.currency || 'AFN'}>
+                    <SelectTrigger className={s.fieldSelect} aria-label="ارز مورد معامله">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="AFN">AFN (افغانی)</SelectItem>
+                      <SelectItem value="USD">USD (دلار)</SelectItem>
+                      <SelectItem value="IRR">IRR (ریال)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>حداکثر مدت (ماه)</label>
@@ -881,14 +895,15 @@ export default function CreditRatesClient({
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>وضعیت</label>
-                  <select
-                    name="status"
-                    defaultValue={rateModal.data?.status || 'ACTIVE'}
-                    className={s.fieldSelect}
-                  >
-                    <option value="ACTIVE">فعال / عمومی</option>
-                    <option value="DRAFT">پیش‌نویس</option>
-                  </select>
+                  <Select name="status" defaultValue={rateModal.data?.status || 'ACTIVE'}>
+                    <SelectTrigger className={s.fieldSelect} aria-label="وضعیت">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">فعال / عمومی</SelectItem>
+                      <SelectItem value="DRAFT">پیش‌نویس</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className={s.field}>
                   <label className={s.fieldLabel}>ترتیب اولویت</label>

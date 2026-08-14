@@ -23,6 +23,7 @@ import {
   getServiceRequestDetail,
 } from '@/actions/serviceRequestActions';
 import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { createPortal } from 'react-dom';
@@ -626,12 +627,24 @@ export default function ServiceRequestsDetailDrawer({
                       aria-label="متن یادداشت جدید"
                     />
                     <div className="at-srq-drawer__note-compose-foot">
-                      <label className="at-srq-drawer__checkbox-label">
-                        <input
-                          type="checkbox"
+                      <label
+                        className="at-srq-drawer__checkbox-label"
+                        htmlFor="srq-note-private"
+                        onClick={(e) => {
+                          if ((e.target as HTMLElement).closest('button')) return;
+                          setNotePrivate((v) => !v);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setNotePrivate((v) => !v);
+                          }
+                        }}
+                      >
+                        <Checkbox
+                          id="srq-note-private"
                           checked={notePrivate}
-                          onChange={(e) => setNotePrivate(e.target.checked)}
-                          className="at-srq-drawer__checkbox"
+                          onCheckedChange={(c) => setNotePrivate(c === true)}
                         />
                         فقط داخلی (مخفی از مشتری)
                       </label>

@@ -24,6 +24,14 @@ import {
   createServiceRequest,
 } from '@/actions/serviceRequestActions';
 import { type CurrencyGroup, CurrencySelect } from '@/components/ui/CurrencySelect';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { type ServiceRequestFormData, ServiceRequestSchema } from '@/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -46,7 +54,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import s from './ServiceRequestForm.module.css';
 
@@ -196,6 +204,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
   const {
     register,
+    control,
     handleSubmit,
     watch,
     setValue,
@@ -235,6 +244,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
   const amount = watch('amount');
   const fullName = watch('fullName');
   const phone = watch('phone');
+  const contactMethod = watch('contactMethod');
 
   // URL params prefill — preserves ?currency=USD&type=...&amount=... links
   useEffect(() => {
@@ -538,21 +548,26 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
             {/* Service type */}
             <Divider label="نوع خدمات" />
-            <div className={s.serviceGrid} role="radiogroup" aria-label="نوع خدمات">
+            <RadioGroup
+              value={serviceType}
+              onValueChange={(v) =>
+                setValue('serviceType', v as ServiceType, { shouldValidate: true })
+              }
+              className={s.serviceGrid}
+              aria-label="نوع خدمات"
+            >
               {SERVICE_TYPES.map((svc) => {
                 const Icon = svc.icon;
                 const sel = serviceType === svc.value;
                 return (
                   <label
                     key={svc.value}
+                    htmlFor={`svc-${svc.value}`}
                     className={`${s.serviceBtn} ${sel ? s.serviceBtnSelected : ''}`}
                   >
-                    <input
-                      type="radio"
-                      name="serviceType"
+                    <RadioGroupItem
                       value={svc.value}
-                      checked={sel}
-                      onChange={() => setValue('serviceType', svc.value)}
+                      id={`svc-${svc.value}`}
                       className={s.srOnly}
                     />
                     {sel && (
@@ -567,7 +582,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                   </label>
                 );
               })}
-            </div>
+            </RadioGroup>
           </div>
         )}
 
@@ -629,19 +644,25 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               <Divider label="اطلاعات حواله (اختیاری)" />
               <div className={s.fieldRow}>
                 <Field id="destinationCountry" label="کشور مقصد">
-                  <div className={s.selectWrap}>
-                    <select
-                      id="destinationCountry"
-                      {...register('destinationCountry')}
-                      className={s.select}
-                    >
-                      <option value="">انتخاب کنید</option>
-                      {COUNTRIES.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
+                  <div className={`${s.selectWrap} ${s.selectWrapRadix}`}>
+                    <Controller
+                      control={control}
+                      name="destinationCountry"
+                      render={({ field }) => (
+                        <Select value={field.value || undefined} onValueChange={field.onChange}>
+                          <SelectTrigger id="destinationCountry" className={s.select}>
+                            <SelectValue placeholder="انتخاب کنید" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COUNTRIES.map((c) => (
+                              <SelectItem key={c.value} value={c.value}>
+                                {c.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                 </Field>
                 <Field id="bankName" label="نام بانک مقصد">
@@ -685,19 +706,25 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               <Divider label="اطلاعات تحصیلی (اختیاری)" />
               <div className={s.fieldRow}>
                 <Field id="tuitionCountry" label="کشور مقصد">
-                  <div className={s.selectWrap}>
-                    <select
-                      id="tuitionCountry"
-                      {...register('destinationCountry')}
-                      className={s.select}
-                    >
-                      <option value="">انتخاب کنید</option>
-                      {COUNTRIES.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
-                        </option>
-                      ))}
-                    </select>
+                  <div className={`${s.selectWrap} ${s.selectWrapRadix}`}>
+                    <Controller
+                      control={control}
+                      name="destinationCountry"
+                      render={({ field }) => (
+                        <Select value={field.value || undefined} onValueChange={field.onChange}>
+                          <SelectTrigger id="tuitionCountry" className={s.select}>
+                            <SelectValue placeholder="انتخاب کنید" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {COUNTRIES.map((c) => (
+                              <SelectItem key={c.value} value={c.value}>
+                                {c.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                 </Field>
                 <Field id="universityName" label="نام دانشگاه">
@@ -760,18 +787,24 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                   />
                 </Field>
                 <Field id="subscriptionType" label="نوع اشتراک">
-                  <div className={s.selectWrap}>
-                    <select
-                      id="subscriptionType"
-                      {...register('subscriptionType')}
-                      className={s.select}
-                    >
-                      <option value="">انتخاب کنید</option>
-                      <option value="monthly">ماهانه</option>
-                      <option value="yearly">سالانه</option>
-                      <option value="lifetime">مادام‌العمر</option>
-                      <option value="one-time">یکبار خرید</option>
-                    </select>
+                  <div className={`${s.selectWrap} ${s.selectWrapRadix}`}>
+                    <Controller
+                      control={control}
+                      name="subscriptionType"
+                      render={({ field }) => (
+                        <Select value={field.value || undefined} onValueChange={field.onChange}>
+                          <SelectTrigger id="subscriptionType" className={s.select}>
+                            <SelectValue placeholder="انتخاب کنید" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="monthly">ماهانه</SelectItem>
+                            <SelectItem value="yearly">سالانه</SelectItem>
+                            <SelectItem value="lifetime">مادام‌العمر</SelectItem>
+                            <SelectItem value="one-time">یکبار خرید</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                 </Field>
               </div>
@@ -781,36 +814,52 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
               <Divider label="اطلاعات گیفت کارت (اختیاری)" />
               <div className={s.fieldRow}>
                 <Field id="giftCardBrand" label="برند گیفت کارت">
-                  <div className={s.selectWrap}>
-                    <select id="giftCardBrand" {...register('giftCardBrand')} className={s.select}>
-                      <option value="">انتخاب کنید</option>
-                      <option value="amazon">Amazon</option>
-                      <option value="google_play">Google Play</option>
-                      <option value="apple">Apple / iTunes</option>
-                      <option value="steam">Steam</option>
-                      <option value="netflix">Netflix</option>
-                      <option value="spotify">Spotify</option>
-                      <option value="xbox">Xbox / Microsoft</option>
-                      <option value="playstation">PlayStation</option>
-                      <option value="visa">Visa Prepaid</option>
-                      <option value="other">سایر</option>
-                    </select>
+                  <div className={`${s.selectWrap} ${s.selectWrapRadix}`}>
+                    <Controller
+                      control={control}
+                      name="giftCardBrand"
+                      render={({ field }) => (
+                        <Select value={field.value || undefined} onValueChange={field.onChange}>
+                          <SelectTrigger id="giftCardBrand" className={s.select}>
+                            <SelectValue placeholder="انتخاب کنید" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="amazon">Amazon</SelectItem>
+                            <SelectItem value="google_play">Google Play</SelectItem>
+                            <SelectItem value="apple">Apple / iTunes</SelectItem>
+                            <SelectItem value="steam">Steam</SelectItem>
+                            <SelectItem value="netflix">Netflix</SelectItem>
+                            <SelectItem value="spotify">Spotify</SelectItem>
+                            <SelectItem value="xbox">Xbox / Microsoft</SelectItem>
+                            <SelectItem value="playstation">PlayStation</SelectItem>
+                            <SelectItem value="visa">Visa Prepaid</SelectItem>
+                            <SelectItem value="other">سایر</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                 </Field>
                 <Field id="giftCardRegion" label="ریجن / منطقه">
-                  <div className={s.selectWrap}>
-                    <select
-                      id="giftCardRegion"
-                      {...register('giftCardRegion')}
-                      className={s.select}
-                    >
-                      <option value="">انتخاب کنید</option>
-                      <option value="us">آمریکا (US)</option>
-                      <option value="eu">اروپا (EU)</option>
-                      <option value="uk">انگلستان (UK)</option>
-                      <option value="global">جهانی (Global)</option>
-                      <option value="other">سایر</option>
-                    </select>
+                  <div className={`${s.selectWrap} ${s.selectWrapRadix}`}>
+                    <Controller
+                      control={control}
+                      name="giftCardRegion"
+                      render={({ field }) => (
+                        <Select value={field.value || undefined} onValueChange={field.onChange}>
+                          <SelectTrigger id="giftCardRegion" className={s.select}>
+                            <SelectValue placeholder="انتخاب کنید" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="us">آمریکا (US)</SelectItem>
+                            <SelectItem value="eu">اروپا (EU)</SelectItem>
+                            <SelectItem value="uk">انگلستان (UK)</SelectItem>
+                            <SelectItem value="global">جهانی (Global)</SelectItem>
+                            <SelectItem value="other">سایر</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                 </Field>
               </div>
@@ -861,14 +910,17 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
 
             {/* Contact method */}
             <Divider label="روش تماس ترجیحی" />
-            <div className={s.contactRow}>
-              <label className={s.contactLabel}>
-                <input
-                  type="radio"
-                  value="telegram"
-                  {...register('contactMethod')}
-                  className={s.contactRadio}
-                />
+            <RadioGroup
+              value={contactMethod}
+              onValueChange={(v) =>
+                setValue('contactMethod', v as ServiceRequestFormData['contactMethod'], {
+                  shouldValidate: true,
+                })
+              }
+              className={s.contactRow}
+            >
+              <label className={s.contactLabel} htmlFor="contact-telegram">
+                <RadioGroupItem value="telegram" id="contact-telegram" className={s.contactRadio} />
                 <div className={s.contactCard}>
                   <div className={s.contactIconWrap} style={{ color: 'oklch(61% 0.17 218)' }}>
                     <FaTelegram size={16} />
@@ -876,13 +928,8 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                   <div className={s.contactCardTitle}>تلگرام</div>
                 </div>
               </label>
-              <label className={s.contactLabel}>
-                <input
-                  type="radio"
-                  value="whatsapp"
-                  {...register('contactMethod')}
-                  className={s.contactRadio}
-                />
+              <label className={s.contactLabel} htmlFor="contact-whatsapp">
+                <RadioGroupItem value="whatsapp" id="contact-whatsapp" className={s.contactRadio} />
                 <div className={s.contactCard}>
                   <div className={s.contactIconWrap} style={{ color: 'oklch(71% 0.18 155)' }}>
                     <FaWhatsapp size={16} />
@@ -890,7 +937,7 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                   <div className={s.contactCardTitle}>واتساپ</div>
                 </div>
               </label>
-            </div>
+            </RadioGroup>
 
             {/* Description — Intercom: auto-expand */}
             <Divider label="توضیحات (اختیاری)" />

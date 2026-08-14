@@ -12,8 +12,12 @@ export const MenuButtonLink = ({ editor }: MenuButtonLinkProps) => {
   const onLink = useCallback(() => {
     if (!isTextSelected(editor)) return;
 
-    // @ts-ignore
-    editor.chain().focus().toggleLink({ class: 'fake_link' }).run();
+    // toggleLink در تایپ پایه href را الزامی می‌داند؛ اینجا فقط class ست می‌شود
+    editor
+      .chain()
+      .focus()
+      .toggleLink({ class: 'fake_link' } as unknown as { href: string; class?: string | null })
+      .run();
   }, [editor]);
 
   return (

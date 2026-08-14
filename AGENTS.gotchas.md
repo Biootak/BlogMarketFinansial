@@ -147,3 +147,18 @@ This is RTL-only. If the editor ever ships in LTR, the labels and the actions mu
 3. If the component renders into a tippy portal or Radix portal, verify `dir` is set on the root of the portaled content.
 4. Run `npx tsc --noEmit` after changes.
 5. Visually verify: place cursor in editor, select text (bubble menu must appear correctly positioned), insert table, right-click a cell (table context menu must appear).
+### next/font `adjustFontFallback` shadows later fonts in the stack
+
+If `localFont()` uses `adjustFontFallback: 'Arial'`, Next emits an extra `@font-face`
+named `<family> Fallback` with **no `unicode-range`** (matches every character, rendered
+from `local(Arial)`). Because it sits right after the real font in the resolved stack,
+it swallows any character the real font's `unicode-range` doesn't cover — e.g. Latin
+text on a Persian site never reaches the second font in the stack (`--font-latin`) and
+stays plain Arial forever (the real Latin font is never even downloaded — check
+`document.fonts` for `unloaded`).
+
+- Fix: `adjustFontFallback: false` on the *first* font of the pair, so characters outside
+  its `unicode-range` fall through to the next font. Verified on 2026-08-14 in
+  `src/app/fonts/index.ts` (Vazirmatn Arabic + Inter Latin).
+- Symptom to look for: English text looks like a system font while `document.fonts`
+  shows the Latin font as `unloaded`.

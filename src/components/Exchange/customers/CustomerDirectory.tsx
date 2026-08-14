@@ -7,6 +7,15 @@
 
 import type { CustomerRow } from '@/actions/exchange-customers';
 import { EmptyState, SearchInput } from '@/components/Dashboard/primitives';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatNumber } from '@/lib/customer-format';
 import {
   type CustomerSort,
@@ -113,76 +122,89 @@ export function CustomerDirectory({
         </div>
 
         {/* KYC select */}
-        <select
-          className={s.select}
+        <Select
           value={filters.kycLevel}
-          onChange={(e) =>
+          onValueChange={(v) =>
             onFiltersChange((p) => ({
               ...p,
-              kycLevel: e.target.value as CustomerDirectoryFilters['kycLevel'],
+              kycLevel: v as CustomerDirectoryFilters['kycLevel'],
             }))
           }
-          aria-label="سطح KYC"
         >
-          {KYC_FILTERS.map((f) => (
-            <option key={f.key} value={f.key}>
-              {f.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className={s.select} aria-label="سطح KYC">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {KYC_FILTERS.map((f) => (
+              <SelectItem key={f.key} value={f.key}>
+                {f.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Risk select */}
-        <select
-          className={s.select}
+        <Select
           value={filters.risk}
-          onChange={(e) =>
+          onValueChange={(v) =>
             onFiltersChange((p) => ({
               ...p,
-              risk: e.target.value as CustomerDirectoryFilters['risk'],
+              risk: v as CustomerDirectoryFilters['risk'],
             }))
           }
-          aria-label="سطح ریسک"
         >
-          <option value="all">همه ریسک‌ها</option>
-          <option value="low">کم‌ریسک</option>
-          <option value="medium">متوسط</option>
-          <option value="high">پرریسک</option>
-        </select>
+          <SelectTrigger className={s.select} aria-label="سطح ریسک">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">همه ریسک‌ها</SelectItem>
+            <SelectItem value="low">کم‌ریسک</SelectItem>
+            <SelectItem value="medium">متوسط</SelectItem>
+            <SelectItem value="high">پرریسک</SelectItem>
+          </SelectContent>
+        </Select>
 
         {/* City select */}
         {cityOptions.length > 0 && (
-          <select
-            className={s.select}
+          <Select
             value={filters.city}
-            onChange={(e) => onFiltersChange((p) => ({ ...p, city: e.target.value }))}
-            aria-label="شهر"
+            onValueChange={(v) => onFiltersChange((p) => ({ ...p, city: v }))}
           >
-            <option value="all">همه شهرها</option>
-            {cityOptions.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className={s.select} aria-label="شهر">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">همه شهرها</SelectItem>
+              {cityOptions.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
 
         {/* Sort */}
-        <select
-          className={s.select}
+        <Select
           value={`${sort.key}:${sort.dir}`}
-          onChange={(e) => {
-            const [k, d] = e.target.value.split(':') as [CustomerSortKey, 'asc' | 'desc'];
+          onValueChange={(v) => {
+            const [k, d] = v.split(':') as [CustomerSortKey, 'asc' | 'desc'];
             onSortChange({ key: k, dir: d });
           }}
-          aria-label="مرتب‌سازی"
         >
-          {SORT_OPTIONS.map((o) => (
-            <optgroup key={o.key} label={o.label}>
-              <option value={`${o.key}:asc`}>{o.label} (صعودی)</option>
-              <option value={`${o.key}:desc`}>{o.label} (نزولی)</option>
-            </optgroup>
-          ))}
-        </select>
+          <SelectTrigger className={s.select} aria-label="مرتب‌سازی">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((o) => (
+              <SelectGroup key={o.key}>
+                <SelectLabel>{o.label}</SelectLabel>
+                <SelectItem value={`${o.key}:asc`}>{o.label} (صعودی)</SelectItem>
+                <SelectItem value={`${o.key}:desc`}>{o.label} (نزولی)</SelectItem>
+              </SelectGroup>
+            ))}
+          </SelectContent>
+        </Select>
 
         {canWrite && (
           <button type="button" className={s.addBtn} onClick={onAdd}>

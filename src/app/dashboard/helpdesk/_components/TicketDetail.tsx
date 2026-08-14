@@ -11,6 +11,7 @@
 
 import { replyToTicket, updateTicketStatus } from '@/actions/tickets-actions';
 import { PanelDrawer } from '@/components/Dashboard/primitives';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { TicketMessageSummary, TicketStatus, TicketSummary } from '@/lib/tickets';
 import { useCallback, useEffect, useState } from 'react';
 import s from './TicketDetail.module.css';
@@ -412,11 +413,25 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
       </div>
 
       <div className={s.footer}>
-        <label className={s.internalLabel}>
-          <input
-            type="checkbox"
+        {' '}
+        <label
+          className={s.internalLabel}
+          htmlFor="ticket-note-internal"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('button')) return;
+            setIsInternal((v) => !v);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsInternal((v) => !v);
+            }
+          }}
+        >
+          <Checkbox
+            id="ticket-note-internal"
             checked={isInternal}
-            onChange={(e) => setIsInternal(e.target.checked)}
+            onCheckedChange={(c) => setIsInternal(c === true)}
           />
           <span>یادداشت داخلی (فقط تیم)</span>
         </label>

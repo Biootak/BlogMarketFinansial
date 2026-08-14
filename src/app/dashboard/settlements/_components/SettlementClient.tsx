@@ -25,6 +25,7 @@ import {
 import cm from '@/components/Dashboard/primitives/CenterModal.module.css';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogClose,
@@ -529,15 +530,20 @@ export function SettlementClient({ settlements: initial, canMutate = true }: Pro
                 <tr>
                   {tab === 'PENDING' && (
                     <th className={`${s.th} ${s.thCheck}`} aria-label="انتخاب همه">
-                      <label className={s.checkLabel} aria-label="انتخاب همه ردیف‌های در انتظار">
-                        <input
-                          type="checkbox"
+                      <label
+                        className={s.checkLabel}
+                        htmlFor="stl-check-all"
+                        aria-label="انتخاب همه ردیف‌های در انتظار"
+                      >
+                        <Checkbox
+                          id="stl-check-all"
                           className={s.checkbox}
-                          checked={allPendingSelected}
-                          ref={(el) => {
-                            if (el) el.indeterminate = somePendingSelected && !allPendingSelected;
-                          }}
-                          onChange={toggleSelectAll}
+                          checked={
+                            somePendingSelected && !allPendingSelected
+                              ? 'indeterminate'
+                              : allPendingSelected
+                          }
+                          onCheckedChange={toggleSelectAll}
                           aria-label="انتخاب همه"
                         />
                       </label>
@@ -602,12 +608,12 @@ export function SettlementClient({ settlements: initial, canMutate = true }: Pro
                         onKeyDown={(e) => e.stopPropagation()}
                       >
                         {row.status === 'PENDING' && (
-                          <label className={s.checkLabel}>
-                            <input
-                              type="checkbox"
+                          <label className={s.checkLabel} htmlFor={`stl-check-${row.id}`}>
+                            <Checkbox
+                              id={`stl-check-${row.id}`}
                               className={s.checkbox}
                               checked={selectedRows.has(row.id)}
-                              onChange={() => toggleSelect(row.id)}
+                              onCheckedChange={() => toggleSelect(row.id)}
                               aria-label={`انتخاب ${row.exchangeName}`}
                             />
                           </label>

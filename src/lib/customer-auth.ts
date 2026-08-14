@@ -79,9 +79,11 @@ export type CustomerAccessResult = CustomerAccessOk | CustomerAccessFail;
 // بدون اینکه داده stale بماند. React.cache قبلاً per-request بود؛
 // این معادل آن است.
 const _requireCustomerAccessImpl = safeCache(
-  async (): Promise<CustomerAccessResult> =>
-    _requireCustomerAccessFn(),
-  { ok: false, error: { success: false, status: 401, code: 'UNAUTHENTICATED', message: 'لطفاً وارد شوید' } },
+  async (): Promise<CustomerAccessResult> => _requireCustomerAccessFn(),
+  {
+    ok: false,
+    error: { success: false, status: 401, code: 'UNAUTHENTICATED', message: 'لطفاً وارد شوید' },
+  },
   { key: 'customer-auth:requireCustomerAccess', ttl: 5 },
 );
 

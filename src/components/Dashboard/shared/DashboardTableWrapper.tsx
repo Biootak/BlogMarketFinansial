@@ -292,36 +292,3 @@ export function EmptyState({
 }
 
 // Filter Select Component
-interface FilterSelectProps {
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-  placeholder?: string;
-  className?: string;
-}
-
-export function FilterSelect({
-  value,
-  onChange,
-  options,
-  placeholder,
-  className,
-}: FilterSelectProps) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className={cn(
-        'h-10 sm:h-11 rounded-xl border border-neutral-200/60 bg-white/80 px-4 text-sm text-neutral-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-neutral-300 focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-100 dark:border-neutral-700/60 dark:bg-neutral-800/80 dark:text-neutral-300 dark:hover:border-neutral-600 dark:focus:border-primary-500 dark:focus:ring-primary-900/30',
-        className,
-      )}
-    >
-      {placeholder && <option value="">{placeholder}</option>}
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
-    </select>
-  );
-}

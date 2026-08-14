@@ -353,21 +353,11 @@ button.kpiCard:hover::before,
   background: var(--ds-canvas) !important;
 }
 
-/* ── Date wrap ────────────────────────────────────────────────────────────── */
+/* ── Date wrap (PersianDatePicker شمسی) ─────────────────────────────────── */
 .dateWrap {
   display: flex;
   align-items: center;
   gap: var(--ds-space-1-5);
-  padding-inline: var(--ds-space-3);
-  block-size: 34px;
-  border: 1.5px solid var(--ds-border-default);
-  border-radius: var(--ds-radius-md);
-  background: var(--ds-canvas);
-}
-
-.dateIcon {
-  color: var(--ds-text-muted);
-  flex-shrink: 0;
 }
 
 .dateSep {
@@ -375,20 +365,8 @@ button.kpiCard:hover::before,
   font-size: var(--ds-text-xs);
 }
 
-.dateInput {
-  block-size: 100%;
-  border: none;
-  background: transparent;
-  color: var(--ds-text-primary);
-  font-size: var(--ds-text-xs);
-  font-family: inherit;
-  font-variant-numeric: tabular-nums;
-  appearance: textfield;
-  inline-size: 110px;
-}
-
-.dateInput:focus {
-  outline: none;
+.datePicker {
+  inline-size: 148px;
 }
 
 /* ── Clear button ─────────────────────────────────────────────────────────── */

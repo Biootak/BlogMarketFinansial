@@ -579,14 +579,6 @@
   min-block-size: 46px;
 }
 
-.selectChevron {
-  position: absolute;
-  inset-inline-end: var(--ds-space-3);
-  color: var(--ds-text-muted);
-  pointer-events: none;
-  flex-shrink: 0;
-}
-
 /* Email with icon */
 .inputWithIcon {
   position: relative;

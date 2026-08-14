@@ -12,5 +12,4 @@ export {
   ActionButton,
   PrimaryActionButton,
   EmptyState as LegacyEmptyState,
-  FilterSelect,
 } from './DashboardTableWrapper';

@@ -36,8 +36,9 @@ import {
 } from '@/actions/serviceRequestActions';
 import { MillionDollarEmpty } from '@/components/Dashboard/primitives';
 import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
+import { Checkbox as UICheckbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from '@/lib/motion-shim';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import {
   HiAcademicCap,
@@ -728,43 +729,14 @@ function CheckBox({
   onChange: () => void;
   ariaLabel: string;
 }) {
+  const id = useId();
   return (
-    <label className="at-srq-check" aria-label={ariaLabel}>
-      <input
-        type="checkbox"
-        className="at-srq-check__input"
-        checked={checked}
-        ref={(el) => {
-          if (el) el.indeterminate = indeterminate ?? false;
-        }}
-        onChange={onChange}
+    <label htmlFor={id} className="at-srq-check" aria-label={ariaLabel}>
+      <UICheckbox
+        id={id}
+        checked={indeterminate ? 'indeterminate' : checked}
+        onCheckedChange={onChange}
       />
-      <span className="at-srq-check__icon" aria-hidden="true">
-        {checked && !indeterminate && (
-          <svg
-            className="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={3}
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        )}
-        {indeterminate && (
-          <svg
-            className="w-3 h-3"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={3}
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path strokeLinecap="round" d="M5 12h14" />
-          </svg>
-        )}
-      </span>
     </label>
   );
 }

@@ -254,7 +254,7 @@
 
 .stickyCol {
   position: sticky;
-  right: 0;
+  inset-inline-end: 0;
   background: inherit;
   z-index: 1;
   box-shadow: 4px 0 10px -8px rgba(28, 36, 52, 0.25);

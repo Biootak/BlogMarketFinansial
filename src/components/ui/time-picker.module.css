@@ -1,0 +1,106 @@
+/*
+ * time-picker.module.css — TimePicker (Popover ساعت/دقیقه)
+ *
+ * پالت از select.tsx popover گرفته شده (ds/nova مشترک — در سایت و
+ * داشبورد هر دو کار می‌کند). trigger طوری طراحی شده که شبیه
+ * input زمان قدیمی باشد تا جایگزینی بی‌درز باشد.
+ */
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.trigger:hover:not(:disabled) {
+  border-color: var(--at-line-strong, var(--ds-border-subtle));
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--at-accent, var(--ds-brand-500));
+  outline-offset: 2px;
+}
+
+.trigger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.icon {
+  opacity: 0.55;
+}
+
+.content {
+  z-index: 60;
+  padding: 8px;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md, 12px);
+  background: var(--nova-surface-solid, var(--ds-surface-2));
+  box-shadow: 0 8px 32px -4px oklch(0% 0 0 / 0.22), 0 0 0 1px var(--ds-border-subtle);
+}
+
+.columns {
+  display: flex;
+  gap: 8px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-inline-size: 56px;
+}
+
+.colLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--ds-text-secondary, var(--at-fg-subtle));
+}
+
+.scroll {
+  block-size: 208px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.optionWrap {
+  border-radius: 6px;
+}
+
+.optionWrapActive {
+  background: color-mix(in oklch, var(--at-accent, var(--ds-brand-500)) 14%, transparent);
+}
+
+.option {
+  inline-size: 100%;
+  padding: 5px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ds-text-primary, var(--at-fg));
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.option:hover {
+  background: color-mix(in oklch, var(--at-accent, var(--ds-brand-500)) 10%, transparent);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--at-accent, var(--ds-brand-500));
+  outline-offset: -1px;
+}

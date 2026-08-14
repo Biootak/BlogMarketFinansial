@@ -11,9 +11,16 @@ import {
   updateCustomerAction,
 } from '@/actions/exchange-customers';
 import { FormField, PanelDrawer } from '@/components/Dashboard/primitives';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import { useToast } from '@/components/ui/use-toast';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
 import s from './CustomerEditDrawer.module.css';
 
 interface Props {
@@ -280,46 +287,49 @@ export function CustomerEditDrawer({ open, exchangeId, initialData, onClose, onS
           <legend className={s.legend}>احراز هویت و ریسک</legend>
           <div className={s.grid2}>
             <FormField label="سطح KYC">
-              <select
-                className={s.select}
+              <Select
                 value={form.kycLevel}
-                onChange={(e) => update('kycLevel', e.target.value as FormState['kycLevel'])}
+                onValueChange={(v) => update('kycLevel', v as FormState['kycLevel'])}
               >
-                <option value="NONE">بدون احراز</option>
-                <option value="LEVEL_1">سطح ۱</option>
-                <option value="LEVEL_2">سطح ۲</option>
-                <option value="LEVEL_3">سطح ۳</option>
-              </select>
+                <SelectTrigger className={s.select} aria-label="سطح KYC">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NONE">بدون احراز</SelectItem>
+                  <SelectItem value="LEVEL_1">سطح ۱</SelectItem>
+                  <SelectItem value="LEVEL_2">سطح ۲</SelectItem>
+                  <SelectItem value="LEVEL_3">سطح ۳</SelectItem>
+                </SelectContent>
+              </Select>
             </FormField>
             <FormField label="وضعیت KYC">
-              <select
-                className={s.select}
+              <Select
                 value={form.kycStatus}
-                onChange={(e) => update('kycStatus', e.target.value as FormState['kycStatus'])}
+                onValueChange={(v) => update('kycStatus', v as FormState['kycStatus'])}
               >
-                <option value="NOT_STARTED">شروع نشده</option>
-                <option value="PENDING">در انتظار</option>
-                <option value="APPROVED">تأییدشده</option>
-                <option value="REJECTED">ردشده</option>
-                <option value="EXPIRED">منقضی</option>
-              </select>
+                <SelectTrigger className={s.select} aria-label="وضعیت KYC">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="NOT_STARTED">شروع نشده</SelectItem>
+                  <SelectItem value="PENDING">در انتظار</SelectItem>
+                  <SelectItem value="APPROVED">تأییدشده</SelectItem>
+                  <SelectItem value="REJECTED">ردشده</SelectItem>
+                  <SelectItem value="EXPIRED">منقضی</SelectItem>
+                </SelectContent>
+              </Select>
             </FormField>
           </div>
           <FormField label="امتیاز ریسک (۰–۱۰۰)" error={errors.riskScore}>
             <div className={s.riskRow}>
-              <input
-                type="range"
+              <Slider
+                className={s.riskSlider}
+                value={[form.riskScore]}
+                onValueChange={(v) => update('riskScore', v[0] ?? 0)}
                 min={0}
                 max={100}
                 step={1}
-                className={s.range}
-                value={form.riskScore}
-                onChange={(e) => update('riskScore', Number(e.target.value))}
-                aria-valuenow={form.riskScore}
-                aria-valuemin={0}
-                aria-valuemax={100}
-                data-tone={form.riskScore > 70 ? 'rose' : form.riskScore > 40 ? 'amber' : 'emerald'}
-                style={{ '--pct': `${form.riskScore}%` } as CSSProperties}
+                aria-label="امتیاز ریسک"
               />
               <span
                 className={s.riskValue}

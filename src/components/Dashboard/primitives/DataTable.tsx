@@ -1,12 +1,13 @@
 'use client';
 
+import { Checkbox as UICheckbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
-import { Check } from 'lucide-react';
 import {
   type CSSProperties,
   type ReactNode,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useState,
 } from 'react';
@@ -271,25 +272,19 @@ interface CheckboxProps {
 }
 
 function Checkbox({ checked, indeterminate, onChange, ariaLabel }: CheckboxProps) {
+  const id = useId();
   return (
-    <label className="relative inline-flex size-4 cursor-pointer items-center justify-center">
-      <input
-        type="checkbox"
-        className="peer absolute inset-0 size-4 cursor-pointer appearance-none rounded border border-[color:var(--ds-color-border-default)] bg-[color:var(--ds-color-surface)] transition-colors checked:border-[color:var(--ds-color-blue)] checked:bg-[color:var(--ds-color-blue)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--ds-color-blue)]"
-        checked={checked}
-        ref={(el) => {
-          if (el) el.indeterminate = Boolean(indeterminate);
-        }}
-        onChange={onChange}
+    <label
+      htmlFor={id}
+      className="relative inline-flex size-4 cursor-pointer items-center justify-center"
+    >
+      <UICheckbox
+        id={id}
+        className="size-4"
+        checked={indeterminate ? 'indeterminate' : checked}
+        onCheckedChange={onChange}
         aria-label={ariaLabel}
       />
-      {(checked || indeterminate) && (
-        <Check
-          aria-hidden="true"
-          className="pointer-events-none size-3 text-white"
-          strokeWidth={3}
-        />
-      )}
     </label>
   );
 }

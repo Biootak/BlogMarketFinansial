@@ -253,6 +253,11 @@
   transform: translateY(-50%) rotate(180deg);
 }
 
+/* Radix Select — chevron خود را دارد؛ chevron اضافه را خاموش کن */
+.selectWrapRadix::after {
+  display: none;
+}
+
 /* Rate strip — Wise-style inline rate display */
 .rateStrip {
   display: flex;
@@ -607,7 +612,7 @@
   min-block-size: 44px;
   transition: border-color 150ms, background 150ms;
 }
-.contactRadio:checked + .contactCard {
+.contactRadio[data-state="checked"] + .contactCard {
   border-color: var(--ds-brand-500);
   background: var(--ds-surface-elevated);
 }

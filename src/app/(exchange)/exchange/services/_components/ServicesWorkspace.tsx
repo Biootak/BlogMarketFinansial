@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { type SerializableServiceMeta, getServiceMeta } from '@/lib/exchange-services';
 import {
   ArrowDown,
@@ -260,14 +261,27 @@ export default function ServicesWorkspace({ initialItems, canEdit }: Props) {
                 <p className={s.itemDescription}>{item.meta.description}</p>
               </div>
 
-              <label className={s.toggle}>
-                <input
-                  type="checkbox"
+              <label
+                className={s.toggle}
+                htmlFor={`svc-${item.serviceKey}`}
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('button')) return;
+                  if (canEdit) updateItem(item.serviceKey, { isActive: !item.isActive });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (canEdit) updateItem(item.serviceKey, { isActive: !item.isActive });
+                  }
+                }}
+              >
+                <Switch
+                  id={`svc-${item.serviceKey}`}
                   checked={item.isActive}
-                  onChange={(e) => updateItem(item.serviceKey, { isActive: e.target.checked })}
+                  onCheckedChange={(c) => updateItem(item.serviceKey, { isActive: c === true })}
                   disabled={!canEdit}
+                  aria-label={item.isActive ? 'غیرفعال‌سازی سرویس' : 'فعال‌سازی سرویس'}
                 />
-                <span className={s.toggleSlider} aria-hidden />
                 <span className={s.toggleLabel}>{item.isActive ? 'فعال' : 'غیرفعال'}</span>
               </label>
             </header>

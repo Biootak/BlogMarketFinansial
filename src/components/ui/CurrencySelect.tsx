@@ -311,94 +311,96 @@ export function CurrencySelect({
       </button>
 
       {/* ── Dropdown panel — با Portal مستقیم روی body تا از transform ancestors خارج شود ── */}
-      {open && typeof document !== 'undefined' && createPortal(
-        <div
-          ref={panelRef}
-          className={`${s.panel} ${tone === 'dark' ? s.panelDark : ''}`}
-          data-tone={tone}
-          aria-label="انتخاب ارز"
-          style={panelStyle ?? { visibility: 'hidden' }}
-        >
-          {/* Search */}
-          <div className={s.search}>
-            <Search size={15} aria-hidden className={s.searchIcon} />
-            <input
-              ref={searchRef}
-              type="search"
-              aria-label="جستجوی ارز"
-              placeholder={searchPlaceholder}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              className={s.searchInput}
-              autoComplete="off"
-              spellCheck={false}
-            />
-          </div>
-
-          {/* List — ARIA listbox pattern (WAI-ARIA 1.2) */}
-          <ul
-            id={listId}
-            role="listbox"
-            tabIndex={-1}
-            aria-label={ariaLabel ?? 'انتخاب ارز'}
-            aria-activedescendant={value ? `csel-opt-${value}` : undefined}
-            className={s.list}
-            onKeyDown={handleListKeyDown}
+      {open &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          <div
+            ref={panelRef}
+            className={`${s.panel} ${tone === 'dark' ? s.panelDark : ''}`}
+            data-tone={tone}
+            aria-label="انتخاب ارز"
+            style={panelStyle ?? { visibility: 'hidden' }}
           >
-            {totalVisible === 0 && (
-              <li className={s.empty} role="presentation">
-                ارزی یافت نشد
-              </li>
-            )}
+            {/* Search */}
+            <div className={s.search}>
+              <Search size={15} aria-hidden className={s.searchIcon} />
+              <input
+                ref={searchRef}
+                type="search"
+                aria-label="جستجوی ارز"
+                placeholder={searchPlaceholder}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className={s.searchInput}
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </div>
 
-            {filteredGroups.map((group) => (
-              <li key={group.label} role="presentation">
-                {group.label && (
-                  <div className={s.groupLabel} aria-hidden="true">
-                    {group.label}
-                  </div>
-                )}
-                <ul
-                  role="group"
-                  aria-label={group.label || undefined}
-                  style={{ listStyle: 'none', padding: 0, margin: 0 }}
-                >
-                  {group.items.map((item) => {
-                    const isSelected = item.value === value;
-                    return (
-                      <li
-                        key={item.value}
-                        id={`csel-opt-${item.value}`}
-                        role="option"
-                        aria-selected={isSelected}
-                        tabIndex={0}
-                        className={`${s.option} ${isSelected ? s.optionSelected : ''}`}
-                        onClick={() => pick(item.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            pick(item.value);
-                          }
-                        }}
-                      >
-                        <span className={s.optBadge} dir="ltr">
-                          {item.code}
-                        </span>
-                        <span className={s.optLabel}>{item.label}</span>
-                        {isSelected && (
-                          <Check size={13} aria-hidden="true" className={s.optCheck} />
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              </li>
-            ))}
-          </ul>
-        </div>,
-        document.body,
-      )}
+            {/* List — ARIA listbox pattern (WAI-ARIA 1.2) */}
+            <ul
+              id={listId}
+              role="listbox"
+              tabIndex={-1}
+              aria-label={ariaLabel ?? 'انتخاب ارز'}
+              aria-activedescendant={value ? `csel-opt-${value}` : undefined}
+              className={s.list}
+              onKeyDown={handleListKeyDown}
+            >
+              {totalVisible === 0 && (
+                <li className={s.empty} role="presentation">
+                  ارزی یافت نشد
+                </li>
+              )}
+
+              {filteredGroups.map((group) => (
+                <li key={group.label} role="presentation">
+                  {group.label && (
+                    <div className={s.groupLabel} aria-hidden="true">
+                      {group.label}
+                    </div>
+                  )}
+                  <ul
+                    role="group"
+                    aria-label={group.label || undefined}
+                    style={{ listStyle: 'none', padding: 0, margin: 0 }}
+                  >
+                    {group.items.map((item) => {
+                      const isSelected = item.value === value;
+                      return (
+                        <li
+                          key={item.value}
+                          id={`csel-opt-${item.value}`}
+                          role="option"
+                          aria-selected={isSelected}
+                          tabIndex={0}
+                          className={`${s.option} ${isSelected ? s.optionSelected : ''}`}
+                          onClick={() => pick(item.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              pick(item.value);
+                            }
+                          }}
+                        >
+                          <span className={s.optBadge} dir="ltr">
+                            {item.code}
+                          </span>
+                          <span className={s.optLabel}>{item.label}</span>
+                          {isSelected && (
+                            <Check size={13} aria-hidden="true" className={s.optCheck} />
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

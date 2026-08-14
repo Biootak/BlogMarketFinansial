@@ -19,6 +19,13 @@ import {
   type ConverterPrefill,
 } from '@/app/(site)/money-transfer/HeroConverter';
 import { CurrencySelect } from '@/components/ui/CurrencySelect';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   AlertCircle,
@@ -28,7 +35,6 @@ import {
   BadgeCheck,
   Bitcoin,
   Check,
-  ChevronDown,
   CircleAlert,
   Copy,
   CreditCard,
@@ -865,22 +871,30 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                     <div
                       className={`${s.selectBox} ${errors.destinationCountry ? s.selectBoxErr : ''}`}
                     >
-                      <span className={s.selectFlag} aria-hidden="true">
-                        {countryMeta ? countryMeta.flag : '🌍'}
-                      </span>
-                      <select
-                        id={`${formId}-country`}
-                        {...register('destinationCountry')}
-                        className={s.select}
+                      <Select
+                        value={destination}
+                        onValueChange={(v) =>
+                          setValue('destinationCountry', v, { shouldValidate: true })
+                        }
                       >
-                        <option value="">انتخاب کشور مقصد</option>
-                        {DESTINATION_COUNTRIES.map((c) => (
-                          <option key={c.value} value={c.value}>
-                            {c.flag} {c.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown size={14} className={s.selectChevron} aria-hidden="true" />
+                        <SelectTrigger
+                          id={`${formId}-country`}
+                          className={s.select}
+                          aria-label="کشور مقصد"
+                        >
+                          <span className={s.selectFlag} aria-hidden="true">
+                            {countryMeta ? countryMeta.flag : '🌍'}
+                          </span>
+                          <SelectValue placeholder="انتخاب کشور مقصد" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DESTINATION_COUNTRIES.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>
+                              {c.flag} {c.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     {errors.destinationCountry && (
                       <p className={s.fieldError} role="alert">
@@ -970,19 +984,25 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                       پلتفرم <span className={s.optional}>(اختیاری)</span>
                     </label>
                     <div className={s.selectBox}>
-                      <select
-                        id={`${formId}-platform`}
-                        {...register('platformName')}
-                        className={s.select}
+                      <Select
+                        value={platform}
+                        onValueChange={(v) => setValue('platformName', v, { shouldValidate: true })}
                       >
-                        <option value="">انتخاب پلتفرم</option>
-                        {DIGITAL_PAYMENT_PLATFORMS.map((p) => (
-                          <option key={p.value} value={p.value}>
-                            {p.label}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown size={14} className={s.selectChevron} aria-hidden="true" />
+                        <SelectTrigger
+                          id={`${formId}-platform`}
+                          className={s.select}
+                          aria-label="پلتفرم"
+                        >
+                          <SelectValue placeholder="انتخاب پلتفرم" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DIGITAL_PAYMENT_PLATFORMS.map((p) => (
+                            <SelectItem key={p.value} value={p.value}>
+                              {p.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   {platform && platform !== 'other' && (

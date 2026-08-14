@@ -104,8 +104,12 @@ export async function logFintechEvent(params: FintechEventLogParams): Promise<vo
         actorId: params.actorId ?? null,
         actorRole: params.actorRole ?? null,
         ip: params.ip ?? null,
-        before: (params.before ?? undefined) as import('@prisma/client').Prisma.InputJsonValue | undefined,
-        after: (params.after ?? undefined) as import('@prisma/client').Prisma.InputJsonValue | undefined,
+        before: (params.before ?? undefined) as
+          | import('@prisma/client').Prisma.InputJsonValue
+          | undefined,
+        after: (params.after ?? undefined) as
+          | import('@prisma/client').Prisma.InputJsonValue
+          | undefined,
         note: params.note ?? null,
       },
     });

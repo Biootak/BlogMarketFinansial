@@ -16,6 +16,7 @@
 
 import type { PublicExchangeService } from '@/actions/exchange-services';
 import { createServiceRequest } from '@/actions/serviceRequestActions';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { getServiceMeta } from '@/lib/exchange-services';
 import {
   AlertCircle,
@@ -268,28 +269,20 @@ export default function ExchangeServiceRequestDialog({
                 <MessageCircle size={14} strokeWidth={1.8} aria-hidden />
                 <span>روش تماس</span>
               </legend>
-              <div className={s.radioRow}>
-                <label className={s.radioOption}>
-                  <input
-                    type="radio"
-                    name="esrd-contact"
-                    value="telegram"
-                    checked={contactMethod === 'telegram'}
-                    onChange={() => setContactMethod('telegram')}
-                  />
+              <RadioGroup
+                value={contactMethod}
+                onValueChange={(v) => setContactMethod(v as 'telegram' | 'whatsapp')}
+                className={s.radioRow}
+              >
+                <label className={s.radioOption} onClick={() => setContactMethod('telegram')}>
+                  <RadioGroupItem value="telegram" id="esrd-contact-telegram" />
                   <span>تلگرام</span>
                 </label>
-                <label className={s.radioOption}>
-                  <input
-                    type="radio"
-                    name="esrd-contact"
-                    value="whatsapp"
-                    checked={contactMethod === 'whatsapp'}
-                    onChange={() => setContactMethod('whatsapp')}
-                  />
+                <label className={s.radioOption} onClick={() => setContactMethod('whatsapp')}>
+                  <RadioGroupItem value="whatsapp" id="esrd-contact-whatsapp" />
                   <span>واتساپ</span>
                 </label>
-              </div>
+              </RadioGroup>
             </fieldset>
 
             <div className={s.field}>

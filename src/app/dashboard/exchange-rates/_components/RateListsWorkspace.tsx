@@ -7,6 +7,7 @@
 import { createRateList, deleteRateList, updateRateList } from '@/actions/rate-lists';
 import { ConfirmDialog } from '@/components/Dashboard/primitives';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -568,12 +569,25 @@ function RateListDialog({
             </div>
           </div>
 
-          <label className="inline-flex items-center" style={{ gap: '0.5rem', cursor: 'pointer' }}>
-            <input
-              type="checkbox"
+          <label
+            className="inline-flex items-center"
+            htmlFor="rate-list-active"
+            style={{ gap: '0.5rem', cursor: 'pointer' }}
+            onClick={(e) => {
+              if ((e.target as HTMLElement).closest('button')) return;
+              setForm({ ...form, isActive: !form.isActive });
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setForm({ ...form, isActive: !form.isActive });
+              }
+            }}
+          >
+            <Checkbox
+              id="rate-list-active"
               checked={form.isActive}
-              onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-              style={{ accentColor: 'var(--ds-brand-500)' }}
+              onCheckedChange={(c) => setForm({ ...form, isActive: c === true })}
             />
             <span style={{ fontSize: 'var(--ds-text-sm)', color: 'var(--ds-text-primary)' }}>
               فعال و نمایش در تیکر

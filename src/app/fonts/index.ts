@@ -9,7 +9,7 @@
  *
  * خروجی‌ها:
  *   - layout ریشه → `fontVariables` (کلاس CSS variable روی <html>)
- *   - globals.css  → متغیرهای --font-fa و --font-fa-latin (در @theme)
+ *   - globals.css  → متغیرهای --font-fa و --font-latin (در @theme)
  *   - ادیتور       → `FONT_FAMILIES` (نام خانوادهٔ فونت)
  *   - استایل‌های inline → `FONT_STACKS`
  *
@@ -39,7 +39,15 @@ const vazirArabic = localFont({
   display: 'swap',
   variable: '--font-fa',
   preload: true,
-  adjustFontFallback: 'Arial',
+  /**
+   * ⚠️ عمداً false — نه 'Arial'.
+   * با adjustFontFallback، next/font یک face «Fallback» بدون unicode-range
+   * (همهٔ کاراکترها) تولید می‌کند. چون در استک بعد از vazirArabic می‌آید،
+   * حروف لاتین را قبل از رسیدن به Inter می‌گیرد و فونت لاتین هرگز دانلود
+   * نمی‌شود (متن انگلیسی با Arial ساده رندر می‌شد). با false این face حذف
+   * می‌شود و لاتین به --font-latin (Inter) می‌رسد.
+   */
+  adjustFontFallback: false,
   declarations: [
     {
       prop: 'unicode-range',
@@ -49,32 +57,39 @@ const vazirArabic = localFont({
 });
 
 /* ----------------------------------------------------------------------------
- * Vazirmatn (وزیرمتن) — subset لاتین/ارقام.
+ * Inter (اینتر) — subset لاتین/ارقام (Rasmus Andersson, SIL OFL 1.1).
  * حروف لاتین، ارقام و فلش‌های ← → برای متن انگلیسی سایت.
- * wght 100–900، ~۴۰KB. preload: false (غیرحیاتی — فقط گاهی نیاز می‌شود).
+ *
+ * چرا Inter؟
+ *   - پرفروش‌ترین/پراستفاده‌ترین فونت UI ۲۰۲۶ (بیشترین خوانایی در سایز کوچک؛
+ *     رفرنس: landingpageflow.com 2026، madegooddesigns.com 2026)
+ *   - ارقام جدولی (tabular figures) برای نرخ‌ها و جدول‌های مالی
+ *   - جایگزین subset لاتین وزیرمتن (که از Roboto می‌آمد و نازک/بی‌هویت دیده می‌شد)
+ * wght 100–900، ~۴۸KB. preload: false (غیرحیاتی — فقط گاهی نیاز می‌شود).
  * -------------------------------------------------------------------------- */
-const vazirLatin = localFont({
-  src: './vazirmatn/vazirmatn-latin.woff2',
+const interLatin = localFont({
+  src: './inter/InterVariable-latin.woff2',
   weight: '100 900',
   display: 'swap',
-  variable: '--font-fa-latin',
+  variable: '--font-latin',
   preload: false,
   adjustFontFallback: 'Arial',
   declarations: [
     {
       prop: 'unicode-range',
-      value: 'U+0020-007E,U+00A0-00FF,U+2190-21FF',
+      value:
+        'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD',
     },
   ],
 });
 
-export const fonts = { ara: vazirArabic, lat: vazirLatin };
+export const fonts = { ara: vazirArabic, lat: interLatin };
 
 /**
  * کلاس‌های CSS variable — روی <html> در layout ریشه اعمال می‌شود.
- * (خروجی: "var(--font-fa) var(--font-fa-latin)")
+ * (خروجی: "var(--font-fa) var(--font-latin)")
  */
-export const fontVariables = `${vazirArabic.variable} ${vazirLatin.variable}`;
+export const fontVariables = `${vazirArabic.variable} ${interLatin.variable}`;
 
 /**
  * نام خانوادهٔ فونت — برای جاهایی که family name لازم دارند (مثل
@@ -86,13 +101,13 @@ export const FONT_FAMILIES = {
 
 /**
  * استک‌های آمادهٔ font-family برای استایل‌های inline (مثل ادیتور).
- * ترتیب: اول subset فارسی (برای متن اصلی)، بعد subset لاتین (برای ارقام و
- * حروف انگلیسی). مرورگر طبق unicode-range تصمیم می‌گیرد کدام فایل برای هر
- * کاراکتر استفاده شود — فقط فایل موردنیاز دانلود می‌شود.
+ * ترتیب: اول subset فارسی (برای متن اصلی)، بعد Inter (برای ارقام و حروف
+ * انگلیسی). مرورگر طبق unicode-range تصمیم می‌گیرد کدام فایل برای هر کاراکتر
+ * استفاده شود — فقط فایل موردنیاز دانلود می‌شود.
  */
 export const FONT_STACKS = {
   /** متن عادی — معادل --font-sans در globals.css */
-  sans: 'var(--font-fa), var(--font-fa-latin), Arial, sans-serif',
+  sans: 'var(--font-fa), var(--font-latin), Arial, sans-serif',
   /** تیترهای display — معادل --font-display در globals.css */
-  display: 'var(--font-fa), var(--font-fa-latin), system-ui, sans-serif',
+  display: 'var(--font-fa), var(--font-latin), system-ui, sans-serif',
 } as const;

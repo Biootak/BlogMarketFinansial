@@ -25,6 +25,7 @@
  *   - نتیجه به‌صورت خودکار به چت ارسال می‌شود (window.__devQaLast + console marker)
  */
 
+import { Checkbox } from '@/components/ui/checkbox';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import s from './DevInspector.module.css';
 import { runVisualQa } from './visualQa';
@@ -822,20 +823,48 @@ export default function DevInspector() {
                       />
                     ))}
                   </div>
-                  <label className={s.check}>
-                    <input
-                      type="checkbox"
+                  <label
+                    className={s.check}
+                    htmlFor="di-show-margin"
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('button')) return;
+                      setSettings((x) => ({ ...x, showMargin: !x.showMargin }));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSettings((x) => ({ ...x, showMargin: !x.showMargin }));
+                      }
+                    }}
+                  >
+                    <Checkbox
+                      id="di-show-margin"
                       checked={settings.showMargin}
-                      onChange={(e) => setSettings((x) => ({ ...x, showMargin: e.target.checked }))}
+                      onCheckedChange={(c) =>
+                        setSettings((x) => ({ ...x, showMargin: c === true }))
+                      }
                     />
                     نمایش جعبهٔ margin
                   </label>
-                  <label className={s.check}>
-                    <input
-                      type="checkbox"
+                  <label
+                    className={s.check}
+                    htmlFor="di-hover-inspect"
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('button')) return;
+                      setSettings((x) => ({ ...x, hoverInspect: !x.hoverInspect }));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSettings((x) => ({ ...x, hoverInspect: !x.hoverInspect }));
+                      }
+                    }}
+                  >
+                    <Checkbox
+                      id="di-hover-inspect"
                       checked={settings.hoverInspect}
-                      onChange={(e) =>
-                        setSettings((x) => ({ ...x, hoverInspect: e.target.checked }))
+                      onCheckedChange={(c) =>
+                        setSettings((x) => ({ ...x, hoverInspect: c === true }))
                       }
                     />
                     بررسی هنگام هاور

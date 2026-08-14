@@ -10,10 +10,17 @@
 
 import { createDeal } from '@/actions/currency-deals';
 import type { QuoteRow } from '@/actions/exchange-quotes';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { CheckCircle2, Loader2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import s from './DealModal.module.css';
 
 interface Props {
@@ -78,6 +85,7 @@ export default function DealModal({ quote, open, onClose }: Props) {
   const [state, formAction, isPending] = useActionState<FormState, FormData>(submitAction, {
     status: 'idle',
   });
+  const [channel, setChannel] = useState<'ONLINE' | 'INPERSON' | 'PHONE'>('ONLINE');
 
   const buy = Number.parseFloat(quote.buyRate);
   const unit = UNIT_LABEL[quote.unit] ?? quote.unit;
@@ -202,11 +210,20 @@ export default function DealModal({ quote, open, onClose }: Props) {
                 <label className={s.label} htmlFor="dm-channel">
                   نوع معامله
                 </label>
-                <select id="dm-channel" name="channel" className={s.select} defaultValue="ONLINE">
-                  <option value="ONLINE">آنلاین</option>
-                  <option value="INPERSON">حضوری</option>
-                  <option value="PHONE">تلفنی</option>
-                </select>
+                <input type="hidden" name="channel" value={channel} />
+                <Select
+                  value={channel}
+                  onValueChange={(v) => setChannel(v as 'ONLINE' | 'INPERSON' | 'PHONE')}
+                >
+                  <SelectTrigger id="dm-channel" className={s.select}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ONLINE">آنلاین</SelectItem>
+                    <SelectItem value="INPERSON">حضوری</SelectItem>
+                    <SelectItem value="PHONE">تلفنی</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className={s.field}>

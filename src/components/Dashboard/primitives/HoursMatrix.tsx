@@ -12,6 +12,9 @@
  */
 
 import { Clock, Moon } from 'lucide-react';
+
+import { TimePicker } from '@/components/ui/time-picker';
+
 import s from './HoursMatrix.module.css';
 
 export interface HoursValue {
@@ -154,25 +157,21 @@ function DayRow({ label, sub, highlight, value, disabled, onChange }: DayRowProp
         <span className={s.daySub}>{sub}</span>
       </div>
       <div className={s.inputCell}>
-        <input
-          type="time"
-          className={s.timeInput}
+        <TimePicker
           value={value.open}
-          dir="ltr"
+          onChange={(t) => onChange({ ...value, open: t })}
           disabled={disabled || value.closed}
-          onChange={(e) => onChange({ ...value, open: e.target.value })}
           aria-label={`ساعت شروع ${label}`}
+          className={s.timeInput}
         />
       </div>
       <div className={s.inputCell}>
-        <input
-          type="time"
-          className={s.timeInput}
+        <TimePicker
           value={value.close}
-          dir="ltr"
+          onChange={(t) => onChange({ ...value, close: t })}
           disabled={disabled || value.closed}
-          onChange={(e) => onChange({ ...value, close: e.target.value })}
           aria-label={`ساعت پایان ${label}`}
+          className={s.timeInput}
         />
       </div>
       <div className={s.statusCell}>{toggleBtn}</div>
@@ -190,26 +189,22 @@ function DayRow({ label, sub, highlight, value, disabled, onChange }: DayRowProp
           <div className={`${s.dayRowInputs} ${disabled ? s.inputDisabled : ''}`}>
             <div>
               <div className={s.dayRowInputLabel}>شروع</div>
-              <input
-                type="time"
-                className={s.timeInput}
+              <TimePicker
                 value={value.open}
-                dir="ltr"
+                onChange={(t) => onChange({ ...value, open: t })}
                 disabled={disabled}
-                onChange={(e) => onChange({ ...value, open: e.target.value })}
                 aria-label={`ساعت شروع ${label}`}
+                className={s.timeInput}
               />
             </div>
             <div>
               <div className={s.dayRowInputLabel}>پایان</div>
-              <input
-                type="time"
-                className={s.timeInput}
+              <TimePicker
                 value={value.close}
-                dir="ltr"
+                onChange={(t) => onChange({ ...value, close: t })}
                 disabled={disabled}
-                onChange={(e) => onChange({ ...value, close: e.target.value })}
                 aria-label={`ساعت پایان ${label}`}
+                className={s.timeInput}
               />
             </div>
           </div>
