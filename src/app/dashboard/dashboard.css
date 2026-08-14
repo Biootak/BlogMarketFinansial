@@ -8771,10 +8771,10 @@
 
   /* ── Header ─────────────────────────────────────────────────────────── */
   .at-rhythm__head {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 10px;
+    /* Mobile: flex column — metric row on top, aside below */
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     padding: 12px 14px 10px;
     border-bottom: 1px solid var(--at-line);
     background: radial-gradient(
@@ -8785,15 +8785,31 @@
   }
   @media (min-width: 768px) {
     .at-rhythm__head {
+      display: grid;
       grid-template-columns: auto 1fr auto;
+      align-items: center;
       gap: 16px;
       padding: 26px 28px 22px;
     }
   }
+
+  /* Mobile: metric + link در یک ردیف */
+  .at-rhythm__head-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  @media (min-width: 768px) {
+    .at-rhythm__head-top {
+      display: contents;
+    }
+  }
+
   .at-rhythm__head-aside {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 3px;
     min-width: 0;
   }
   .at-rhythm__head-eyebrow {
@@ -8808,18 +8824,24 @@
   }
   .at-rhythm__head-day {
     margin: 0;
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--at-fg-muted);
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+  }
+  @media (min-width: 768px) {
+    .at-rhythm__head-day {
+      font-size: 13.5px;
+      gap: 6px;
+    }
   }
   .at-rhythm__head-day-sep {
     color: var(--at-fg-faint);
   }
   .at-rhythm__head-range {
-    margin: 2px 0 0;
+    margin: 1px 0 0;
     font-size: 11px;
     font-weight: 500;
     color: var(--at-fg-subtle);
@@ -8906,18 +8928,27 @@
   }
 
   .at-rhythm__head-link {
-    justify-self: end;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 7px 12px;
+    gap: 5px;
+    padding: 5px 10px;
     border-radius: var(--at-radius);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: var(--at-fg-muted);
     border: 1px solid var(--at-line);
     background: var(--at-bg);
     transition: all var(--at-duration) var(--at-ease);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  @media (min-width: 768px) {
+    .at-rhythm__head-link {
+      justify-self: end;
+      gap: 6px;
+      padding: 7px 12px;
+      font-size: 12px;
+    }
   }
   .at-rhythm__head-link:hover {
     color: var(--at-accent-fg);

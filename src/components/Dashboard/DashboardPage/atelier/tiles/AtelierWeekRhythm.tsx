@@ -284,6 +284,30 @@ export default function AtelierWeekRhythm({ scheduledPosts }: AtelierWeekRhythmP
     <section className="at-tile at-rhythm" aria-label="هفتهٔ انتشار">
       {/* ───── Header ───── */}
       <header className="at-rhythm__head">
+        {/* Mobile: metric + link in same row. On ≥768px: display:contents → grid children */}
+        <div className="at-rhythm__head-top">
+          <div className="at-rhythm__metric">
+            <span className="at-rhythm__metric-num tabular-nums">{fmt(thisWeekTotal)}</span>
+            <span className="at-rhythm__metric-suffix">پست در ۷ روز</span>
+            <span className={cn('at-rhythm__metric-delta', `is-${delta.trend}`)}>
+              {delta.trend === 'up' && <span aria-hidden>▲</span>}
+              {delta.trend === 'down' && <span aria-hidden>▼</span>}
+              {delta.trend === 'flat' && <span aria-hidden>—</span>}
+              <span className="tabular-nums">{delta.text}</span>
+              <span className="at-rhythm__metric-delta-aux">نسبت به هفتۀ قبل</span>
+            </span>
+          </div>
+
+          <Link
+            href="/dashboard/posts/calendar"
+            className="at-rhythm__head-link"
+            aria-label="تقویم کامل"
+          >
+            <span>تقویم کامل</span>
+            <HiOutlineArrowLeft className="w-3 h-3" />
+          </Link>
+        </div>
+
         <div className="at-rhythm__head-aside">
           <span className="at-rhythm__head-eyebrow">
             <HiOutlineChartBar className="w-3 h-3" />
@@ -297,27 +321,6 @@ export default function AtelierWeekRhythm({ scheduledPosts }: AtelierWeekRhythmP
             هفتهٔ {persianRangeShort(week[0], week[6])}
           </p>
         </div>
-
-        <div className="at-rhythm__metric">
-          <span className="at-rhythm__metric-num tabular-nums">{fmt(thisWeekTotal)}</span>
-          <span className="at-rhythm__metric-suffix">پست در ۷ روز</span>
-          <span className={cn('at-rhythm__metric-delta', `is-${delta.trend}`)}>
-            {delta.trend === 'up' && <span aria-hidden>▲</span>}
-            {delta.trend === 'down' && <span aria-hidden>▼</span>}
-            {delta.trend === 'flat' && <span aria-hidden>—</span>}
-            <span className="tabular-nums">{delta.text}</span>
-            <span className="at-rhythm__metric-delta-aux">نسبت به هفتۀ قبل</span>
-          </span>
-        </div>
-
-        <Link
-          href="/dashboard/posts/calendar"
-          className="at-rhythm__head-link"
-          aria-label="تقویم کامل"
-        >
-          <span>تقویم کامل</span>
-          <HiOutlineArrowLeft className="w-3 h-3" />
-        </Link>
       </header>
 
       {/* ───── Bar chart ───── */}
