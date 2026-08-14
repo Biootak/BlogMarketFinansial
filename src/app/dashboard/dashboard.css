@@ -9387,8 +9387,8 @@
   .at-rhythm__empty {
     display: flex;
     align-items: center;
-    gap: 18px;
-    padding: 22px 24px;
+    gap: 14px;
+    padding: 14px 14px;
     border: 1px dashed var(--at-line-strong);
     border-radius: var(--at-radius);
     background: repeating-linear-gradient(
@@ -9695,10 +9695,16 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 16px;
-    padding: 18px 20px 14px;
+    gap: 12px;
+    padding: 12px 14px 10px;
     border-bottom: 1px solid var(--at-line);
     flex-wrap: wrap;
+  }
+  @media (min-width: 768px) {
+    .at-chart__head {
+      gap: 16px;
+      padding: 18px 20px 14px;
+    }
   }
   .at-chart__controls {
     display: flex;
@@ -9815,8 +9821,8 @@
   .at-c-kpi {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 16px 18px;
+    gap: 10px;
+    padding: 10px 12px;
     position: relative;
     transition: background var(--at-duration) var(--at-ease);
   }
@@ -10088,7 +10094,12 @@
 
   /* ─── Heatstrip ──────────────────────────────────────── */
   .at-chart__heatwrap {
-    padding: 4px 24px 18px;
+    padding: 4px 12px 12px;
+  }
+  @media (min-width: 768px) {
+    .at-chart__heatwrap {
+      padding: 4px 24px 18px;
+    }
   }
   .at-c-heat {
     display: flex;
@@ -10312,7 +10323,7 @@
     transform: translateX(0);
   }
   .at-posts__empty {
-    padding: 36px 20px;
+    padding: 20px 14px;
     text-align: center;
     font-size: 13px;
     color: var(--at-fg-subtle);
@@ -10726,9 +10737,9 @@
   }
   .at-posts__feature {
     display: grid;
-    grid-template-columns: 88px 1fr;
+    grid-template-columns: 64px 1fr;
     gap: 0;
-    padding: 20px 22px 18px;
+    padding: 12px 14px 12px;
     background: linear-gradient(
       180deg,
       color-mix(in oklch, var(--at-gold-soft) 60%, transparent) 0%,
@@ -10872,8 +10883,8 @@
   .at-posts__empty-state {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 28px 22px;
+    gap: 12px;
+    padding: 16px 14px;
     flex-wrap: wrap;
   }
   .at-posts__empty-ico {
@@ -10914,15 +10925,18 @@
     background: var(--at-accent-fg);
   }
 
+  @media (min-width: 768px) {
+    .at-posts__feature {
+      grid-template-columns: 88px 1fr;
+      padding: 20px 22px 18px;
+    }
+    .at-posts__feature-rank-num {
+      font-size: 28px;
+    }
+  }
   @media (max-width: 640px) {
     .at-posts__filters {
       display: none;
-    }
-    .at-posts__feature {
-      grid-template-columns: 64px 1fr;
-    }
-    .at-posts__feature-rank-num {
-      font-size: 22px;
     }
     .at-posts__feature-title {
       font-size: 15px;
@@ -11177,8 +11191,14 @@
   .at-actions__grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 14px 16px 16px;
+    gap: 6px;
+    padding: 10px 12px 12px;
+  }
+  @media (min-width: 768px) {
+    .at-actions__grid {
+      gap: 8px;
+      padding: 14px 16px 16px;
+    }
   }
   @media (min-width: 640px) {
     .at-actions__grid {
