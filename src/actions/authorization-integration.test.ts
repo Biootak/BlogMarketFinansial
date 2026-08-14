@@ -372,4 +372,17 @@ describe('CSRF Protection', () => {
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('CSRF_FAILED');
   });
+
+  it('confirmWithdraw بدون CSRF token → CSRF_FAILED (شکاف قبلی — B-CSRF-01)', async () => {
+    // این تست شکافی که قبلاً وجود داشت را پوشش می‌دهد:
+    // confirmWithdraw تا قبل از fix، assertCsrf نداشت و این تست کاملاً miss می‌شد.
+    const { assertCsrf } = await import('@/lib/csrf-server');
+    vi.mocked(assertCsrf).mockRejectedValueOnce(new Error('CSRF mismatch'));
+    vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK_USER);
+    const r = await confirmWithdraw({ txnId: 'txn-1', txnRef: 'ref-1' });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.code).toBe('CSRF_FAILED');
+    // هیچ DB call (transaction.findFirst) نباید رخ دهد
+    expect(prisma.transaction.findFirst).not.toHaveBeenCalled();
+  });
 });

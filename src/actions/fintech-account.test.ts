@@ -69,6 +69,7 @@ vi.mock('@/lib/fintech/txn-trail', () => ({
 vi.mock('next/headers', () => ({
   headers: vi.fn().mockResolvedValue({ get: vi.fn().mockReturnValue('127.0.0.1') }),
 }));
+vi.mock('@/lib/csrf-server', () => ({ assertCsrf: vi.fn().mockResolvedValue(undefined) }));
 
 // ─── Imports ──────────────────────────────────────────────────────────────────
 
@@ -169,6 +170,8 @@ describe('requestDeposit', () => {
   it('idempotency — کلید تکراری → همان txnId (بدون insert جدید)', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
+    // B-DEPOSIT-IDMP fix: اکنون customer اول فچ می‌شود، سپس transaction
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({ id: 'cust-1', FintechAccount: [] } as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
       id: 'txn-exist',
       meta: { txnRef: 'ref-abc' },
@@ -182,7 +185,6 @@ describe('requestDeposit', () => {
   it('NO_ACCOUNT — مشتری ندارد → NO_ACCOUNT', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(null);
     const r = await requestDeposit(VALID_DEPOSIT);
     expect(r.success).toBe(false);
@@ -192,8 +194,9 @@ describe('requestDeposit', () => {
   it('NO_ACCOUNT — حساب ارز ندارد → NO_ACCOUNT', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER_NO_ACCOUNT as never);
+    // idempotency: بدون transaction موجود → transaction.findFirst null برمی‌گرداند
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     const r = await requestDeposit(VALID_DEPOSIT);
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('NO_ACCOUNT');
@@ -202,8 +205,8 @@ describe('requestDeposit', () => {
   it('fraud block → FRAUD_BLOCKED (تراکنش ثبت نمی‌شود)', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(screenTransaction).mockResolvedValueOnce({
       score: 95,
       reasons: ['velocity'],
@@ -219,8 +222,8 @@ describe('requestDeposit', () => {
   it('واریز موفق → txnId + txnRef + paymentInstructions', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.transaction.create).mockResolvedValueOnce({
       id: 'txn-dep-1',
       meta: {},
@@ -236,8 +239,8 @@ describe('requestDeposit', () => {
   it('audit trail — logTxnStatusChange با PENDING صدا زده می‌شود', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.transaction.create).mockResolvedValueOnce({
       id: 'txn-dep-2',
       meta: {},
@@ -251,8 +254,8 @@ describe('requestDeposit', () => {
   it('audit log — auditLog.create صدا زده می‌شود', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.transaction.create).mockResolvedValueOnce({
       id: 'txn-dep-3',
       meta: {},
@@ -295,6 +298,8 @@ describe('requestWithdraw', () => {
   it('idempotency — کلید تکراری → همان txnId', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
+    // B-IDMP-01 fix: اکنون customer اول فچ می‌شود، سپس transaction
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({ id: 'cust-1', FintechAccount: [] } as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
       id: 'txn-w-exist',
       meta: { txnRef: 'ref-w' },
@@ -308,8 +313,9 @@ describe('requestWithdraw', () => {
   it('NO_ACCOUNT → error', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER_NO_ACCOUNT as never);
+    // idempotency: بدون transaction موجود
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     const r = await requestWithdraw(VALID_WITHDRAW);
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('NO_ACCOUNT');
@@ -318,8 +324,8 @@ describe('requestWithdraw', () => {
   it('INSUFFICIENT_BALANCE → error (قبل از ثبت تراکنش)', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER_ZERO as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     const r = await requestWithdraw({ ...VALID_WITHDRAW, amountCents: 100_000_00 });
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('INSUFFICIENT_BALANCE');
@@ -329,8 +335,8 @@ describe('requestWithdraw', () => {
   it('KYC limit — حد تراکنش از سقف بیشتر است → خطای AML', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(assertOutgoingKycLimit).mockResolvedValueOnce({
       ok: false,
       code: 'KYC_LIMIT_EXCEEDED',
@@ -344,8 +350,8 @@ describe('requestWithdraw', () => {
   it('fraud block → FRAUD_BLOCKED', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(assertOutgoingKycLimit).mockResolvedValueOnce({ ok: true } as never);
     vi.mocked(screenTransaction).mockResolvedValueOnce({
       score: 90,
@@ -362,8 +368,8 @@ describe('requestWithdraw', () => {
   it('برداشت عادی موفق → txnId + needsOtp=false', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(assertOutgoingKycLimit).mockResolvedValueOnce({ ok: true } as never);
     vi.mocked(prisma.transaction.create).mockResolvedValueOnce({
       id: 'txn-w-1',
@@ -380,8 +386,8 @@ describe('requestWithdraw', () => {
   it('برداشت پرمبلغ → needsOtp=true + expiresInSeconds', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER_HIGH_BALANCE as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(assertOutgoingKycLimit).mockResolvedValueOnce({ ok: true } as never);
     vi.mocked(prisma.transaction.create).mockResolvedValueOnce({ id: 'txn-w-hv' } as never);
     vi.mocked(isHighValueTransaction).mockReturnValueOnce(true);
@@ -400,8 +406,8 @@ describe('requestWithdraw', () => {
   it('OTP ارسال نشد → تراکنش FAILED می‌شود (نه PENDING مرده)', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
-    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce(CUSTOMER_HIGH_BALANCE as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce(null);
     vi.mocked(assertOutgoingKycLimit).mockResolvedValueOnce({ ok: true } as never);
     vi.mocked(prisma.transaction.create).mockResolvedValueOnce({ id: 'txn-w-fail' } as never);
     vi.mocked(isHighValueTransaction).mockReturnValueOnce(true);
@@ -467,6 +473,7 @@ describe('confirmWithdraw', () => {
       accountId: 'acc-1',
       exchangeId: 'exch-1',
       customerId: 'cust-1',
+      meta: { txnRef: 'ref-001' },
     } as never);
     const r = await confirmWithdraw(VALID_INPUT);
     expect(r.success).toBe(true); // idempotent
@@ -483,6 +490,7 @@ describe('confirmWithdraw', () => {
       accountId: 'acc-1',
       exchangeId: 'exch-1',
       customerId: 'cust-1',
+      meta: { txnRef: 'ref-001' },
     } as never);
     const r = await confirmWithdraw(VALID_INPUT);
     expect(r.success).toBe(false);
@@ -500,6 +508,7 @@ describe('confirmWithdraw', () => {
       accountId: 'acc-1',
       exchangeId: 'exch-1',
       customerId: 'cust-1',
+      meta: { txnRef: 'ref-001' },
     } as never);
     vi.mocked(isHighValueTransaction).mockReturnValueOnce(true);
     const r = await confirmWithdraw(VALID_INPUT);
@@ -518,6 +527,7 @@ describe('confirmWithdraw', () => {
       accountId: 'acc-1',
       exchangeId: 'exch-1',
       customerId: 'cust-1',
+      meta: { txnRef: 'ref-001' },
     } as never);
     vi.mocked(isHighValueTransaction).mockReturnValueOnce(true);
     vi.mocked(verifyTransactionOtp).mockResolvedValueOnce({
@@ -540,6 +550,7 @@ describe('confirmWithdraw', () => {
       accountId: 'acc-1',
       exchangeId: 'exch-1',
       customerId: 'cust-1',
+      meta: { txnRef: 'ref-001' },
     } as never);
     // $transaction با tx کامل — claim + debit + ledger + statusLog
     vi.mocked(prisma.$transaction).mockImplementationOnce((async (
@@ -581,6 +592,7 @@ describe('confirmWithdraw', () => {
       accountId: 'acc-1',
       exchangeId: 'exch-1',
       customerId: 'cust-1',
+      meta: { txnRef: 'ref-001' },
     } as never);
     // atomic claim می‌گوید 0 ردیف update شد — یعنی دیگری قبلاً claim کرده
     vi.mocked(prisma.$transaction).mockImplementationOnce((async (
@@ -604,6 +616,70 @@ describe('confirmWithdraw', () => {
       })) as never);
     const r = await confirmWithdraw(VALID_INPUT);
     // idempotent success — تراکنش قبلاً کامل شده
+    expect(r.success).toBe(true);
+  });
+
+  // ─── B-TXNREF-01: txnRef باید با meta.txnRef تطبیق داشته باشد ──────────────
+
+  it('B-TXNREF-01: txnRef اشتباه → INVALID_REFERENCE (شکاف قبلی)', async () => {
+    // این تست باگ واقعی B-TXNREF-01 را پوشش می‌دهد:
+    // قبل از fix، مهاجم می‌توانست txnRef را جعل کند و OTP مربوط به txnRef دیگری
+    // را برای این تراکنش verify کند. fix: meta.txnRef با txnRef ورودی مطابقت می‌شود.
+    vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({ id: 'cust-1' } as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
+      id: 'txn-w-1',
+      status: 'PENDING',
+      amount: BigInt(100_000_00),
+      currency: 'AFN',
+      accountId: 'acc-1',
+      exchangeId: 'exch-1',
+      customerId: 'cust-1',
+      meta: { txnRef: 'legitimate-ref-001' }, // txnRef واقعی در DB
+    } as never);
+    // مهاجم txnRef متفاوت ارسال می‌کند
+    const r = await confirmWithdraw({ txnId: 'txn-w-1', txnRef: 'attacker-spoofed-ref' });
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.code).toBe('INVALID_REFERENCE');
+    // نباید به $transaction برسد
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it('B-TXNREF-01: txnRef صحیح → تراکنش به جلو می‌رود (مقابل false positive)', async () => {
+    // مطمئن می‌شویم که fix باعث false positive نشده:
+    // وقتی txnRef درست است باید به $transaction برسد نه INVALID_REFERENCE.
+    vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({ id: 'cust-1' } as never);
+    vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
+      id: 'txn-w-1',
+      status: 'PENDING',
+      amount: BigInt(100_000_00),
+      currency: 'AFN',
+      accountId: 'acc-1',
+      exchangeId: 'exch-1',
+      customerId: 'cust-1',
+      meta: { txnRef: 'ref-001' }, // همان ref که در VALID_INPUT هست
+    } as never);
+    vi.mocked(prisma.$transaction).mockImplementationOnce((async (
+      fn: (tx: Record<string, unknown>) => Promise<unknown>,
+    ) =>
+      fn({
+        transaction: {
+          findFirst: vi.fn(),
+          create: vi.fn(),
+          update: vi.fn(),
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+        },
+        fintechAccount: {
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+          findUniqueOrThrow: vi.fn().mockResolvedValue({ balance: BigInt(800_000) }),
+          findFirst: vi.fn(),
+          update: vi.fn(),
+        },
+        ledgerEntry: { create: vi.fn().mockResolvedValue({}) },
+        transactionStatusLog: { create: vi.fn().mockResolvedValue({}) },
+      })) as never);
+    const r = await confirmWithdraw(VALID_INPUT); // txnRef: 'ref-001' = meta.txnRef
     expect(r.success).toBe(true);
   });
 });

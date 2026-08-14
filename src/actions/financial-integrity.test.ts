@@ -490,6 +490,8 @@ describe('Idempotency — درخواست تکراری بدون side effect اض�
   it('deposit تکراری با همان کلید → همان txnId بدون create جدید', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
+    // B-DEPOSIT-IDMP fix: customer قبل از transaction فچ می‌شود
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({ id: 'cust-1', FintechAccount: [] } as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
       id: 'txn-idem-dep',
       meta: { txnRef: 'ref-idem' },
@@ -509,6 +511,8 @@ describe('Idempotency — درخواست تکراری بدون side effect اض�
   it('withdraw تکراری با همان کلید → همان txnId', async () => {
     vi.mocked(requireUser).mockResolvedValueOnce(AUTH_OK);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RL_OK as never);
+    // B-IDMP-01 fix: customer قبل از transaction فچ می‌شود
+    vi.mocked(prisma.customer.findFirst).mockResolvedValueOnce({ id: 'cust-1', FintechAccount: [] } as never);
     vi.mocked(prisma.transaction.findFirst).mockResolvedValueOnce({
       id: 'txn-idem-wit',
       meta: { txnRef: 'ref-w-idem' },

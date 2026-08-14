@@ -21,6 +21,7 @@
 
 import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
+import { assertCsrf } from '@/lib/csrf-server';
 import {
   isHighValueTransaction,
   requestTransactionOtp,
@@ -93,19 +94,6 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
 
   const { amountCents, currency, idempotencyKey, note } = parsed.data;
 
-  // Idempotency
-  const existing = await prisma.transaction.findFirst({
-    where: { idempotencyKey },
-    select: { id: true, meta: true },
-  });
-  if (existing) {
-    const meta = existing.meta as { txnRef?: string } | null;
-    return {
-      success: true,
-      data: { txnId: existing.id, txnRef: meta?.txnRef ?? existing.id, amountCents, currency },
-    };
-  }
-
   const senderCustomer = await prisma.customer.findFirst({
     where: { userId: auth.user.id },
     select: {
@@ -116,6 +104,24 @@ export async function requestDeposit(raw: unknown): Promise<FintechActionResult<
       },
     },
   });
+
+  // Idempotency — ownership: فقط تراکنش خود این کاربر برگردانده می‌شود.
+  // B-DEPOSIT-IDMP fix: بدون شرط customerId، مهاجم با idempotencyKey کاربر
+  // دیگر می‌توانست txn آن کاربر را re-use کند و paymentInstructions را ببیند.
+  // customerId از customer record خود کاربر گرفته می‌شود که قبلاً فچ شده.
+  if (senderCustomer) {
+    const existing = await prisma.transaction.findFirst({
+      where: { idempotencyKey, customerId: senderCustomer.id },
+      select: { id: true, meta: true },
+    });
+    if (existing) {
+      const meta = existing.meta as { txnRef?: string } | null;
+      return {
+        success: true,
+        data: { txnId: existing.id, txnRef: meta?.txnRef ?? existing.id, amountCents, currency },
+      };
+    }
+  }
 
   if (!senderCustomer || senderCustomer.FintechAccount.length === 0) {
     return {
@@ -265,18 +271,6 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
 
   const { amountCents, currency, idempotencyKey, destinationAccount, note } = parsed.data;
 
-  const existing = await prisma.transaction.findFirst({
-    where: { idempotencyKey },
-    select: { id: true, meta: true },
-  });
-  if (existing) {
-    const meta = existing.meta as { txnRef?: string } | null;
-    return {
-      success: true,
-      data: { txnId: existing.id, txnRef: meta?.txnRef ?? existing.id, needsOtp: false },
-    };
-  }
-
   const customer = await prisma.customer.findFirst({
     where: { userId: auth.user.id },
     select: {
@@ -287,6 +281,24 @@ export async function requestWithdraw(raw: unknown): Promise<FintechActionResult
       },
     },
   });
+
+  // Idempotency — ownership: فقط تراکنش خود این کاربر برگردانده می‌شود.
+  // B-IDMP-01 fix: بدون شرط customerId، مهاجم با idempotencyKey کاربر دیگر
+  // می‌توانست txn آن کاربر را re-use کند و withdraw او را confirm کند.
+  // customerId از customer record خود کاربر گرفته می‌شود که قبلاً فچ شده.
+  if (customer) {
+    const existing = await prisma.transaction.findFirst({
+      where: { idempotencyKey, customerId: customer.id },
+      select: { id: true, meta: true },
+    });
+    if (existing) {
+      const meta = existing.meta as { txnRef?: string } | null;
+      return {
+        success: true,
+        data: { txnId: existing.id, txnRef: meta?.txnRef ?? existing.id, needsOtp: false },
+      };
+    }
+  }
 
   if (!customer || customer.FintechAccount.length === 0) {
     return { success: false, error: { code: 'NO_ACCOUNT', message: 'حساب فعالی یافت نشد' } };
@@ -440,6 +452,18 @@ const ConfirmWithdrawSchema = z.object({
 export async function confirmWithdraw(
   raw: unknown,
 ): Promise<FintechActionResult<{ txnId: string }>> {
+  // B-CSRF-01 fix: confirmWithdraw بدون assertCsrf بود — یک سایت مخرب
+  // می‌توانست کاربر را مجبور کند تراکنش برداشت را تأیید کند. مثل
+  // confirmTransfer که قبلاً این guard را داشت.
+  try {
+    await assertCsrf();
+  } catch {
+    return {
+      success: false,
+      error: { code: 'CSRF_FAILED', message: 'درخواست نامعتبر — لطفاً صفحه را refresh کنید' },
+    };
+  }
+
   const auth = await requireUser();
   if (!auth.success) {
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب کاربری شوید' } };
@@ -478,6 +502,7 @@ export async function confirmWithdraw(
       accountId: true,
       exchangeId: true,
       customerId: true,
+      meta: true,
     },
   });
 
@@ -487,6 +512,17 @@ export async function confirmWithdraw(
     return {
       success: false,
       error: { code: 'INVALID_STATE', message: 'این تراکنش قابل تأیید نیست' },
+    };
+  }
+
+  // B-TXNREF-01 fix: txnRef باید با meta.txnRef تطبیق داشته باشد.
+  // بدون این چک، اگر کاربر txnRef را عوض کند، OTP مربوط به txnRef دیگری
+  // verify می‌شود و می‌تواند یک تراکنش بدون OTP معتبر confirm شود.
+  const txnMeta = txn.meta as { txnRef?: string } | null;
+  if (!txnMeta?.txnRef || txnMeta.txnRef !== txnRef) {
+    return {
+      success: false,
+      error: { code: 'INVALID_REFERENCE', message: 'شناسه تأیید تراکنش نامعتبر است' },
     };
   }
 
