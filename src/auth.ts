@@ -7,18 +7,20 @@ import 'server-only';
 
 import authConfig from '@/auth.config';
 import { getUserByEmail } from '@/data/user';
+import { createAuthAdapter } from '@/lib/auth-adapter';
 import { getAuthSecret } from '@/lib/auth-secret';
-import { devOwnerRoleForEmail } from '@/lib/dev-access';
 import prisma from '@/lib/db';
+import { devOwnerRoleForEmail } from '@/lib/dev-access';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
-import { consumeLoginToken } from '@/lib/tokens';
+import { consumeLoginToken, createTwoFactorChallenge } from '@/lib/tokens';
 import { LoginSchema } from '@/schemas';
 import type { Role } from '@/types/types';
-import { PrismaAdapter } from '@auth/prisma-adapter';
+import { getToken } from '@auth/core/jwt';
 import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import { cookies } from 'next/headers';
 import { z } from 'zod';
 
 // 2026-08-09 fix: accept both AUTH_SECRET (canonical, used by middleware +
@@ -71,6 +73,34 @@ const InternalCredentialsSchema = z.object({
 // session. The OTP pipeline in src/actions/auth-actions.ts is the gate
 // that decides *when* signIn('credentials') gets reached.
 
+// 2026-08-14: تشخیص اینکه کاربرِ درخواست‌کننده از قبل session دارد (برای
+// تشخیص مسیر «اتصال حساب‌ها» از ورود عادی در callbacks.signIn). JWT-cookie
+// را مستقیم decode می‌کنیم — cookie در هر دو flavor (secure prod /
+// غیرامن dev) بررسی می‌شود. هر خطا → null (fail-open: بدون session فرض
+// می‌شود و گاردهای معمول ورود اعمال می‌شوند).
+async function currentSessionUserId(): Promise<string | null> {
+  try {
+    const cookieStore = await cookies();
+    const header = cookieStore.toString();
+    if (!header) return null;
+    for (const secureCookie of [false, true]) {
+      try {
+        const token = await getToken({
+          req: { headers: { cookie: header } },
+          secret: getAuthSecret(),
+          secureCookie,
+        });
+        if (token?.sub) return token.sub as string;
+      } catch {
+        // flavor نامعتبر — flavor بعدی را امتحان کن
+      }
+    }
+  } catch (error) {
+    serverLog.warn('auth', 'current-session-decode-failed', error);
+  }
+  return null;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   logger: {
@@ -89,22 +119,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // ولی signIn() در auth-actions خطا نمی‌دهد — کاربر redirect می‌شود ولی
       // session ندارد → loop. این چک‌ها در authorize() هم هستند (redundant
       // ولی best-effort) پس اینجا فقط best-effort activity log می‌نویسیم.
-      const existingUser = await prisma.user.findUnique({
-        where: { id: user.id as string },
-      });
-      if (!existingUser || !existingUser.emailVerified || existingUser.status !== 'Active') {
-        // authorize() already blocked this — این branch نباید رخ دهد.
-        // اگر رخ داد، فقط log کن؛ throw نکن (session block را authorize انجام داده)
-        serverLog.warn('auth', 'signIn-event-guard', {
-          userId: user.id,
-          hasUser: !!existingUser,
-          emailVerified: existingUser?.emailVerified,
-          status: existingUser?.status,
-        });
-        return;
-      }
-
+      // G3-fix (2026-08-14): کل بدنه باید fail-open باشد — هر خطای DB
+      // (اتصال قطع، pool timeout و …) در این hook نباید ساخت session را
+      // متوقف کند؛ authorize() گارد اصلی است و اینجا فقط logging است.
       try {
+        const existingUser = await prisma.user.findUnique({
+          where: { id: user.id as string },
+        });
+        if (!existingUser || !existingUser.emailVerified || existingUser.status !== 'Active') {
+          // authorize() already blocked this — این branch نباید رخ دهد.
+          // اگر رخ داد، فقط log کن؛ throw نکن (session block را authorize انجام داده)
+          serverLog.warn('auth', 'signIn-event-guard', {
+            userId: user.id,
+            hasUser: !!existingUser,
+            emailVerified: existingUser?.emailVerified,
+            status: existingUser?.status,
+          });
+          return;
+        }
+
         await prisma.activityLog.create({
           data: {
             userId: existingUser.id,
@@ -113,7 +146,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
       } catch (error) {
-        serverLog.error('auth', 'log-login-activity', error);
+        serverLog.error('auth', 'signIn-event-fail-open', error);
       }
     },
     async linkAccount({ user, account, profile }) {
@@ -179,6 +212,190 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // ── Credentials: authorize() کاملاً gate می‌کند — اینجا کاری نکن ──
+      if (!account || account.provider === 'credentials') return true;
+
+      // ── OAuth: گاردها قبل از ساخت session ──
+      // (این callback قبل از handleLoginOrRegister اجرا می‌شود — redirect یا
+      // false یعنی هیچ session و هیچ linking صورت نمی‌گیرد.)
+      //
+      // گارد ۱ — ایمیلِ تأییدشدهٔ provider: allowDangerousEmailAccountLinking
+      // فقط وقتی امن است که provider مالکیت ایمیل را اثبات کرده باشد
+      // (Google همیشه email_verified دارد؛ GitHub فقط ایمیل تأییدشده را در
+      // profile می‌گذارد — ر.ک auth.config.ts). بدون این گارد، هر حساب OAuth
+      // با ایمیلِ تأییدنشده می‌توانست به حسابِ قربانی link شود.
+      const oauthProfile = profile as unknown as { email_verified?: boolean } | undefined;
+      const providerVerifiedEmail = oauthProfile?.email_verified === true;
+      const rawEmail = (profile as { email?: unknown } | undefined)?.email ?? user.email;
+      const oauthEmail = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
+
+      // گارد ۰ — کاربرِ از‌قبل‌لاگین‌شده (مسیر «اتصال حساب‌ها» در داشبورد):
+      // 2026-08-14: وقتی کاربرِ لاگین‌شده از صفحهٔ اتصال حساب‌ها یک provider
+      // تازه وصل می‌کند، OAuth callback با session موجود اجرا می‌شود. تشخیص این
+      // حالت حیاتی است چون بدون آن:
+      //   a) حسابِ OAuth با ایمیلِ کاربرِ دیگری → Auth.js (با
+      //      allowDangerousEmailAccountLinking) به آن کاربرِ دیگر link می‌کرد و
+      //      session فعلی بی‌صدا عوض می‌شد (takeover).
+      //   b) حسابِ OAuth با ایمیلِ جدید/ناشناخته → کاربر جدید ساخته می‌شد.
+      // هر دو باید به‌جای خطای OAuthAccountNotLinked یا تغییر ناخواستهٔ هویت،
+      // با پیام واضح برگردند. همین ایمیلِ حسابِ فعلی → linking مجاز است.
+      const sessionUserId = await currentSessionUserId();
+      const linkingIntent = sessionUserId !== null;
+
+      if (!oauthEmail || !providerVerifiedEmail) {
+        serverLog.warn('auth', 'signIn-oauth-unverified-email', {
+          provider: account.provider,
+          hasEmail: !!oauthEmail,
+        });
+        return linkingIntent
+          ? '/dashboard/connected-accounts?error=oauth-email-unverified'
+          : '/auth?error=oauth-email-unverified';
+      }
+
+      // Account در نسخهٔ نصب‌شده فیلدهای token را به‌صورت JsonValue تایپ
+      // می‌کند؛ اینجا به شکل شناخته‌شده cast می‌کنیم تا در upsert بدون
+      // any کار کند (خود مقادیر از پاسخ provider می‌آیند).
+      const oauthAccount = account as unknown as {
+        provider: string;
+        providerAccountId: string;
+        type: string;
+        access_token?: string | null;
+        refresh_token?: string | null;
+        expires_at?: number | null;
+        token_type?: string | null;
+        scope?: string | null;
+        id_token?: string | null;
+        session_state?: string | null;
+      };
+
+      try {
+        const dbUser = await prisma.user.findFirst({
+          where: { email: { equals: oauthEmail, mode: 'insensitive' } },
+          select: {
+            id: true,
+            email: true,
+            twoFactorEnabled: true,
+            twoFactorSecretEnc: true,
+            role: true,
+            status: true,
+          },
+        });
+
+        // مسدود/معلق → قبل از هر session/link ورود را برگردان.
+        if (dbUser && dbUser.status !== 'Active') {
+          return linkingIntent
+            ? '/dashboard/connected-accounts?error=account-blocked'
+            : '/auth?error=account-blocked';
+        }
+
+        // گارد ۲ — مسیر اتصال (کاربرِ لاگین‌شده): حسابِ OAuth نباید متعلق به
+        // کاربرِ دیگری باشد.
+        // 2026-08-14: قبلاً شرط سخت‌گیرانه‌تر بود — «ایمیلِ OAuth باید دقیقاً
+        // با ایمیلِ حسابِ فعلی یکی باشد» — و همین باعث می‌شد کاربری که ایمیلِ
+        // گیت‌هابش (مثلاً ایمیل کاری) با ایمیلِ ثبت‌نامش فرق دارد نتواند حسابش
+        // را وصل کند و خطای «ایمیل یکی نیست» بگیرد؛ در حالی که این حالت هیچ
+        // ریسکی ندارد: کاربر از قبل احراز هویت شده و آن ایمیل به هیچ کاربر
+        // دیگری تعلق ندارد. حالا فقط تضاد واقعی رد می‌شود: ایمیلِ OAuth متعلق
+        // به کاربرِ دیگری است (در آن صورت linking یعنی ادغام دو هویت).
+        if (linkingIntent) {
+          if (dbUser && dbUser.id !== sessionUserId) {
+            serverLog.warn('auth', 'signIn-oauth-email-owned-by-other-user', {
+              provider: account.provider,
+              sessionUser: sessionUserId,
+              oauthEmailUser: dbUser.id,
+            });
+            return '/dashboard/connected-accounts?error=oauth-email-mismatch';
+          }
+          // خودِ حسابِ OAuth (provider + providerAccountId) از قبل به کاربرِ
+          // دیگری وصل است؟ Auth.js در این حالت OAuthAccountNotLinked پرتاب
+          // می‌کند و کاربر به صفحهٔ خطای عمومی می‌رود. اینجا با پیام روشن
+          // برمی‌گردانیم — این تنها حالتِ واقعاً مبهم است (یک حساب گوگل
+          // نمی‌تواند همزمان به دو کاربر وصل باشد).
+          const linkedElsewhere = await prisma.account.findUnique({
+            where: {
+              provider_providerAccountId: {
+                provider: oauthAccount.provider,
+                providerAccountId: oauthAccount.providerAccountId,
+              },
+            },
+            select: { userId: true },
+          });
+          if (linkedElsewhere && linkedElsewhere.userId !== sessionUserId) {
+            serverLog.warn('auth', 'signIn-oauth-account-owned-by-other-user', {
+              provider: account.provider,
+              sessionUser: sessionUserId,
+              accountOwner: linkedElsewhere.userId,
+            });
+            return '/dashboard/connected-accounts?error=oauth-account-taken';
+          }
+          // همان کاربر (یا ایمیلی که به کسی تعلق ندارد) → Auth.js حساب را به
+          // کاربرِ لاگین‌شده link می‌کند. کاربر از قبل احراز هویت شده؛ چالش 2FA
+          // لازم نیست.
+          return true;
+        }
+
+        // گارد ۳ — 2FA: اگر حساب 2FA فعال دارد، OAuth نباید آن را دور بزند.
+        // identity او را به حساب link می‌کنیم (tokens از خود provider آمده —
+        // فقط دارندهٔ واقعی حساب OAuth می‌تواند به این‌جا برسد) و بعد challenge
+        // TOTP می‌سازیم؛ بدون کد Authenticator هیچ session ساخته نمی‌شود.
+        // بعد از TOTP، verifyOtp با single-use loginToken همان حساب را
+        // sign-in می‌کند — همان مسیر امن بعد_otp.
+        if (dbUser?.twoFactorEnabled && dbUser.twoFactorSecretEnc) {
+          await prisma.account.upsert({
+            where: {
+              provider_providerAccountId: {
+                provider: oauthAccount.provider,
+                providerAccountId: oauthAccount.providerAccountId,
+              },
+            },
+            update: {
+              access_token: oauthAccount.access_token ?? null,
+              refresh_token: oauthAccount.refresh_token ?? null,
+              expires_at: oauthAccount.expires_at ?? null,
+              token_type: oauthAccount.token_type ?? null,
+              scope: oauthAccount.scope ?? null,
+              id_token: oauthAccount.id_token ?? null,
+              session_state: oauthAccount.session_state ?? null,
+            },
+            create: {
+              userId: dbUser.id,
+              type: oauthAccount.type,
+              provider: oauthAccount.provider,
+              providerAccountId: oauthAccount.providerAccountId,
+              access_token: oauthAccount.access_token ?? null,
+              refresh_token: oauthAccount.refresh_token ?? null,
+              expires_at: oauthAccount.expires_at ?? null,
+              token_type: oauthAccount.token_type ?? null,
+              scope: oauthAccount.scope ?? null,
+              id_token: oauthAccount.id_token ?? null,
+              session_state: oauthAccount.session_state ?? null,
+            },
+          });
+
+          // challenge یکبارمصرف — همان شکل loginWithPassword.
+          // 2026-08-14: از createTwoFactorChallenge استفاده می‌شود تا verifyOtp
+          // بتواند با beginTwoFactorChallenge همان row را claim کند (گارد عامل
+          // اول). قبلاً هر دو مسیر row را دستی می‌ساختند و verify هرگز وجودش
+          // را چک نمی‌کرد.
+          await createTwoFactorChallenge(oauthEmail);
+
+          serverLog.info('auth', 'oauth-2fa-challenge', {
+            provider: account.provider,
+            email: oauthEmail,
+          });
+          return `/auth?step=verify&intent=2fa&email=${encodeURIComponent(dbUser.email)}`;
+        }
+      } catch (error) {
+        // قطعی DB → fail-open: اختلال موقت نباید کاربر را قفل کند. گاردهای
+        // jwt/events در درخواست بعدی هنوز status/role را اعمال می‌کنند.
+        serverLog.error('auth', 'signIn-oauth-db-unavailable', error);
+      }
+
+      // کاربر عادی بدون 2FA (یا OWNER/SUPERADMIN هنوز 2FA فعال نکرده —
+      // dashboard layout او را به /2fa-setup می‌فرستد) → اجازهٔ ورود.
+      return true;
+    },
     async jwt({ token, trigger, session, user }) {
       // ── First sign-in: populate all fields from the DB user object ──────────
       if (user) {
@@ -198,7 +415,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: user.id as string },
-            select: { tokenVersion: true, passwordVersion: true, permissions: true, deniedPermissions: true },
+            select: {
+              tokenVersion: true,
+              passwordVersion: true,
+              permissions: true,
+              deniedPermissions: true,
+            },
           });
           token.tokenVersion = dbUser?.tokenVersion ?? 0;
           token.passwordVersion = dbUser?.passwordVersion ?? 0;
@@ -304,7 +526,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-  adapter: PrismaAdapter(prisma),
+  adapter: createAuthAdapter(),
   session: {
     strategy: 'jwt',
     maxAge: 3 * 24 * 60 * 60, // 3 days
