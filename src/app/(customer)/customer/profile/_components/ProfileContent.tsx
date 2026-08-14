@@ -112,7 +112,7 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
   // ── Derived state ──────────────────────────────────────────
   const kycKey = KYC_STATUS_CSSKEY[profile.kycStatus] ?? 'warning';
   const statusKey = CUSTOMER_STATUS_CSSKEY[profile.status] ?? 'neutral';
-  const initials = profile.fullName
+  const initials = (profile.fullName ?? '')
     .split(' ')
     .map((p) => p[0])
     .filter(Boolean)
@@ -456,18 +456,20 @@ export default function ProfileContent({ profile, initialEditField }: Props) {
                 mono
               />
             )}
-            <InfoRow
-              label="تلفن"
-              value={
-                <a href={`tel:${profile.phone}`} dir="ltr" className={s.link}>
-                  {showSensitive
-                    ? profile.phone
-                    : `${profile.phone.slice(0, 4)}•••${profile.phone.slice(-3)}`}
-                </a>
-              }
-              icon={Phone}
-              mono
-            />
+            {profile.phone && (
+              <InfoRow
+                label="تلفن"
+                value={
+                  <a href={`tel:${profile.phone}`} dir="ltr" className={s.link}>
+                    {showSensitive
+                      ? profile.phone
+                      : `${profile.phone.slice(0, 4)}•••${profile.phone.slice(-3)}`}
+                  </a>
+                }
+                icon={Phone}
+                mono
+              />
+            )}
             {profile.email && (
               <InfoRow
                 label="ایمیل"

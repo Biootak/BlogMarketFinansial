@@ -71,6 +71,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (action.length > 200 || details.length > 2000) {
+      return NextResponse.json(
+        { success: false, error: { code: 'BAD_REQUEST', message: 'Field length exceeded' } },
+        { status: 400 },
+      );
+    }
+
     const activity = await db.activityLog.create({
       data: {
         action,

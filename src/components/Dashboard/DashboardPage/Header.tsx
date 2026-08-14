@@ -243,9 +243,12 @@ const Header: React.FC<HeaderProps> = ({ portal = 'admin' }) => {
   }, []);
 
   const handleMarkAllRead = async () => {
-    await markAllNotificationsRead();
-    // Optimistically update local state
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    try {
+      await markAllNotificationsRead();
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch {
+      // best-effort — UI را revert نمی‌کنیم؛ کاربر می‌تواند دوباره تلاش کند
+    }
   };
 
   // Live Tehran clock — cheap single setState per minute.

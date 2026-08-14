@@ -253,6 +253,7 @@ export async function persistMarketRates(
 
   revalidateTag(TAGS.ticker);
   revalidateTag(TAGS.list);
+  revalidateTag(TAGS.exchangeRates);
 
   return { updated, snapshotCount };
 }

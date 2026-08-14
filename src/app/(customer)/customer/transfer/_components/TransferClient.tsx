@@ -915,17 +915,22 @@ function ExchangeForm({
     let cancelled = false;
     setQuoteLoading(true);
     startT(async () => {
-      const res = await getFxQuote({
-        fromCurrency: fromCur as Currency,
-        toCurrency: toCur as Currency,
-      });
-      if (cancelled) return;
-      if (res.success && res.data) {
-        setQuote({ rate: res.data.rate, feePercent: res.data.feePercent });
-      } else {
-        setQuote(null);
+      try {
+        const res = await getFxQuote({
+          fromCurrency: fromCur as Currency,
+          toCurrency: toCur as Currency,
+        });
+        if (cancelled) return;
+        if (res.success && res.data) {
+          setQuote({ rate: res.data.rate, feePercent: res.data.feePercent });
+        } else {
+          setQuote(null);
+        }
+      } catch {
+        if (!cancelled) setQuote(null);
+      } finally {
+        if (!cancelled) setQuoteLoading(false);
       }
-      setQuoteLoading(false);
     });
     return () => {
       cancelled = true;

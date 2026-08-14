@@ -23,6 +23,19 @@ export async function POST(req: NextRequest) {
     const fromDate = body.from ? new Date(body.from) : undefined;
     const toDate = body.to ? new Date(body.to) : undefined;
 
+    // bounds validation — جلوگیری از تاریخ‌های غیرمعقول
+    const MIN_DATE = new Date('2020-01-01').getTime();
+    const MAX_DATE = Date.now() + 24 * 60 * 60 * 1000; // حداکثر فردا
+    if (fromDate && (isNaN(fromDate.getTime()) || fromDate.getTime() < MIN_DATE || fromDate.getTime() > MAX_DATE)) {
+      return NextResponse.json({ success: false, message: 'تاریخ شروع نامعتبر است' }, { status: 400 });
+    }
+    if (toDate && (isNaN(toDate.getTime()) || toDate.getTime() < MIN_DATE || toDate.getTime() > MAX_DATE)) {
+      return NextResponse.json({ success: false, message: 'تاریخ پایان نامعتبر است' }, { status: 400 });
+    }
+    if (fromDate && toDate && fromDate > toDate) {
+      return NextResponse.json({ success: false, message: 'تاریخ شروع باید قبل از تاریخ پایان باشد' }, { status: 400 });
+    }
+
     // دریافت گزارش‌ها
     const result = await getSystemReports(fromDate, toDate);
 

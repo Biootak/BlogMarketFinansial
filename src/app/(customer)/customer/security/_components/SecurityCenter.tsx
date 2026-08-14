@@ -109,9 +109,7 @@ export function SecurityCenter({ overview }: Props) {
         });
         setPwd(EMPTY_PASSWORD);
         // session فعلی هم باطل شود و به صفحه ورود بریم
-        setTimeout(() => {
-          void signOutUser();
-        }, 800);
+        void signOutUser();
       } else {
         toast({
           title: 'خطا در تغییر رمز',
