@@ -8,6 +8,7 @@
 
 import { getFintechKpiData } from '@/actions/getFintechKpiData';
 import { getLiveOpsData } from '@/actions/liveOpsActions';
+import { getMarketRates } from '@/actions/market-rates';
 import { getServiceRequestStats, getServiceRequests } from '@/actions/serviceRequestActions';
 import { auth } from '@/auth';
 import { checkRole } from '@/lib/auth';
@@ -30,11 +31,12 @@ export async function FintechCockpitServer() {
   const userRole = (session.user.role ?? 'AUTHOR') as FintechCockpitProps['userRole'];
   const userName = (session.user.name ?? session.user.email ?? '').split(' ')[0] ?? '';
 
-  const [kpiRes, statsRes, listRes, liveRes] = await Promise.all([
+  const [kpiRes, statsRes, listRes, liveRes, marketRatesRes] = await Promise.all([
     getFintechKpiData().catch(() => null),
     getServiceRequestStats().catch(() => null),
     getServiceRequests({ status: 'PENDING', page: 1, limit: 6 }).catch(() => null),
     getLiveOpsData().catch(() => null),
+    getMarketRates().catch(() => [] as never[]),
   ]);
 
   // KPI
@@ -122,6 +124,7 @@ export async function FintechCockpitServer() {
       recent,
     },
     live,
+    marketRates: Array.isArray(marketRatesRes) ? marketRatesRes : [],
     deadlines: [
       {
         label: 'بررسی KYC',

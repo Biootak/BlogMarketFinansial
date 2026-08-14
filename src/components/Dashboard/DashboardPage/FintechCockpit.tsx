@@ -34,14 +34,17 @@
 import { QuickActionRow } from '@/components/Dashboard/primitives';
 import { Badge } from '@/components/ui/badge';
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
+import type { MarketRateItem } from '@/lib/market-rates/types';
 import {
-  AlertCircle,
+  ArrowDown,
   ArrowDownRight,
   ArrowLeft,
+  ArrowUp,
   ArrowUpRight,
   Check,
   Inbox,
   type LucideIcon,
+  Minus,
   Plus,
   Radio,
   ShieldAlert,
@@ -120,6 +123,8 @@ export interface FintechCockpitProps {
     events: FintechCockpitLiveEvent[];
     activityBars: number[];
   };
+  /** نرخ‌های بازار برای Market Intelligence Panel */
+  marketRates?: MarketRateItem[];
   /** Optional deadline items (KYC expiry, subscriptions, etc.) */
   deadlines: Array<{
     label: string;
@@ -164,15 +169,6 @@ const STATUS_CLASS: Record<string, string> = {
   CANCELLED: 'isCancelled',
 };
 
-const EVENT_LABELS: Record<FintechCockpitLiveEvent['type'], string> = {
-  deposit: 'واریز',
-  withdraw: 'برداشت',
-  kyc: 'احراز هویت',
-  order: 'سفارش',
-  auth: 'ورود',
-  fraud: 'هشدار',
-};
-
 const STATUS_LIVE_LABELS: Record<FintechCockpitLiveService['status'], string> = {
   healthy: 'سالم',
   degraded: 'کند',
@@ -196,21 +192,6 @@ const _faCompact = new Intl.NumberFormat('fa-IR', {
   maximumFractionDigits: 1,
 });
 
-const toMs = (ts: string | number): number => {
-  if (typeof ts === 'number') return ts;
-  const ms = new Date(ts).getTime();
-  return Number.isFinite(ms) ? ms : Date.now();
-};
-
-const formatRel = (ts: number, now: number): string => {
-  const diff = Math.max(0, Math.floor((now - ts) / 1000));
-  if (diff < 5) return 'هم اکنون';
-  if (diff < 60) return `${_faNum.format(diff)} ثانیه پیش`;
-  if (diff < 3600) return `${_faNum.format(Math.floor(diff / 60))} دقیقه پیش`;
-  if (diff < 86_400) return `${_faNum.format(Math.floor(diff / 3600))} ساعت پیش`;
-  return `${_faNum.format(Math.floor(diff / 86_400))} روز پیش`;
-};
-
 const formatRelDate = (iso: string | Date): string => {
   const date = typeof iso === 'string' ? new Date(iso) : iso;
   const diffMin = Math.floor((Date.now() - date.getTime()) / 60_000);
@@ -222,8 +203,6 @@ const formatRelDate = (iso: string | Date): string => {
   if (diffD < 30) return `${_faNum.format(diffD)} روز پیش`;
   return date.toLocaleDateString('fa-IR');
 };
-
-const formatCompactFa = (n: number): string => _faCompact.format(n);
 
 const formatIntFa = (n: number): string => _faNum.format(n);
 
@@ -258,6 +237,40 @@ const getInitial = (name: string): string => {
   }
   return trimmed[0] ?? '؟';
 };
+
+function unitLabel(unit: string): string {
+  if (unit === 'afn') return 'افغانی';
+  if (unit === 'toman') return 'تومان';
+  return unit.toUpperCase();
+}
+
+/**
+ * نرخ‌های کلیدی افغانستان را از لیست فیلتر و مرتب می‌کند.
+ * اولویت: USD، EUR، AED، تومان — حداکثر ۴ آیتم.
+ */
+function pickKeyRates(rates: MarketRateItem[]): MarketRateItem[] {
+  // اول نرخ‌های گروه افغان (USD/AFN)، سپس forex اصلی
+  const afg = rates.filter((r) => r.group === 'afghan').slice(0, 3);
+  const forex = rates
+    .filter(
+      (r) =>
+        r.group === 'iran-forex' &&
+        (r.symbol.toLowerCase().includes('usd') ||
+          r.symbol.toLowerCase().includes('eur') ||
+          r.symbol.toLowerCase().includes('aed')),
+    )
+    .slice(0, 2);
+  const combined = [...afg, ...forex];
+  // اگر هیچ‌کدام پیدا نشد، ۴ تا اول را بده
+  return combined.length > 0 ? combined.slice(0, 4) : rates.slice(0, 4);
+}
+
+function formatRateValue(item: MarketRateItem): string {
+  const val = item.value / item.divisor;
+  if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(2)}M`;
+  if (val >= 1_000) return new Intl.NumberFormat('fa-IR').format(Math.round(val));
+  return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: item.decimals }).format(val);
+}
 
 // ─── Ambient SVG glow (signature moment) ────────────────────────────────
 
@@ -758,16 +771,90 @@ function ServicesPanel({
   );
 }
 
+// ─── Market Intelligence Panel (جایگزین eventList) ─────────────────────
+
+function MarketIntelPanel({ rates }: { rates: MarketRateItem[] }) {
+  const items = useMemo(() => pickKeyRates(rates), [rates]);
+  const updatedAt = useMemo(() => {
+    if (items.length === 0) return null;
+    const dates = items.map((r) => r.updatedAt.getTime());
+    return new Date(Math.max(...dates));
+  }, [items]);
+
+  if (items.length === 0) {
+    return (
+      <div className={s.marketEmpty}>
+        <TrendingUp aria-hidden size={20} />
+        <span>نرخ‌های بازار در دسترس نیست</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={s.marketPanel}>
+      <div className={s.marketHeader}>
+        <span className={s.marketEyebrow}>
+          <TrendingUp aria-hidden size={11} />
+          <span>بازار زنده</span>
+        </span>
+        {updatedAt ? (
+          <span className={s.marketUpdated} dir="ltr">
+            {updatedAt.toLocaleTimeString('en-GB', {
+              hour12: false,
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </span>
+        ) : null}
+      </div>
+      <ul className={s.marketList}>
+        {items.map((item) => {
+          const change = item.changePercent ?? 0;
+          const isUp = change > 0.01;
+          const isDown = change < -0.01;
+          const ChangeIcon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
+          const changeTone = isUp
+            ? s.marketChange_up
+            : isDown
+              ? s.marketChange_down
+              : s.marketChange_flat;
+          return (
+            <li key={item.symbol} className={s.marketItem}>
+              <div className={s.marketItemMain}>
+                <span className={s.marketItemName}>{item.displayNameFa}</span>
+                <span className={s.marketItemUnit}>{unitLabel(item.unit)}</span>
+              </div>
+              <div className={s.marketItemRight}>
+                <span className={s.marketItemValue} dir="ltr">
+                  {formatRateValue(item)}
+                </span>
+                <span className={`${s.marketChange} ${changeTone}`}>
+                  <ChangeIcon aria-hidden size={9} />
+                  <span dir="ltr">{Math.abs(change).toFixed(2)}٪</span>
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+      <Link href="/market-rates" className={s.marketFootLink}>
+        <span>مشاهده همه نرخ‌ها</span>
+        <ArrowLeft aria-hidden size={12} />
+      </Link>
+    </div>
+  );
+}
+
 // ─── Live Ops panel ────────────────────────────────────────────────────
 
 function LivePanel({
   services,
-  events,
   activityBars,
+  marketRates,
 }: {
   services: FintechCockpitLiveService[];
-  events: FintechCockpitLiveEvent[];
   activityBars: number[];
+  marketRates: MarketRateItem[];
 }) {
   const [now, setNow] = useState(() => Date.now());
 
@@ -814,8 +901,11 @@ function LivePanel({
           </span>
         </div>
         <div className={s.liveStat}>
-          <span className={s.liveStatLabel}>رویداد</span>
-          <span className={s.liveStatValue}>{formatCompactFa(events.length)}</span>
+          <span className={s.liveStatLabel}>سلامت</span>
+          <span className={s.liveStatValue}>
+            <span dir="ltr">{formatIntFa(healthScore)}</span>
+            <span className={s.liveStatValueMuted}>٪</span>
+          </span>
         </div>
         <div className={s.liveStat}>
           <span className={s.liveStatLabel}>ساعت</span>
@@ -861,68 +951,8 @@ function LivePanel({
         })}
       </ul>
 
-      <ul className={s.eventList}>
-        {events.length === 0 ? (
-          <li className={s.svcEmpty}>
-            <AlertCircle aria-hidden size={16} />
-            <span>در حال گوش دادن به رویدادها…</span>
-          </li>
-        ) : (
-          events.slice(0, 6).map((evt) => {
-            const Icon: LucideIcon =
-              evt.type === 'deposit'
-                ? ArrowDownRight
-                : evt.type === 'withdraw'
-                  ? ArrowUpRight
-                  : evt.type === 'kyc'
-                    ? ShieldAlert
-                    : evt.type === 'fraud'
-                      ? AlertCircle
-                      : Wallet;
-            const eventHref = evt.href ?? undefined;
-            return (
-              <li key={evt.id} className={s.eventItem}>
-                {eventHref ? (
-                  <Link
-                    href={eventHref}
-                    className={s.eventIconWrap}
-                    style={{ textDecoration: 'none', color: 'inherit' }}
-                  >
-                    <span
-                      className={`${s.eventIcon} ${s[`eventIcon_${evt.type}`] ?? ''}`}
-                      aria-hidden
-                    >
-                      <Icon size={12} />
-                    </span>
-                  </Link>
-                ) : (
-                  <span
-                    className={`${s.eventIcon} ${s[`eventIcon_${evt.type}`] ?? ''}`}
-                    aria-hidden
-                  >
-                    <Icon size={12} />
-                  </span>
-                )}
-                <span className={s.eventBody}>
-                  <span className={s.eventTop}>
-                    <strong className={s.eventActor}>{evt.actor}</strong>
-                    <span className={s.eventAction}>{EVENT_LABELS[evt.type]}</span>
-                    {evt.amount ? (
-                      <span className={s.eventAmount} dir="ltr">
-                        {formatCompactFa(evt.amount.value)} {evt.amount.currency}
-                      </span>
-                    ) : null}
-                  </span>
-                  <span className={s.eventBottom}>
-                    <span className={s.eventDetail}>{evt.detail}</span>
-                    <span className={s.eventTime}>· {formatRel(toMs(evt.timestamp), now)}</span>
-                  </span>
-                </span>
-              </li>
-            );
-          })
-        )}
-      </ul>
+      {/* Market Intelligence — جایگزین eventList */}
+      <MarketIntelPanel rates={marketRates} />
     </section>
   );
 }
@@ -952,6 +982,7 @@ export function FintechCockpit({
   kpi,
   services,
   live,
+  marketRates,
   deadlines,
   editorial,
 }: FintechCockpitProps) {
@@ -984,7 +1015,11 @@ export function FintechCockpit({
       {/* Two main panels: services + live ops */}
       <div className={s.mainGrid}>
         <ServicesPanel stats={services.stats} recent={services.recent} />
-        <LivePanel services={live.services} events={live.events} activityBars={live.activityBars} />
+        <LivePanel
+          services={live.services}
+          activityBars={live.activityBars}
+          marketRates={marketRates ?? []}
+        />
       </div>
 
       {/* Optional editorial deck (for editor roles) */}
