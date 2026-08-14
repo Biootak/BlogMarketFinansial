@@ -8,14 +8,18 @@
  *   CUSTOMER / TEST_CUSTOMER / MERCHANT → اگر Customer record داشته باشند دسترسی دارند
  *   بقیه → 403 FORBIDDEN
  *
- * Performance: requireCustomerAccess از React.cache() استفاده می‌کند تا
- * در یک render pass فقط یکبار اجرا شود (auth() + DB query فقط یکبار).
+ * Performance: requireCustomerAccess از safeCache() استفاده می‌کند تا
+ * در یک render pass و Server Actions فقط یکبار اجرا شود.
+ * React.cache() فقط در React render tree (Server Components) کار می‌کند و
+ * وقتی تابع مستقیم از یک Server Action صدا زده شود dedup نمی‌کند.
+ * safeCache از module-level Map با TTL کوتاه (ttl=0 = یک‌بار per process) استفاده
+ * می‌کند که هم در render tree و هم در Server Actions کار می‌کند.
  */
 
 import prisma from '@/lib/db';
 import { requireUser } from '@/lib/require-auth';
+import { safeCache } from '@/lib/safe-cache';
 import { cookies, headers } from 'next/headers';
-import { cache } from 'react';
 
 const PLATFORM_ADMINS = new Set(['OWNER', 'SUPERADMIN', 'ADMIN']);
 const CUSTOMER_ROLES = new Set(['CUSTOMER', 'TEST_CUSTOMER', 'MERCHANT']);
@@ -71,7 +75,17 @@ export type CustomerAccessResult = CustomerAccessOk | CustomerAccessFail;
  * اجرا می‌شود — تمام callers در یک pass نتیجه یکسان را بدون DB round-trip
  * اضافه دریافت می‌کنند.
  */
-export const requireCustomerAccess = cache(async (): Promise<CustomerAccessResult> => {
+// ttl=5: 5 ثانیه کافی است تا در یک render pass / action chain dedup شود
+// بدون اینکه داده stale بماند. React.cache قبلاً per-request بود؛
+// این معادل آن است.
+const _requireCustomerAccessImpl = safeCache(
+  async (): Promise<CustomerAccessResult> =>
+    _requireCustomerAccessFn(),
+  { ok: false, error: { success: false, status: 401, code: 'UNAUTHENTICATED', message: 'لطفاً وارد شوید' } },
+  { key: 'customer-auth:requireCustomerAccess', ttl: 5 },
+);
+
+async function _requireCustomerAccessFn(): Promise<CustomerAccessResult> {
   const auth = await requireUser();
   if (!auth.success) {
     return {
@@ -160,7 +174,11 @@ export const requireCustomerAccess = cache(async (): Promise<CustomerAccessResul
     exchangeId: customer.exchangeId,
     customerStatus: customer.status,
   };
-});
+}
+
+export async function requireCustomerAccess(): Promise<CustomerAccessResult> {
+  return _requireCustomerAccessImpl();
+}
 
 /**
  * تنظیم customer context برای ادمین پلتفرم (از طریق cookie).

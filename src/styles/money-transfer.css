@@ -450,7 +450,7 @@
     align-items: center;
     gap: 2.25rem;
     padding-inline: 1.25rem;
-    animation: mt-ticker-scroll 60s linear infinite;
+    animation: mt-ticker-scroll 35s linear infinite;
   }
   .mt-ticker:hover .mt-ticker__track {
     animation-play-state: paused;
@@ -471,7 +471,7 @@
     }
   }
   [dir="rtl"] .mt-ticker__track {
-    animation: mt-ticker-scroll-rtl 60s linear infinite;
+    animation: mt-ticker-scroll-rtl 35s linear infinite;
   }
   [dir="rtl"] .mt-ticker:hover .mt-ticker__track {
     animation-play-state: paused;

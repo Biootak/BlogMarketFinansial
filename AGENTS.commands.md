@@ -27,6 +27,21 @@ npm run db:reset       # scripts/reset-and-seed-50-posts.js
 npm run db:fresh       # prisma migrate reset --force && npm run db:seed
 npm run db:stats       # scripts/db-stats.js
 npx prisma migrate dev # schema changes
+
+## Rules Read Gate (مکانیکی — قبل از هر کد)
+
+```bash
+npm run rules:check    # گام صفر هر تسک — بدون مهر تازه FAIL می‌دهد + لیست فایل‌ها
+npm run rules:stamp -- --files "AGENTS.md,PDK.md,pdk/constitution.md"
+                       # بعد از خواندن واقعی فایل‌ها — مهر sha256 ثبت می‌کند
+npm run rules:log      # audit trail مهرها (کی/چه کسی چه فایل‌هایی را خوانده)
+npm run setup:hooks    # git config core.hooksPath scripts/git-hooks (clone تازه)
+```
+
+- `npm run verify` = `rules:check` + typecheck + lint + tests → بدون مهر تازه سبز نمی‌شود.
+- pre-commit hook کامیت بدون مهر تازه را بلاک می‌کند (دور زدن عمدی: `--no-verify`).
+- تغییر AGENTS.md/PDK.md/pdk/constitution.md → مهر خودکار باطل (hash). TTL: `RULES_GATE_TTL_MINUTES` (پیش‌فرض ۱۲۰).
+- `CI=true` یا `RULES_GATE_SKIP=1` → gate غیرفعال (فقط برای CI/استثنا).
 npx prisma studio      # DB GUI
 ```
 

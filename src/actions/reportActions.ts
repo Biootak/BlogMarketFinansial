@@ -94,24 +94,29 @@ interface ActionResult<T = unknown> {
 
 // 2026-07-28: Use session role directly instead of a redundant DB roundtrip.
 // The JWT-based session already carries the role — no need to re-fetch from DB.
-export async function checkReportAccess() {
+export async function checkReportAccess(): Promise<
+  | { ok: true }
+  | { ok: false; status: 401 | 403; message: string }
+> {
   const session = await auth();
 
   if (!session?.user?.id) {
-    throw new Error('احراز هویت الزامی است');
+    return { ok: false, status: 401, message: 'احراز هویت الزامی است' };
   }
 
   // 2026-08-11: reports are owner-only — SUPERADMIN is an elevated ADMIN,
   // not an OWNER alias, and must not read financial reports.
   const role = session.user.role as string | undefined;
   if (!role || !['OWNER'].includes(role)) {
-    throw new Error('شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید');
+    return { ok: false, status: 403, message: 'شما دسترسی لازم برای مشاهده گزارش‌ها را ندارید' };
   }
+  return { ok: true };
 }
 
 export async function getSystemReports(from?: Date, to?: Date) {
   try {
-    await checkReportAccess();
+    const access = await checkReportAccess();
+    if (!access.ok) return { success: false, message: access.message };
 
     const dateFilter =
       from && to
@@ -222,7 +227,8 @@ export async function getSystemReports(from?: Date, to?: Date) {
 
 export const getSystemStatus = async (): Promise<ActionResult<SystemStatus>> => {
   try {
-    await checkReportAccess();
+    const access = await checkReportAccess();
+    if (!access.ok) return { success: false, message: access.message };
 
     // دریافت متریک‌های واقعی از OS
     const metrics = await getSystemMetrics();

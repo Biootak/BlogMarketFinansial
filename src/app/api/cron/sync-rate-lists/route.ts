@@ -71,11 +71,11 @@ async function handleSync(req: Request) {
   if (existing) {
     await prisma.rateList.update({
       where: { id: existing.id },
-      data: { rates: rateItems as never, isActive: true },
+      data: { rates: rateItems as unknown as import('@prisma/client').Prisma.InputJsonValue, isActive: true },
     });
   } else {
     await prisma.rateList.create({
-      data: { title: LIST_TITLE, rates: rateItems as never, isActive: true },
+      data: { title: LIST_TITLE, rates: rateItems as unknown as import('@prisma/client').Prisma.InputJsonValue, isActive: true },
     });
   }
 

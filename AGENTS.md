@@ -68,6 +68,40 @@
 
 ---
 
+## 📖 Pre-Code Rule Reading (اجباری — قبل از هر کد، حتی یک خط)
+
+> **یاد گرفته شد 2026-08-14 — گزارش کاربر:** قوانین در طراحی/کد اعمال نمی‌شد؛ «قبل از اینکه حتی یک خط کد بنویسی، قوانین باید حتماً خوانده شوند.»
+
+| قانون | جزئیات |
+|-------|--------|
+| **خواندن قبل از اولین کد** | قبل از اولین خط کد هر تسک: AGENTS.md + PDK.md + `pdk/constitution.md` + topic files مرتبط با همان تسک خوانده شوند — نه فقط اول چت |
+| **حتی Trivial/یک خط** | «یک خط» از قوانین مستثنا نیست — Decision Ladder (grep→reuse→extend→compose) + tokens فقط + RTL همیشه اجرا شود |
+| **گیت شفاف در پیام** | هر تسک غیر-Trivial: جدول PRE-CODE GATE (و UI VISION GATE برای UI) با پاسخ واقعی داخل پاسخ بیاید — placeholder = تسک تمام‌شده نیست |
+| **اینترنت-اول** | هر تغییر UI/UX → حداقل یک `web_search` با تاریخ، حتی برای یک خط؛ منبع رسمی خوانده شود |
+| **NO-REPEAT محدود** | NO-REPEAT فقط declaration را یک‌بار محدود می‌کند؛ خواندن فایل‌های قوانین قبل از هر تسک اجباری می‌ماند |
+| **حق کاربر (trigger)** | کاربر می‌تواند وسط هر تسک بگوید «قوانین را بخوان» / «گیت‌ها را پر کن» → trigger جدید برای re-load rules؛ هرگز مسدود نمی‌شود |
+| **گزارش پایانی** | انتهای هر تسک یک خط: «✅ قوانین: [گیت‌های اجراشده]» |
+
+### 🛡️ مکانیک اجباری — Rules Read Gate (hook — نه فقط قانون)
+
+> قانونِ نوشته‌شده کافی نیست (یاد گرفته شد 2026-08-14). این gate فایل‌محور است و روی همین
+> working tree مشترک کار می‌کند — سشن یا اکانت عوض شود فرقی ندارد.
+
+| فرمان | نقش |
+|-------|-----|
+| `npm run rules:check` | **گام صفر هر تسک** — بدون مهر تازه FAIL می‌کند و لیست فایل‌های خواندنی را می‌دهد |
+| `npm run rules:stamp -- --files "..."` | بعد از خواندن واقعی فایل‌ها — مهر با sha256 فایل‌ها ثبت می‌شود (فایل‌های اجباری: AGENTS.md، PDK.md، `pdk/constitution.md`) |
+| `npm run verify` | اکنون شامل `rules:check` است → بدون مهر تازه تسک «تمام» نمی‌شود |
+| pre-commit hook | `scripts/git-hooks/pre-commit` — بدون مهر تازه کامیت بلاک می‌شود |
+| `npm run rules:log` | audit trail — قابل دیدن است چه کسی/کی چه فایل‌هایی را خوانده |
+| `npm run setup:hooks` | `git config core.hooksPath scripts/git-hooks` — برای clone های تازه |
+
+- اگر AGENTS.md / PDK.md / `pdk/constitution.md` تغییر کنند (hash فرق کند) → مهر **خودکار باطل** می‌شود و خواندن دوباره اجباری است.
+- عمر مهر: `RULES_GATE_TTL_MINUTES` (پیش‌فرض ۱۲۰ دقیقه).
+- حد صادقانه: هیچ سیستمی «لحظهٔ نوشتن اولین خط» را رهگیری نمی‌کند؛ اما مسیر اتمام (verify) و کامیت (hook) بدون مهر تازه بسته است → کار بدون خواندن قوانین هرگز تمام/کامیت نمی‌شود.
+
+---
+
 ## 🎨 UI VISION GATE (فقط UI — قبل از PRE-CODE GATE)
 
 > ⛔ برای تسک‌های backend/DB → یک خط: `UI VISION GATE: N/A — backend only`
@@ -500,6 +534,7 @@ interface RouteErrorProps {
 | 2026-07-30 | **§3.7 Flexibility & Restraint اضافه شد:** page-specific premium containers، header متنوع در هر zone، color discipline (۲-۳ tone) — همزمان با anti-overdesign: حداکثر ۴ zone، حداکثر ۳ tone، حداکثر ۱ overlay تزئینی، حداکثر ۲ animation، حداکثر ۱ SVG signature در page. یاد گرفته شد از: ۶-zone redesign که همه zoneها با هم رقابت می‌کردند. |
 | 2026-08-13 | **Playwright MCP دائمی شد:** `scripts/playwright-open.mjs` (خودترمیم، SDK را خودش نصب می‌کند) + `npm run browser:open` + `AGENTS.playwright.md`. باز کردن مرورگر واقعی دیگر فقط یک فرمان است — هر AI باید این سند را بخواند و از صفر کانفیگ نکند. |
 | 2026-08 | **UI/UX Pro Max Skill تنظیم شد:** Skill local در `.claude/skills/ui-ux-pro-max/` نصب شده؛ Design System با `--variance 6 --density 8` برای fintech/RTL/dark در `design-system/afghanistan-exchange-market/MASTER.md` persist شد؛ `AGENTS.ui-ux-skill.md` با قوانین P1–P10 از SKILL.md و وضعیت انطباق پروژه ایجاد شد؛ `AUDIT.md` با gap report نوشته شد. در هر سشن UI باید `AGENTS.ui-ux-skill.md` خوانده شود. |
+| 2026-08-14 | **📖 Pre-Code Rule Reading اضافه شد:** خواندن قوانین قبل از هر کد (حتی یک خط) اجباری؛ گیت شفاف در پیام؛ اینترنت-اول برای هر تغییر UI؛ حق کاربر برای trigger «قوانین را بخوان». یاد گرفته شد از گزارش مستقیم کاربر. |
 
 ---
 
