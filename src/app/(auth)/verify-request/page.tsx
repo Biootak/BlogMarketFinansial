@@ -1,52 +1,29 @@
-﻿import Link from 'next/link';
-import { Suspense } from 'react';
+// 2026-06-23: legacy alias — funnel into the canonical entry.
+// 2026-08-14: single-flow unification — /verify-request now redirects to
+// the canonical /auth?step=verify (AuthFlow.VerifyStep) instead of the
+// standalone VerifyRequestClient page. `redirect` (legacy param) maps to
+// AuthFlow's `callbackUrl`; email/intent pass through untouched.
+import { redirect } from 'next/navigation';
 
-import VerifyRequestClient from '@/components/Auth/VerifyRequestClient';
-
-export const metadata = {
-  title: 'تأیید ایمیل — Financial Market',
-  robots: { index: false, follow: false },
-};
-
-export default function VerifyRequestPage() {
-  return (
-    <main className="auth-page-root" dir="rtl">
-      <div className="auth-aurora" aria-hidden="true" />
-
-      <Link href="/" className="auth-brand" aria-label="Financial Market — صفحه اصلی">
-        <span className="auth-brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="4" y="11" width="4" height="9" rx="1.2" fill="currentColor" opacity="0.55" />
-            <rect x="10" y="7" width="4" height="13" rx="1.2" fill="currentColor" opacity="0.8" />
-            <rect x="16" y="4" width="4" height="16" rx="1.2" fill="currentColor" />
-          </svg>
-        </span>
-        <span className="auth-brand-name">Financial Market</span>
-      </Link>
-
-      <div className="auth-card-shell">
-        <Suspense
-          fallback={
-            <div className="auth-card" aria-busy="true" style={{ minHeight: '20rem' }}>
-              <div className="auth-card-inner" />
-            </div>
-          }
-        >
-          <VerifyRequestClient />
-        </Suspense>
-      </div>
-
-      <nav className="auth-foot" aria-label="پیوندهای پاورقی">
-        <Link href="/terms" prefetch={false}>
-          قوانین و مقررات
-        </Link>
-        <span aria-hidden="true" style={{ margin: '0 0.5rem', opacity: 0.4 }}>
-          ·
-        </span>
-        <Link href="/privacy-policy" prefetch={false}>
-          حریم خصوصی
-        </Link>
-      </nav>
-    </main>
-  );
+export default async function AliasPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const sp = await searchParams;
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(sp)) {
+    if (typeof value === 'string') params.set(key, value);
+    else if (Array.isArray(value)) {
+      for (const v of value) params.append(key, v);
+    }
+  }
+  // legacy VerifyRequestClient read `?redirect=`; AuthFlow reads `callbackUrl`.
+  const legacyRedirect = params.get('redirect');
+  if (legacyRedirect) {
+    params.set('callbackUrl', legacyRedirect);
+    params.delete('redirect');
+  }
+  params.set('step', 'verify');
+  redirect(`/auth?${params.toString()}`);
 }

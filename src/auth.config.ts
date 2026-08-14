@@ -106,6 +106,6 @@ export default {
     signIn: '/auth',
     newUser: '/auth?step=register',
     error: '/error',
-    verifyRequest: '/verify-request',
+    verifyRequest: '/auth?step=verify',
   },
 } satisfies NextAuthConfig;
