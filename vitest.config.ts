@@ -4,6 +4,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': new URL('./src', import.meta.url).pathname,
+      // ماژول‌های server-only (مثل optimize-body-images) در vitest/node throw
+      // می‌کنند → stub خالی جایگزین می‌شود (ر.ک src/lib/server-only-stub.ts)
+      'server-only': new URL('./src/lib/server-only-stub.ts', import.meta.url).pathname,
     },
   },
   test: {

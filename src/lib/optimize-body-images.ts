@@ -1,37 +1,37 @@
 import 'server-only';
 
+import imageLoader from '@/lib/image-loader';
+
 /**
  * @file optimize-body-images.ts — server-side body-<img> optimizer.
  *
  * Article bodies are SSR'd to static HTML and injected via
  * `dangerouslySetInnerHTML`, so next/image's component can't wrap them.
  * This transform rewrites raw `<img src="…">` into `<img srcset="…" src="…">`
- * pointing at Next's built-in image optimizer (`/_next/image`), which serves
- * AVIF/WebP and resizes to the exact viewport widths. Result: article images
- * get responsive, format-optimized delivery with zero client-side JS.
+ * pointing at each host's own CDN transform (unsplash/pexels w/q params) —
+ * the same CDN-side strategy as the global `images.loaderFile` in
+ * next.config.ts. Result: article images get responsive, format-optimized
+ * delivery with zero server-side sharp work and zero client-side JS.
  *
- * Only remote / absolute image hosts in the `images.remotePatterns` allowlist
- * are rewritten; local `/…` paths and data: URIs pass through untouched
- * (they're already next/image-optimized or inline).
+ * ⚠️ 2026-08-15: قبلاً srcset به `/_next/image` (optimizer داخلی) اشاره می‌کرد.
+ * با loaderFile سفارشی، route `/_next/image` دیگر سرو نمی‌شود — تصاویر مقالات
+ * 404 می‌گرفتند. حالا همان `imageLoader` سراسری (src/lib/image-loader) صدا
+ * زده می‌شود تا URL های CDN مستقیم بسازد — یک منبع حقیقت واحد.
+ *
+ * Only remote / absolute image hosts in `OPTIMIZABLE_HOSTS` are rewritten;
+ * local `/…` paths and data: URIs pass through untouched.
  */
 
-// Widths emitted per image — matches the `imageSizes` device breakpoints so
-// the browser picks the closest cache entry. 480 covers mobile, 768 tablet,
-// 1200 desktop card/body width, 1920 full-bleed retina.
+// Widths emitted per image — 480 covers mobile, 768 tablet, 1200 desktop
+// card/body width, 1920 full-bleed retina.
 const OPTIMIZED_WIDTHS = [480, 768, 1200, 1920];
 const DEFAULT_WIDTH = 1200;
 
-/** Hosts served by the Next image optimizer (must match next.config images). */
-const OPTIMIZABLE_HOSTS = new Set(['images.pexels.com', 'images.unsplash.com', 'cdn.jsdelivr.net']);
-
-const _srcsetPattern = /^\s*[\d\s,wx/]+(?:\s*\d+w)?\s*$/;
-
 /**
- * Encode a URL for use as the `url` query param of `/_next/image`.
+ * Hosts that our CDN-side loader can transform (must match src/lib/image-loader).
+ * jsdelivr تصویر-transform ندارد → passthrough (بدون srcset).
  */
-function encodeImageUrl(url: string): string {
-  return encodeURIComponent(url);
-}
+const OPTIMIZABLE_HOSTS = new Set(['images.pexels.com', 'images.unsplash.com']);
 
 /**
  * Rewrite a single `<img …>` tag to add srcset/sizes + fetchpriority attrs.
@@ -68,10 +68,10 @@ function optimizeImgTag(tag: string): string {
   const intrinsic = wAttr ? Number.parseInt(wAttr, 10) : DEFAULT_WIDTH;
   const widths = OPTIMIZED_WIDTHS.filter((w) => w <= intrinsic);
   if (widths.length === 0) widths.push(480);
-  const _maxW = widths[widths.length - 1];
 
+  // همان loader سراسری — مستقیم از CDN خودِ تصویر (بدون /_next/image)
   const srcset = widths
-    .map((w) => `/_next/image?url=${encodeImageUrl(url)}&w=${w}&q=75 ${w}w`)
+    .map((w) => `${imageLoader({ src: url, width: w, quality: 75 })} ${w}w`)
     .join(', ');
 
   // sizes: article body is ~60vw of a max-w-3xl container. Use vw-based sizes
@@ -120,5 +120,3 @@ export function wrapBodyTables(html: string): string {
     (_m) => `<div class="overflow-x-auto">${_m}</div>`,
   );
 }
-
-export { OPTIMIZABLE_HOSTS };

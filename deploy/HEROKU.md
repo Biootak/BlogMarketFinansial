@@ -188,6 +188,44 @@ heroku addons:create upstash-redis:micro -a $APP
 
 ---
 
+## چک‌لیست قبل از دیپلوی (۲۰۲۶-۰۸-۱۵ — هر بار قبل از push)
+
+> این چک‌لیست از تغییرات perf 2026-08-15 (loader تصویر CDN + گیت پرفورمنس) الهام
+> گرفته — همهٔ موارد واقعاً در دیپلوی قبلی دیده و رفع شده‌اند.
+
+```bash
+# ۱) verify (rules + typecheck + lint + تست‌ها)
+npm run verify
+
+# ۲) build پروداکشن در ایزوله + گیت پرفورمنس (رگرسیون bundle و first-load)
+rm -rf .next-perf && NEXT_DIST_DIR=.next-perf npm run build && \
+  NEXT_DIST_DIR=.next-perf npm run perf:snapshot && \
+  NEXT_DIST_DIR=.next-perf npm run perf:gate
+
+# ۳) بررسی دستی — تصاویر articles باید مستقیم از CDN باشند (نه /_next/image):
+#    صفحهٔ single → view-source → srcset تصاویر بدنه باید images.unsplash.com/...?w=... باشد
+```
+
+### ⚠️ Config Vars — دامنهٔ اختصاصی (financialmarket.page)
+
+اگر دامنهٔ اختصاصی داری، این چهار متغیر باید به دامنهٔ اصلی اشاره کنند، نه `$APP.herokuapp.com`:
+
+```bash
+heroku config:set NEXTAUTH_URL=https://financialmarket.page AUTH_URL=https://financialmarket.page -a $APP
+# NEXT_PUBLIC_* مقدار fallback کد (financialmarket.page) است و build-time inline می‌شود؛
+# ولی برای خواندن سمت سرور، ترجیحاً همان دامنه را هم ست کن:
+heroku config:set NEXT_PUBLIC_APP_URL=https://financialmarket.page NEXT_PUBLIC_SITE_URL=https://financialmarket.page -a $APP
+```
+
+### ⚠️ NEXT_PUBLIC_SENTRY_DSN — build-time
+
+`NEXT_PUBLIC_SENTRY_DSN` در build-time inline می‌شود ولی workflow build-arg ندارد →
+Sentry wrap در production غیرفعال است (مگر اینکه config var ست شود و build دوباره
+اجرا شود). اگر monitoring لازم است، قبل از push یک build-arg در
+`.github/workflows/deploy-heroku.yml` اضافه کن و DSN را در Heroku config ست کن.
+
+---
+
 ## مرحله ۴ — Deploy
 
 ### روش اصلی: push به main (توصیه‌شده ✅)
