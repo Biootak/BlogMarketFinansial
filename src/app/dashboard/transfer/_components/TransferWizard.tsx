@@ -59,13 +59,14 @@ function saveRecentContact(contact: RecentContact) {
   localStorage.setItem(RECENT_CONTACTS_KEY, JSON.stringify(filtered.slice(0, 5)));
 }
 
+const _faAFNFmt = new Intl.NumberFormat('fa-IR', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+  useGrouping: true,
+});
+
 function formatAFN(cents: number): string {
-  const formatted = new Intl.NumberFormat('fa-IR', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-    useGrouping: true,
-  }).format(cents / 100);
-  return `${formatted} AFN`;
+  return `${_faAFNFmt.format(cents / 100)} AFN`;
 }
 
 const QUICK_AMOUNTS = [50_000_00, 100_000_00, 500_000_00]; // cents

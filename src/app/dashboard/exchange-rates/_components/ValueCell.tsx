@@ -14,12 +14,19 @@ interface ValueCellProps {
   delta?: number | null;
 }
 
+// cache به‌ازای هر decimals — جلوگیری از new Intl در هر سطر جدول
+const _enNumCache = new Map<number, Intl.NumberFormat>();
 function formatNumber(n: number, decimals: number): string {
   if (!Number.isFinite(n) || n <= 0) return '—';
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(n);
+  let f = _enNumCache.get(decimals);
+  if (!f) {
+    f = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+    _enNumCache.set(decimals, f);
+  }
+  return f.format(n);
 }
 
 export default function ValueCell({ rawValue, unit, decimals, delta }: ValueCellProps) {

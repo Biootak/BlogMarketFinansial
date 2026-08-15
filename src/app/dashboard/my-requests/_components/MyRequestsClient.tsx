@@ -166,21 +166,24 @@ function fp(v: number | string): string {
   return Number.isFinite(n) ? _faNum.format(n) : String(v);
 }
 
+const _faDateLong = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+const _faDateTimeFmt = new Intl.DateTimeFormat('fa-IR', {
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
 function formatDate(d: string | Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(d));
+  return _faDateLong.format(new Date(d));
 }
 
 function formatDateTime(d: string | Date): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(d));
+  return _faDateTimeFmt.format(new Date(d));
 }
 
 function fmtAmount(amount: string, currency: string): string {

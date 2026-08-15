@@ -140,15 +140,17 @@ const STEP_TONE: Record<StepStatus, string> = {
   skipped: 'neutral',
 };
 
+const _faDateTimeLong = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(iso));
+  return _faDateTimeLong.format(new Date(iso));
 }
 
 function formatTimeAgo(iso: string): string {

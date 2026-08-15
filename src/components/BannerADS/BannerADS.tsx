@@ -29,6 +29,15 @@ import {
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
+// Pin to Asia/Tehran so server (UTC) and client render identical
+// day/month strings — avoids a React hydration mismatch near midnight.
+const _faShowcaseDateFmt = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  timeZone: 'Asia/Tehran',
+});
+
 export type BannerAdVariant = 'rich' | 'image' | 'showcase' | 'minimal' | 'spotlight';
 
 export interface BannerAdsProps {
@@ -369,12 +378,7 @@ export default function BannerAds({
     const created = new Date(createdAt);
     // Pin to Asia/Tehran so server (UTC) and client render identical
     // day/month strings — avoids a React hydration mismatch near midnight.
-    const dateStr = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      timeZone: 'Asia/Tehran',
-    }).format(created);
+    const dateStr = _faShowcaseDateFmt.format(created);
 
     return (
       <div
