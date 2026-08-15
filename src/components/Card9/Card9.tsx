@@ -5,7 +5,6 @@ import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia'
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import { heading, radius, text } from '@/lib/design-tokens';
 import { getPostLink } from '@/lib/getPostLink';
-import { devImageSrc } from '@/lib/image-url';
 import type { PostWithRelations } from '@/types/types';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -89,7 +88,7 @@ const Card9: FC<Card9Props> = ({ className = 'h-full', ratio = 'tall', post, hov
               fill
               alt={title}
               className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-              src={devImageSrc(featuredImage) || '/images/placeholder-large.png'}
+              src={featuredImage || '/images/placeholder-large.png'}
               sizes="(max-width: 600px) 480px, 500px"
               loading="lazy"
             />

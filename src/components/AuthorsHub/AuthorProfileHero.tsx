@@ -1,5 +1,4 @@
 import styles from '@/components/AuthorsHub/AuthorProfileHero.module.css';
-import { devImageSrc } from '@/lib/image-url';
 import { cn, toPersianNumber } from '@/lib/utils';
 import {
   Briefcase,
@@ -125,7 +124,7 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
           <div className={styles.avatarCard}>
             {photo ? (
               <Image
-                src={devImageSrc(normalizeImageUrl(photo))}
+                src={normalizeImageUrl(photo)}
                 alt={name}
                 fill
                 priority

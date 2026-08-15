@@ -1,6 +1,5 @@
 'use client';
 
-import { devImageSrc } from '@/lib/image-url';
 import { AnimatePresence, MotionConfig, motion } from '@/lib/motion-shim';
 import { variants } from '@/utils/animationVariants';
 import Image, { type StaticImageData } from 'next/image';
@@ -89,7 +88,7 @@ export default function GallerySlider({
                 className="absolute inset-0"
               >
                 <Image
-                  src={devImageSrc(currentImage) || '/images/placeholder-large.png'}
+                  src={currentImage || '/images/placeholder-large.png'}
                   fill
                   alt="listing card gallery"
                   className={`object-cover ${imageClass}`}

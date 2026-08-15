@@ -19,7 +19,6 @@ import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import Spotlight from '@/components/Sections/effects/Spotlight';
 import { getPostLink } from '@/lib/getPostLink';
-import { devImageSrc } from '@/lib/image-url';
 import { getReadingMinutes } from '@/lib/readingTime';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
@@ -161,7 +160,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                   <Image
                     fill
                     sizes="(max-width: 1024px) 100vw, 33vw"
-                    src={devImageSrc(featuredImage) || '/images/placeholder-large.png'}
+                    src={featuredImage || '/images/placeholder-large.png'}
                     alt={title}
                     className="object-cover"
                   />

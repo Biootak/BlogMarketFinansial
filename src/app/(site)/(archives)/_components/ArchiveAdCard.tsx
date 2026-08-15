@@ -1,5 +1,4 @@
 import { AD_STRIP_SIZES } from '@/lib/image-sizes';
-import { devImageSrc } from '@/lib/image-url';
 import type { Advertisement } from '@/types/types';
 import { ExternalLink } from 'lucide-react';
 import Image from 'next/image';
@@ -58,7 +57,7 @@ export default function ArchiveAdCard({ ad }: Props) {
             fine here since it's only seen as a soft fill. */}
         <Image
           aria-hidden
-          src={devImageSrc(ad.imageUrl)}
+          src={ad.imageUrl}
           alt=""
           width={width}
           height={height}
@@ -70,7 +69,7 @@ export default function ArchiveAdCard({ ad }: Props) {
         />
         {/* Foreground — natural size, fully visible. */}
         <Image
-          src={devImageSrc(ad.imageUrl)}
+          src={ad.imageUrl}
           alt={ad.title}
           width={width}
           height={height}

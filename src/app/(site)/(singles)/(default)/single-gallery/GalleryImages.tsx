@@ -1,6 +1,5 @@
 'use client';
 
-import { devImageSrc } from '@/lib/image-url';
 import { cn, toPersianNumber } from '@/lib/utils';
 import { Dialog, Transition } from '@headlessui/react';
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
@@ -25,7 +24,7 @@ const ImageWithSkeleton: React.FC<{
       )}
       <Image
         alt={alt}
-        src={devImageSrc(src)}
+        src={src}
         fill={fill}
         sizes={sizes}
         priority={priority}

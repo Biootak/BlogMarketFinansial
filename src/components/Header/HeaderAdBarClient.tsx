@@ -22,7 +22,6 @@
  * window shortened from 24h to 1h on user request.
  */
 
-import { devImageSrc } from '@/lib/image-url';
 import { Megaphone, Sparkles, X } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -134,7 +133,7 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
                 unoptimized
                 fill
                 sizes="24px"
-                src={devImageSrc(ad.imageUrl)}
+                src={ad.imageUrl}
                 alt={ad.text ? `تصویر تبلیغ: ${ad.text}` : 'تصویر تبلیغ'}
                 className="object-contain"
                 loading="lazy"

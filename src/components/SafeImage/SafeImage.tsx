@@ -1,6 +1,5 @@
 'use client';
 
-import { devImageUrl } from '@/lib/image-url';
 import { cn } from '@/lib/utils';
 import { ImageOff } from 'lucide-react';
 /**
@@ -78,12 +77,6 @@ const ICON_SIZE_BY_VARIANT: Record<ImageVariant, string> = {
  * می‌کند. این params را از unsplash URL حذف می‌کنیم (2026-08-03 fix).
  */
 function normalizeRasterUrl(src: string): string {
-  // Dev-only: هاست‌های بلاک‌شده در این شبکه (unsplash/pexels/picsum) →
-  // placeholder محلی تا مرورگر هرگز هاست بلاک‌شده را درخواست نکند. در prod
-  // دست‌نخورده برمی‌گردد.
-  const devSafe = devImageUrl(src);
-  if (devSafe !== src) return devSafe as string;
-
   // placehold.co: SVG → PNG
   if (src.startsWith('https://placehold.co/')) {
     const queryIdx = src.indexOf('?');
