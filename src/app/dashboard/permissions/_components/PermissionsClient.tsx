@@ -535,12 +535,11 @@ function PermRow({
     }
     const check = () => setOverflows(el.scrollWidth > el.clientWidth + 1);
     check();
+    // ResizeObserver کافی است — window.resize تکراری و غیرضروری بود
     const ro = new ResizeObserver(check);
     ro.observe(el);
-    window.addEventListener('resize', check);
     return () => {
       ro.disconnect();
-      window.removeEventListener('resize', check);
     };
   }, [perm.description, perm.key]);
 

@@ -134,6 +134,7 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
   };
 
   useEffect(() => {
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
     const check = () => {
       const el = scrollRef.current;
       if (!el) return;
@@ -141,14 +142,19 @@ const Navigation = ({ className = '', rateLists = [] }: NavigationProps): React.
       setShowLeftFade(el.scrollLeft > 4);
       setShowRightFade(el.scrollLeft < maxScroll - 4);
     };
+    const debouncedCheck = () => {
+      if (resizeTimer !== null) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(check, 150);
+    };
     check();
     const el = scrollRef.current;
     if (!el) return;
     el.addEventListener('scroll', check, { passive: true });
-    window.addEventListener('resize', check);
+    window.addEventListener('resize', debouncedCheck, { passive: true });
     return () => {
       el.removeEventListener('scroll', check);
-      window.removeEventListener('resize', check);
+      window.removeEventListener('resize', debouncedCheck);
+      if (resizeTimer !== null) clearTimeout(resizeTimer);
     };
   }, []);
 

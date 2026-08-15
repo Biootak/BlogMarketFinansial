@@ -826,10 +826,18 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
 
   // ── Detect mobile ──────────────────────────────────────────────────────────
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
     const check = () => setIsMobile(window.innerWidth < 860);
+    const debouncedCheck = () => {
+      if (timer !== null) clearTimeout(timer);
+      timer = setTimeout(check, 150);
+    };
     check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    window.addEventListener('resize', debouncedCheck, { passive: true });
+    return () => {
+      window.removeEventListener('resize', debouncedCheck);
+      if (timer !== null) clearTimeout(timer);
+    };
   }, []);
 
   // ── Initial loading simulation (for skeleton) ─────────────────────────────

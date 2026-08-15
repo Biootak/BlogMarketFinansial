@@ -12,10 +12,13 @@
  * The list is read-only for now (clicking an item does not open the
  * drawer — the table on the left is the source of truth for row
  * navigation; this is just a side audit log).
+ *
+ * perf: setNow از component بیرون کشیده شده — فقط RelTimeDisplay
+ *       هر دقیقه re-render می‌شود، نه کل feed.
  */
 
 import { getServiceRequestRecentActivity } from '@/actions/serviceRequestActions';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   HiOutlineBolt,
   HiOutlineCheckCircle,
@@ -154,6 +157,41 @@ function timeAgoFa(iso: string, now: Date): string {
   })}`;
 }
 
+/**
+ * RelTimeDisplay — ایزوله‌کننده‌ی timer
+ * فقط این component هر دقیقه re-render می‌شود، نه کل feed.
+ */
+function RelTimeDisplay({ iso }: { iso: string }) {
+  const [now, setNow] = useState<Date>(() => new Date());
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    setNow(new Date());
+    const start = () => {
+      timerRef.current = setInterval(() => setNow(new Date()), 60_000);
+    };
+    start();
+    const onVis = () => {
+      if (document.hidden) {
+        if (timerRef.current !== null) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+      } else {
+        setNow(new Date());
+        start();
+      }
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      document.removeEventListener('visibilitychange', onVis);
+      if (timerRef.current !== null) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  return <span>{timeAgoFa(iso, now)}</span>;
+}
+
 interface ServiceRequestsActivityFeedProps {
   refreshKey?: number;
 }
@@ -163,36 +201,9 @@ export default function ServiceRequestsActivityFeed({
 }: ServiceRequestsActivityFeedProps) {
   const [items, setItems] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [now, setNow] = useState<Date | null>(null);
-
-  useEffect(() => {
-    setNow(new Date());
-    let id: number | null = null;
-    const stop = () => {
-      if (id !== null) {
-        window.clearInterval(id);
-        id = null;
-      }
-    };
-    const start = () => {
-      stop();
-      id = window.setInterval(() => setNow(new Date()), 60_000);
-    };
-    start();
-    const onVis = () => {
-      if (document.hidden) {
-        stop();
-      } else {
-        setNow(new Date());
-        start();
-      }
-    };
-    document.addEventListener('visibilitychange', onVis);
-    return () => {
-      document.removeEventListener('visibilitychange', onVis);
-      stop();
-    };
-  }, []);
+  // now فقط برای groupByDay — یک بار در mount و هر بار در data refresh
+  const nowRef = useRef<Date>(new Date());
+  const [groupedKey, setGroupedKey] = useState(0);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refreshKey is an intentional external signal prop
   useEffect(() => {
@@ -202,7 +213,9 @@ export default function ServiceRequestsActivityFeed({
       const result = await getServiceRequestRecentActivity(15);
       if (cancelled) return;
       if (result.success && result.data) {
+        nowRef.current = new Date();
         setItems(result.data as Activity[]);
+        setGroupedKey((k) => k + 1);
       }
       setLoading(false);
     })();
@@ -211,7 +224,8 @@ export default function ServiceRequestsActivityFeed({
     };
   }, [refreshKey]);
 
-  const grouped = useMemo(() => (now ? groupByDay(items, now) : []), [items, now]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: groupedKey forces re-group when data refreshes
+  const grouped = useMemo(() => groupByDay(items, nowRef.current), [items, groupedKey]);
   const total = items.length;
 
   return (
@@ -279,7 +293,7 @@ export default function ServiceRequestsActivityFeed({
               </p>
               <ol className="at-srq-activity__items">
                 {group.items.map((item) => (
-                  <ActivityRow key={item.id} item={item} now={now ?? new Date()} />
+                  <ActivityRow key={item.id} item={item} />
                 ))}
               </ol>
             </li>
@@ -290,7 +304,7 @@ export default function ServiceRequestsActivityFeed({
   );
 }
 
-function ActivityRow({ item, now }: { item: Activity; now: Date }) {
+function ActivityRow({ item }: { item: Activity }) {
   const tone = getTone(item);
   const isCreated = item.kind === 'created';
 
@@ -337,7 +351,8 @@ function ActivityRow({ item, now }: { item: Activity; now: Date }) {
           <span className="mx-1.5" aria-hidden>
             ·
           </span>
-          <span>{timeAgoFa(item.createdAt, now)}</span>
+          {/* RelTimeDisplay: فقط این span هر دقیقه re-render می‌شود */}
+          <RelTimeDisplay iso={item.createdAt} />
         </p>
       </div>
       <Icon className="w-4 h-4 opacity-0" aria-hidden />
