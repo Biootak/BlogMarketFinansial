@@ -1,7 +1,7 @@
 import { getSystemReports } from '@/actions/reportActions';
 import { auth } from '@/auth';
+import ExcelJS from 'exceljs';
 import { NextResponse } from 'next/server';
-import * as XLSX from 'xlsx';
 
 const MAX_REPORT_RANGE_MS = 366 * 24 * 60 * 60 * 1000;
 
@@ -41,45 +41,34 @@ export async function POST(req: Request) {
     if (!result.data) return NextResponse.json({ error: 'داده‌ای یافت نشد' }, { status: 404 });
 
     const { data } = result;
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ['آمار کاربران'],
-        ['تعداد کل', data.userStats.total],
-        ['کاربران جدید این ماه', data.userStats.newThisMonth],
-      ]),
-      'آمار کاربران',
-    );
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ['آمار مطالب'],
-        ['تعداد کل', data.postStats.total],
-        ['منتشر شده', data.postStats.published],
-      ]),
-      'آمار مطالب',
-    );
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ['آمار نظرات'],
-        ['تعداد کل', data.commentStats.total],
-        ['در انتظار تایید', data.commentStats.pending],
-      ]),
-      'آمار نظرات',
-    );
-    XLSX.utils.book_append_sheet(
-      workbook,
-      XLSX.utils.aoa_to_sheet([
-        ['آمار بازدید'],
-        ['تعداد کل', data.viewStats.total],
-        ['امروز', data.viewStats.today],
-      ]),
-      'آمار بازدید',
-    );
+    const workbook = new ExcelJS.Workbook();
+    const addSheet = (name: string, rows: (string | number)[][]) => {
+      const sheet = workbook.addWorksheet(name);
+      for (const row of rows) sheet.addRow(row);
+    };
+    addSheet('آمار کاربران', [
+      ['آمار کاربران'],
+      ['تعداد کل', data.userStats.total],
+      ['کاربران جدید این ماه', data.userStats.newThisMonth],
+    ]);
+    addSheet('آمار مطالب', [
+      ['آمار مطالب'],
+      ['تعداد کل', data.postStats.total],
+      ['منتشر شده', data.postStats.published],
+    ]);
+    addSheet('آمار نظرات', [
+      ['آمار نظرات'],
+      ['تعداد کل', data.commentStats.total],
+      ['در انتظار تایید', data.commentStats.pending],
+    ]);
+    addSheet('آمار بازدید', [
+      ['آمار بازدید'],
+      ['تعداد کل', data.viewStats.total],
+      ['امروز', data.viewStats.today],
+    ]);
 
-    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    // exceljs's Buffer type extends ArrayBuffer → directly usable as BodyInit
+    const buffer = await workbook.xlsx.writeBuffer();
     const filename = `system-report-${fromDate.toISOString().slice(0, 10)}-to-${toDate.toISOString().slice(0, 10)}.xlsx`;
     return new NextResponse(buffer, {
       headers: {
