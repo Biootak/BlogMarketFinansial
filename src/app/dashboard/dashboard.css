@@ -8898,8 +8898,16 @@
     background: var(--at-bg-elevated);
     color: var(--at-fg-muted);
     line-height: 1.1;
-    position: relative;
-    inset-block-start: -6px;
+  }
+  @media (min-width: 768px) {
+    /* Desktop: the delta chip rides against the big centered number — a small
+       optical lift reads as intentional. On mobile (<768px) the metric wraps
+       onto two lines, so this lift would eat the 4px wrap gap and glue the
+       chip to the «پست در ۷ روز» line above it (از بالا چسبیده). */
+    .at-rhythm__metric-delta {
+      position: relative;
+      inset-block-start: -6px;
+    }
   }
   .at-rhythm__metric-delta.is-up {
     color: var(--at-accent-fg);

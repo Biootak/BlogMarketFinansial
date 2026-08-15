@@ -431,7 +431,7 @@ export function CommunicationHub({ hub, nexus }: CommunicationHubProps) {
               اعلان‌ها
             </Link>
             <Link href="/dashboard/communication/campaigns" className={s.pipelineLink}>
-              <Send size={11} aria-hidden />
+              <Send size={11} aria-hidden style={{ transform: 'scaleX(-1)' }} />
               کمپین‌ها
             </Link>
             <Link href="/dashboard/communication/audiences" className={s.pipelineLink}>

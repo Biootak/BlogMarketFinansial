@@ -387,7 +387,7 @@ export const SECTIONS: SectionDef[] = [
         label: 'خبرنامه',
         path: '/dashboard/newsletter',
         description: 'مشترکین خبرنامه، خروجی CSV و ارسال',
-        icon: <Send size={S} />,
+        icon: <Send size={S} style={{ transform: 'scaleX(-1)' }} />,
         tone: 'primary',
       },
       {

@@ -232,12 +232,12 @@ export function NewTicketForm({ open, onClose, onCreated }: NewTicketFormProps) 
           disabled={submitting || !subject.trim() || !description.trim()}
           className={s.submitBtn}
         >
+          ثبت تیکت
           {submitting ? (
             <Loader2 className={`${s.spin} ${s.submitIcon}`} aria-hidden />
           ) : (
-            <Send className={s.submitIcon} aria-hidden />
+            <Send className={s.submitIcon} style={{ transform: 'scaleX(-1)' }} aria-hidden />
           )}
-          ثبت تیکت
           <Plus className={s.submitIconEnd} aria-hidden />
         </button>
       </div>

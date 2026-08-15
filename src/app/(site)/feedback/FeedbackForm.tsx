@@ -140,12 +140,12 @@ export default function FeedbackForm() {
         className={s.submit}
         aria-busy={pending || undefined}
       >
+        {pending ? 'در حال ارسال…' : 'ارسال بازخورد'}
         {pending ? (
           <Loader2 size={15} className={s.spinner} aria-hidden />
         ) : (
-          <Send size={15} aria-hidden />
+          <Send size={15} aria-hidden style={{ transform: 'scaleX(-1)' }} />
         )}
-        {pending ? 'در حال ارسال…' : 'ارسال بازخورد'}
       </Button>
     </form>
   );

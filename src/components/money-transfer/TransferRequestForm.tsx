@@ -1200,8 +1200,8 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                   </>
                 ) : (
                   <>
-                    <Send size={14} aria-hidden="true" />
                     <span>تأیید و ثبت درخواست</span>
+                    <Send size={14} aria-hidden="true" style={{ transform: 'scaleX(-1)' }} />
                   </>
                 )}
               </button>

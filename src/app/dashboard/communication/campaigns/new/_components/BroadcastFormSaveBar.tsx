@@ -48,8 +48,8 @@ export function BroadcastFormSaveBar({
           {pending ? 'در حال ذخیره…' : 'ذخیره پیش‌نویس'}
         </Button>
         <Button type="button" disabled={pending} onClick={() => onSubmit('publish')}>
-          <Send size={14} aria-hidden />
           {pending ? 'در حال ارسال…' : campaignMode ? 'ارسال کمپین' : 'انتشار فوری'}
+          <Send size={14} aria-hidden style={{ transform: 'scaleX(-1)' }} />
         </Button>
       </div>
     </div>

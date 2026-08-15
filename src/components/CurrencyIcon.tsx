@@ -39,6 +39,7 @@ const CurrencyIcon: FC<CurrencyIconProps> = memo(({ symbol, className = 'w-6 h-6
           alt={`${symbol} icon`}
           width={24}
           height={24}
+          unoptimized // SVG محلی — optimizer نمی‌تواند SVG را پردازش کند (404 می‌داد)
           onLoad={handleLoad}
           onError={handleError}
           className={cn(isLoading ? 'invisible' : 'visible', className)}

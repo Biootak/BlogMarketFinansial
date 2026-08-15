@@ -517,8 +517,8 @@ export default function RequestForm({
             </>
           ) : (
             <>
-              <Send size={14} aria-hidden />
               ثبت درخواست
+              <Send size={14} aria-hidden style={{ transform: 'scaleX(-1)' }} />
             </>
           )}
         </Button>

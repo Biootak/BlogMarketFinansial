@@ -23,6 +23,7 @@ import LiveClock from '@/components/Sections/effects/LiveClock';
 import MarketTicker from '@/components/Sections/effects/MarketTicker';
 import { getCategoryAccent } from '@/components/Sections/effects/categoryAccent';
 import { getPostLink } from '@/lib/getPostLink';
+import { useMediaQuery } from '@/hooks/use-media-query';
 import { motion, useInView, useReducedMotion } from '@/lib/motion-shim';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { Advertisement, PostWithRelations } from '@/types/types';
@@ -161,6 +162,7 @@ function LatestArticles({
 }: LatestArticlesProps) {
   const _reduce = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const categoriesList = useMemo(() => dedupeCategories(categories), [categories]);
   const initialPosts = useMemo(() => dedupePosts(posts), [posts]);
@@ -616,12 +618,15 @@ function LatestArticles({
                           bookmarked={bookmarked}
                           onToggleBookmark={toggleBookmark}
                         />
-                        <ListColumn
-                          posts={right}
-                          className="hidden md:block"
-                          bookmarked={bookmarked}
-                          onToggleBookmark={toggleBookmark}
-                        />
+                        {/* ستون دوم فقط در md+ رندر می‌شود — مخفی‌کردن با CSS
+                            باعث warning «fill و height 0» در Next dev می‌شود */}
+                        {isDesktop && (
+                          <ListColumn
+                            posts={right}
+                            bookmarked={bookmarked}
+                            onToggleBookmark={toggleBookmark}
+                          />
+                        )}
                       </>
                     );
                   })()}

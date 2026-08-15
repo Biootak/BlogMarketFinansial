@@ -523,7 +523,7 @@ export function TransferWizard() {
                 disabled={isPending || (transferResult.needsOtp && otp.length < 6)}
               >
                 {isPending ? 'در حال ارسال...' : 'تأیید و ارسال'}
-                {!isPending && <Send size={14} aria-hidden />}
+                {!isPending && <Send size={14} aria-hidden style={{ transform: 'scaleX(-1)' }} />}
               </Button>
             </div>
           </div>

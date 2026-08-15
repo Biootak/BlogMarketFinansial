@@ -387,8 +387,9 @@ const PostForm = <T extends CreatePostInput | UpdatePostInput>({
                   </>
                 ) : (
                   <>
-                    <RiSendPlaneFill className="w-4 h-4" />
+                    {/* در RTL آیکون بعد از متن (سمت چپ بصری) + flip افقی تا نوک موشک سمت چپ باشد */}
                     <span>{isEditing ? 'به‌روزرسانی' : 'انتشار پست'}</span>
+                    <RiSendPlaneFill className="w-4 h-4" style={{ transform: 'scaleX(-1)' }} />
                   </>
                 )}
               </button>

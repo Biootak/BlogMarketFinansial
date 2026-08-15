@@ -31,6 +31,7 @@ import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import { cn, toPersianNumber } from '@/lib/utils';
 import type { Advertisement } from '@/types/types';
 import { ArrowUpLeft, ExternalLink, Eye, Sparkles } from 'lucide-react';
+import { devImageSrc } from '@/lib/image-url';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -178,7 +179,7 @@ function InlineAd({
             {/* Image container — همون aspect ratio با PostItem */}
             <div className="relative aspect-[16/9] sm:aspect-[16/10] overflow-hidden">
               <Image
-                src={ad.imageUrl}
+                src={devImageSrc(ad.imageUrl)}
                 alt={ad.title}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -362,7 +363,7 @@ function CompactAd({
           {/* Thumbnail */}
           <div className="relative h-14 w-20 sm:h-16 sm:w-24 shrink-0 overflow-hidden rounded-lg sm:rounded-xl ring-1 ring-[color:var(--hairline)]">
             <Image
-              src={ad.imageUrl}
+              src={devImageSrc(ad.imageUrl)}
               alt={ad.title}
               fill
               sizes="120px"
@@ -527,7 +528,7 @@ function ShowcaseAd({
             {/* Image */}
             <div className="relative aspect-[16/9] md:aspect-auto md:min-h-[280px] overflow-hidden">
               <Image
-                src={ad.imageUrl}
+                src={devImageSrc(ad.imageUrl)}
                 alt={ad.title}
                 fill
                 sizes="(max-width: 768px) 100vw, 60vw"

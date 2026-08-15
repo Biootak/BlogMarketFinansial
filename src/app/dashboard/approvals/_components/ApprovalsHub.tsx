@@ -90,7 +90,7 @@ const TYPE_LABEL: Record<ApprovalType, string> = {
 };
 
 const TYPE_ICON: Record<ApprovalType, React.ReactNode> = {
-  settlement: <Send className="h-3.5 w-3.5" />,
+  settlement: <Send className="h-3.5 w-3.5" style={{ transform: 'scaleX(-1)' }} />,
   kyc: <ShieldCheck className="h-3.5 w-3.5" />,
   refund: <Wallet className="h-3.5 w-3.5" />,
   withdrawal: <Wallet className="h-3.5 w-3.5" />,

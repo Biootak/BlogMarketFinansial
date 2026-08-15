@@ -73,31 +73,10 @@ export function TimePicker({
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className={styles.content}>
+        {/* ترتیب ستون‌ها (2026-08-14 — درخواست کاربر): در رشتهٔ نمایش «HH:MM»
+            (مثل «۱۸:۳۰») ساعت سمت چپ و دقیقه سمت راست رندر می‌شود؛ ستون‌ها
+            هم همین ترتیب را دنبال می‌کنند: دقیقه راست، ساعت چپ. */}
         <div className={styles.columns}>
-          <div className={styles.col}>
-            <div className={styles.colLabel}>ساعت</div>
-            <ScrollArea className={styles.scroll}>
-              <ul className={styles.list}>
-                {HOURS.map((h) => (
-                  <li
-                    key={h}
-                    ref={h === hour ? hourRef : undefined}
-                    className={cn(styles.optionWrap, h === hour && styles.optionWrapActive)}
-                  >
-                    <button
-                      type="button"
-                      dir="ltr"
-                      className={styles.option}
-                      aria-pressed={h === hour}
-                      onClick={() => selectHour(h)}
-                    >
-                      {h}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </ScrollArea>
-          </div>
           <div className={styles.col}>
             <div className={styles.colLabel}>دقیقه</div>
             <ScrollArea className={styles.scroll}>
@@ -116,6 +95,30 @@ export function TimePicker({
                       onClick={() => selectMinute(m)}
                     >
                       {m}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </ScrollArea>
+          </div>
+          <div className={styles.col}>
+            <div className={styles.colLabel}>ساعت</div>
+            <ScrollArea className={styles.scroll}>
+              <ul className={styles.list}>
+                {HOURS.map((h) => (
+                  <li
+                    key={h}
+                    ref={h === hour ? hourRef : undefined}
+                    className={cn(styles.optionWrap, h === hour && styles.optionWrapActive)}
+                  >
+                    <button
+                      type="button"
+                      dir="ltr"
+                      className={styles.option}
+                      aria-pressed={h === hour}
+                      onClick={() => selectHour(h)}
+                    >
+                      {h}
                     </button>
                   </li>
                 ))}

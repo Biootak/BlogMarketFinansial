@@ -24,7 +24,7 @@ const ContentSecurityPolicy = `
     https://picsum.photos
     https://placehold.co;
   font-src 'self' data:;
-  connect-src 'self' https://*.sentry.io https://api.telegram.org https://api.exir.io wss: ws:;
+  connect-src 'self' https://*.sentry.io https://api.telegram.org https://api.exir.io https://avatar.vercel.sh wss: ws:;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.aparat.com;
   media-src 'self' https: blob:;
   object-src 'none';
@@ -223,6 +223,11 @@ const nextConfig: NextConfig = {
   turbopack: {},
 
   images: {
+    // 2026-08-15: dev-only fallback برای هاست‌های بلاک‌شده (unsplash/pexels/
+    // picsum — DNS این شبکه به IP خصوصی ربوده شده) در `src/lib/image-url.ts`
+    // در سطح کامپوننت اعمال می‌شود. از loaderFile استفاده نکن — با loaderFile،
+    // route `/_next/image` (optimizer) در dev سرو نمی‌شود و همه تصاویر 404
+    // می‌گیرند (داک رسمی: loaderFile = «سرویس بهینه‌سازی سفارشی»).
     // 2026-06-27: `images.unsplash.com` resolves to a public IPv6
     // address (`2001:4188:2:600:10:10:34:36`) whose `10:10:34:36`
     // segment is falsely matched as the private IPv4 `10.10.34.36`

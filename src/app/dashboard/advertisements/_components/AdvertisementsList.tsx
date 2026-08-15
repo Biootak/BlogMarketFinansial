@@ -7,6 +7,7 @@ import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import type { Advertisement } from '@/types/types';
 import { Pencil, Trash2 } from 'lucide-react';
 import Image from 'next/image';
+import { devImageSrc } from '@/lib/image-url';
 import { positionLabels, sizeLabels } from './AdvertisementForm';
 import s from './AdvertisementsList.module.css';
 
@@ -104,7 +105,7 @@ function AdRowDesktop({
       <td className={s.tableCell}>
         <div className={s.adContent}>
           <div className={s.adImageWrap}>
-            <Image src={ad.imageUrl} alt={ad.title} fill className={s.adImage} />
+            <Image src={devImageSrc(ad.imageUrl)} alt={ad.title} fill sizes="96px" className={s.adImage} />
           </div>
           <div className={s.adInfo}>
             <div className={s.adTitle}>{ad.title}</div>
@@ -168,7 +169,7 @@ function AdCardMobile({
     <div className={s.mobileCard}>
       <div className={s.mobileCardTop}>
         <div className={s.mobileImageWrap}>
-          <Image src={ad.imageUrl} alt={ad.title} fill className={s.mobileImage} />
+          <Image src={devImageSrc(ad.imageUrl)} alt={ad.title} fill sizes="128px" className={s.mobileImage} />
         </div>
         <div className={s.mobileCardInfo}>
           <div className={s.mobileCardTitle}>{ad.title}</div>

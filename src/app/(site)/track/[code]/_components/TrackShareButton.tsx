@@ -101,7 +101,7 @@ export default function TrackShareButton() {
             role="menuitem"
           >
             <span className={`${s.itemIcon} ${s.itemTelegram}`} aria-hidden>
-              <Send size={14} strokeWidth={2} />
+              <Send size={14} strokeWidth={2} style={{ transform: 'scaleX(-1)' }} />
             </span>
             ارسال به تلگرام
           </a>

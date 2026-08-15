@@ -24,6 +24,7 @@
 
 import { Megaphone, Sparkles, X } from 'lucide-react';
 import Image from 'next/image';
+import { devImageSrc } from '@/lib/image-url';
 import { useEffect, useState } from 'react';
 
 type Theme = 'PRIMARY' | 'ACCENT' | 'NEUTRAL' | 'DARK' | 'GRADIENT';
@@ -133,7 +134,7 @@ export default function HeaderAdBarClient({ ad }: { ad: Ad }) {
                 unoptimized
                 fill
                 sizes="24px"
-                src={ad.imageUrl}
+                src={devImageSrc(ad.imageUrl)}
                 alt={ad.text ? `تصویر تبلیغ: ${ad.text}` : 'تصویر تبلیغ'}
                 className="object-contain"
                 loading="lazy"

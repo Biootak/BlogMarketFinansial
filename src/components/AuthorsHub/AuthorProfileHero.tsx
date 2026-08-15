@@ -10,6 +10,7 @@ import {
   ThumbsUp,
 } from 'lucide-react';
 import Image from 'next/image';
+import { devImageSrc } from '@/lib/image-url';
 import type * as React from 'react';
 
 /**
@@ -124,7 +125,7 @@ const AuthorProfileHero: React.FC<AuthorProfileHeroProps> = ({
           <div className={styles.avatarCard}>
             {photo ? (
               <Image
-                src={normalizeImageUrl(photo)}
+                src={devImageSrc(normalizeImageUrl(photo))}
                 alt={name}
                 fill
                 priority

@@ -13,7 +13,7 @@ import { replyToTicket, updateTicketStatus } from '@/actions/tickets-actions';
 import { PanelDrawer } from '@/components/Dashboard/primitives';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { TicketMessageSummary, TicketStatus, TicketSummary } from '@/lib/tickets';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import s from './TicketDetail.module.css';
 
 interface TicketDetailProps {
@@ -95,9 +95,10 @@ const IconMessage = (p: { className?: string }) => (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
   </svg>
 );
-const IconSend = (p: { className?: string }) => (
+const IconSend = (p: { className?: string; style?: CSSProperties }) => (
   <svg
     className={p.className}
+    style={p.style}
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -441,12 +442,12 @@ export function TicketDetail({ ticket, onClose, onChanged }: TicketDetailProps) 
           disabled={sending || !reply.trim()}
           className={s.sendBtn}
         >
+          ارسال پاسخ
           {sending ? (
             <IconLoader className={`${s.spin} ${s.sendIcon}`} aria-hidden />
           ) : (
-            <IconSend className={s.sendIcon} aria-hidden />
+            <IconSend className={s.sendIcon} style={{ transform: 'scaleX(-1)' }} aria-hidden />
           )}
-          ارسال پاسخ
         </button>
       </div>
 

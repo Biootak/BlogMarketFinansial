@@ -535,8 +535,8 @@ export default function FeedbackClient({ initial }: Props) {
                   />
                   <div className={s.replyFooter}>
                     <Button size="sm" onClick={handleReply} disabled={!replyText.trim()}>
-                      <Send size={14} className="rtl:-scale-x-100" />
                       <span>ارسال پاسخ</span>
+                      <Send size={14} style={{ transform: 'scaleX(-1)' }} />
                     </Button>
                   </div>
                 </div>

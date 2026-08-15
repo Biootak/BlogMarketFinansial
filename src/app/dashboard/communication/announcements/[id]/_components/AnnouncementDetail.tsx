@@ -228,7 +228,8 @@ export function AnnouncementDetail(props: Props) {
             ) : null}
             {canPublish ? (
               <Button onClick={onPublish} disabled={pending}>
-                <Send size={14} aria-hidden /> انتشار فوری
+                انتشار فوری
+                <Send size={14} aria-hidden style={{ transform: 'scaleX(-1)' }} />
               </Button>
             ) : null}
             {canArchive ? (

@@ -317,8 +317,8 @@ export default function ExchangeServiceRequestDialog({
                 </>
               ) : (
                 <>
-                  <Send size={16} strokeWidth={2} aria-hidden />
                   <span>ثبت درخواست</span>
+                  <Send size={16} strokeWidth={2} aria-hidden style={{ transform: 'scaleX(-1)' }} />
                 </>
               )}
             </button>

@@ -437,7 +437,8 @@ export function AnnouncementsList({ items }: AnnouncementsListProps) {
                                 }}
                                 disabled={pending}
                               >
-                                <Send size={14} aria-hidden /> انتشار فوری
+                                انتشار فوری
+                                <Send size={14} aria-hidden style={{ transform: 'scaleX(-1)' }} />
                               </button>
                             ) : null}
                             {a.status !== 'archived' ? (

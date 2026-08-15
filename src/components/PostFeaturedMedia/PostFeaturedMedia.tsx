@@ -4,6 +4,7 @@ import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeat
 import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import Image from 'next/image';
+import { devImageSrc } from '@/lib/image-url';
 import { type FC, useMemo } from 'react';
 import GallerySlider from './GallerySlider';
 import MediaAudio from './MediaAudio';
@@ -93,11 +94,11 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
     >
       {postType !== 'GALLERY' && featuredImage && (
         <Image
-          src={
+          src={devImageSrc(
             featuredImage.startsWith('/') || featuredImage.startsWith('http')
               ? featuredImage
               : `/${featuredImage}`
-          }
+          )}
           alt={post.title ?? 'Featured'}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

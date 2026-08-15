@@ -3,6 +3,7 @@
 import { AnimatePresence, MotionConfig, motion } from '@/lib/motion-shim';
 import { variants } from '@/utils/animationVariants';
 import Image, { type StaticImageData } from 'next/image';
+import { devImageSrc } from '@/lib/image-url';
 import Link from 'next/link';
 import { useState } from 'react';
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
@@ -88,7 +89,7 @@ export default function GallerySlider({
                 className="absolute inset-0"
               >
                 <Image
-                  src={currentImage || '/images/placeholder-large.png'}
+                  src={devImageSrc(currentImage) || '/images/placeholder-large.png'}
                   fill
                   alt="listing card gallery"
                   className={`object-cover ${imageClass}`}

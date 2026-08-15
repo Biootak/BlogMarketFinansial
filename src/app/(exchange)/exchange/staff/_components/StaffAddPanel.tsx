@@ -117,10 +117,10 @@ export function StaffAddPanel({ exchangeId, onAdded }: Props) {
             </>
           ) : (
             <>
-              <span className={s.submitIcon}>
-                <Send size={14} strokeWidth={2} />
-              </span>
               افزودن به تیم
+              <span className={s.submitIcon}>
+                <Send size={14} strokeWidth={2} style={{ transform: 'scaleX(-1)' }} />
+              </span>
             </>
           )}
         </button>

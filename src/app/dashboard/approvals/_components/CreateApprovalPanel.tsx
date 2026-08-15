@@ -44,7 +44,7 @@ const TYPE_OPTIONS: {
     id: 'settlement',
     label: 'تسویه',
     desc: 'تأیید تسویه حساب معامله یا درخواست مالی',
-    icon: <Send className="h-5 w-5" />,
+    icon: <Send className="h-5 w-5" style={{ transform: 'scaleX(-1)' }} />,
     tone: 'indigo',
   },
   {

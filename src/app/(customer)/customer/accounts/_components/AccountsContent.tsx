@@ -306,8 +306,8 @@ export default function AccountsContent({ accounts, profile, balanceTrend = [] }
 
             <div className={s.heroActions}>
               <Link href="/customer/transfer?action=transfer" className={s.ctaPrimary}>
-                <Send size={12} aria-hidden />
                 انتقال سریع
+                <Send size={12} aria-hidden style={{ transform: 'scaleX(-1)' }} />
               </Link>
               <Link href="/customer/transactions" className={s.ctaGhost}>
                 <ArrowLeftRight size={12} aria-hidden />

@@ -24,6 +24,7 @@ import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
 import { ArrowLeft, Calendar, Clock, Eye } from 'lucide-react';
 import Image from 'next/image';
+import { devImageSrc } from '@/lib/image-url';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -158,7 +159,7 @@ export default function CompactPostCard({ post, className }: CompactPostCardProp
                   <Image
                     fill
                     sizes="(max-width: 1024px) 100vw, 33vw"
-                    src={featuredImage || '/images/placeholder-large.png'}
+                    src={devImageSrc(featuredImage) || '/images/placeholder-large.png'}
                     alt={title}
                     className="object-cover"
                   />

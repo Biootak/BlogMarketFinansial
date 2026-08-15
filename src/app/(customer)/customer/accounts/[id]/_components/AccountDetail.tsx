@@ -179,7 +179,7 @@ export default function AccountDetail({ account, ledger }: Props) {
             aria-label="انتقال از این حساب به حساب دیگر"
           >
             <span className={s.actionIcon} aria-hidden>
-              <Send size={16} />
+              <Send size={16} style={{ transform: 'scaleX(-1)' }} />
             </span>
             <span className={s.actionLabel}>انتقال</span>
             <ChevronLeft size={12} className={s.actionChevron} aria-hidden />

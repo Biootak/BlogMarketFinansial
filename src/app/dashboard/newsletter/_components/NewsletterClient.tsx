@@ -441,8 +441,8 @@ export default function NewsletterClient({ initial }: Props) {
         description="مدیریت مشترکین و ارسال خبرنامه"
         actions={
           <Button size="sm" onClick={() => setComposerOpen(true)} className={s.sendBtn}>
-            <Send size={14} className="rtl:-scale-x-100" />
             <span className={s.btnLabel}>ارسال خبرنامه</span>
+            <Send size={14} style={{ transform: 'scaleX(-1)' }} />
           </Button>
         }
       />
@@ -486,8 +486,8 @@ export default function NewsletterClient({ initial }: Props) {
               count={displayed.length}
               actions={
                 <Button size="sm" onClick={() => setComposerOpen(true)} className={s.inlineSend}>
-                  <Send size={13} className="rtl:-scale-x-100" />
                   <span>ارسال</span>
+                  <Send size={13} style={{ transform: 'scaleX(-1)' }} />
                 </Button>
               }
             >
@@ -674,7 +674,7 @@ export default function NewsletterClient({ initial }: Props) {
         <DialogContent className={s.composerDialog}>
           <DialogHeader>
             <DialogTitle className={s.composerTitle}>
-              <Send size={16} className="rtl:-scale-x-100" />
+              <Send size={16} style={{ transform: 'scaleX(-1)' }} />
               ارسال خبرنامه
             </DialogTitle>
           </DialogHeader>
@@ -732,8 +732,8 @@ export default function NewsletterClient({ initial }: Props) {
               disabled={!subject.trim() || !body.trim()}
               className={s.sendNow}
             >
-              <Send size={14} className="rtl:-scale-x-100" />
               ارسال به {fa.format(activeCount)} مشترک فعال
+              <Send size={14} style={{ transform: 'scaleX(-1)' }} />
             </Button>
           </div>
         </DialogContent>

@@ -168,8 +168,8 @@ const SingleCommentForm: FC<SingleCommentFormProps> = ({
                 </>
               ) : (
                 <>
-                  <HiPaperAirplane className="w-4 h-4 rotate-180" />
                   <span>ارسال نظر</span>
+                  <HiPaperAirplane className="w-4 h-4" style={{ transform: 'scaleX(-1)' }} />
                 </>
               )}
             </button>

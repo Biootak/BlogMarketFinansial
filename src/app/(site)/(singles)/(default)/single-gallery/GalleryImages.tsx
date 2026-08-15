@@ -4,6 +4,7 @@ import { cn, toPersianNumber } from '@/lib/utils';
 import { Dialog, Transition } from '@headlessui/react';
 import { ChevronLeft, ChevronRight, Maximize2, X } from 'lucide-react';
 import Image from 'next/image';
+import { devImageSrc } from '@/lib/image-url';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Fragment, useCallback, useEffect, useState } from 'react';
 
@@ -24,7 +25,7 @@ const ImageWithSkeleton: React.FC<{
       )}
       <Image
         alt={alt}
-        src={src}
+        src={devImageSrc(src)}
         fill={fill}
         sizes={sizes}
         priority={priority}
