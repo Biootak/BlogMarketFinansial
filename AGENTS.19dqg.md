@@ -100,7 +100,7 @@ Lite (L1–L10) + موارد زیر:
 
 【D8】 پروژه یکپارچه است؟
       [ ] Data pipeline تغییر کرد → assembler+registry+seed هماهنگند
-      [ ] Cron تغییر کرد → vercel.json + cron-auth.ts + comments هماهنگند
+      [ ] Cron تغییر کرد → cron-job.org (deploy/HEROKU.md مرحله ۵) + cron-auth.ts + comments هماهنگند
       [ ] منابع موازی داده بررسی شدند (→ ر.ک AGENTS.market-rates.md)
 
 【D9】 Best practice 2026 رعایت شده؟

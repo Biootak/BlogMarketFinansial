@@ -10,10 +10,9 @@
 // چرا cron و نه یک job درون‌درخواستی؟
 //   - دقیقه‌ای فاصلهٔ بین publish و scheduledAt باید مستقل از بازدید
 //     سایت باشد (cron حتی وقتی سایت بازدیدکننده ندارد کار می‌کند).
-//   - در Vercel Hobby حداکثر interval یک ساعت است؛ پست‌هایی که scheduledAt
-//     در آن یک ساعت گذشته، در فراخوانی بعدی منتشر می‌شوند. تأخیر یک ساعته
-//     برای انتشار برنامه‌ریزی‌شده قابل‌قبول است.
-//   - در Vercel Pro می‌توان به یک دقیقه رسید.
+//   - cron-job.org (تنظیم هر ۱ دقیقه — ر.ک deploy/HEROKU.md مرحله ۵) این
+//     endpoint را با هدر Authorization صدا می‌زند؛ پست‌هایی که موعدشان رسیده
+//     در همان فراخوانی منتشر می‌شوند.
 //
 // Auth: `CRON_SECRET` env variable — هدر `Authorization: Bearer ${CRON_SECRET}`
 // یا `x-cron-secret` یا query `?secret=`. اگر تنظیم نشده باشد endpoint غیرفعال
@@ -28,8 +27,8 @@ import prisma from '@/lib/db';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';
 import { NextResponse } from 'next/server';
 
-// Vercel Cron: Hobby max=10s, Pro max=60s. کوئری ما یک SELECT + چند UPDATE
-// است؛ حتی با ۱۰۰ پست زیر ۵ ثانیه.
+// کوئری ما یک SELECT + چند UPDATE است؛ حتی با ۱۰۰ پست زیر ۵ ثانیه.
+// maxDuration روی Heroku برای سرور Node عادی اعمال نمی‌شود ولی safe نگه داشته می‌شود.
 export const maxDuration = 60;
 
 interface PublishResult {
@@ -40,8 +39,8 @@ interface PublishResult {
 }
 
 /**
- * Handler اصلی. GET برای Vercel Cron (که GET می‌فرستد با هدر Authorization)؛
- * POST هم برای سرویس‌های cron خارجی یا تست دستی.
+ * Handler اصلی. GET و POST هر دو پشتیبانی می‌شوند — cron-job.org و
+ * سرویس‌های cron خارجی با هدر Authorization صدا می‌زنند؛ GET برای تست دستی.
  */
 async function handle(request: Request) {
   const authError = verifyCronSecret(request);

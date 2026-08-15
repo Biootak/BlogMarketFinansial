@@ -6,7 +6,7 @@ import CryptoTickerSliderLazy from './CryptoTickerSliderLazy';
 async function CryptoTickerContent() {
   const result = await fetchCryptoTickerRates();
 
-  // Exir API اغلب از سرورهای خارجی (Vercel) 403/4xx برمی‌گرداند.
+  // Exir API اغلب از سرورهای خارجی 403/4xx برمی‌گرداند.
   // نشان دادن error box به کاربر ارزشی ندارد — این section اختیاری است.
   // اگر داده نبود، سکشن را کاملاً مخفی می‌کنیم.
   if (!result.success || !result.data || result.data.length === 0) {

@@ -43,7 +43,7 @@ services:
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
       # Next.js 16's image SSRF guard mis-classifies unsplash IPv6 addresses
       # as private; forcing IPv4-first DNS resolution sidesteps the false
-      # positive in self-hosted (non-Vercel) deployments.
+      # positive in self-hosted deployments.
       - NODE_OPTIONS=--dns-result-order=ipv4first
       # در کانتینر، دیتابیس با hostname «db» در دسترس است (نه localhost)
       - DATABASE_URL=postgresql://blog_owner:${POSTGRES_PASSWORD}@db:5432/blog?sslmode=disable

@@ -120,8 +120,8 @@ export function jsonReplacer(_key: string, value: unknown): unknown {
 
 const BACKUP_DIR = path.join(process.cwd(), 'backups');
 
-// ── S3 backup (optional — Vercel ephemeral filesystem safe) ─────────────────
-// M8-fix: backups are mirrored to S3 so they survive Vercel redeploys.
+// ── S3 backup (optional — Heroku ephemeral filesystem safe) ───────────────
+// M8-fix: backups are mirrored to S3 so they survive Heroku dyno restarts.
 // All operations are best-effort — a missing/misconfigured S3 never fails
 // the primary filesystem backup.
 
@@ -301,7 +301,7 @@ export async function writeBackup(
     throw err;
   }
 
-  // M8-fix: mirror to S3 so backup survives Vercel ephemeral filesystem
+  // M8-fix: mirror to S3 so backup survives Heroku ephemeral filesystem
   // best-effort — filesystem backup already written, S3 failure is non-fatal
   await uploadBackupToS3(filename, json).catch(() => {});
 
@@ -358,7 +358,7 @@ export async function listBackups(): Promise<BackupFileInfo[]> {
     }
   }
 
-  // S3-only entries (e.g. after Vercel redeploy wiped local fs)
+  // S3-only entries (e.g. after Heroku dyno restart wiped local fs)
   for (const name of s3Names) {
     if (seen.has(name)) continue;
     try {
@@ -406,7 +406,7 @@ export async function readBackup(filename: string): Promise<BackupEnvelope | nul
     }
   }
 
-  // M8-fix: fallback to S3 (handles Vercel ephemeral fs wipe)
+  // M8-fix: fallback to S3 (handles Heroku ephemeral fs wipe)
   try {
     const raw = await readBackupFromS3(filename);
     if (!raw) return null;

@@ -1,7 +1,8 @@
 // src/app/api/cron/sync-rate-lists/route.ts
 //
 // نرخ‌های خرید/فروش bonbast.com را در جدول RateList در DB ذخیره می‌کند.
-// Vercel Cron این endpoint را هر ۵ دقیقه یک‌بار صدا می‌زند.
+// cron-job.org (ر.ک deploy/HEROKU.md مرحله ۵) این endpoint را هر ۵ دقیقه
+// با هدر Authorization صدا می‌زند.
 //
 // جریان:
 //   1. fetchBonbastBuySell() → نرخ‌های live خرید/فروش

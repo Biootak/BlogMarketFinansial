@@ -16,7 +16,6 @@ const ContentSecurityPolicy = `
     https://images.pexels.com
     https://images.unsplash.com
     https://*.r2.dev
-    https://avatar.vercel.sh
     https://lh3.googleusercontent.com
     https://avatars.githubusercontent.com
     https://cdn.jsdelivr.net
@@ -24,7 +23,7 @@ const ContentSecurityPolicy = `
     https://picsum.photos
     https://placehold.co;
   font-src 'self' data:;
-  connect-src 'self' https://*.sentry.io https://api.telegram.org https://api.exir.io https://avatar.vercel.sh wss: ws:;
+  connect-src 'self' https://*.sentry.io https://api.telegram.org https://api.exir.io wss: ws:;
   frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.aparat.com;
   media-src 'self' https: blob:;
   object-src 'none';
@@ -44,9 +43,8 @@ const nextConfig: NextConfig = {
   // NEXT_DIST_DIR=/tmp/next-dev-$USER routes the .next directory
   // (and its lockfile) to native ext4 where locking works.
   ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
-  // output: 'standalone' — disabled because Vercel's onBuildComplete hook cannot
-  // find index.html when standalone mode is active (ENOENT lstat index.html).
-  // For self-hosted (PM2/Docker) builds, set OUTPUT_STANDALONE=1 locally.
+  // output: 'standalone' — برای self-hosted (Docker/PM2) با OUTPUT_STANDALONE=1
+  // فعال می‌شود؛ در هرکو با Buildpack معمولی نیازی به آن نیست.
   ...(process.env.OUTPUT_STANDALONE === '1' ? { output: 'standalone' } : {}),
   // Strict mode doubles every render in dev — useful for catching side-effects
   // but burns CPU on low-power machines. Keep it on in CI/prod; opt-out locally
@@ -245,7 +243,8 @@ const nextConfig: NextConfig = {
     // `dangerouslyAllowPrivateIPs` was removed in Next.js 16.
     // The dev script sets `NODE_OPTIONS=--dns-result-order=ipv4first`
     // so Node prefers IPv4 A-records, sidestepping the bug in dev.
-    // Production (Vercel edge optimizer) is unaffected.
+    // Since 2026-08-15 images are optimized by the CDN (custom loaderFile),
+    // so this DNS quirk only ever mattered for the in-app optimizer.
     // 2026-08-08: قبلاً در dev کاملاً unoptimized بود — هر تصویر با سایز اصلی
     // (تا چند MB) دانلود می‌شد؛ صفحهٔ archive با ۱۵ کارت چند ده مگابایت وزن داشت،
     // تصاویر «با اسکرول لود نمی‌شدند» و priority هم کار نمی‌کرد.
@@ -284,10 +283,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.r2.dev',
-      },
-      {
-        protocol: 'https',
-        hostname: 'avatar.vercel.sh',
       },
       {
         protocol: 'https',

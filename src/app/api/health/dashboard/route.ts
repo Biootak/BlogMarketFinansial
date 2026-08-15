@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
     build: {
       env: process.env.NODE_ENV ?? 'development',
       sha:
-        process.env.VERCEL_GIT_COMMIT_SHA ??
+        process.env.HEROKU_SLUG_COMMIT ??
+        process.env.SOURCE_VERSION ??
         process.env.GIT_COMMIT ??
         process.env.NEXT_PUBLIC_GIT_SHA ??
         null,

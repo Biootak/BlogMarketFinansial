@@ -8,7 +8,7 @@ Load when adding/changing config or debugging env. `.env.example` is the source 
 
 ## SMS / Phone Verification (phone-verify.ts)
 
-`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` — required in production for `sendPhoneOtp`. If any is missing, `src/lib/sms.ts` falls back to **console.log** mode (dev/staging only; no real SMS is sent). Set all three in Vercel env for the `phone-verify` server actions to function in prod.
+`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER` — required in production for `sendPhoneOtp`. If any is missing, `src/lib/sms.ts` falls back to **console.log** mode (dev/staging only; no real SMS is sent). Set all three in Heroku config vars for the `phone-verify` server actions to function in prod.
 
 ## Notes
 

@@ -39,11 +39,9 @@ function getAllowedHosts(): Set<string> {
   // default: production + preview + local
   set.add('financialmarket.page');
   set.add('www.financialmarket.page');
-  // Production domain (self-hosted) — بدون این، assertCsrf در production
+  // Production domain (Heroku) — بدون این، assertCsrf در production
   // تمام Server Actions را با CSRF_FAILED رد می‌کند (مرورگر Origin را همیشه
   // روی POST ارسال می‌کند). هماهنگ با public/robots.txt و PDK.md.
-  set.add('blogmarketfinansial.ir');
-  set.add('www.blogmarketfinansial.ir');
   set.add('localhost');
   set.add('127.0.0.1');
   set.add('0.0.0.0');

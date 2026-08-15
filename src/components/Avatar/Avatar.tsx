@@ -35,15 +35,17 @@ const Avatar: FC<AvatarProps> = ({
   const [hasImage, setHasImage] = useState(!!imgUrl);
 
   useEffect(() => {
-    if (!imgUrl) {
-      const avatarName = name || 'user';
-      setUrl(`https://avatar.vercel.sh/${encodeURIComponent(avatarName)}?size=80`);
-      setHasImage(true);
-    } else {
+    // 2026-08-15: بدون سرویس avatar.vercel.sh — هویت بصری کاملاً مستقل.
+    // وقتی imgUrl وجود ندارد، monogram داخلی (حرف اول + پس‌زمینه) نمایش داده
+    // می‌شود؛ همان ظاهر قبلی بدون درخواست شبکه خارجی.
+    if (imgUrl) {
       setUrl(imgUrl);
       setHasImage(true);
+    } else {
+      setUrl(null);
+      setHasImage(false);
     }
-  }, [imgUrl, name]);
+  }, [imgUrl]);
 
   const rawUrl = typeof url === 'string' ? url : '';
   const useNextImage = rawUrl !== '' && isLocalUploads(rawUrl);

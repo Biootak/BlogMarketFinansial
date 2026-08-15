@@ -40,7 +40,7 @@
 ```
 [ ] assembler.ts تغییر کرد → registry.ts + seed-market-rates.ts بررسی شد
 [ ] symbol جدید → registry.ts + seed + هر UI که نرخ را نمایش می‌دهد
-[ ] cron تغییر کرد → vercel.json + cron-auth.ts + comments هماهنگ است
+[ ] cron تغییر کرد → cron-job.org (deploy/HEROKU.md مرحله ۵) + cron-auth.ts + comments هماهنگ است
 [ ] منبع داده جدید → priority chain مستند شد
 [ ] comment درباره auth → با کد cron-auth.ts تطبیق داده شد
 ```

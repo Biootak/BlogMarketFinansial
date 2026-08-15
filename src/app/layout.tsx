@@ -75,8 +75,8 @@ export async function generateMetadata(): Promise<Metadata> {
       'تحلیل تکنیکال',
       'آموزش ترید',
     ],
-    authors: [{ name: siteName || 'BlogMarketFinansial' }],
-    creator: siteName || 'BlogMarketFinansial',
+    authors: [{ name: siteName || 'بازارهای مالی افغانستان' }],
+    creator: siteName || 'بازارهای مالی افغانستان',
     robots: { index: true, follow: true },
     sitemap: '/sitemap.xml',
     icons: {

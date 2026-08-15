@@ -116,7 +116,7 @@ AI یک فایل را تغییر می‌دهد ولی همه وابستگی‌ه
 - تغییر `interface`/`type` → همه caller ها grep شوند
 - تغییر function signature → همه import sites بررسی شوند
 - اضافه کردن symbol جدید → registry + seed + هر mapping جداگانه
-- اضافه کردن cron جدید → vercel.json / scheduler config
+- اضافه کردن cron جدید → cron-job.org (ر.ک deploy/HEROKU.md مرحله ۵)
 - اضافه کردن env var → `AGENTS.env.md` + `.env.example`
 
 ### 21. Confident Wrong Answer (اشتباه با اطمینان)
@@ -203,7 +203,7 @@ AI می‌داند راهکار بهتری وجود دارد ولی ساکت پ�
 ### 32. Cross-section Inconsistency (بُعد 8 — ناهماهنگی بین بخش‌ها)
 
 AI تغییری می‌دهد که در بخش خودش درست است ولی با بخش دیگری تضاد دارد.
-**نشانه**: market-rates cron درست است ولی vercel.json هنوز sync-bazaar فعال دارد؛ یا دو component یک state را متفاوت نمایش می‌دهند.
+**نشانه**: cron در cron-job.org به‌روز نشده و endpoint قدیمی را صدا می‌زند؛ یا دو component یک state را متفاوت نمایش می‌دهند.
 **Prevention**: قبل از هر تسک، بخش‌های مرتبط را شناسایی کن (data pipeline، UI، config). بعد از تغییر، آن بخش‌ها را cross-check کن.
 
 ### 33. Outdated Pattern (بُعد 9 — الگوی قدیمی)

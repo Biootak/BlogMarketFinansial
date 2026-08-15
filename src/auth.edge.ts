@@ -6,7 +6,7 @@ import NextAuth from 'next-auth';
  *
  * چرا این فایل جدا شده؟
  * - فایل اصلی auth.ts از bcrypt و PrismaAdapter استفاده می‌کنه که فقط در Node.js کار می‌کنن
- * - Middleware در Vercel روی Edge Runtime اجرا میشه که این کتابخانه‌ها رو ساپورت نمی‌کنه
+ * - Middleware در Next.js روی Edge Runtime اجرا میشه که این کتابخانه‌ها رو ساپورت نمی‌کنه
  * - این فایل فقط OAuth providers رو شامل میشه (بدون Credentials)
  */
 export const { auth } = NextAuth(authConfig);

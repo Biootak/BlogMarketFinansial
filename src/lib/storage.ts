@@ -69,7 +69,7 @@ function tripCircuitBreaker(reason: string): void {
   if (s3DisabledUntil > Date.now()) return;
   s3DisabledUntil = Date.now() + S3_BREAKER_TTL_MS;
   // S3 failure is a first-class observability event: on ephemeral filesystems
-  // (Heroku/Vercel) a silent S3 fallback means uploads are written only to the
+  // (Heroku) a silent S3 fallback means uploads are written only to the
   // local disk and wiped on the next restart — exactly the "image upload
   // disappears" bug. Log it so the LiveOps `storage` service + SystemLog catch it.
   serverLog.warn('storage', 's3-circuit-breaker-tripped', { reason });

@@ -4,7 +4,7 @@
 # این فایل رو با `crontab -e` یا `crontab deploy/crontab.example` نصب کن.
 #
 # قبل از نصب این مقادیر را با محیط واقعی خودت جایگزین کن:
-#   - APP_URL: دامنه‌ی واقعی سایت (مثلاً https://blogmarketfinansial.ir)
+#   - APP_URL: دامنه‌ی واقعی سایت (مثلاً https://financialmarket.page)
 #   - CRON_SECRET: همان مقدار CRON_SECRET در .env پروژه
 #
 # نکته: در صورت اجرای لوکال، APP_URL را https://your-domain.com بگذار
@@ -38,7 +38,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # ---------- backup دیتابیس: هر شب ساعت ۰۳:۰۰ ----------
 # JSON کامل (محتوای سایت + تنظیمات) می‌سازد و در S3-compatible آینه می‌کند تا
-# روی filesystem اپمرال (Heroku/Vercel) از بین نرود.
+# روی filesystem اپمرال (Heroku) از بین نرود.
 0 3 * * * curl -fsS -m 300 -H "Authorization: Bearer YOUR_CRON_SECRET" https://YOUR_DOMAIN.com/api/cron/backup >> /var/log/fm-cron.log 2>&1
 
 # ---------- بکاپ واقعی Postgres (pg_dump): هر شب ساعت ۰۳:۳۰ ----------
