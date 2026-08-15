@@ -15,18 +15,11 @@
  */
 
 import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { CircleHelp, MessagesSquare, ShieldCheck, Sparkles, Wallet, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  HiOutlineChatBubbleLeftRight,
-  HiOutlineQuestionMarkCircle,
-  HiOutlineShieldCheck,
-  HiOutlineSparkles,
-  HiOutlineXMark,
-} from 'react-icons/hi2';
-import { LuWallet } from 'react-icons/lu';
 import s from './QuickActions.module.css';
 
 interface ActionItem {
@@ -66,7 +59,7 @@ const QuickActions: FC = () => {
       {
         id: 'wallet',
         label: isLoggedIn ? 'کیف پول' : 'شروع کنید',
-        icon: LuWallet,
+        icon: Wallet,
         href: isLoggedIn ? '/dashboard/wallet' : '/auth',
         badge: isLoggedIn ? null : 'new',
       },
@@ -75,20 +68,20 @@ const QuickActions: FC = () => {
       list.push({
         id: 'kyc',
         label: 'احراز هویت',
-        icon: HiOutlineShieldCheck,
+        icon: ShieldCheck,
         href: '/customer/kyc',
       });
     }
     list.push({
       id: 'support',
       label: 'پشتیبانی',
-      icon: HiOutlineChatBubbleLeftRight,
+      icon: MessagesSquare,
       href: '/support',
     });
     list.push({
       id: 'help',
       label: 'راهنما',
-      icon: HiOutlineQuestionMarkCircle,
+      icon: CircleHelp,
       href: '/help-center',
     });
     return list;
@@ -194,7 +187,7 @@ const QuickActions: FC = () => {
       >
         <span className={s.fabIcon} data-open={open}>
           {open ? (
-            <HiOutlineXMark size={20} strokeWidth={2} />
+            <X size={20} strokeWidth={2} />
           ) : logoUrl ? (
             <Image
               src={logoUrl}
@@ -205,7 +198,7 @@ const QuickActions: FC = () => {
               unoptimized
             />
           ) : (
-            <HiOutlineSparkles size={20} strokeWidth={2} />
+            <Sparkles size={20} strokeWidth={2} />
           )}
         </span>
         <span className={s.fabPulse} aria-hidden />

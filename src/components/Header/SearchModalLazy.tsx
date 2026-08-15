@@ -9,9 +9,9 @@
  * lazily the first time the user opens search, so the modal cost is paid only
  * on interaction, not on first paint.
  */
+import { Search } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { type ReactNode, useState } from 'react';
-import { HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 
 const LazySearchModal = dynamic(() => import('./SearchModal'), {
   ssr: false,
@@ -39,7 +39,7 @@ export default function SearchModalLazy({ renderTrigger }: Props) {
         "
         aria-label="جستجو"
       >
-        {renderTrigger ? renderTrigger() : <HiOutlineMagnifyingGlass className="size-5" />}
+        {renderTrigger ? renderTrigger() : <Search className="size-5" />}
       </button>
 
       {open && (

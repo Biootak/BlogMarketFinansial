@@ -23,18 +23,11 @@
  * engaged, so the drag-and-drop library no longer ships on every page load.
  */
 
+import { Briefcase, CircleUserRound, Home, Newspaper, Search, Wallet } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { usePathname, useRouter } from 'next/navigation';
 import { type FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  HiOutlineBriefcase,
-  HiOutlineHome,
-  HiOutlineMagnifyingGlass,
-  HiOutlineNewspaper,
-  HiOutlineUserCircle,
-} from 'react-icons/hi2';
-import { LuWallet } from 'react-icons/lu';
 import s from './MobileBottomNav.module.css';
 import type { MobileBottomNavSortableProps, SortableNavItem } from './MobileBottomNavSortable';
 
@@ -66,28 +59,28 @@ const buildItems = (loggedIn: boolean): NavItem[] => [
     id: 'home',
     href: '/',
     label: 'خانه',
-    icon: HiOutlineHome,
+    icon: Home,
     matchPrefixes: ['/'],
   },
   {
     id: 'market',
     href: '/exchanges',
     label: 'بازار',
-    icon: HiOutlineNewspaper,
+    icon: Newspaper,
     matchPrefixes: ['/exchanges', '/exchange-rates', '/money-transfer', '/online-payment'],
   },
   {
     id: 'search',
     href: '/search',
     label: 'جستجو',
-    icon: HiOutlineMagnifyingGlass,
+    icon: Search,
     matchPrefixes: ['/search'],
   },
   {
     id: 'wallet',
     href: loggedIn ? '/dashboard/wallet' : '/wallet',
     label: 'کیف پول',
-    icon: LuWallet,
+    icon: Wallet,
     primary: true,
     matchPrefixes: ['/wallet', '/dashboard/wallet', '/beneficiaries'],
   },
@@ -96,7 +89,7 @@ const buildItems = (loggedIn: boolean): NavItem[] => [
     id: 'services',
     href: '/services',
     label: 'سرویس‌ها',
-    icon: HiOutlineBriefcase,
+    icon: Briefcase,
     tabletOnly: true,
     matchPrefixes: ['/services', '/services/compare'],
   },
@@ -105,7 +98,7 @@ const buildItems = (loggedIn: boolean): NavItem[] => [
     // 2026-08-09: single-step login — email + password on one page
     href: loggedIn ? '/dashboard' : '/auth?step=login',
     label: loggedIn ? 'پروفایل' : 'ورود',
-    icon: HiOutlineUserCircle,
+    icon: CircleUserRound,
     matchPrefixes: ['/dashboard', '/auth', '/customer', '/exchange'],
   },
 ];
