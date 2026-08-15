@@ -226,11 +226,18 @@ const nextConfig: NextConfig = {
   turbopack: {},
 
   images: {
-    // 2026-08-15: dev-only fallback برای هاست‌های بلاک‌شده (unsplash/pexels/
-    // picsum — DNS این شبکه به IP خصوصی ربوده شده) در `src/lib/image-url.ts`
-    // در سطح کامپوننت اعمال می‌شود. از loaderFile استفاده نکن — با loaderFile،
-    // route `/_next/image` (optimizer) در dev سرو نمی‌شود و همه تصاویر 404
-    // می‌گیرند (داک رسمی: loaderFile = «سرویس بهینه‌سازی سفارشی»).
+    // 2026-08-15 LCP fix (اندازه‌گیری Lighthouse prod: LCP 5.6–7.7s):
+    // بهینه‌ساز داخلی (`/_next/image` + sharp) هر تصویر را request-time روی
+    // dyno ضعیف (512MB) پردازش می‌کرد — با کش خالی بعد از deploy و
+    // imgOptConcurrency:1 هر encode serial بود. loaderFile (داک رسمی Next.js:
+    // «سرویس بهینه‌سازی سفارشی») این بار را به CDN هاست تصویر منتقل می‌کند:
+    // unsplash/pexels → پارامترهای w/q/auto خودشان روی edge؛ بقیه passthrough.
+    // مرورگر حالا مستقیم به CDN وصل می‌شود (CSP img-src از قبل allowlist دارد؛
+    // preconnect در root layout اضافه شد). فواید next/image (srcset/lazy/priority)
+    // بدون تغییر می‌مانند. در dev هم رفتار یکسان است — فقط اگر ماشین dev به
+    // هاست تصویر دسترسی نداشت (ECONNRESET/DNS)، با NEXT_IMAGE_UNOPTIMIZED=1
+    // برگردید.
+    loaderFile: './src/lib/image-loader.ts',
     // 2026-06-27: `images.unsplash.com` resolves to a public IPv6
     // address (`2001:4188:2:600:10:10:34:36`) whose `10:10:34:36`
     // segment is falsely matched as the private IPv4 `10.10.34.36`

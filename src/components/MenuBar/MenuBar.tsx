@@ -1,9 +1,21 @@
 'use client';
 
-import NavMobile from '@/components/Navigation/NavMobile';
-import { Transition } from '@headlessui/react';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+/**
+ * MenuBar — دکمه‌ی منوی موبایل (نازک — بدون headlessui).
+ *
+ * 2026-08-15 TBT fix: دراور سنگین (headlessui Transition + NavMobile) به
+ * `MenuDrawer` منتقل شد و lazy-lod می‌شود — فقط وقتی کاربر منو را باز می‌کند.
+ * قبلاً `@headlessui/react` (~۱۰۹KB) در first-load همه‌ی صفحات site بود و
+ * TBT/LCP را بالا می‌برد (Lighthouse prod: home TBT 1,090ms). الگوی
+ * SearchModalLazy — هزینه‌ی modal فقط با interaction پرداخت می‌شود.
+ */
+const LazyMenuDrawer = dynamic(() => import('./MenuDrawer'), {
+  ssr: false,
+});
 
 interface MenuBarProps {
   className?: string;
@@ -19,19 +31,6 @@ const MenuBar = ({ className }: MenuBarProps) => {
   const handleToggleMenu = useCallback(() => {
     setIsVisible((prev) => !prev);
   }, []);
-
-  const handleOverlayInteraction = useCallback(
-    (e: React.MouseEvent | React.KeyboardEvent) => {
-      if (
-        e.type === 'click' ||
-        (e as React.KeyboardEvent).key === 'Enter' ||
-        (e as React.KeyboardEvent).key === ' '
-      ) {
-        handleToggleMenu();
-      }
-    },
-    [handleToggleMenu],
-  );
 
   const menuIcon = useMemo(
     () => (
@@ -65,48 +64,7 @@ const MenuBar = ({ className }: MenuBarProps) => {
         {menuIcon}
       </button>
 
-      <Transition show={isVisible} as={React.Fragment}>
-        <div className="relative z-50">
-          <Transition.Child
-            as={React.Fragment}
-            enter="transition-opacity duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-opacity duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div
-              className="fixed inset-0 bg-neutral-900 bg-opacity-50 backdrop-blur-md"
-              onClick={handleOverlayInteraction}
-              onKeyDown={handleOverlayInteraction}
-              role="button"
-              tabIndex={0}
-            />
-          </Transition.Child>
-
-          <Transition.Child
-            as={React.Fragment}
-            enter="transition transform duration-100"
-            enterFrom="opacity-0 -translate-x-14 rtl:translate-x-14"
-            enterTo="opacity-100 translate-x-0"
-            leave="transition transform duration-150"
-            leaveFrom="opacity-100 translate-x-0"
-            leaveTo="opacity-0 -translate-x-14 rtl:translate-x-14"
-          >
-            <div
-              className="fixed inset-y-0 start-0 w-screen max-w-sm overflow-y-auto z-50"
-              id="mobile-menu"
-            >
-              <div className="flex min-h-full">
-                <div className="w-full max-w-sm overflow-hidden transition-all">
-                  <NavMobile onClickClose={handleToggleMenu} />
-                </div>
-              </div>
-            </div>
-          </Transition.Child>
-        </div>
-      </Transition>
+      {isVisible && <LazyMenuDrawer onClose={handleToggleMenu} />}
     </div>
   );
 };

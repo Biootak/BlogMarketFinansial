@@ -127,15 +127,14 @@ export default function RootLayout({
             auth/upload و… مستثنا هستند تا صفحات خصوصی و DB-سنگین هرگز
             prerender نشوند. PageViewTracker با document.prerendering gate
             شده — پریرندر pageview کاذب ثبت نمی‌کند (ر.ک usePageView). */}
-        {/* 2026-08-12 perf (performance skill): اتصال به هاست‌های تصویر خارجی که
-            مرورگر واقعاً مستقیم به آن‌ها وصل می‌شود. تحلیل HTML صفحات عمومی:
-            i.pravatar.cc → آواتار نویسنده‌ها (۳۳۹ ارجاع؛ مستقیم با <Image
-            unoptimized> لود می‌شود) → preconnect کامل. تصاویر شاخص پست‌ها
-            (unsplash/pexels) از /_next/image پراکسی می‌شوند (same-origin) پس
-            preconnect به آن‌ها بی‌فایده است. آواتارهای OAuth کاربران واقعی
-            (Google/GitHub) هم مستقیم لود می‌شوند → dns-prefetch ارزان برای
-            گرم نگه‌داشتن DNS. */}
+        {/* 2026-08-15 (custom image loader): از این پس تصاویر unsplash/pexels
+            مستقیم از CDN خودشان لود می‌شوند (بدون پراکسی /_next/image) →
+            preconnect برای اتصال زودهنگام و حذف تأخیر handshake حیاتی است.
+            آواتار نویسنده‌ها (i.pravatar.cc — <Image unoptimized>) و آواتارهای
+            OAuth (Google/GitHub) هم مستقیم هستند → dns-prefetch ارزان. */}
         <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://images.pexels.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://i.pravatar.cc" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
