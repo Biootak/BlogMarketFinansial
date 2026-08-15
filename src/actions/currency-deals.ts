@@ -531,32 +531,54 @@ export async function createDeal(
   }
 
   const trackingCode = generateTrackingCode();
-  const deal = await prisma.currencyDeal.create({
-    data: {
-      trackingCode,
-      exchangeId,
-      quoteId: quoteId ?? null,
-      userId,
-      customerName,
-      customerPhone,
-      customerEmail: customerEmail ?? null,
-      fromCurrency,
-      toCurrency,
-      fromAmount,
-      toAmount: calculatedToAmount,
-      appliedRate,
-      feeAmount,
-      marketRateRef,
-      channel,
-      status: 'PENDING',
-      note: note ?? null,
-      idempotencyKey: idempotencyKey ?? null,
-    },
-  });
 
-  await prisma.dealStatusLog.create({
-    data: { dealId: deal.id, toStatus: 'PENDING', actorRole: userId ? 'USER' : 'GUEST' },
-  });
+  // Pass 3 fix: quote lock was taken in a separate transaction above — if the
+  // deal creation below throws, the quote would stay LOCKED until the expiry
+  // cron sweeps it (up to its full validity window). Release it back to ACTIVE
+  // immediately. Release only when the deal was never created: an existing deal
+  // keeps its quote reference and confirm releases it like the happy path.
+  let createdDeal: Awaited<ReturnType<typeof prisma.currencyDeal.create>> | null = null;
+  try {
+    createdDeal = await prisma.currencyDeal.create({
+      data: {
+        trackingCode,
+        exchangeId,
+        quoteId: quoteId ?? null,
+        userId,
+        customerName,
+        customerPhone,
+        customerEmail: customerEmail ?? null,
+        fromCurrency,
+        toCurrency,
+        fromAmount,
+        toAmount: calculatedToAmount,
+        appliedRate,
+        feeAmount,
+        marketRateRef,
+        channel,
+        status: 'PENDING',
+        note: note ?? null,
+        idempotencyKey: idempotencyKey ?? null,
+      },
+    });
+
+    await prisma.dealStatusLog.create({
+      data: { dealId: createdDeal.id, toStatus: 'PENDING', actorRole: userId ? 'USER' : 'GUEST' },
+    });
+  } catch (err) {
+    if (createdDeal === null && quoteId) {
+      try {
+        await prisma.exchangeRateQuote.updateMany({
+          where: { id: quoteId, status: 'LOCKED' },
+          data: { status: 'ACTIVE' },
+        });
+      } catch {
+        // release best-effort — cron expireQuotes همچنان LOCKED های باقی‌مانده را پاک می‌کند
+      }
+    }
+    throw err;
+  }
+  const deal = createdDeal;
 
   await prisma.auditLog.create({
     data: {
