@@ -54,6 +54,10 @@ interface TelegramUpdate {
 const BOT_NAME = 'Financial Market';
 const BOT_TAGLINE = 'دستیار رسمی حساب شما';
 
+/** پیام /start وقتی چت قبلاً به حساب دیگری وصل است — دکمهٔ ارسال شماره برای انتقال امن */
+const CHAT_LINKED_RELINK_MESSAGE =
+  '🔄 <b>این گفتگو به حساب دیگری متصل است</b>\n\nاگر این حساب و شمارهٔ تلگرام متعلق به <b>خود شما</b> است (شمارهٔ یکسان)، دکمهٔ «ارسال شماره تماس» را بزنید — انتقال فقط با تطبیق شماره انجام می‌شود.';
+
 const PORTAL_BTN = { text: '🌐 باز کردن پورتال', url: getPortalUrl('/customer/dashboard') };
 
 /** منوی اصلی ربات — دکمه‌های اینلاین (سبک، بدون ارسال پیام اضافه) */
@@ -186,13 +190,23 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
       const result = await consumeTelegramLinkToken(token, chat, fromId);
 
       if (!result.ok) {
+        // 2026-08-15: چت قبلاً به حساب دیگری وصل است → جریان انتقال امن.
+        // توکن burn نشده (relinkChatId ست شده)؛ با دکمهٔ «ارسال شماره تماس»،
+        // شمارهٔ تلگرام با شمارهٔ حساب مقصد تطبیق داده می‌شود و فقط در صورت
+        // یکی‌بودن، چت منتقل می‌شود (ر.ک handleRelink).
+        if (result.reason === 'chat-linked') {
+          await sendTelegramMessage(chat, CHAT_LINKED_RELINK_MESSAGE, {
+            requestContact: true,
+          });
+          return;
+        }
+
         const replies: Record<string, string> = {
-          'not-found': '❌ لینک اتصال نامعتبر است.\nاز صفحهٔ سایت دوباره «اتصال تلگرام» را بزنید.',
-          used: '❌ این لینک قبلاً استفاده شده است.\nاز صفحهٔ سایت لینک جدید بگیرید.',
+          'not-found':
+            '⏰ این لینک اتصال <b>منقضی یا نامعتبر</b> شده است.\n\nبرای دریافت لینک تازه، دکمهٔ زیر را بزنید و از صفحهٔ احراز هویت دوباره «اتصال تلگرام» را انتخاب کنید.',
+          used: '⏰ این لینک قبلاً استفاده شده است.\n\nاگر هنوز متصل نشده‌اید، از صفحهٔ احراز هویت لینک تازه بگیرید.',
           expired:
-            '⏰ لینک اتصال <b>منقضی</b> شده است (۱۵ دقیقه).\nاز صفحهٔ سایت دوباره «اتصال تلگرام» را بزنید.',
-          'chat-linked':
-            '❌ این گفتگوی تلگرام قبلاً به حساب دیگری متصل شده است.\nبرای تغییر حساب، از پورتال کمک بگیرید.',
+            '⏰ لینک اتصال <b>منقضی</b> شده است (۳۰ دقیقه).\n\nبرای دریافت لینک تازه، دکمهٔ زیر را بزنید و از صفحهٔ احراز هویت دوباره «اتصال تلگرام» را انتخاب کنید.',
           'db-error': '❌ خطای سرور رخ داد. لطفاً دوباره تلاش کنید.',
         };
         // مطابق طراحی (اسکرین ۷): هر خطای لینک با دکمهٔ باز کردن پورتال همراه است
@@ -202,20 +216,26 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
         return;
       }
 
-      await sendTelegramMessage(
-        chat,
-        `✅ <b>اتصال موفق</b>\n\nحساب تلگرام شما با موفقیت به <b>${BOT_NAME}</b> متصل شد.\nاز این پس کدهای امنیتی و اعلان‌های حساب به همین گفتگو ارسال می‌شوند.`,
-        { inlineKeyboard: MENU_KEYBOARD },
-      );
-
-      // اگر شماره‌ای در انتظار تأیید است → دکمهٔ ارسال شماره تماس (با نمایش حساب)
-      // consume خروجی pendingPhone را همان‌جا داده — کوئری جداگانه نمی‌زنیم.
+      // اتصال موفق — دو حالت: با شماره در انتظار (مستقیم تأیید) یا بدون آن
       if (result.pendingPhone) {
+        // شماره در انتظار → پیام یکپارچه با دکمهٔ ارسال شماره (بدون پیام جداگانه)
         const account = result.accountName || 'حساب کاربری شما';
         await sendTelegramMessage(
           chat,
-          `🛡️ <b>${BOT_NAME}</b> — تأیید امن هویت\n\n👤 حساب: <code>${account}</code>\n📱 شماره: <code>${formatTelegramPhone(result.pendingPhone)}</code>\n\nاگر این حساب و شماره متعلق به <b>شما</b> است، دکمهٔ زیر را بزنید تا شماره به‌صورت خودکار و بدون کد تأیید شود. 🔐`,
+          `✅ <b>اتصال موفق!</b>\n\n👤 حساب: <code>${account}</code>\n📱 شماره در انتظار تأیید: <code>${formatTelegramPhone(result.pendingPhone)}</code>\n\n🔐 برای تأیید خودکار شماره، دکمهٔ زیر را بزنید. اگر شمارهٔ تلگرام شما با شماره بالا یکی باشد، تأیید فوری انجام می‌شود.`,
           { requestContact: true },
+        );
+      } else {
+        // بدون شماره در انتظار → راهنمای گام بعدی
+        await sendTelegramMessage(
+          chat,
+          `✅ <b>اتصال موفق!</b>\n\nحساب تلگرام شما به <b>${BOT_NAME}</b> متصل شد.\n\n📋 <b>گام بعدی:</b>\nبه صفحهٔ احراز هویت بروید، شماره موبایل خود را وارد کنید و «ارسال کد تأیید» را بزنید — شماره به‌صورت خودکار از طریق همین ربات تأیید می‌شود.`,
+          {
+            inlineKeyboard: [
+              [{ text: '🛡️ رفتن به صفحهٔ احراز هویت', url: getPortalUrl('/customer/kyc') }],
+              [PORTAL_BTN],
+            ],
+          },
         );
       }
       return;
@@ -247,6 +267,25 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
         ? String(update.message.contact.user_id)
         : undefined;
     if (contactPhone) {
+      // ── جریان ۵.۰: انتقال چت (relink) — چت قبلاً به حساب دیگری وصل شده ──
+      // /start لینک را با توکنِ حساب مقصد باز کرده و توکن در حالت chat-linked
+      // relinkChatId=chat ثبت شده. این contact جوابِ دکمهٔ «ارسال شماره تماس»
+      // همان پیام است → با تطبیق شماره، چت به حساب مقصد منتقل می‌شود.
+      const pendingRelink = await prisma.telegramLinkToken.findFirst({
+        where: { relinkChatId: chat, used: false, expiresAt: { gt: new Date() } },
+        select: { id: true, userId: true },
+      });
+      if (pendingRelink) {
+        await handleRelink({
+          chat,
+          contactPhone,
+          contactUserId,
+          tokenId: pendingRelink.id,
+          targetUserId: pendingRelink.userId,
+        });
+        return;
+      }
+
       // یک کوئری: کاربر با chatId + همهٔ فیلدهای لازم (autoVerify کوئری دوم نمی‌زند)
       const user = await prisma.user.findUnique({
         where: { telegramChatId: chat },
@@ -258,49 +297,234 @@ async function processUpdate(update: TelegramUpdate): Promise<void> {
         },
       });
 
-      if (user) {
-        const result = await autoVerifyPhoneFromTelegram(user.id, contactPhone, {
-          tgUserId: contactUserId,
-          preloadedUser: user,
-        });
+      await sendTelegramChatAction(chat, 'typing');
 
-        const msgs: Record<string, string> = {
-          ok: `✅ <b>هویت شما تأیید شد</b>\n\n📱 شماره: <code>${formatTelegramPhone(contactPhone)}</code>\n🏅 سطح امنیت حساب: <b>سطح ۱</b>\n\nمرحلهٔ بعدی (مدرک و سلفی) در پورتال شما فعال شده است.`,
-          'no-pending':
-            'ℹ️ شماره‌ای در انتظار تأیید نیست.\nبرای تأیید شماره، از پورتال حساب دوباره درخواست بدهید.',
-          mismatch:
-            '❌ <b>تأیید نشد</b>\n\nشمارهٔ تلگرام شما با شماره‌ای که در حساب وارد کرده‌اید <b>یکی نیست</b>.\nلطفاً در پورتال همان شمارهٔ تلگرام خود را وارد کنید و دوباره تلاش کنید.',
-          'telegram-identity-mismatch':
-            '❌ این شماره از حساب تلگرام دیگری ارسال شده است.\nلطفاً با همان تلگرامی که Start زده‌اید دوباره تلاش کنید.',
-          'account-blocked':
-            '⛔ حساب شما <b>مسدود</b> است و امکان تأیید شماره وجود ندارد.\nبا پشتیبانی تماس بگیرید.',
-          'no-customer': '❌ حساب مشتری برای این کاربر پیدا نشد. با پشتیبانی تماس بگیرید.',
-          'already-verified': 'ℹ️ شمارهٔ شما قبلاً تأیید شده است. ✅',
-          'db-error': '❌ خطای سرور رخ داد. لطفاً دوباره تلاش کنید.',
-        };
-
-        // نشانگر «در حال نوشتن» قبل از نتیجه — مطابق طراحی (اسکرین ۳)
-        await sendTelegramChatAction(chat, 'typing');
-
+      if (!user) {
+        // chatId هنوز به هیچ حسابی وصل نشده — کاربر مستقیم contact فرستاده
         await sendTelegramMessage(
           chat,
-          msgs[result.ok ? 'ok' : result.reason] ?? msgs['db-error'],
-          result.ok
-            ? {
-                inlineKeyboard: [
-                  [{ text: '🚀 ادامه احراز هویت', url: getPortalUrl('/customer/kyc') }],
-                  [PORTAL_BTN],
-                ],
-              }
-            : // خطاها (مثل شماره یکی نیست) دکمهٔ پورتال دارند؛ مسدود بودن بدون دکمه
-              result.reason === 'account-blocked'
-              ? undefined
-              : { inlineKeyboard: PORTAL_KEYBOARD },
+          `⚠️ <b>حساب متصل نیست</b>\n\nاین گفتگوی تلگرام به هیچ حسابی در <b>${BOT_NAME}</b> متصل نشده است.\n\n📋 <b>چطور متصل شوید؟</b>\n۱. وارد سایت شوید\n۲. به صفحهٔ احراز هویت بروید\n۳. روی «اتصال تلگرام» بزنید\n۴. لینک را در همین تلگرام باز کنید`,
+          {
+            inlineKeyboard: [
+              [{ text: '🛡️ رفتن به صفحهٔ احراز هویت', url: getPortalUrl('/customer/kyc') }],
+              [PORTAL_BTN],
+            ],
+          },
         );
+        return;
       }
+
+      const result = await autoVerifyPhoneFromTelegram(user.id, contactPhone, {
+        tgUserId: contactUserId,
+        preloadedUser: user,
+      });
+
+      // شمارهٔ فرستاده‌شده برای نمایش در پیام‌های خطا
+      const tgPhoneFmt = formatTelegramPhone(`+${contactPhone.replace(/\D/g, '')}`);
+      const pendingFmt = user.pendingPhone ? formatTelegramPhone(user.pendingPhone) : '—';
+
+      type MsgKey =
+        | 'ok'
+        | 'no-pending'
+        | 'mismatch'
+        | 'telegram-identity-mismatch'
+        | 'account-blocked'
+        | 'no-customer'
+        | 'already-verified'
+        | 'db-error';
+      const msgs: Record<MsgKey, string> = {
+        ok: `✅ <b>هویت شما تأیید شد!</b>\n\n📱 شماره: <code>${tgPhoneFmt}</code>\n🏅 سطح امنیت: <b>سطح ۱</b>\n\nمرحلهٔ بعدی (مدرک هویتی + سلفی) در پورتال شما فعال شده است.`,
+
+        'no-pending':
+          'ℹ️ <b>شماره‌ای در انتظار تأیید نیست</b>\n\nشما دکمه را زدید ولی هنوز شماره‌ای در سایت ثبت نشده است.\n\n📋 <b>چطور ادامه دهید؟</b>\n۱. به صفحهٔ احراز هویت بروید\n۲. شماره موبایل خود را وارد کنید\n۳. «ارسال کد تأیید» را بزنید\n۴. سپس در تلگرام دوباره روی دکمهٔ ارسال شماره بزنید',
+
+        mismatch: `❌ <b>شماره‌ها یکی نیستند</b>\n\n📱 شمارهٔ تلگرام شما: <code>${tgPhoneFmt}</code>\n📝 شمارهٔ ثبت‌شده در سایت: <code>${pendingFmt}</code>\n\nاین دو شماره باید یکی باشند.\n\n💡 <b>راه‌حل:</b> در سایت همان شماره‌ای را وارد کنید که با آن در تلگرام ثبت‌نام کرده‌اید.`,
+
+        'telegram-identity-mismatch':
+          '❌ <b>هویت تلگرام مطابقت ندارد</b>\n\nاین شماره از یک حساب تلگرام <b>متفاوت</b> ارسال شده است.\n\n💡 <b>راه‌حل:</b> مطمئن شوید با همان تلگرامی که لینک اتصال را باز کردید، دکمهٔ «ارسال شماره تماس» را بزنید.',
+
+        'account-blocked':
+          '⛔ <b>حساب مسدود است</b>\n\nمتأسفانه حساب شما در وضعیت محدودشده قرار دارد و امکان انجام عملیات KYC وجود ندارد.\n\nبرای رفع مشکل با پشتیبانی تماس بگیرید.',
+
+        'no-customer':
+          '❌ <b>حساب مشتری پیدا نشد</b>\n\nحساب شما در سیستم به‌درستی تنظیم نشده است.\n\nلطفاً با پشتیبانی تماس بگیرید تا مشکل بررسی شود.',
+
+        'already-verified': `✅ <b>شمارهٔ شما قبلاً تأیید شده است</b>\n\n📱 شماره: <code>${tgPhoneFmt}</code>\n🏅 سطح ۱ احراز هویت کامل است.\n\nبرای ادامه و ارتقا به سطح ۲ (مدرک و سلفی) به پورتال مراجعه کنید.`,
+
+        'db-error':
+          '⚠️ <b>خطای موقت سرور</b>\n\nعملیات به‌طور موقت ناموفق بود. لطفاً چند دقیقه صبر کنید و دوباره امتحان کنید.\n\nاگر مشکل ادامه داشت با پشتیبانی تماس بگیرید.',
+      };
+
+      const msgKey: MsgKey = result.ok ? 'ok' : (result.reason as MsgKey);
+      const msgText = msgs[msgKey] ?? msgs['db-error'];
+
+      // دکمه‌های متناسب با هر وضعیت
+      let keyboard: Parameters<typeof sendTelegramMessage>[2] | undefined;
+      if (result.ok) {
+        keyboard = {
+          inlineKeyboard: [
+            [{ text: '🚀 ادامهٔ احراز هویت (سطح ۲)', url: getPortalUrl('/customer/kyc') }],
+            [PORTAL_BTN],
+          ],
+        };
+      } else if (result.reason === 'account-blocked' || result.reason === 'no-customer') {
+        // این دو نیاز به پشتیبانی دارند — پورتال اضافه نمی‌شود
+        keyboard = undefined;
+      } else if (result.reason === 'already-verified') {
+        keyboard = {
+          inlineKeyboard: [
+            [{ text: '📋 رفتن به پورتال (سطح ۲)', url: getPortalUrl('/customer/kyc') }],
+            [PORTAL_BTN],
+          ],
+        };
+      } else {
+        // mismatch / no-pending / telegram-identity-mismatch / db-error → پورتال
+        keyboard = { inlineKeyboard: PORTAL_KEYBOARD };
+      }
+
+      await sendTelegramMessage(chat, msgText, keyboard);
+    } else if (text && !text.startsWith('/')) {
+      // کاربر متن آزاد تایپ کرده — ربات فقط دستورات و contact می‌فهمد
+      await sendTelegramMessage(
+        chat,
+        '💬 این ربات پیام متنی پردازش نمی‌کند.\n\nدستورات موجود:\n/start — شروع\n/status — وضعیت حساب\n/help — راهنما',
+        { inlineKeyboard: MENU_KEYBOARD },
+      );
     }
   } catch {
     // best-effort — هرگز به بیرون throw نمی‌کنیم؛ تلگرام retry نمی‌زند
+  }
+}
+
+/**
+ * handleRelink — انتقال امن چت تلگرام از حساب قبلی به حساب مقصد.
+ *
+ * امنیت (2026-08-15): انتقال فقط وقتی انجام می‌شود که شمارهٔ تماسِ تلگرام
+ * (که خود تلگرام تأییدش کرده — حساب‌های VoIP/مجازی برای contact قبول نمی‌کند)
+ * با شمارهٔ در انتظارِ حساب مقصد یکی باشد — proof-of-ownership. اگر شماره یکی
+ * نبود، تلاش به‌عنوان دزدی توکن رد می‌شود (توکن سوزانده می‌شود) و به ادمین
+ * هشدار داده می‌شود.
+ */
+async function handleRelink(opts: {
+  chat: string;
+  contactPhone: string;
+  contactUserId?: string;
+  tokenId: string;
+  targetUserId: string;
+}): Promise<void> {
+  const { chat, contactPhone, contactUserId, tokenId, targetUserId } = opts;
+
+  // نرمال‌سازی شمارهٔ تماس تلگرام → E.164 (همان منطق autoVerify)
+  const tgDigits = contactPhone.replace(/\D/g, '');
+  let tgE164: string | null = null;
+  try {
+    const { parsePhoneNumber } = await import('libphonenumber-js');
+    const parsed = parsePhoneNumber(`+${tgDigits}`);
+    if (parsed?.isValid()) tgE164 = parsed.format('E.164');
+  } catch {
+    // fallthrough — tgE164 = null → mismatch
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: targetUserId },
+    select: {
+      pendingPhone: true,
+      name: true,
+      email: true,
+      Customer: { select: { id: true, exchangeId: true } },
+    },
+  });
+
+  const phonesMatch = !!target?.pendingPhone && tgE164 === target.pendingPhone;
+
+  if (!target || !phonesMatch) {
+    // ❌ شماره یکی نیست → رد + توکن سوزانده می‌شود + هشدار ادمین
+    try {
+      await prisma.telegramLinkToken.update({
+        where: { id: tokenId },
+        data: { used: true, relinkChatId: null },
+      });
+    } catch {
+      // ignore
+    }
+    await sendTelegramMessage(
+      chat,
+      `❌ <b>انتقال انجام نشد</b>\n\n📱 شمارهٔ تلگرام شما: <code>${tgE164 ? formatTelegramPhone(tgE164) : 'نامشخص'}</code>\n📝 شمارهٔ در انتظارِ حساب: <code>${target?.pendingPhone ? formatTelegramPhone(target.pendingPhone) : '—'}</code>\n\nاین دو شماره یکی نیستند — برای امنیت، انتقال رد شد.\n\nاگر این درخواست مال شما نیست، با پشتیبانی تماس بگیرید.`,
+      { inlineKeyboard: PORTAL_KEYBOARD },
+    );
+    // هشدار به ادمین — احتمال دزدی توکن
+    const adminChat = process.env.TELEGRAM_ADMIN_CHAT_ID?.trim();
+    if (adminChat) {
+      await sendTelegramMessage(
+        adminChat,
+        `🚨 <b>هشدار امنیتی: انتقال چت رد شد</b>\n\nچت <code>${chat}</code> با توکنِ حساب <code>${targetUserId}</code> تلاش به انتقال کرد ولی شماره یکی نبود.\nشمارهٔ تلگرام: <code>${tgE164 ?? 'نامشخص'}</code> — احتمال دزدی توکن.`,
+      );
+    }
+    return;
+  }
+
+  // ✅ شماره یکی است → انتقال امن
+  const { v4: createId } = await import('uuid');
+  const _now = new Date();
+  const targetCustomer = target.Customer;
+
+  await prisma.$transaction(async (tx) => {
+    // ۱) چت را از حساب قبلی (A) جدا کن
+    await tx.user.updateMany({
+      where: { telegramChatId: chat },
+      data: { telegramChatId: null, telegramUserId: null },
+    });
+    // ۲) چت را به حساب مقصد (B) وصل کن
+    await tx.user.update({
+      where: { id: targetUserId },
+      data: {
+        telegramChatId: chat,
+        ...(contactUserId ? { telegramUserId: contactUserId } : {}),
+      },
+    });
+    // ۳) توکن را بسوزان — relink تمام شد
+    await tx.telegramLinkToken.update({
+      where: { id: tokenId },
+      data: { used: true, relinkChatId: null },
+    });
+    // ۴) AuditLog — عملیات حساس (C10)
+    if (targetCustomer) {
+      await tx.auditLog.create({
+        data: {
+          id: createId(),
+          exchangeId: targetCustomer.exchangeId,
+          actorId: targetUserId,
+          actorRole: 'USER',
+          action: 'TELEGRAM_CHAT_RELINKED',
+          entityType: 'User',
+          entityId: '',
+          meta: { chatId: chat, source: 'telegram-contact-relink' },
+        },
+      });
+    }
+  });
+
+  // همان contact شمارهٔ مقصد را خودکار تأیید می‌کند — بدون دکمهٔ دوم
+  const verify = await autoVerifyPhoneFromTelegram(targetUserId, contactPhone, {
+    tgUserId: contactUserId,
+  });
+  if (verify.ok) {
+    await sendTelegramMessage(
+      chat,
+      `✅ <b>انتقال انجام شد و هویت شما تأیید شد!</b>\n\nاین گفتگو حالا به حساب <code>${target.name?.trim() || target.email || 'شما'}</code> متصل است و سطح ۱ احراز هویت با شمارهٔ <code>${formatTelegramPhone(tgE164 as string)}</code> تکمیل شد.`,
+      {
+        inlineKeyboard: [
+          [{ text: '🚀 ادامهٔ احراز هویت (سطح ۲)', url: getPortalUrl('/customer/kyc') }],
+          [PORTAL_BTN],
+        ],
+      },
+    );
+  } else {
+    await sendTelegramMessage(
+      chat,
+      `✅ <b>انتقال انجام شد</b>\n\nاین گفتگو حالا به حساب <code>${target.name?.trim() || target.email || 'شما'}</code> متصل است.\n\nشماره‌ای در انتظار تأیید نبود — از پورتال، «ارسال کد تأیید» را بزنید.`,
+      { inlineKeyboard: PORTAL_KEYBOARD },
+    );
   }
 }
 

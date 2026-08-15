@@ -28,7 +28,18 @@ vi.mock('@/lib/telegram', () => telegramMock);
 const prismaMock = vi.hoisted(() => ({
   user: {
     findUnique: vi.fn(),
+    updateMany: vi.fn(),
+    update: vi.fn(),
+    findFirst: vi.fn(),
   },
+  telegramLinkToken: {
+    findFirst: vi.fn(),
+    update: vi.fn(),
+  },
+  auditLog: {
+    create: vi.fn(),
+  },
+  $transaction: vi.fn(),
 }));
 
 vi.mock('@/lib/db', () => ({ default: prismaMock }));
@@ -56,7 +67,10 @@ function makeRequest(body: unknown, secret?: string): Request {
 
 /** زنجیره‌های asyncِ after() را قبل از assert تخلیه می‌کند */
 async function flushAsync(): Promise<void> {
-  await new Promise((r) => setTimeout(r, 0));
+  // چند تیک — زنجیره‌های طولانی (dynamic import در relink و …) چند task می‌گیرند
+  for (let i = 0; i < 8; i++) {
+    await new Promise((r) => setTimeout(r, 0));
+  }
 }
 
 // ─── تست‌ها ───────────────────────────────────────────────────────────────────
@@ -65,6 +79,15 @@ describe('POST /api/telegram/webhook', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     telegramMock.sendTelegramMessage.mockResolvedValue({ success: true });
+    prismaMock.$transaction.mockImplementation((fn: (tx: unknown) => unknown) =>
+      fn({
+        user: prismaMock.user,
+        telegramLinkToken: prismaMock.telegramLinkToken,
+        auditLog: prismaMock.auditLog,
+      }),
+    );
+    // جریان عادی: بدون relink در انتظار
+    prismaMock.telegramLinkToken.findFirst.mockResolvedValue(null);
   });
 
   it('بدون secret معتبر → 401', async () => {
@@ -116,7 +139,9 @@ describe('POST /api/telegram/webhook', () => {
 
     const [chatId, text] = telegramMock.sendTelegramMessage.mock.calls[0];
     expect(chatId).toBe('9');
-    expect(text).toContain('موفقیت');
+    // بدون pendingPhone → پیام «اتصال موفق + گام بعدی»
+    expect(text).toContain('اتصال موفق');
+    expect(text).toContain('گام بعدی');
   });
 
   it('اگر توکن expired → پیام خطا + دکمهٔ پورتال ارسال می‌شود', async () => {
@@ -215,7 +240,7 @@ describe('POST /api/telegram/webhook', () => {
     await flushAsync();
     expect(telegramMock.sendTelegramChatAction).toHaveBeenCalledWith('3', 'typing');
     const [, text, markup] = telegramMock.sendTelegramMessage.mock.calls[0];
-    expect(text).toContain('تأیید نشد');
+    expect(text).toContain('شماره‌ها یکی نیستند');
     expect(text).toContain('یکی نیست');
     expect(markup).toEqual({
       inlineKeyboard: [[{ text: '🌐 باز کردن پورتال', url: 'https://financialmarket.page' }]],
@@ -245,7 +270,7 @@ describe('POST /api/telegram/webhook', () => {
     const [, text, markup] = telegramMock.sendTelegramMessage.mock.calls[0];
     expect(text).toContain('هویت شما تأیید شد');
     expect(text).toContain('<code>+98 916 520 0952</code>');
-    expect(markup.inlineKeyboard[0][0]).toMatchObject({ text: '🚀 ادامه احراز هویت' });
+    expect(markup.inlineKeyboard[0][0]).toMatchObject({ text: '🚀 ادامهٔ احراز هویت (سطح ۲)' });
   });
 
   it('حساب مسدود → بدون دکمه (طراحی اسکرین ۸)', async () => {
@@ -274,5 +299,113 @@ describe('POST /api/telegram/webhook', () => {
     const [, text, markup] = telegramMock.sendTelegramMessage.mock.calls[0];
     expect(text).toContain('مسدود');
     expect(markup).toBeUndefined();
+  });
+
+  // ── جریان انتقال چت (relink) 2026-08-15 ───────────────────────────────
+
+  it('chat-linked → پیام شفاف + دکمهٔ «ارسال شماره تماس» (بدون رد خام)', async () => {
+    telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
+    telegramMock.consumeTelegramLinkToken.mockResolvedValue({
+      ok: false,
+      reason: 'chat-linked',
+    });
+
+    await POST(makeRequest({ message: { chat: { id: 9 }, text: '/start link_x' } }));
+
+    const [, text, markup] = telegramMock.sendTelegramMessage.mock.calls[0];
+    expect(text).toContain('به حساب دیگری متصل است');
+    expect(text).toContain('شمارهٔ یکسان');
+    expect(markup).toEqual({ requestContact: true });
+  });
+
+  it('relink: شمارهٔ تلگرام با شمارهٔ حساب مقصد یکی است → انتقال + تأیید خودکار', async () => {
+    telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
+    prismaMock.telegramLinkToken.findFirst.mockResolvedValue({
+      id: 'tok1',
+      userId: 'uB',
+    });
+    prismaMock.user.findUnique.mockResolvedValue({
+      pendingPhone: '+989165200952',
+      name: 'علی',
+      email: 'ali@mail.com',
+      Customer: { id: 'cB', exchangeId: 'eB' },
+    });
+    phoneKycMock.autoVerifyPhoneFromTelegram.mockResolvedValue({ ok: true });
+
+    await POST(
+      makeRequest({
+        message: {
+          chat: { id: 3 },
+          contact: { phone_number: '989165200952', user_id: 999 },
+        },
+      }),
+    );
+
+    await flushAsync();
+    // انتقال: چت از حساب قبلی جدا + به حساب مقصد وصل + توکن سوزانده شد
+    expect(prismaMock.user.updateMany).toHaveBeenCalledWith({
+      where: { telegramChatId: '3' },
+      data: { telegramChatId: null, telegramUserId: null },
+    });
+    expect(prismaMock.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'uB' },
+        data: expect.objectContaining({ telegramChatId: '3', telegramUserId: '999' }),
+      }),
+    );
+    expect(prismaMock.telegramLinkToken.update).toHaveBeenCalledWith({
+      where: { id: 'tok1' },
+      data: { used: true, relinkChatId: null },
+    });
+    expect(prismaMock.auditLog.create).toHaveBeenCalled();
+    // همان contact، شمارهٔ مقصد را خودکار تأیید کرد
+    expect(phoneKycMock.autoVerifyPhoneFromTelegram).toHaveBeenCalledWith(
+      'uB',
+      '989165200952',
+      expect.objectContaining({ tgUserId: '999' }),
+    );
+    const [, text] = telegramMock.sendTelegramMessage.mock.calls[0];
+    expect(text).toContain('انتقال انجام شد و هویت شما تأیید شد');
+  });
+
+  it('relink: شماره یکی نیست → رد + توکن سوزانده + هشدار به ادمین', async () => {
+    telegramMock.isTelegramWebhookSecretValid.mockReturnValue(true);
+    prismaMock.telegramLinkToken.findFirst.mockResolvedValue({
+      id: 'tok1',
+      userId: 'uB',
+    });
+    prismaMock.user.findUnique.mockResolvedValue({
+      pendingPhone: '+989165200952',
+      name: 'علی',
+      email: 'ali@mail.com',
+      Customer: { id: 'cB', exchangeId: 'eB' },
+    });
+    process.env.TELEGRAM_ADMIN_CHAT_ID = 'admin123';
+
+    await POST(
+      makeRequest({
+        message: {
+          chat: { id: 3 },
+          contact: { phone_number: '989111111111', user_id: 999 },
+        },
+      }),
+    );
+
+    await flushAsync();
+    // توکن سوزانده شد تا attacker دوباره تلاش نکند
+    expect(prismaMock.telegramLinkToken.update).toHaveBeenCalledWith({
+      where: { id: 'tok1' },
+      data: { used: true, relinkChatId: null },
+    });
+    // انتقال انجام نشد — نه جدایی، نه اتصال
+    expect(prismaMock.user.updateMany).not.toHaveBeenCalled();
+    // پیام رد برای کاربر
+    const [, text] = telegramMock.sendTelegramMessage.mock.calls[0];
+    expect(text).toContain('انتقال انجام نشد');
+    // هشدار به ادمین (دزدی احتمالی توکن)
+    const [adminChat, adminText] = telegramMock.sendTelegramMessage.mock.calls[1];
+    expect(adminChat).toBe('admin123');
+    expect(adminText).toContain('هشدار امنیتی');
+    process.env.TELEGRAM_ADMIN_CHAT_ID = undefined;
   });
 });

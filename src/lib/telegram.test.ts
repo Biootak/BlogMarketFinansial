@@ -20,6 +20,7 @@ const prismaMock = vi.hoisted(() => ({
   user: {
     update: vi.fn(),
     findUnique: vi.fn(),
+    findFirst: vi.fn(),
   },
   $transaction: vi.fn(),
 }));
@@ -144,9 +145,12 @@ describe('consumeTelegramLinkToken', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.clearAllMocks();
     prismaMock.$transaction.mockImplementation((txns: unknown[]) =>
       Promise.all(txns as Promise<unknown>[]),
     );
+    // جریان عادی: چت آزاد است (هیچ حساب دیگری مالک آن نیست)
+    prismaMock.user.findFirst.mockResolvedValue(null);
   });
 
   it('توکن بدون پیشوند link_ → not-found', async () => {
@@ -209,15 +213,40 @@ describe('consumeTelegramLinkToken', () => {
     });
   });
 
-  it('P2002 (chat قبلاً وصل است) → chat-linked', async () => {
+  it('P2002 (race) → chat-linked + relinkChatId ثبت می‌شود', async () => {
     prismaMock.telegramLinkToken.findUnique.mockResolvedValue({
       id: 't1',
       used: false,
       expiresAt: future,
     });
+    prismaMock.telegramLinkToken.update.mockResolvedValue({});
     prismaMock.$transaction.mockRejectedValueOnce({ code: 'P2002' });
     const res = await consumeTelegramLinkToken('link_aa', 'chat-99');
     expect(res).toEqual({ ok: false, reason: 'chat-linked' });
+    // توکن burn نشده — جریان انتقال فعال شد
+    expect(prismaMock.telegramLinkToken.update).toHaveBeenCalledWith({
+      where: { token: 'link_aa' },
+      data: { relinkChatId: 'chat-99' },
+    });
+  });
+
+  it('چت قبلاً به حساب دیگری وصل است → chat-linked + relinkChatId (بدون burn)', async () => {
+    prismaMock.telegramLinkToken.findUnique.mockResolvedValue({
+      id: 't1',
+      used: false,
+      expiresAt: future,
+    });
+    prismaMock.telegramLinkToken.update.mockResolvedValue({});
+    // چت متعلق به حساب دیگری (نه کاربر توکن)
+    prismaMock.user.findFirst.mockResolvedValue({ id: 'other-user' });
+    const res = await consumeTelegramLinkToken('link_aa', 'chat-99');
+    expect(res).toEqual({ ok: false, reason: 'chat-linked' });
+    expect(prismaMock.telegramLinkToken.update).toHaveBeenCalledWith({
+      where: { id: 't1' },
+      data: { relinkChatId: 'chat-99' },
+    });
+    // هرگز transaction اتصال اجرا نشد
+    expect(prismaMock.$transaction).not.toHaveBeenCalled();
   });
 
   it('خطای دیگر → db-error', async () => {

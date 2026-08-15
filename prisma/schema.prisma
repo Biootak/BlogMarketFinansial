@@ -2204,10 +2204,15 @@ model TelegramLinkToken {
   used      Boolean  @default(false)
   expiresAt DateTime
   createdAt DateTime @default(now())
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// 2026-08-15: چت در انتظار انتقال — وقتی /start روی چتی که قبلاً به حساب
+  /// دیگری وصل است می‌آید، توکن burn نمی‌شود و این فیلد chatId را نگه می‌دارد
+  /// تا با تطبیق شمارهٔ تماس، چت به حساب مقصد منتقل شود.
+  relinkChatId String?
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([expiresAt])
+  @@index([relinkChatId])
 }
 
 enum ExchangeStatus {

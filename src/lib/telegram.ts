@@ -22,7 +22,7 @@ import prisma from '@/lib/db';
 
 const TELEGRAM_API = 'https://api.telegram.org';
 
-const LINK_TOKEN_TTL_MS = 15 * 60 * 1000;
+const LINK_TOKEN_TTL_MS = 30 * 60 * 1000;
 const LINK_PREFIX = 'link_';
 
 export interface TelegramSendResult {
@@ -53,13 +53,28 @@ export function getPortalUrl(path = '/customer/dashboard'): string {
 
 /**
  * formatTelegramPhone — نمایش خوانای شمارهٔ E.164 در پیام‌های ربات.
- * `+989165200952` → `+98 916 520 0952` (کد کشور + گروه‌های ۳-۳-۴).
+ * cc طول صحیح از PHONE_COUNTRIES شناسایی می‌شود (۱، ۲ یا ۳ رقم).
+ * `+989165200952` → `+98 916 520 0952`
+ * `+97150123456`  → `+971 50 123 456`
  */
 export function formatTelegramPhone(e164: string): string {
   const digits = e164.replace(/\D/g, '');
   if (digits.length < 4) return e164;
-  const cc = digits.slice(0, 2);
-  const rest = digits.slice(2);
+
+  // شناسایی طول cc از لیست کشورها (طولانی‌ترین match اول — مثل 971 قبل از 97)
+  const CC_LENGTHS = [3, 2, 1] as const;
+  let ccLen = 2; // fallback
+  for (const len of CC_LENGTHS) {
+    const prefix = `+${digits.slice(0, len)}`;
+    if (KNOWN_DIAL_PREFIXES.has(prefix)) {
+      ccLen = len;
+      break;
+    }
+  }
+
+  const cc = digits.slice(0, ccLen);
+  const rest = digits.slice(ccLen);
+  if (!rest) return `+${cc}`;
   if (rest.length <= 4) return `+${cc} ${rest}`;
   const groups: string[] = [];
   for (let i = 0; i < rest.length; i += 3) {
@@ -71,6 +86,15 @@ export function formatTelegramPhone(e164: string): string {
   }
   return `+${cc} ${groups.join(' ')}`;
 }
+
+/**
+ * مجموعهٔ پیش‌کدهای شناخته‌شده برای تشخیص طول cc.
+ * این set داخل ماژول نگه‌داری می‌شود تا circular import نشود.
+ */
+const KNOWN_DIAL_PREFIXES = new Set([
+  '+93', '+98', '+92', '+971', '+966', '+1', '+44', '+49', '+90', '+91',
+  '+992', '+998', '+7', '+86', '+880', '+964', '+963', '+994', '+995', '+996',
+]);
 
 /**
  * sendTelegramChatAction — نشانگر «در حال نوشتن» (typing) قبل از پاسخ ربات.
@@ -221,6 +245,22 @@ export async function consumeTelegramLinkToken(
     if (record.used) return { ok: false, reason: 'used' };
     if (record.expiresAt < new Date()) return { ok: false, reason: 'expired' };
 
+    // 2026-08-15: چت قبلاً به حساب دیگری وصل است؟ → جریان انتقال (relink).
+    // توکن burn نمی‌شود؛ relinkChatId نگه داشته می‌شود تا وقتی contact آمد و
+    // شمارهٔ تلگرام با شمارهٔ حساب مقصد تطبیق داده شد، چت منتقل شود.
+    // این به کاربر اجازه می‌دهد چت را به حساب دومش (با همان شماره) منتقل کند.
+    const existingOwner = await prisma.user.findFirst({
+      where: { telegramChatId: chatId },
+      select: { id: true },
+    });
+    if (existingOwner && existingOwner.id !== record.userId) {
+      await prisma.telegramLinkToken.update({
+        where: { id: record.id },
+        data: { relinkChatId: chatId },
+      });
+      return { ok: false, reason: 'chat-linked' };
+    }
+
     await prisma.$transaction([
       prisma.telegramLinkToken.update({
         where: { id: record.id },
@@ -243,8 +283,17 @@ export async function consumeTelegramLinkToken(
     const accountName = user?.name?.trim() || user?.email || null;
     return { ok: true, pendingPhone: user?.pendingPhone ?? null, accountName };
   } catch (err) {
-    // P2002: chat قبلاً به کاربر دیگری وصل شده — unique(telegramChatId)
+    // P2002: race — chat در همین لحظه به کاربر دیگری وصل شد. توکن transaction
+    // را rollback کرده (used=false می‌ماند) → جریان انتقال فعال می‌شود.
     if ((err as { code?: string }).code === 'P2002') {
+      try {
+        await prisma.telegramLinkToken.update({
+          where: { token },
+          data: { relinkChatId: chatId },
+        });
+      } catch {
+        // ignore — بهترین تلاش؛ اگر ست نشد همان رد قبلی کافی است
+      }
       return { ok: false, reason: 'chat-linked' };
     }
     return { ok: false, reason: 'db-error' };
