@@ -38,13 +38,15 @@ interface FeaturedPostHeroProps {
   className?: string;
 }
 
+// Module-level singleton — shared across all FeaturedPostHero instances on the page
+const _faDateFmt = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
 function formatJalaliDate(d: Date | string): string {
-  const date = new Date(d);
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
+  return _faDateFmt.format(new Date(d));
 }
 
 export default function FeaturedPostHero({ post, className }: FeaturedPostHeroProps) {

@@ -42,6 +42,14 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import s from './WalletClient.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
+// AFN formatter — reused across fmtAFN and fmtFxAmount
+const _faAFNFmt = new Intl.NumberFormat('fa-IR', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+  useGrouping: true,
+});
+// Cache for currency formatters — keyed by currency code
+const _fxFmtCache = new Map<string, Intl.NumberFormat>();
 
 type Account = { id: string; currency: string; balance: string; status: string; type: string };
 type WalletData = {
@@ -96,33 +104,26 @@ const FX_ITEMS: CurrencyItem[] = FX_CURRENCIES.map((c) => ({
 }));
 
 function formatFxAmount(cents: number, currency: FxCurrency): string {
-  // 2026-07-29: هیچ ارزی در سیستم ما decimal نیست؛ مقدار ورودی سِنت (عدد صحیح) است
-  // AFN: عدد فارسی + " AFN" بعد از عدد (نه «ف» جلوی عدد)
   if (currency === 'AFN') {
-    const formatted = new Intl.NumberFormat('fa-IR', {
+    return `${_faAFNFmt.format(cents)} AFN`;
+  }
+  let fmt = _fxFmtCache.get(currency);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat('fa-IR', {
+      style: 'currency',
+      currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-      useGrouping: true,
-    }).format(cents);
-    return `${formatted} AFN`;
+    });
+    _fxFmtCache.set(currency, fmt);
   }
-  return new Intl.NumberFormat('fa-IR', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(cents);
+  return fmt.format(cents);
 }
 
 function fmtAFN(amount: string): string {
   const n = Number(amount);
   if (Number.isNaN(n)) return '—';
-  const formatted = new Intl.NumberFormat('fa-IR', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-    useGrouping: true,
-  }).format(n / 100);
-  return `${formatted} AFN`;
+  return `${_faAFNFmt.format(n / 100)} AFN`;
 }
 
 function fmtDate(iso: string): string {

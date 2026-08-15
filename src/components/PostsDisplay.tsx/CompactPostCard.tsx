@@ -19,12 +19,12 @@ import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import Spotlight from '@/components/Sections/effects/Spotlight';
 import { getPostLink } from '@/lib/getPostLink';
+import { devImageSrc } from '@/lib/image-url';
 import { getReadingMinutes } from '@/lib/readingTime';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
 import { ArrowLeft, Calendar, Clock, Eye } from 'lucide-react';
 import Image from 'next/image';
-import { devImageSrc } from '@/lib/image-url';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
@@ -33,13 +33,15 @@ interface CompactPostCardProps {
   className?: string;
 }
 
+// Module-level singleton — shared across all CompactPostCard instances on the page
+const _faDateFmt = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
 function formatJalaliDate(d: Date | string): string {
-  const date = new Date(d);
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
+  return _faDateFmt.format(new Date(d));
 }
 
 export default function CompactPostCard({ post, className }: CompactPostCardProps) {

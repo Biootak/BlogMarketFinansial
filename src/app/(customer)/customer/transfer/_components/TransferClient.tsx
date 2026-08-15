@@ -45,6 +45,13 @@ import { useCallback, useEffect, useId, useMemo, useState, useTransition } from 
 import s from './TransferClient.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
+// Module-level formatters — avoid new Intl per fmtAmount call
+const _faAFNFmt = new Intl.NumberFormat('fa-IR', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+  useGrouping: true,
+});
+const _faCurrFmtCache = new Map<string, Intl.NumberFormat>();
 
 type TabId = 'deposit' | 'withdraw' | 'transfer' | 'exchange';
 type ResultKind = 'success' | 'error';
@@ -88,21 +95,18 @@ function newIdempotencyKey() {
 
 function fmtAmount(cents: number, currency: string): string {
   const n = cents / 100;
-  // AFN: عدد فارسی + " AFN" بعد از عدد (نه «ف» جلوی عدد)
-  if (currency === 'AFN') {
-    const formatted = new Intl.NumberFormat('fa-IR', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-      useGrouping: true,
-    }).format(n);
-    return `${formatted} AFN`;
-  }
+  if (currency === 'AFN') return `${_faAFNFmt.format(n)} AFN`;
   try {
-    return new Intl.NumberFormat('fa-IR', {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 0,
-    }).format(n);
+    let fmt = _faCurrFmtCache.get(currency);
+    if (!fmt) {
+      fmt = new Intl.NumberFormat('fa-IR', {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 0,
+      });
+      _faCurrFmtCache.set(currency, fmt);
+    }
+    return fmt.format(n);
   } catch {
     return `${_faNum.format(n)} ${currency}`;
   }

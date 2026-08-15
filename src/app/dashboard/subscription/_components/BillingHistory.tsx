@@ -15,6 +15,13 @@ import { useState } from 'react';
 import s from './BillingHistory.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
+// Module-level formatters — avoid new Intl per fmtAmount call
+const _faAFNFmt = new Intl.NumberFormat('fa-IR', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+  useGrouping: true,
+});
+const _faCurrFmtCache = new Map<string, Intl.NumberFormat>();
 
 interface Event {
   id: string;
@@ -60,21 +67,18 @@ const PLAN_FA: Record<string, string> = {
 function fmtAmount(amount: string, currency: string): string {
   const num = Number(amount) / 100;
   if (num === 0) return '—';
-  // AFN: عدد فارسی + " AFN" بعد از عدد (نه «ف» جلوی عدد)
-  if (currency === 'AFN') {
-    const formatted = new Intl.NumberFormat('fa-IR', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-      useGrouping: true,
-    }).format(num);
-    return `${formatted} AFN`;
-  }
+  if (currency === 'AFN') return `${_faAFNFmt.format(num)} AFN`;
   try {
-    return new Intl.NumberFormat('fa-IR', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-    }).format(num);
+    let fmt = _faCurrFmtCache.get(currency);
+    if (!fmt) {
+      fmt = new Intl.NumberFormat('fa-IR', {
+        style: 'currency',
+        currency,
+        minimumFractionDigits: 0,
+      });
+      _faCurrFmtCache.set(currency, fmt);
+    }
+    return fmt.format(num);
   } catch {
     return `${_faNum.format(num)} ${currency}`;
   }

@@ -5,6 +5,16 @@ import type { PostWithRelations } from '@/types/types';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+// Module-level singleton — shared across all PostCardMeta instances on the page
+const _faDateFmt = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  hour12: false,
+});
+
 export interface PostCardMetaProps {
   className?: string;
   meta: Pick<PostWithRelations, 'createdAt' | 'author'>;
@@ -22,16 +32,7 @@ const PostCardMeta: React.FC<PostCardMetaProps> = ({
   const [formattedDate, setFormattedDate] = useState<string>('');
 
   useEffect(() => {
-    setFormattedDate(
-      new Intl.DateTimeFormat('fa-IR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: false,
-      }).format(new Date(createdAt)),
-    );
+    setFormattedDate(_faDateFmt.format(new Date(createdAt)));
   }, [createdAt]);
 
   return (

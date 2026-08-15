@@ -56,6 +56,12 @@ import { useCallback, useMemo, useState, useTransition } from 'react';
 import s from './SettlementClient.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
+// AFN formatter — shared across fmtAFN calls
+const _faAFNFmt = new Intl.NumberFormat('fa-IR', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+  useGrouping: true,
+});
 
 type Props = {
   settlements: SettlementRow[];
@@ -83,12 +89,7 @@ const STATUS_VARIANT: Record<string, string> = {
 
 function fmtAFN(val: string): string {
   const n = Number(val) / 100;
-  const formatted = new Intl.NumberFormat('fa-IR', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-    useGrouping: true,
-  }).format(n);
-  return `${formatted} AFN`;
+  return `${_faAFNFmt.format(n)} AFN`;
 }
 
 function fmtNum(n: number): string {

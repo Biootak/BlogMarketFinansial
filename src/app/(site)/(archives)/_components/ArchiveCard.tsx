@@ -30,13 +30,16 @@ export interface ArchiveCardProps {
   variant?: 'card' | 'list';
 }
 
+// Module-level singleton — shared across all ArchiveCard instances
+const _faDateFmt = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
 function formatJalaliDate(d: Date | string) {
   try {
-    return new Intl.DateTimeFormat('fa-IR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(new Date(d));
+    return _faDateFmt.format(new Date(d));
   } catch {
     return '';
   }

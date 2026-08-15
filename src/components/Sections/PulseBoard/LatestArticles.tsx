@@ -22,8 +22,8 @@ import AnimatedNumber from '@/components/Sections/effects/AnimatedNumber';
 import LiveClock from '@/components/Sections/effects/LiveClock';
 import MarketTicker from '@/components/Sections/effects/MarketTicker';
 import { getCategoryAccent } from '@/components/Sections/effects/categoryAccent';
-import { getPostLink } from '@/lib/getPostLink';
 import { useMediaQuery } from '@/hooks/use-media-query';
+import { getPostLink } from '@/lib/getPostLink';
 import { motion, useInView, useReducedMotion } from '@/lib/motion-shim';
 import { cn, formatNumber, toPersianNumber } from '@/lib/utils';
 import type { Advertisement, PostWithRelations } from '@/types/types';
@@ -123,19 +123,23 @@ function accessibleTextColor(hex: string, fallback = '#374151'): string {
   return hex;
 }
 
+// Module-level singletons — shared across all LatestArticles renders
+const _faDateFull = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+const _faDateShort = new Intl.DateTimeFormat('fa-IR', {
+  month: 'long',
+  day: 'numeric',
+});
+
 function fmtJalali(d: Date | string): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(d));
+  return _faDateFull.format(new Date(d));
 }
 
 function fmtJalaliShort(d: Date | string): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(d));
+  return _faDateShort.format(new Date(d));
 }
 
 function relTime(d: Date | string): string {

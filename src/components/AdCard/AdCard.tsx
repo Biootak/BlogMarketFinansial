@@ -28,10 +28,10 @@ import '@/styles/ad-primitives.css';
  */
 
 import { TiltCard } from '@/components/ModernTrending/effects/TiltCard';
+import { devImageSrc } from '@/lib/image-url';
 import { cn, toPersianNumber } from '@/lib/utils';
 import type { Advertisement } from '@/types/types';
 import { ArrowUpLeft, ExternalLink, Eye, Sparkles } from 'lucide-react';
-import { devImageSrc } from '@/lib/image-url';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
@@ -80,15 +80,16 @@ function getRatioForAd(ad: Advertisement, variant: AdCardVariant): string {
   }
 }
 
+// Module-level singleton pinned to Asia/Tehran — shared across all AdCard instances.
+// Pinning the timeZone avoids hydration mismatches (server is UTC, client may differ).
+const _faAdDateFmt = new Intl.DateTimeFormat('fa-IR', {
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'Asia/Tehran',
+});
+
 function formatJalaliShort(d: Date | string): string {
-  const date = new Date(d);
-  // Pin to Asia/Tehran so server (UTC) and client render identical strings
-  // — avoids a React hydration mismatch in the showcase card.
-  return new Intl.DateTimeFormat('fa-IR', {
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'Asia/Tehran',
-  }).format(date);
+  return _faAdDateFmt.format(new Date(d));
 }
 
 /* -------------------------------------------------------------------------- */

@@ -83,8 +83,12 @@ function formatDuration(min: number): string {
   return `${Math.round(min / (60 * 24))} روز`;
 }
 
-// Module-level Intl singleton — created once at module load
+// Module-level Intl singletons — created once at module load
 const _faNum = new Intl.NumberFormat('fa-IR');
+const _faDateShortTime = new Intl.DateTimeFormat('fa-IR', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+});
 
 function formatNum(n: number): string {
   return _faNum.format(n);
@@ -558,13 +562,7 @@ export default function ExchangeRatesWorkspace({ exchange, provider }: Props) {
             {/* زمان آخرین ذخیره */}
             {lastSaved && (
               <p className={s.previewLastSaved}>
-                آخرین ذخیره:{' '}
-                <span dir="ltr">
-                  {new Intl.DateTimeFormat('fa-IR', {
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  }).format(lastSaved)}
-                </span>
+                آخرین ذخیره: <span dir="ltr">{_faDateShortTime.format(lastSaved)}</span>
               </p>
             )}
           </div>

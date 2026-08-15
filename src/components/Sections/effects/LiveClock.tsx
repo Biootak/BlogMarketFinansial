@@ -25,17 +25,30 @@ interface LiveClockProps {
   timeZone?: string;
 }
 
+// Module-level cache — keyed by `timeZone:showSeconds` (at most ~4 entries in practice)
+const _clockFmtCache = new Map<string, Intl.DateTimeFormat>();
+
+function _getClockFmt(showSeconds: boolean, timeZone: string): Intl.DateTimeFormat {
+  const key = `${timeZone}:${showSeconds}`;
+  let fmt = _clockFmtCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.DateTimeFormat('fa-IR', {
+      timeZone,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: showSeconds ? '2-digit' : undefined,
+      hour12: false,
+    });
+    _clockFmtCache.set(key, fmt);
+  }
+  return fmt;
+}
+
 function getTimeParts(
   showSeconds: boolean,
   timeZone: string,
 ): { hour: string; minute: string; second: string | undefined } {
-  const formatter = new Intl.DateTimeFormat('fa-IR', {
-    timeZone,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: showSeconds ? '2-digit' : undefined,
-    hour12: false,
-  });
+  const formatter = _getClockFmt(showSeconds, timeZone);
   const parts = formatter.formatToParts(new Date());
   const hour = parts.find((p) => p.type === 'hour')?.value ?? '۰۰';
   const minute = parts.find((p) => p.type === 'minute')?.value ?? '۰۰';

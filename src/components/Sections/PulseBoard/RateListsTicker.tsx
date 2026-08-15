@@ -69,12 +69,15 @@ function getAccentForTitle(title: string): { color: string; label: string } {
   return DEFAULT_ACCENT;
 }
 
+// Module-level singleton — shared across all RateListsTicker renders
+const _faDateFmt = new Intl.DateTimeFormat('fa-IR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
 function fmtJalaliShort(d: Date | string): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(new Date(d));
+  return _faDateFmt.format(new Date(d));
 }
 
 function RateListsTicker({

@@ -45,10 +45,13 @@ const EMPTY_FORM: FormState = {
   isActive: true,
 };
 
+// Module-level singleton — avoids allocating per dateLabel() call
+const _faDateMedium = new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' });
+
 function dateLabel(d: Date | string): string {
   const dt = d instanceof Date ? d : new Date(d);
   if (Number.isNaN(dt.getTime())) return '—';
-  return new Intl.DateTimeFormat('fa-IR', { dateStyle: 'medium' }).format(dt);
+  return _faDateMedium.format(dt);
 }
 
 export default function RateListsWorkspace({ initialLists }: Props) {
