@@ -13,7 +13,6 @@
  */
 
 import prisma from '@/lib/db';
-import { validatePhone } from '@/lib/phone-validation';
 
 export type AutoVerifyPhoneResult =
   | { ok: true }
@@ -77,14 +76,25 @@ export async function autoVerifyPhoneFromTelegram(
       return { ok: false, reason: 'telegram-identity-mismatch' };
     }
 
-    // نرمال‌سازی شمارهٔ تلگرام — معمولاً بدون + می‌آید (989916520952) و چون
-    // شمارهٔ تلگرام همیشه بین‌المللی کامل است، + اضافه می‌کنیم تا با
-    // کشور پیش‌فرض (افغانستان) اشتباه پارس نشود.
+    // نرمال‌سازی شمارهٔ تلگرام — معمولاً بدون + می‌آید (989916520952).
+    // تلگرام خودش شماره‌ها را تأیید کرده — نیازی به چک VOIP/مجازی نیست.
+    // فقط E.164 می‌کنیم و با pendingPhone مقایسه می‌کنیم.
     const tgDigits = rawPhone.replace(/\D/g, '');
-    const tgWithPlus = tgDigits ? `+${tgDigits}` : rawPhone.trim();
-    const norm = validatePhone(tgWithPlus);
-    if (!norm.valid) return { ok: false, reason: 'mismatch' };
-    if (norm.e164 !== user.pendingPhone) return { ok: false, reason: 'mismatch' };
+    if (!tgDigits) return { ok: false, reason: 'mismatch' };
+    const tgWithPlus = `+${tgDigits}`;
+
+    // normalize با libphonenumber — بدون اعمال فیلتر VOIP
+    const { parsePhoneNumber } = await import('libphonenumber-js');
+    let tgE164: string;
+    try {
+      const parsed = parsePhoneNumber(tgWithPlus);
+      if (!parsed || !parsed.isValid()) return { ok: false, reason: 'mismatch' };
+      tgE164 = parsed.format('E.164');
+    } catch {
+      return { ok: false, reason: 'mismatch' };
+    }
+
+    if (tgE164 !== user.pendingPhone) return { ok: false, reason: 'mismatch' };
 
     const customer = user.Customer;
     if (!customer) return { ok: false, reason: 'no-customer' };
@@ -110,7 +120,7 @@ export async function autoVerifyPhoneFromTelegram(
           level: 'LEVEL_1',
           status: 'APPROVED',
           docType: 'PHONE',
-          docNumber: norm.e164,
+          docNumber: tgE164,
           reviewedAt: now,
           expiresAt,
           updatedAt: now,
@@ -133,7 +143,7 @@ export async function autoVerifyPhoneFromTelegram(
 
       await tx.user.update({
         where: { id: userId },
-        data: { phoneNumber: norm.e164, pendingPhone: null },
+        data: { phoneNumber: tgE164, pendingPhone: null },
       });
 
       // audit log

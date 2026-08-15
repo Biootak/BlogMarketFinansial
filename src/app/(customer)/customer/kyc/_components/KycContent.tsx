@@ -33,6 +33,7 @@ import {
   StatusRail,
 } from '@/app/(customer)/customer/_lib/customer-ui';
 import { ImageUploader } from '@/components/ImageUpload/ImageUploader';
+import { CountryCodeSelect } from '@/components/ui/CountryCodeSelect';
 import {
   Dialog,
   DialogContent,
@@ -48,7 +49,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { KYC_TIER_LIMITS } from '@/lib/kyc-tier';
-import { DEFAULT_DIAL_CODE, PHONE_COUNTRIES, combineDialAndNumber } from '@/lib/phone-countries';
+import { PHONE_COUNTRIES, combineDialAndNumber } from '@/lib/phone-countries';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -112,10 +113,16 @@ export default function KycContent({ profile, records }: Props) {
   const [success, setSuccess] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [successLevel, setSuccessLevel] = useState<KycLevel | null>(null);
+  // نشان‌دهنده «در حال تأیید» قبل از router.refresh — جلوگیری از احساس crash
+  const [autoVerifying, setAutoVerifying] = useState(false);
+  // وقتی تلگرام وصل نیست، polling کُند می‌شود (تعداد linked=false پشت سر هم)
+  const notLinkedCountRef = useRef(0);
 
   // سطح ۱ — موبایل و تلگرام
   const [phone, setPhone] = useState(profile.phone ?? '');
-  const [dialCode, setDialCode] = useState(DEFAULT_DIAL_CODE);
+  // کد کشور (ISO) — پیش‌فرض افغانستان
+  const [dialCountry, setDialCountry] = useState('AF');
+  const dialCode = PHONE_COUNTRIES.find((o) => o.code === dialCountry)?.dial ?? '+93';
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpInfo, setOtpInfo] = useState<string | null>(null);
@@ -217,7 +224,7 @@ export default function KycContent({ profile, records }: Props) {
 
   function resetFields() {
     setPhone(profile.phone ?? '');
-    setDialCode(DEFAULT_DIAL_CODE);
+    setDialCountry('AF');
     setOtpCode('');
     setOtpSent(false);
     setOtpInfo(null);
@@ -233,24 +240,25 @@ export default function KycContent({ profile, records }: Props) {
   }
 
   // ── پولینگ تأیید خودکار تلگرام ─────────────────────────────────────
-  // بعد از «ارسال کد»، هر ۳ ثانیه چک می‌شود که آیا وبهوک تلگرام شماره را
-  // تأیید کرده (pendingPhone پاک شده) — اگر بله، دیالوگ خودکار بسته می‌شود
-  // و کاربر مجبور به وارد کردن OTP نیست.
-  const verifyPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // بعد از «ارسال کد»، چک می‌شود که آیا وبهوک تلگرام شماره را تأیید کرده.
+  // از setTimeout به جای setInterval استفاده می‌شود تا بتوان delay را dynamic کرد.
+  const verifyPollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stopVerifyPoll = useCallback(() => {
     if (verifyPollRef.current) {
-      clearInterval(verifyPollRef.current);
+      clearTimeout(verifyPollRef.current);
       verifyPollRef.current = null;
     }
   }, []);
 
   const startVerifyPoll = useCallback(() => {
     stopVerifyPoll();
+    notLinkedCountRef.current = 0;
     let attempts = 0;
-    verifyPollRef.current = setInterval(async () => {
+
+    const tick = async () => {
       attempts += 1;
-      if (attempts > 40) {
-        // ~۲ دقیقه — اگر تلگرام تأیید نکرد، کاربر همچنان مسیر OTP را دارد
+      // ~۳ دقیقه حداکثر (۶۰ بار با فاصله ۳–۱۰ ثانیه)
+      if (attempts > 60) {
         stopVerifyPoll();
         return;
       }
@@ -258,16 +266,32 @@ export default function KycContent({ profile, records }: Props) {
         const res = await getTelegramLink();
         if (res.success && res.data.linked && res.data.pendingPhoneVerified) {
           stopVerifyPoll();
+          // ۸۰۰ms نشان‌دهنده موفقیت → بعد refresh — جلوگیری از احساس crash
+          setAutoVerifying(true);
+          await new Promise((r) => setTimeout(r, 800));
           setSuccess(true);
           setSuccessLevel('LEVEL_1');
           closeDialog();
+          setAutoVerifying(false);
           resetFields();
           router.refresh();
+          return;
+        }
+        // تلگرام هنوز وصل نیست — بعد از ۳ بار interval را کُند کن (هر ۱۰s)
+        if (res.success && !res.data.linked) {
+          notLinkedCountRef.current += 1;
+        } else {
+          notLinkedCountRef.current = 0;
         }
       } catch {
-        // خطاهای موقتی نادیده گرفته می‌شوند — پولینگ ادامه می‌دهد
+        // خطاهای موقتی نادیده گرفته می‌شوند
       }
-    }, 3000);
+      // interval بعدی: بعد از ۳ بار linked=false → ۱۰ ثانیه، وگرنه ۳ ثانیه
+      const delay = notLinkedCountRef.current >= 3 ? 10_000 : 3_000;
+      verifyPollRef.current = setTimeout(tick, delay) as unknown as ReturnType<typeof setInterval>;
+    };
+
+    verifyPollRef.current = setTimeout(tick, 3_000) as unknown as ReturnType<typeof setInterval>;
   }, [stopVerifyPoll, router]);
 
   useEffect(() => () => stopVerifyPoll(), [stopVerifyPoll]);
@@ -639,8 +663,19 @@ export default function KycContent({ profile, records }: Props) {
                               <label htmlFor="phone" className={s.formLabel}>
                                 شماره موبایل
                               </label>
-                              <div className={s.phoneRow}>
-                                {/* کد کشور سمت چپِ شماره — چون اعداد از چپ خوانده می‌شوند */}
+                              <div className={s.phoneRow} dir="ltr">
+                                {/* کد کشور سمت چپِ شماره — CountryCodeSelect LTR-pinned */}
+                                <CountryCodeSelect
+                                  value={dialCountry}
+                                  onChange={setDialCountry}
+                                  options={PHONE_COUNTRIES.map((o) => ({
+                                    code: o.code,
+                                    name: o.label,
+                                    dial: o.dial,
+                                  }))}
+                                  ariaLabel="کد کشور"
+                                  disabled={isPending || otpPending}
+                                />
                                 <input
                                   id="phone"
                                   type="tel"
@@ -654,31 +689,10 @@ export default function KycContent({ profile, records }: Props) {
                                   autoComplete="tel-national"
                                   dir="ltr"
                                 />
-                                <Select
-                                  value={dialCode}
-                                  onValueChange={setDialCode}
-                                  disabled={isPending || otpPending}
-                                >
-                                  <SelectTrigger
-                                    className={`${s.formControl} ${s.formSelectTrigger} ${s.dialSelect}`}
-                                    aria-label="کد کشور"
-                                  >
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {PHONE_COUNTRIES.map((o) => (
-                                      <SelectItem key={o.dial} value={o.dial}>
-                                        <span className={s.dialItem}>
-                                          <span aria-hidden>{o.flag}</span>
-                                          {o.label} {o.dial}
-                                        </span>
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
                               </div>
                               <span className={s.formHint}>
-                                کد تأیید به تلگرام شما ارسال می‌شود — {dialCode} پیش‌فرض است.
+                                مطمئن شوید شمارهٔ تلگرام شما همین <b dir="ltr">{dialCode}</b> است —
+                                کد تأیید از طریق تلگرام ارسال می‌شود.
                               </span>
                             </div>
 
@@ -707,7 +721,13 @@ export default function KycContent({ profile, records }: Props) {
                                     کد تست (فقط توسعه): <b dir="ltr">{devCode}</b>
                                   </span>
                                 )}
-                                {telegramUrl && (
+                                {autoVerifying && (
+                                  <span className={s.autoVerifyHint}>
+                                    <Loader2 size={11} aria-hidden className={s.spinnerInline} />
+                                    شماره در حال تأیید خودکار...
+                                  </span>
+                                )}
+                                {telegramUrl && !autoVerifying && (
                                   <a
                                     href={telegramUrl}
                                     target="_blank"
@@ -715,7 +735,7 @@ export default function KycContent({ profile, records }: Props) {
                                     className={s.telegramLink}
                                   >
                                     <MessageCircle size={11} aria-hidden />
-                                    اتصال تلگرام (اختیاری) — کدها مستقیم در تلگرام
+                                    اتصال تلگرام — تأیید خودکار شماره
                                   </a>
                                 )}
                               </div>
@@ -731,7 +751,7 @@ export default function KycContent({ profile, records }: Props) {
                                       className={s.telegramLink}
                                     >
                                       <MessageCircle size={11} aria-hidden />
-                                      اتصال تلگرام (اختیاری)
+                                      اتصال تلگرام — تأیید خودکار شماره
                                     </a>
                                   )}
                                 </div>

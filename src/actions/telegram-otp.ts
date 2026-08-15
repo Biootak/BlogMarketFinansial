@@ -5,6 +5,7 @@ import { validatePhone } from '@/lib/phone-validation';
 import { requireUser } from '@/lib/require-auth';
 import {
   createTelegramLinkToken,
+  formatTelegramPhone,
   getTelegramBotUsername,
   getTelegramLinkUrl,
   sendTelegramMessage,
@@ -86,10 +87,10 @@ export async function getTelegramLink(): Promise<FintechActionResult<TelegramLin
     };
   }
 
-  // FIX: توکن موجود (استفاده‌نشده و منقضی‌نشده) را برگردان — ساخت توکن جدید
-  // هر بار، لینک نمایش‌داده‌شده به کاربر را باطل می‌کرد (پولینگ UI هر ۳ ثانیه
-  // این اکشن را صدا می‌زند و هر بار توکن قبلی را used می‌کرد → «لینک قبلاً
-  // استفاده شده است»). فقط وقتی توکن معتبری نیست، یکی جدید ساخته می‌شود.
+  // توکن موجود معتبر را برگردان — هرگز createTelegramLinkToken بدون بررسی
+  // موجودی صدا نزن، آن همه توکن‌های قبلی را باطل می‌کند و کاربری که لینک
+  // را دارد با «نامعتبر» روبرو می‌شود. polling این action را هر چند ثانیه
+  // صدا می‌زند — بدون این guard هر بار لینک در دست کاربر کِش می‌شد.
   const existing = await prisma.telegramLinkToken.findFirst({
     where: {
       userId: auth.user.id,
@@ -99,24 +100,16 @@ export async function getTelegramLink(): Promise<FintechActionResult<TelegramLin
     orderBy: { createdAt: 'desc' },
     select: { token: true },
   });
-  if (existing) {
-    return {
-      success: true,
-      data: {
-        linked: false,
-        url: getTelegramLinkUrl(existing.token),
-        username,
-        pendingPhoneVerified: false,
-      },
-    };
-  }
 
-  const token = await createTelegramLinkToken(auth.user.id);
+  // فقط اگر هیچ توکن معتبری نیست، جدید بساز
+  // (createTelegramLinkToken ابتدا همه قبلی‌ها را باطل می‌کند — باید آخرین راه باشد)
+  const activeToken = existing?.token ?? (await createTelegramLinkToken(auth.user.id));
+
   return {
     success: true,
     data: {
       linked: false,
-      url: getTelegramLinkUrl(token),
+      url: getTelegramLinkUrl(activeToken),
       username,
       pendingPhoneVerified: false,
     },
@@ -163,19 +156,30 @@ export async function requestPhoneOtpOrTelegramLink(phone: string): Promise<Phon
   const username = getTelegramBotUsername();
 
   if (user?.telegramChatId) {
-    // تلگرام وصل است → دکمهٔ ارسال شماره تماس را همین حالا بفرست
+    // تلگرام وصل است → دکمهٔ ارسال شماره تماس را همین حالا بفرست + شماره مورد انتظار نشان بده
     if (username) {
       const sent = await sendTelegramMessage(
         user.telegramChatId,
-        'برای تأیید خودکار شماره موبایل، دکمهٔ زیر را بزنید تا شمارهٔ تلگرام شما با شمارهٔ واردشده در سایت مقایسه و تأیید شود.',
+        `🔐 <b>تأیید شماره موبایل</b>\n\n📱 شماره‌ای که وارد کردید: <code>${formatTelegramPhone(e164)}</code>\n\nبرای تأیید، دکمهٔ زیر را بزنید. <b>شمارهٔ تلگرام شما باید همین شماره باشد</b> تا تأیید خودکار انجام شود.`,
         { requestContact: true },
       );
       if (sent.success) telegramAction = 'contact-request';
     }
   } else if (username) {
-    // تلگرام وصل نیست → لینک اتصال بساز؛ بعد از /start ربات دکمهٔ شماره را می‌فرستد
+    // تلگرام وصل نیست → لینک اتصال بساز (یا توکن معتبر موجود را reuse کن)
+    // ⚠️ هرگز createTelegramLinkToken بدون بررسی موجودی صدا نزن — آن توکن‌های
+    // قبلی را باطل می‌کند و کاربری که لینک را دارد با «نامعتبر» روبرو می‌شود.
     try {
-      const token = await createTelegramLinkToken(authResult.user.id);
+      const existingForOtp = await prisma.telegramLinkToken.findFirst({
+        where: {
+          userId: authResult.user.id,
+          used: false,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: { token: true },
+      });
+      const token = existingForOtp?.token ?? (await createTelegramLinkToken(authResult.user.id));
       telegramUrl = getTelegramLinkUrl(token);
       telegramAction = 'link';
     } catch {
@@ -192,11 +196,9 @@ export async function requestPhoneOtpOrTelegramLink(phone: string): Promise<Phon
 
   let message = res.message;
   if (telegramAction === 'contact-request') {
-    message =
-      'در تلگرام روی دکمهٔ «ارسال شماره تماس» بزنید — اگر شماره یکی بود، خودکار تأیید می‌شوید. کد هم به‌عنوان پشتیبان ارسال شد.';
+    message = `پیامی در تلگرام برای شما ارسال شد — شمارهٔ ثبت‌شده (${e164}) را با دکمهٔ «ارسال شماره تماس» تأیید کنید. کد پشتیبان هم ارسال شد.`;
   } else if (telegramAction === 'link') {
-    message =
-      'برای تأیید خودکار: تلگرام را باز کنید و Start بزنید، سپس روی دکمهٔ «ارسال شماره تماس» — کد هم به‌عنوان پشتیبان ارسال شد.';
+    message = `تلگرام را باز کنید، روی «Start» بزنید و سپس دکمهٔ «ارسال شماره تماس» را بزنید — شمارهٔ تلگرام شما باید ${e164} باشد. کد پشتیبان هم ارسال شد.`;
   }
 
   return { kind: 'sent', message, devCode: res.devCode, telegramUrl };
