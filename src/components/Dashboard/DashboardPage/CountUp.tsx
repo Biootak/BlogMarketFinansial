@@ -20,7 +20,7 @@
  *     interrupting other speech
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface CountUpProps {
   value: number;
@@ -37,6 +37,23 @@ interface CountUpProps {
 
 const easeOutQuart = (t: number) => 1 - (1 - t) ** 4;
 
+// Module-level cache: reuse Intl.NumberFormat instances across all CountUp mounts.
+// Key: `${locale}:${decimals}` — covers every combination used in the app.
+const fmtCache = new Map<string, Intl.NumberFormat>();
+
+function getFormatter(locale: string, decimals: number): Intl.NumberFormat {
+  const key = `${locale}:${decimals}`;
+  let fmt = fmtCache.get(key);
+  if (!fmt) {
+    fmt = new Intl.NumberFormat(locale, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+    fmtCache.set(key, fmt);
+  }
+  return fmt;
+}
+
 export default function CountUp({
   value,
   duration = 900,
@@ -50,6 +67,9 @@ export default function CountUp({
   const startRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
   const reducedMotion = useRef<boolean>(false);
+
+  // Stable formatter — only recreated when locale/decimals change (rare).
+  const formatter = useMemo(() => getFormatter(locale, decimals), [locale, decimals]);
 
   // Honor prefers-reduced-motion at mount.
   useEffect(() => {
@@ -92,10 +112,7 @@ export default function CountUp({
     };
   }, [value, duration]);
 
-  const formatted = new Intl.NumberFormat(locale, {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(Math.round(display * 10 ** decimals) / 10 ** decimals);
+  const formatted = formatter.format(Math.round(display * 10 ** decimals) / 10 ** decimals);
 
   return (
     <output

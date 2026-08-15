@@ -191,6 +191,21 @@ const _faCompact = new Intl.NumberFormat('fa-IR', {
   notation: 'compact',
   maximumFractionDigits: 1,
 });
+// Module-level cache for currency formatters — avoids new Intl.NumberFormat on every call
+const _currencyFmtCache = new Map<string, Intl.NumberFormat>();
+// Shared fa-IR date formatter (weekday+day+month) — used in CockpitHero
+const _faDateLong = new Intl.DateTimeFormat('fa-IR', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+});
+// Shared en-GB time formatter HH:MM:SS
+const _enTimeFmt = new Intl.DateTimeFormat('en-GB', {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
 
 const formatRelDate = (iso: string | Date): string => {
   const date = typeof iso === 'string' ? new Date(iso) : iso;
@@ -211,11 +226,16 @@ const formatCurrency = (n: number, currency: string): string => {
     return `${_faNum.format(Math.round(n))} AFN`;
   }
   try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      maximumFractionDigits: 2,
-    }).format(n);
+    let fmt = _currencyFmtCache.get(currency);
+    if (!fmt) {
+      fmt = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency,
+        maximumFractionDigits: 2,
+      });
+      _currencyFmtCache.set(currency, fmt);
+    }
+    return fmt.format(n);
   } catch {
     return `${_faNum.format(Math.round(n))} ${currency}`;
   }
@@ -265,11 +285,19 @@ function pickKeyRates(rates: MarketRateItem[]): MarketRateItem[] {
   return combined.length > 0 ? combined.slice(0, 4) : rates.slice(0, 4);
 }
 
+// Module-level cache for fa-IR decimal formatters (keyed by decimals count)
+const _faDecFmtCache = new Map<number, Intl.NumberFormat>();
+
 function formatRateValue(item: MarketRateItem): string {
   const val = item.value / item.divisor;
   if (val >= 1_000_000) return `${(val / 1_000_000).toFixed(2)}M`;
-  if (val >= 1_000) return new Intl.NumberFormat('fa-IR').format(Math.round(val));
-  return new Intl.NumberFormat('fa-IR', { maximumFractionDigits: item.decimals }).format(val);
+  if (val >= 1_000) return _faNum.format(Math.round(val));
+  let decFmt = _faDecFmtCache.get(item.decimals);
+  if (!decFmt) {
+    decFmt = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: item.decimals });
+    _faDecFmtCache.set(item.decimals, decFmt);
+  }
+  return decFmt.format(val);
 }
 
 // ─── Ambient SVG glow (signature moment) ────────────────────────────────
@@ -337,6 +365,28 @@ function StaggerChildren({
 
 // ─── Subcomponents ──────────────────────────────────────────────────────
 
+/**
+ * HeroClock — isolated ticker component so only this tiny span re-renders
+ * every second, NOT the entire CockpitHero tree.
+ */
+function HeroClock({ className }: { className?: string }) {
+  const [timeStr, setTimeStr] = useState(() => _enTimeFmt.format(new Date()));
+  useVisibilityAwareInterval(() => setTimeStr(_enTimeFmt.format(new Date())), 1000);
+  return (
+    <span className={className} dir="ltr">
+      {timeStr}
+    </span>
+  );
+}
+
+function getGreeting(h: number): string {
+  if (h < 5) return 'بامداد بخیر';
+  if (h < 12) return 'صبح بخیر';
+  if (h < 17) return 'ظهر بخیر';
+  if (h < 21) return 'عصر بخیر';
+  return 'شب بخیر';
+}
+
 function CockpitHero({
   userName,
   userRole,
@@ -366,25 +416,11 @@ function CockpitHero({
   kpi?: FintechCockpitProps['kpi'];
   deadlines?: FintechCockpitProps['deadlines'];
 }) {
-  const [now, setNow] = useState(() => Date.now());
-
-  useVisibilityAwareInterval(() => setNow(Date.now()), 1000);
-
-  const time = new Date(now).toLocaleTimeString('en-GB', { hour12: false });
-  const date = new Date(now).toLocaleDateString('fa-IR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-
-  const greeting = (() => {
-    const h = new Date(now).getHours();
-    if (h < 5) return 'بامداد بخیر';
-    if (h < 12) return 'صبح بخیر';
-    if (h < 17) return 'ظهر بخیر';
-    if (h < 21) return 'عصر بخیر';
-    return 'شب بخیر';
-  })();
+  // Date and greeting are computed once on mount (stable for the session).
+  // No interval needed here — only HeroClock ticks every second.
+  const now = Date.now();
+  const date = _faDateLong.format(new Date(now));
+  const greeting = getGreeting(new Date(now).getHours());
 
   return (
     <section className={s.hero} aria-label="مرکز عملیات">
@@ -396,9 +432,7 @@ function CockpitHero({
           <span className={s.heroEyebrowSep} aria-hidden>
             ·
           </span>
-          <span className={s.heroEyebrowTime} dir="ltr">
-            {time}
-          </span>
+          <HeroClock className={s.heroEyebrowTime} />
           <span className={s.heroEyebrowSep} aria-hidden>
             ·
           </span>
@@ -927,6 +961,20 @@ function MarketIntelPanel({ rates }: { rates: MarketRateItem[] }) {
 
 // ─── Live Ops panel ────────────────────────────────────────────────────
 
+/**
+ * LivePanelClock — isolated clock span; only this re-renders every second,
+ * not the entire LivePanel with its service list and activity bars.
+ */
+function LivePanelClock({ className }: { className?: string }) {
+  const [timeStr, setTimeStr] = useState(() => _enTimeFmt.format(new Date()));
+  useVisibilityAwareInterval(() => setTimeStr(_enTimeFmt.format(new Date())), 1000);
+  return (
+    <span className={className} dir="ltr">
+      {timeStr}
+    </span>
+  );
+}
+
 function LivePanel({
   services,
   activityBars,
@@ -936,10 +984,6 @@ function LivePanel({
   activityBars: number[];
   marketRates: MarketRateItem[];
 }) {
-  const [now, setNow] = useState(() => Date.now());
-
-  useVisibilityAwareInterval(() => setNow(Date.now()), 1000);
-
   const healthy = useMemo(() => services.filter((x) => x.status === 'healthy').length, [services]);
   const total = services.length || 1;
   const healthScore = Math.round((healthy / total) * 100);
@@ -989,9 +1033,7 @@ function LivePanel({
         </div>
         <div className={s.liveStat}>
           <span className={s.liveStatLabel}>ساعت</span>
-          <span className={s.liveStatValue} dir="ltr">
-            {new Date(now).toLocaleTimeString('en-GB', { hour12: false })}
-          </span>
+          <LivePanelClock className={s.liveStatValue} />
         </div>
       </div>
 

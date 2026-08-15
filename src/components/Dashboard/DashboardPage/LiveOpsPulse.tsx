@@ -125,8 +125,16 @@ const formatRel = (ts: number, now: number) => {
   return `${Math.floor(diff / 86400)} روز پیش`;
 };
 
-const formatAmount = (n: number) =>
-  new Intl.NumberFormat('fa-IR', { notation: 'compact' }).format(n);
+// Module-level singleton — avoids allocating a new Intl object on every call
+const _faCompactFmt = new Intl.NumberFormat('fa-IR', { notation: 'compact' });
+const _faTimeFmt = new Intl.DateTimeFormat('en-GB', {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: false,
+});
+
+const formatAmount = (n: number) => _faCompactFmt.format(n);
 
 const formatLatency = (ms?: number) => {
   if (ms == null) return '—';
@@ -135,6 +143,35 @@ const formatLatency = (ms?: number) => {
   return `${(ms / 1000).toFixed(2)}s`;
 };
 
+/**
+ * LivePulseRelTime — isolated span that re-renders every second to show
+ * relative timestamps. Keeps the parent LiveOpsPulse tree stable.
+ */
+function LivePulseRelTime({
+  ts,
+  className,
+}: {
+  ts: number;
+  className?: string;
+}) {
+  const [now, setNow] = useState(() => Date.now());
+  useVisibilityAwareInterval(() => setNow(Date.now()), 1000);
+  return <span className={className}>· {formatRel(ts, now)}</span>;
+}
+
+/**
+ * LivePulseFooterTime — isolated footer clock span.
+ */
+function LivePulseFooterTime({ className }: { className?: string }) {
+  const [timeStr, setTimeStr] = useState(() => _faTimeFmt.format(new Date()));
+  useVisibilityAwareInterval(() => setTimeStr(_faTimeFmt.format(new Date())), 1000);
+  return (
+    <span className={className} dir="ltr">
+      {timeStr}
+    </span>
+  );
+}
+
 export function LiveOpsPulse({
   services,
   events,
@@ -142,14 +179,11 @@ export function LiveOpsPulse({
   pollIntervalMs = 0,
   className,
 }: LiveOpsPulseProps) {
-  const [now, setNow] = useState(() => Date.now());
   const [waveform, setWaveform] = useState<number[]>(() =>
     Array.from({ length: 28 }, () => Math.random() * 0.6 + 0.1),
   );
 
-  // Pause the second-by-second tick and waveform when the tab is hidden so a
-  // background dashboard doesn't re-render twice per second for nothing.
-  useVisibilityAwareInterval(() => setNow(Date.now()), 1000);
+  // Waveform update when pollIntervalMs > 0 (visual only — no network cost)
   useVisibilityAwareInterval(
     () => {
       setWaveform((prev) => {
@@ -330,7 +364,7 @@ export function LiveOpsPulse({
                       </span>
                       <span className={s.feedLine2}>
                         {evt.detail}
-                        <span className={s.feedTime}>· {formatRel(toMs(evt.timestamp), now)}</span>
+                        <LivePulseRelTime ts={toMs(evt.timestamp)} className={s.feedTime} />
                       </span>
                     </span>
                   </>
@@ -353,9 +387,7 @@ export function LiveOpsPulse({
           <footer className={s.feedFoot}>
             <Sparkles size={12} aria-hidden />
             <span>به‌روزرسانی خودکار هر ثانیه</span>
-            <span className={s.feedFootTime} dir="ltr">
-              {new Date(now).toLocaleTimeString('en-GB', { hour12: false })}
-            </span>
+            <LivePulseFooterTime className={s.feedFootTime} />
           </footer>
         </section>
       </div>
