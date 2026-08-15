@@ -85,7 +85,9 @@ export default async function PageArchive({ params, searchParams }: PageArchiveP
   const { slug } = await params;
   const searchParamsData = await searchParams;
   const [type, category, subcategory] = slug || [];
-  const currentPage = searchParamsData.page ? Number.parseInt(searchParamsData.page) : 1;
+  const currentPage = searchParamsData.page
+    ? Math.max(1, Number.parseInt(searchParamsData.page) || 1)
+    : 1;
   const filter = searchParamsData.filter || DEFAULT_FILTER;
   const searchQuery = searchParamsData.q || '';
   const limit = 15;

@@ -1101,7 +1101,13 @@ async function fetchArchivePostsRaw(
   tag: string | undefined,
   searchQuery: string | undefined,
 ): Promise<ActionResult<ArchiveResult>> {
-  const skip = (page - 1) * limit;
+  // Pass 2 fix: defensive clamp — NaN/negative/huge page or limit from a URL
+  // must never reach Prisma as skip/take (NaNs and negatives throw; huge
+  // offsets become a deep-pagination scan). Mirrors the L2 clamp in
+  // api/categories + api/tags.
+  const safePage = Number.isFinite(page) && page >= 1 ? Math.floor(page) : 1;
+  const safeLimit = Number.isFinite(limit) && limit >= 1 ? Math.min(Math.floor(limit), 100) : 15;
+  const skip = (safePage - 1) * safeLimit;
   let whereCondition: Prisma.PostWhereInput = { status: PostStatus.PUBLISHED };
   let orderBy: Prisma.PostOrderByWithRelationInput = { createdAt: 'desc' };
 
@@ -1181,8 +1187,8 @@ async function fetchArchivePostsRaw(
   const [posts, total] = await prisma.$transaction([
     prisma.post.findMany({
       where: whereCondition,
-      take: limit,
-      skip: skip,
+      take: safeLimit,
+      skip,
       orderBy: orderBy,
       // 2026-06-14: trim heavy includes — likes/savedBy were full records
       // (not just counts) which made list queries 10–100x heavier than

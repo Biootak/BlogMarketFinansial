@@ -7,7 +7,9 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const page = Number.parseInt(searchParams.get('page') || '1', 10);
+  // Pass 2 fix: clamp page like api/categories + api/tags (L2) — NaN,
+  // negative or huge page values must not reach the Prisma skip.
+  const page = Math.max(1, Number.parseInt(searchParams.get('page') || '1', 10) || 1);
   const limit = 15;
   const filter = searchParams.get('filter') || 'همه مقالات';
   const type = searchParams.get('type') || undefined;
