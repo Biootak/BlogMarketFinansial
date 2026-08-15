@@ -27,8 +27,12 @@ scripts/*
 !scripts/reencrypt-totp-secrets.ts
 !scripts/rules-gate.mjs
 !scripts/rules-watch.mjs
+!scripts/perf-gate.mjs
 !scripts/git-hooks/
 !scripts/git-hooks/pre-commit
+
+# Isolated production build for perf gate (NEXT_DIST_DIR=.next-perf)
+/.next-perf/
 
 # Rules Read Gate — local state (machine/session-specific, never commit)
 .rules-read-stamp.json
