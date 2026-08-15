@@ -42,6 +42,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import s from './WalletClient.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
+const _enRate4Fmt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 });
 // AFN formatter — reused across fmtAFN and fmtFxAmount
 const _faAFNFmt = new Intl.NumberFormat('fa-IR', {
   minimumFractionDigits: 0,
@@ -761,11 +762,7 @@ function FxTradeModal({
                 <div className={s.fxQuoteRow}>
                   <span className={s.fxQuoteLabel}>نرخ صرافی</span>
                   <span dir="ltr" className={s.fxQuoteValue}>
-                    1 {quote.fromCurrency} ={' '}
-                    {new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(
-                      quote.rate,
-                    )}{' '}
-                    {quote.toCurrency}
+                    1 {quote.fromCurrency} = {_enRate4Fmt.format(quote.rate)} {quote.toCurrency}
                   </span>
                 </div>
                 <div className={s.fxQuoteRow}>
@@ -819,9 +816,7 @@ function FxTradeModal({
               <div className={s.fxDetailsGrid}>
                 <span className={s.fxQuoteLabel}>نرخ</span>
                 <span dir="ltr" className={s.fxDetailsValue}>
-                  1 {result.fromCurrency} ={' '}
-                  {new Intl.NumberFormat('en-US', { maximumFractionDigits: 4 }).format(result.rate)}{' '}
-                  {result.toCurrency}
+                  1 {result.fromCurrency} = {_enRate4Fmt.format(result.rate)} {result.toCurrency}
                 </span>
                 <span className={s.fxQuoteLabel}>کارمزد</span>
                 <span className={s.fxDetailsValue}>
