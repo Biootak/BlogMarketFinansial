@@ -1,4 +1,4 @@
-import { NotFound } from '@/components/Dashboard/primitives';
+import { NotFound } from '@/components/Dashboard/primitives/NotFound';
 
 export default function SiteNotFound() {
   return (

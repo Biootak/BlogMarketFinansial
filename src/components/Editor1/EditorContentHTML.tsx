@@ -23,7 +23,7 @@ import 'server-only';
 import MarkdownRenderer from '@/app/(site)/(singles)/MarkdownRenderer';
 import BannerAds from '@/components/BannerADS/BannerADS';
 import { optimizeBodyImages, wrapBodyTables } from '@/lib/optimize-body-images';
-import { sanitizeHtml, sanitizeRenderedBody } from '@/lib/utils';
+import { sanitizeHtml, sanitizeRenderedBody } from '@/lib/sanitize-html';
 import type { Advertisement } from '@/types/types';
 import { generateHTML } from '@tiptap/html/server';
 import { renderExtensions } from './render-content';

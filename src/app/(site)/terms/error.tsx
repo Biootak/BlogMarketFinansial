@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { RouteError } from '@/components/Dashboard/primitives';
+import { RouteError } from '@/components/Dashboard/primitives/RouteError';
 
 export default function RouteErrorPage({
   error,
