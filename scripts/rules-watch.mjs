@@ -40,13 +40,13 @@ const CODE_EXT = new Set([
 ]);
 const WATCH_DIRS = ['src', 'prisma', 'scripts'];
 
-// gate را حداکثر هر ۵ ثانیه یک بار دوباره صدا بزن تا spawn اضافه نشود
+// gate را حداکثر هر ۱۵ ثانیه یک بار دوباره صدا بزن تا spawn اضافه نشود
 let lastGateCheck = 0;
 let gateStale = false;
 
 function gateFresh() {
   const now = Date.now();
-  if (now - lastGateCheck < 5000) return !gateStale;
+  if (now - lastGateCheck < 15_000) return !gateStale;
   lastGateCheck = now;
   const r = spawnSync(process.execPath, [join(root, 'scripts', 'rules-gate.mjs'), 'check'], {
     cwd: root,

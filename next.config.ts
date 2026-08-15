@@ -48,7 +48,10 @@ const nextConfig: NextConfig = {
   // find index.html when standalone mode is active (ENOENT lstat index.html).
   // For self-hosted (PM2/Docker) builds, set OUTPUT_STANDALONE=1 locally.
   ...(process.env.OUTPUT_STANDALONE === '1' ? { output: 'standalone' } : {}),
-  reactStrictMode: true,
+  // Strict mode doubles every render in dev — useful for catching side-effects
+  // but burns CPU on low-power machines. Keep it on in CI/prod; opt-out locally
+  // with NEXT_STRICT_MODE=0.
+  reactStrictMode: process.env.NEXT_STRICT_MODE !== '0',
   // 2026-06-29: cacheComponents (PPR) disabled. With it on, the static shell
   // streamed while dynamic holes (e.g. the auth-aware header) deferred — but
   // it also forced every prerendered page to connect to the DB at build time.
@@ -364,7 +367,9 @@ const nextConfig: NextConfig = {
     // یعنی «cached نمی‌شود»؛ مقدار 30 یعنی صفحهٔ داینامیک تا ۳۰ ثانیه در کش
     // مرورگر می‌ماند و تغییراتِ بعدی در ناوبری از منو دیده نمی‌شود. مقدارهای
     // 30/180 فقط برای production نگه داشته شده (بهینه‌سازی perf).
-    staleTimes: isProd ? { dynamic: 30, static: 180 } : { dynamic: 0, static: 0 },
+    // Next.js 16: staleTimes.static minimum is 30 — 0 is invalid even in dev.
+    // dynamic:0 keeps dev-mode revalidation instant; static:30 is the floor.
+    staleTimes: isProd ? { dynamic: 30, static: 180 } : { dynamic: 0, static: 30 },
     // 2026-07-29: staticGeneration concurrency dialed to SAFE values.
     // Each worker builds its OWN PrismaClient (the singleton only helps
     // within one worker, not across workers). With connection_limit=3
@@ -411,9 +416,10 @@ const nextConfig: NextConfig = {
     keepAlive: true,
   },
 
-  // 2026-08: logging.fetches — در dev نشان می‌دهد کدام fetch cached است
-  // و کدام شبکه می‌رود. در production فقط خطاها.
-  logging: process.env.NODE_ENV !== 'production' ? { fetches: { fullUrl: true } } : undefined,
+  // 2026-08: logging.fetches — فقط وقتی DEV_FETCH_LOG=1 باشد فعال می‌شود.
+  // روشن‌بودن دائمی در dev برای هر fetch یک console.log می‌زند که CPU/terminal
+  // را شلوغ می‌کند. با DEV_FETCH_LOG=1 می‌توان موقتاً روشن کرد.
+  logging: process.env.DEV_FETCH_LOG === '1' ? { fetches: { fullUrl: true } } : undefined,
 
   // 2026-07-07: `next-auth` beta.25 imports `next/server` without the `.js`
   // extension. When Turbopack externalizes the package, Node's ESM loader

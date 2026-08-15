@@ -5,9 +5,9 @@ import PostFeaturedMedia from '@/components/PostFeaturedMedia/PostFeaturedMedia'
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import { heading, radius, text } from '@/lib/design-tokens';
 import { getPostLink } from '@/lib/getPostLink';
+import { devImageSrc } from '@/lib/image-url';
 import type { PostWithRelations } from '@/types/types';
 import Image from 'next/image';
-import { devImageSrc } from '@/lib/image-url';
 import Link from 'next/link';
 import type { FC } from 'react';
 import { HiArrowLeft } from 'react-icons/hi2';

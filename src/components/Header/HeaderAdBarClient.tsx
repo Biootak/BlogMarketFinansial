@@ -22,9 +22,9 @@
  * window shortened from 24h to 1h on user request.
  */
 
+import { devImageSrc } from '@/lib/image-url';
 import { Megaphone, Sparkles, X } from 'lucide-react';
 import Image from 'next/image';
-import { devImageSrc } from '@/lib/image-url';
 import { useEffect, useState } from 'react';
 
 type Theme = 'PRIMARY' | 'ACCENT' | 'NEUTRAL' | 'DARK' | 'GRADIENT';

@@ -1,4 +1,5 @@
 import styles from '@/components/AuthorsHub/AuthorProfileHero.module.css';
+import { devImageSrc } from '@/lib/image-url';
 import { cn, toPersianNumber } from '@/lib/utils';
 import {
   Briefcase,
@@ -10,7 +11,6 @@ import {
   ThumbsUp,
 } from 'lucide-react';
 import Image from 'next/image';
-import { devImageSrc } from '@/lib/image-url';
 import type * as React from 'react';
 
 /**

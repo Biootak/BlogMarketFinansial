@@ -19,6 +19,7 @@
  * ----------------------------------------------------------------------------
  */
 
+import { createUpstashRequester } from '@/lib/upstash-requester';
 import { Redis } from '@upstash/redis';
 
 // --------------- Redis Client (lazy singleton) ---------------
@@ -33,19 +34,22 @@ function getRedis(): Redis | null {
     _redisEnabled = false;
     return null;
   }
-  redisClient = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    // Upstash Redis HTTP-based است — نیاز به keep-alive یا pooling خاصی ندارد
-    automaticDeserialization: false, // خودمان JSON.stringify/parse می‌کنیم
-    // 2026-08-12 — داک رسمی Upstash (upstash.com/docs/redis/sdks/ts/advanced →
-    // "Request Timeout"): signal روی کلاینت هر درخواست را محدود می‌کند و در
-    // timeout به‌جای آویزان‌ماندن خطای TimeoutError می‌دهد. بدون این، روی
-    // شبکه‌های پر-latency (مثلاً افغانستان → Upstash اروپا، ۰.۵–۵s برای هر
-    // فراخوانی) هر استفاده از L2 بدون سقف بلاک می‌شد. این سقف «پایانی» است —
-    // هیچ call-site نمی‌تواند بینهایت صبر کند.
-    signal: () => AbortSignal.timeout(2000),
-  });
+  // 2026-08-15 perf-fix: Requester سفارشی با undici (خارج از پچ fetch Next.js).
+  // SDK پیش‌فرض با fetch cache:'no-store' به Redis می‌زند → Next.js در رندر RSC
+  // آن را intercept می‌کند و صفحات SSG/ISR (single, home, blog…) را dynamic
+  // می‌کند (خطای «Page changed from static to dynamic … no-store fetch …/pipeline»).
+  // نتیجه: اولین درخواست بعد از deploy = SSR سرد ۱۷-۲۳s به‌جای HTML کش‌شده.
+  // با undici، رندر static هیچ fetch dynamic نمی‌بیند و SSG/ISR سالم می‌ماند.
+  // نکته: با requester، آپشن `automaticDeserialization` به super منتقل نمی‌شود
+  // (پیش‌فرض SDK = true)؛ مصرف‌کننده‌ها هر دو شکل (string خام یا object parse‌شده)
+  // را تحمل می‌کنند — ر.ک `redisGet`/`redisGetSwr` پایین.
+  redisClient = new Redis(
+    createUpstashRequester({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      timeoutMs: 2000,
+    }),
+  );
   _redisEnabled = true;
   return redisClient;
 }
@@ -120,13 +124,16 @@ export async function redisGet<T>(key: string): Promise<T | null> {
 
   const fullKey = redisKey(key);
   try {
-    const raw = await r.get<string>(fullKey);
+    const raw = await r.get<CacheEntry<T> | string | null>(fullKey);
     if (!raw) {
       counter.misses++;
       return null;
     }
 
-    const entry: CacheEntry<T> = JSON.parse(raw);
+    // requester سفارشی، automaticDeserialization را به super منتقل نمی‌کند
+    // (پیش‌فرض SDK = true)؛ پس نتیجه ممکن است object (قبلاً parse شده) یا
+    // string خام باشد — هر دو را تحمل می‌کنیم.
+    const entry: CacheEntry<T> = typeof raw === 'string' ? (JSON.parse(raw) as CacheEntry<T>) : raw;
     const now = Date.now();
 
     if (entry.expiresAt > now) {
@@ -208,13 +215,13 @@ export async function redisGetSwr<T>(key: string): Promise<[T | null, boolean]> 
 
   const fullKey = redisKey(key);
   try {
-    const raw = await r.get<string>(fullKey);
+    const raw = await r.get<CacheEntry<T> | string | null>(fullKey);
     if (!raw) {
       counter.misses++;
       return [null, false];
     }
 
-    const entry: CacheEntry<T> = JSON.parse(raw);
+    const entry: CacheEntry<T> = typeof raw === 'string' ? (JSON.parse(raw) as CacheEntry<T>) : raw;
     const now = Date.now();
 
     if (entry.expiresAt > now) {

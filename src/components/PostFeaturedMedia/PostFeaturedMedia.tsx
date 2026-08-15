@@ -2,9 +2,9 @@
 
 import PostTypeFeaturedIcon from '@/components/PostTypeFeaturedIcon/PostTypeFeaturedIcon';
 import { getPostLink } from '@/lib/getPostLink';
+import { devImageSrc } from '@/lib/image-url';
 import type { PostWithRelations } from '@/types/types';
 import Image from 'next/image';
-import { devImageSrc } from '@/lib/image-url';
 import { type FC, useMemo } from 'react';
 import GallerySlider from './GallerySlider';
 import MediaAudio from './MediaAudio';
@@ -97,7 +97,7 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
           src={devImageSrc(
             featuredImage.startsWith('/') || featuredImage.startsWith('http')
               ? featuredImage
-              : `/${featuredImage}`
+              : `/${featuredImage}`,
           )}
           alt={post.title ?? 'Featured'}
           fill

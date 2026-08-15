@@ -16,19 +16,22 @@ const MenuBar = ({ className }: MenuBarProps) => {
     setIsVisible(false);
   }, [pathname]);
 
-  const handleToggleMenu = () => {
+  const handleToggleMenu = useCallback(() => {
     setIsVisible((prev) => !prev);
-  };
-
-  const handleOverlayInteraction = useCallback((e: React.MouseEvent | React.KeyboardEvent) => {
-    if (
-      e.type === 'click' ||
-      (e as React.KeyboardEvent).key === 'Enter' ||
-      (e as React.KeyboardEvent).key === ' '
-    ) {
-      handleToggleMenu();
-    }
   }, []);
+
+  const handleOverlayInteraction = useCallback(
+    (e: React.MouseEvent | React.KeyboardEvent) => {
+      if (
+        e.type === 'click' ||
+        (e as React.KeyboardEvent).key === 'Enter' ||
+        (e as React.KeyboardEvent).key === ' '
+      ) {
+        handleToggleMenu();
+      }
+    },
+    [handleToggleMenu],
+  );
 
   const menuIcon = useMemo(
     () => (

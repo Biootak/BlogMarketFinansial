@@ -90,7 +90,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
           dir="rtl"
         >
           {stats.map(({ icon: Icon, value, label }) => (
-            <div key={label} className="flex items-center gap-2.5 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3">
+            <div
+              key={label}
+              className="flex items-center gap-2.5 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3"
+            >
               <span
                 className="flex-shrink-0 w-9 h-9 rounded-[10px] flex items-center justify-center bg-[color:var(--at-accent-soft)] text-[color:var(--at-accent)]"
                 aria-hidden

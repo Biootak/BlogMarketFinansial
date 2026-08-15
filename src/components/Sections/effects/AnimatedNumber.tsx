@@ -46,6 +46,8 @@ export default function AnimatedNumber({
   const ref = useRef<HTMLSpanElement>(null);
   const [display, setDisplay] = useState(() => formatValue(0, format, thousands));
   const inViewRef = useRef(false);
+  // نگه‌دارندهٔ آخرین rAF برای کنسل‌کردن در unmount (جلوگیری از نشت حافظه)
+  const pendingRafRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -65,23 +67,31 @@ export default function AnimatedNumber({
             const start = performance.now();
             const from = 0;
             const to = value;
+            let rafId = 0;
             const tick = (now: number) => {
               const elapsed = (now - start) / 1000;
               const t = Math.min(elapsed / duration, 1);
               const eased = 1 - (1 - t) ** 3;
               const current = from + (to - from) * eased;
               setDisplay(formatValue(current, format, thousands));
-              if (t < 1) requestAnimationFrame(tick);
+              if (t < 1) rafId = requestAnimationFrame(tick);
               else setDisplay(formatValue(to, format, thousands));
             };
-            requestAnimationFrame(tick);
+            rafId = requestAnimationFrame(tick);
+            // زنجیرهٔ rAF را در unmount کنسل کن — بدون این، انیمیشن روی
+            // کامپوننت unmount شده ادامه پیدا می‌کند (setState بی‌اثر + کار اضافی).
+            pendingRafRef.current = () => cancelAnimationFrame(rafId);
           }
         }
       },
       { rootMargin: '-50px' },
     );
     observer.observe(ref.current);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      pendingRafRef.current?.();
+      pendingRafRef.current = null;
+    };
   }, [value, duration, format, thousands]);
 
   return (

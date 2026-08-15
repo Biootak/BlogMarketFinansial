@@ -60,8 +60,8 @@ const ESC = String.fromCharCode(27);
 const STRIP_ANSI = (s) => s.replace(new RegExp(`${ESC}\\[[0-9;]*m`, 'g'), '');
 
 const RESTART_WINDOW_MS = 120_000; // rolling window for the loop guard
-const MAX_RESTARTS = 4; // panics allowed inside the window before giving up
-const RESTART_DELAY_MS = 1_500; // let the port/SQLite locks settle before rebinding
+const MAX_RESTARTS = 3; // panics allowed inside the window before giving up
+const RESTART_DELAY_MS = 3_000; // give the OS time to release port + SQLite locks
 
 let child = null;
 let restartScheduled = false;

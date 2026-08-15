@@ -38,10 +38,11 @@ export function devImageUrl(src: string | null | undefined): string | null | und
  * Same as `devImageUrl` but with a non-nullable result for direct assignment
  * into `src` props that already have a fallback (`src || '/fallback.png'`).
  */
-export function devImageSrc(src: string | null | StaticImageData | undefined): string | StaticImageData {
+export function devImageSrc(
+  src: string | null | StaticImageData | undefined,
+): string | StaticImageData {
   if (typeof src !== 'string') return src ?? '';
   return devImageUrl(src) ?? src;
 }
 
 type StaticImageData = { src: string; height: number; width: number; blurDataURL?: string };
-

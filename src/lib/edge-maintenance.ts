@@ -17,6 +17,7 @@
  * up on the next TTL-bound poll).
  */
 
+import { createUpstashRequester } from '@/lib/upstash-requester';
 import { Redis } from '@upstash/redis';
 
 const KEY = 'system:maintenanceMode';
@@ -34,15 +35,18 @@ function getRedis(): Redis | undefined {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return undefined;
-  return new Redis({
-    url,
-    token,
-    automaticDeserialization: false,
-    // 2026-08-12 — داک رسمی Upstash (Request Timeout): سقف هر فراخوانی، تا
-    // middleware هرگز روی شبکهٔ پر-latency آویزان نماند (کش ۳ ثانیه‌ای فرکانس
-    // را کم می‌کند؛ این سقف هر فراخوانی را باند می‌کند).
-    signal: () => AbortSignal.timeout(1000),
-  });
+  // 2026-08-15 perf-fix: Requester سفارشی با undici — middleware این پروژه روی
+  // runtime: 'nodejs' اجرا می‌شود؛ requester در Edge به fetch fallback می‌کند.
+  return new Redis(
+    createUpstashRequester({
+      url,
+      token,
+      // 2026-08-12 — داک رسمی Upstash (Request Timeout): سقف هر فراخوانی، تا
+      // middleware هرگز روی شبکهٔ پر-latency آویزان نماند (کش ۳ ثانیه‌ای فرکانس
+      // را کم می‌کند؛ این سقف هر فراخوانی را باند می‌کند).
+      timeoutMs: 1000,
+    }),
+  );
 }
 
 /**
@@ -89,8 +93,10 @@ export async function isMaintenanceActive(): Promise<boolean> {
   if (!inflight) {
     inflight = (async () => {
       try {
-        const val = await r.get(KEY);
-        return val === '1';
+        const val = await r.get<unknown>(KEY);
+        // requester سفارشی automaticDeserialization را پیش‌فرض (true) نگه می‌دارد
+        // → '1' به عدد ۱ parse می‌شود. هر دو شکل را بپذیر.
+        return val === '1' || val === 1;
       } catch {
         return false;
       }

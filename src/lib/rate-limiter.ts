@@ -1,24 +1,28 @@
+import { createUpstashRequester } from '@/lib/upstash-requester';
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 import { LRUCache } from 'lru-cache';
 
 // اگه Redis تنظیم نشده، از in-memory استفاده کن
 const redis = process.env.UPSTASH_REDIS_REST_URL
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      // biome-ignore lint/style/noNonNullAssertion: UPSTASH_REDIS_REST_TOKEN is guaranteed present when UPSTASH_REDIS_REST_URL is set
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-      // 2026-08-12 — داک رسمی Upstash (Request Timeout): سقف هر فراخوانی در
-      // سطح کلاینت؛ روی شبکه‌های پر-latency هر pipeline ۰.۵ تا ۵+ ثانیه طول
-      // می‌کشید و اکشن‌های auth/صرافی/صفحه‌بینی بدون سقف آویزان می‌ماندند.
-      // در timeout، @upstash/ratelimit به‌صورت TimeoutError reject می‌کند و
-      // catch پایین همان سیاست موجود را اعمال می‌کند (auth فیل-کلوز، بقیه
-      // in-memory). توجه: از آپشن `timeout` خود Ratelimit استفاده نمی‌کنیم
-      // چون طبق داک رسمی (features → Timeout) آن آپشن روی timeout درخواست را
-      // ALLOW می‌کند (fail-open) که با سیاست fail-closed این پروژه برای auth
-      // ناسازگار است.
-      signal: () => AbortSignal.timeout(4000),
-    })
+  ? new Redis(
+      createUpstashRequester({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        // biome-ignore lint/style/noNonNullAssertion: UPSTASH_REDIS_REST_TOKEN is guaranteed present when UPSTASH_REDIS_REST_URL is set
+        token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+        // 2026-08-12 — داک رسمی Upstash (Request Timeout): سقف هر فراخوانی در
+        // سطح کلاینت؛ روی شبکه‌های پر-latency هر pipeline ۰.۵ تا ۵+ ثانیه طول
+        // می‌کشید و اکشن‌های auth/صرافی/صفحه‌بینی بدون سقف آویزان می‌ماندند.
+        // در timeout، @upstash/ratelimit به‌صورت TimeoutError reject می‌کند و
+        // catch پایین همان سیاست موجود را اعمال می‌کند (auth فیل-کلوز، بقیه
+        // in-memory). توجه: از آپشن `timeout` خود Ratelimit استفاده نمی‌کنیم
+        // چون طبق داک رسمی (features → Timeout) آن آپشن روی timeout درخواست را
+        // ALLOW می‌کند (fail-open) که با سیاست fail-closed این پروژه برای auth
+        // ناسازگار است.
+        timeoutMs: 4000,
+      }),
+      // automaticDeserialization پیش‌فرض (true) — Ratelimit به parse نیاز دارد.
+    )
   : null;
 
 // Rate limiters مختلف برای کاربردهای مختلف

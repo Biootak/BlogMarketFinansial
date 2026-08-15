@@ -13,7 +13,7 @@ import { replyToTicket, updateTicketStatus } from '@/actions/tickets-actions';
 import { PanelDrawer } from '@/components/Dashboard/primitives';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { TicketMessageSummary, TicketStatus, TicketSummary } from '@/lib/tickets';
-import { useCallback, useEffect, useState, type CSSProperties } from 'react';
+import { type CSSProperties, useCallback, useEffect, useState } from 'react';
 import s from './TicketDetail.module.css';
 
 interface TicketDetailProps {
