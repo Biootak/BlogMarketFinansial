@@ -15,7 +15,10 @@ interface DeferredDesign7Props {
 
 const Design7 = dynamic(() => import('../designs/Design7'), {
   loading: () => <CardLarge1Skeleton />,
-  ssr: false,
+  // 2026-08-15 (mobile LCP): عمداً بدون ssr:false — برخلاف deferred های پایین
+  // صفحه، این hero slider بالای fold است و تصویر اصلی آن (priority) باید در
+  // HTML استریم‌شده باشد تا LCP منتظر hydration نماند. motion-shim پروژه
+  // SSR-safe است (plain DOM + CSS transitions) پس رندر اولیه یکسان است.
 });
 
 export default function DeferredDesign7(props: DeferredDesign7Props) {
