@@ -1,9 +1,9 @@
 import { toPersianNumber } from '@/lib/utils';
 import type { PostWithRelations } from '@/types/types';
 import { formatDate } from '@/utils/formatDate';
+import { CalendarDays, Clock, Folder } from 'lucide-react';
 import Link from 'next/link';
 import React, { type FC } from 'react';
-import { CalendarDays, Clock, Folder } from 'lucide-react';
 
 export interface PostMeta2Props {
   className?: string;

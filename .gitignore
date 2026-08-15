@@ -296,3 +296,6 @@ terraform.tfvars
 # Isolated production build for perf measurement (NEXT_DIST_DIR=.next-audit)
 /.next-audit/
 public/data/market-rates.json
+
+# Local DB backups (contains real user rows — never commit)
+/.local-backups/

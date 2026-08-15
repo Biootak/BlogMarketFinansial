@@ -2,9 +2,9 @@ import type { TopAuthor } from '@/actions/getTopAuthors';
 import Avatar from '@/components/Avatar/Avatar';
 import NcImage from '@/components/NcImage/NcImage';
 import { heading, radius, text } from '@/lib/design-tokens';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import type { FC } from 'react';
-import { ArrowRight } from 'lucide-react';
 
 export interface CardAuthorBox2Props {
   className?: string;
