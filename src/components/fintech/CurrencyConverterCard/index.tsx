@@ -92,13 +92,24 @@ export interface CurrencyConverterCardProps {
 const DEFAULT_AMOUNT = 1000;
 const PRESETS_DEFAULT = [100, 500, 1000, 5000, 10000] as const;
 
+// Cache برای formatFaRaw — جلوگیری از new Intl.NumberFormat در هر keystroke
+const _fmtFaRawCache = new Map<number, Intl.NumberFormat>();
+function _getFaRawFmt(decimals: number): Intl.NumberFormat {
+  let f = _fmtFaRawCache.get(decimals);
+  if (!f) {
+    f = new Intl.NumberFormat('fa-IR', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+      useGrouping: true,
+    });
+    _fmtFaRawCache.set(decimals, f);
+  }
+  return f;
+}
+
 function formatFaRaw(n: number, decimals: number): string {
   if (!Number.isFinite(n)) return '—';
-  return new Intl.NumberFormat('fa-IR', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-    useGrouping: true,
-  }).format(n);
+  return _getFaRawFmt(decimals).format(n);
 }
 
 function formatRate(n: number, unit: string | undefined, decimals: number): string {
@@ -272,10 +283,8 @@ export function CurrencyConverterCard({
   const fmtSpreadPct = (n: number): string => {
     if (!Number.isFinite(n)) return '—';
     if (n === 0) return '۰٫۰۰';
-    return new Intl.NumberFormat('fa-IR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(n);
+    // reuse decimals=2 از cache بالا — بدون new Intl در هر re-render
+    return _getFaRawFmt(2).format(n);
   };
 
   return (

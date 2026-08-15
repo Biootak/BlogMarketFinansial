@@ -12,26 +12,23 @@ import Link from 'next/link';
 import s from './ExchangeDashboard.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
+const _faCompact = new Intl.NumberFormat('fa-IR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+const _faTimeFmt = new Intl.DateTimeFormat('fa-IR', { hour: '2-digit', minute: '2-digit' });
+const _faDateFmt = new Intl.DateTimeFormat('fa-IR', { month: 'short', day: 'numeric' });
 
 function formatAmount(amountStr: string, currency: string): string {
-  return `${new Intl.NumberFormat('fa-IR', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(Number(BigInt(amountStr)) / 100)} ${currency}`;
+  return `${_faCompact.format(Number(BigInt(amountStr)) / 100)} ${currency}`;
 }
 
 function formatTime(iso: string): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(iso));
+  return _faTimeFmt.format(new Date(iso));
 }
 
 function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('fa-IR', {
-    month: 'short',
-    day: 'numeric',
-  }).format(new Date(iso));
+  return _faDateFmt.format(new Date(iso));
 }
 
 export default function ExchangeRecentTransactions({

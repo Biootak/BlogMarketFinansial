@@ -27,7 +27,7 @@
 import type { ActivityEntry } from '@/actions/getRecentActivity';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   HiOutlineBolt,
   HiOutlineChatBubbleLeftRight,
@@ -114,26 +114,25 @@ interface AtelierActivityProps {
   items: ActivityItem[];
 }
 
-export default function AtelierActivity({ items }: AtelierActivityProps) {
-  const [now, setNow] = useState<Date | null>(null);
-  const [filter, setFilter] = useState<CategoryFilter>('all');
+/**
+ * ActivityRelTime — ایزوله‌کننده‌ی timer برای timestamp هر آیتم.
+ * فقط این span هر دقیقه re-render می‌شود، نه کل AtelierActivity.
+ */
+function ActivityRelTime({ iso }: { iso: string }) {
+  const [now, setNow] = useState<Date>(() => new Date());
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    setNow(new Date());
-    let id: number | null = null;
     const start = () => {
-      id = window.setInterval(() => setNow(new Date()), 60_000);
-    };
-    const stop = () => {
-      if (id !== null) {
-        window.clearInterval(id);
-        id = null;
-      }
+      timerRef.current = setInterval(() => setNow(new Date()), 60_000);
     };
     start();
     const onVis = () => {
       if (document.hidden) {
-        stop();
+        if (timerRef.current !== null) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
       } else {
         setNow(new Date());
         start();
@@ -142,9 +141,17 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
     document.addEventListener('visibilitychange', onVis);
     return () => {
       document.removeEventListener('visibilitychange', onVis);
-      stop();
+      if (timerRef.current !== null) clearInterval(timerRef.current);
     };
   }, []);
+
+  return <span>{formatRelativeFa(new Date(iso), now)}</span>;
+}
+
+export default function AtelierActivity({ items }: AtelierActivityProps) {
+  // nowRef برای groupByDay — نه state، تا هر دقیقه کل component re-render نشود
+  const nowRef = useRef<Date>(new Date());
+  const [filter, setFilter] = useState<CategoryFilter>('all');
 
   useEffect(() => {
     setFilter(loadStoredFilter());
@@ -165,7 +172,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
   }, [items, filter]);
 
   const grouped = useMemo<DayGroup[]>(() => {
-    if (!now) return [];
+    const now = nowRef.current;
     const sorted = [...filteredItems].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
@@ -177,7 +184,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
       map.get(key)?.items.push(it);
     }
     return Array.from(map.values());
-  }, [filteredItems, now]);
+  }, [filteredItems]);
 
   const total = grouped.reduce((acc, g) => acc + g.items.length, 0);
 
@@ -280,7 +287,7 @@ export default function AtelierActivity({ items }: AtelierActivityProps) {
                         </p>
                         <p className="at-activity__time">
                           <CatIcon className="w-3 h-3 inline-block align-middle" aria-hidden />{' '}
-                          {now ? formatRelativeFa(new Date(item.createdAt), now) : '—'}
+                          <ActivityRelTime iso={item.createdAt} />
                         </p>
                       </span>
                     </li>

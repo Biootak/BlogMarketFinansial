@@ -36,19 +36,22 @@ function toAfnNumber(volumeStr: string): number {
   return asNumber;
 }
 
-function formatCompact(value: number, locale = 'fa-IR'): string {
-  return new Intl.NumberFormat(locale, {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  }).format(value);
+const _faCompact = new Intl.NumberFormat('fa-IR', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+});
+const _faPercent = new Intl.NumberFormat('fa-IR', {
+  style: 'percent',
+  maximumFractionDigits: 1,
+  signDisplay: 'never',
+});
+
+function formatCompact(value: number): string {
+  return _faCompact.format(value);
 }
 
 function formatPercent(value: number): string {
-  return new Intl.NumberFormat('fa-IR', {
-    style: 'percent',
-    maximumFractionDigits: 1,
-    signDisplay: 'never',
-  }).format(value / 100);
+  return _faPercent.format(value / 100);
 }
 
 export default function ExchangeHeroPulse({

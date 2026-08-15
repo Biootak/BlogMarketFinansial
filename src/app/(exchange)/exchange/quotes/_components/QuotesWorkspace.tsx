@@ -21,7 +21,7 @@ import {
   spreadPct,
 } from '@/lib/exchange-quotes-labels';
 import { ArrowDownUp, Clock, History, Plus, RefreshCw, SearchX } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { QuoteCard } from './QuoteCard';
 import { QuoteComposer } from './QuoteComposer';
 import { QuoteDetailsDrawer } from './QuoteDetailsDrawer';
@@ -46,12 +46,8 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
   const [formOpen, setFormOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // ساعت زندهٔ countdown — هر ۳۰ ثانیه
-  const [nowMs, setNowMs] = useState(() => Date.now());
-  useEffect(() => {
-    const t = setInterval(() => setNowMs(Date.now()), 30_000);
-    return () => clearInterval(t);
-  }, []);
+  // nowMsRef — برای card/table countdown (بدون re-render کل workspace)
+  const nowMsRef = useRef(Date.now());
 
   const selected = useMemo(
     () => quotes.find((q) => q.id === selectedId) ?? null,
@@ -190,7 +186,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
           {/* ── نمای موبایل/تبلت: کارت‌ها ─────────────────────────────── */}
           <div className={s.cardGrid} aria-label="قیمت‌های ثبت‌شده">
             {filtered.map((q) => (
-              <QuoteCard key={q.id} quote={q} nowMs={nowMs} onSelect={setSelectedId} />
+              <QuoteCard key={q.id} quote={q} nowMs={nowMsRef.current} onSelect={setSelectedId} />
             ))}
           </div>
 
@@ -294,7 +290,7 @@ export default function QuotesWorkspace({ exchangeId, allowedCurrencies, initial
                           {active && q.expiresAt ? (
                             <span className={s.countdown}>
                               <Clock size={12} aria-hidden />
-                              {countdownLabel(q.expiresAt, nowMs)}
+                              {countdownLabel(q.expiresAt, nowMsRef.current)}
                             </span>
                           ) : q.status === 'REJECTED' && q.note ? (
                             <span className={s.rejectNote} title={q.note}>
