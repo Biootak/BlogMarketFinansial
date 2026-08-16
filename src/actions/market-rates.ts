@@ -374,6 +374,17 @@ export async function updateMarketRate(
     return { success: false, error: { code: authCheck.code, message: authCheck.message } };
   }
 
+  // Rate-fix: validation یکسان با createMarketRate — نرخ نمی‌تواند صفر یا منفی باشد.
+  if (input.singleRate !== undefined && input.singleRate !== null) {
+    const rateVal = Number.parseFloat(input.singleRate);
+    if (!Number.isFinite(rateVal) || rateVal <= 0) {
+      return {
+        success: false,
+        error: { code: 'INVALID_INPUT', message: 'نرخ باید عددی مثبت باشد' },
+      };
+    }
+  }
+
   try {
     await prisma.exchangeRate.update({
       where: { id },

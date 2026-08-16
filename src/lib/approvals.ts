@@ -168,9 +168,11 @@ const fetchSnapshotRaw = async (
     prisma.approvalRequest.count({ where: { status: 'pending' } }),
     prisma.approvalRequest.count({ where: { status: 'approved', decidedAt: { gte: since24 } } }),
     prisma.approvalRequest.count({ where: { status: 'rejected', decidedAt: { gte: since24 } } }),
+    // DoS-fix: cap به ۵۰۰ — این query فقط برای محاسبه میانگین زمان تصمیم است.
     prisma.approvalRequest.findMany({
       where: { status: { in: ['approved', 'rejected'] }, decidedAt: { gte: since24 } },
       select: { createdAt: true, decidedAt: true },
+      take: 500,
     }),
   ]);
 
@@ -341,10 +343,12 @@ export async function decideStep(
     const currentStep = request.steps[request.currentStep];
     if (!currentStep) return { success: false, message: 'مرحله فعلی نامعتبر است' };
 
-    // چک کاربر: یا owner دارد یا نقش
+    // چک کاربر: یا owner دارد یا نقش — و نمی‌تواند درخواست خودش را تأیید کند (self-approval)
     const canDecide =
-      (currentStep.approverId && currentStep.approverId === guard.userId) ||
-      currentStep.approverRole === guard.role;
+      ((currentStep.approverId && currentStep.approverId === guard.userId) ||
+        currentStep.approverRole === guard.role) &&
+      // Self-approval fix: تایید‌کننده نباید همان شخصی باشد که درخواست داده
+      guard.userId !== request.requesterId;
     if (!canDecide) return { success: false, message: 'شما مجاز به تصمیم نیستید' };
 
     const now = new Date();

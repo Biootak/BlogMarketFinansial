@@ -16,6 +16,7 @@ import {
   requestTransactionOtp,
   verifyTransactionOtp,
 } from '@/lib/fintech/transaction-guard';
+import { screenTransaction } from '@/lib/fraud/screener';
 import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { computeKycProgression } from '@/lib/kyc-progression';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
@@ -35,6 +36,7 @@ import {
   type TransactionKind,
   type TransactionStatus,
 } from '@prisma/client';
+import { headers } from 'next/headers';
 import { cache } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
@@ -2254,6 +2256,35 @@ export async function transferBetweenAccounts(
     return {
       success: false,
       error: { code: limitCheck.code, message: limitCheck.error },
+    };
+  }
+
+  // Fraud-fix: transferBetweenAccounts مثل سایر عملیات مالی باید fraud screen شود.
+  // قبلاً این مسیر بدون screenTransaction بود — می‌توانست برای دور زدن AML استفاده شود.
+  const _xffTransfer = (await headers()).get('x-forwarded-for') ?? '';
+  const fraudIp =
+    _xffTransfer
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .at(-1) ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
+  const fraudRisk = await screenTransaction({
+    customerId: access.customerId,
+    exchangeId: customer.exchangeId,
+    amount: BigInt(amountCents),
+    currency: from.currency,
+    ip: fraudIp,
+    kind: 'TRANSFER',
+  });
+  if (fraudRisk.shouldBlock) {
+    return {
+      success: false,
+      error: {
+        code: 'FRAUD_BLOCKED',
+        message: 'این انتقال به دلایل امنیتی مسدود شد. لطفاً با پشتیبانی تماس بگیرید.',
+      },
     };
   }
 

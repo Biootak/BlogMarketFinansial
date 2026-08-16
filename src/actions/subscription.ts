@@ -211,7 +211,9 @@ export async function changePlan(
         amount: BigInt(amount),
         currency: target.currency,
         invoiceNo,
-        status: isDowngrade ? 'PAID' : 'PAID',
+        // Payment-fix: upgrade → PENDING تا payment webhook تأیید کند.
+        // downgrade (cancel) → بلافاصله PAID (هزینه‌ای ندارد).
+        status: isDowngrade ? 'PAID' : 'PENDING',
         paymentMethod,
         validUntil: planId === 'free' ? null : validUntil,
         meta: {

@@ -145,7 +145,9 @@ export async function getMyApiKeys() {
       id: true,
       name: true,
       key: true,
-      secret: true,
+      // Secret-fix: secret هرگز بعد از ایجاد به کلاینت برگردانده نمی‌شود.
+      // فقط در createApiKey یک بار نشان داده می‌شود.
+      // secret: true,  ← حذف شد
       isActive: true,
       lastUsed: true,
       lastIp: true,
@@ -239,7 +241,11 @@ export async function toggleApiKey(id: string): Promise<ApiKeyActionResult> {
   const k = await prisma.apiKey.findUnique({ where: { id, userId: auth.user.id } });
   if (!k) return { success: false, error: 'کلید یافت نشد' };
 
-  await prisma.apiKey.update({ where: { id }, data: { isActive: !k.isActive } });
+  // IDOR-fix: where باید userId هم داشته باشد تا update اتمیک و ownership-safe باشد.
+  await prisma.apiKey.update({
+    where: { id, userId: auth.user.id },
+    data: { isActive: !k.isActive },
+  });
   await audit({ userId: auth.user.id, apiKeyId: id, action: 'TOGGLE' });
 
   revalidateTag('api-keys');

@@ -697,8 +697,10 @@ export async function confirmDeal(
     };
   }
 
-  await prisma.currencyDeal.update({
-    where: { id: dealId },
+  // Atomic-fix: updateMany با شرط status — جلوگیری از double-confirm در race condition.
+  // اگر دو درخواست هم‌زمان بیایند، فقط یکی موفق می‌شود (count=1)؛ دیگری 0 برمی‌گرداند.
+  const confirmClaim = await prisma.currencyDeal.updateMany({
+    where: { id: dealId, status: 'PENDING' },
     data: {
       status: 'CONFIRMED',
       confirmedById: access.userId,
@@ -709,6 +711,14 @@ export async function confirmDeal(
       ...(data.internalNote ? { internalNote: data.internalNote } : {}),
     },
   });
+  if (confirmClaim.count === 0) {
+    // deal در این لحظه PENDING نبود — idempotent check
+    if (data.idempotencyKey) return { success: true, data: { id: dealId } };
+    return {
+      success: false,
+      error: { code: 'INVALID_STATE', message: 'معامله دیگر در وضعیت PENDING نیست' },
+    };
+  }
 
   await prisma.dealStatusLog.create({
     data: {
@@ -1063,6 +1073,10 @@ export async function completeDeal(
         },
       };
     }
+    if (msg === 'ALREADY_COMPLETED') {
+      // idempotent — دو بار complete شد، موفق برگردان
+      return { success: true, data: { id: dealId } };
+    }
     if (msg === 'DEAL_INSUFFICIENT_BALANCE') {
       return {
         success: false,
@@ -1294,41 +1308,52 @@ export async function disputeDeal(
   }
 
   const disputeIp = await getClientIp();
-  await prisma.$transaction(async (tx) => {
-    await tx.currencyDeal.update({
-      where: { id: dealId },
-      data: { status: 'DISPUTED', internalNote: reason },
-    });
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Atomic-fix: updateMany با شرط status — جلوگیری از double-dispute.
+      const disputeClaim = await tx.currencyDeal.updateMany({
+        where: { id: dealId, status: 'COMPLETED' },
+        data: { status: 'DISPUTED', internalNote: reason },
+      });
+      if (disputeClaim.count === 0) throw new Error('DISPUTE_ALREADY_PROCESSED');
 
-    await tx.dealStatusLog.create({
-      data: {
-        dealId,
-        fromStatus: 'COMPLETED',
-        toStatus: 'DISPUTED',
-        actorId: user.id,
-        actorRole: isAdmin ? 'ADMIN' : isOwner ? 'USER' : 'SARAFI',
-        note: reason,
-      },
-    });
+      await tx.dealStatusLog.create({
+        data: {
+          dealId,
+          fromStatus: 'COMPLETED',
+          toStatus: 'DISPUTED',
+          actorId: user.id,
+          actorRole: isAdmin ? 'ADMIN' : isOwner ? 'USER' : 'SARAFI',
+          note: reason,
+        },
+      });
 
-    await tx.auditLog.create({
-      data: {
-        id: createId(),
-        exchangeId: deal.exchangeId,
-        actorId: user.id,
-        actorRole: isAdmin ? 'ADMIN' : isOwner ? 'USER' : 'SARAFI',
-        action: 'DEAL_DISPUTED',
-        entityType: 'CurrencyDeal',
-        entityId: dealId,
-        ip: disputeIp,
-        meta: { reason } as Prisma.InputJsonValue,
-      },
+      await tx.auditLog.create({
+        data: {
+          id: createId(),
+          exchangeId: deal.exchangeId,
+          actorId: user.id,
+          actorRole: isAdmin ? 'ADMIN' : isOwner ? 'USER' : 'SARAFI',
+          action: 'DEAL_DISPUTED',
+          entityType: 'CurrencyDeal',
+          entityId: dealId,
+          ip: disputeIp,
+          meta: { reason } as Prisma.InputJsonValue,
+        },
+      });
     });
-  });
+  } catch (err) {
+    if ((err as Error).message === 'DISPUTE_ALREADY_PROCESSED') {
+      return { success: true, data: { id: dealId } };
+    }
+    throw err;
+  }
 
   revalidateDealCaches();
   return { success: true, data: { id: dealId } };
 }
+
+// helper: مدیریت خطای dispute در صورت وجود
 
 // ─── REFUND ───────────────────────────────────────────────────────────────────
 
@@ -1403,14 +1428,15 @@ async function _refundDealImpl(
 
   const refundIp = await getClientIp();
 
-  // Serializable isolation: جلوگیری از race condition روی balance
-  // اگر دو refund همزمان بیایند، دومی با conflict خطا می‌دهد
+  // Atomic-fix: updateMany با شرط status — جلوگیری از double-refund.
+  // Serializable isolation هم نگه داشته شده برای SELECT FOR UPDATE روی balance.
   await prisma.$transaction(
     async (tx) => {
-      await tx.currencyDeal.update({
-        where: { id: dealId },
+      const refundClaim = await tx.currencyDeal.updateMany({
+        where: { id: dealId, status: 'DISPUTED' },
         data: { status: 'REFUNDED', internalNote: refundNote },
       });
+      if (refundClaim.count === 0) throw new Error('REFUND_ALREADY_PROCESSED');
 
       await tx.dealStatusLog.create({
         data: {
@@ -1503,6 +1529,10 @@ async function _refundDealImpl(
 // خطاهای $queryRaw/$transaction را به FintechActionResult تبدیل می‌کند
 function parseRefundError(err: unknown): FintechActionResult<{ id: string }> {
   const msg = err instanceof Error ? err.message : '';
+  if (msg === 'REFUND_ALREADY_PROCESSED') {
+    // idempotent — دو refund هم‌زمان، اولی موفق شد، دومی success برمی‌گرداند
+    return { success: true, data: { id: '' } };
+  }
   if (msg.startsWith('INSUFFICIENT_BALANCE')) {
     return {
       success: false,
