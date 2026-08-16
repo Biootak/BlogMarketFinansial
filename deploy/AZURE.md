@@ -38,17 +38,31 @@ nginx (80/443) → 127.0.0.1:3000  ← کانتینر web (fm-blog-web:latest)
 ## 🚀 دیپلوی روزمره — push به GitHub (روش استاندارد — فقط همین را استفاده کن)
 
 > **قانون:** آپدیت سایت فقط با یک کار انجام می‌شود: **`git push origin main`**.
-> هیچ دستور دستی روی VM لازم نیست. این روش مرجع واحد است؛ روش قبلی (Heroku/GitHub Actions) منسوخ شده.
+> هیچ دستور دستی روی VM لازم نیست. این روش مرجع واحد است؛ روش قبلی (Heroku) منسوخ شده.
 
-**چطور کار می‌کند:** روی VM یک cron-poll هست که هر دقیقه `origin/main` را fetch می‌کند؛
-اگر commit جدیدی دید → `deploy/azure-update.sh` را اجرا می‌کند:
-`git pull --ff-only` → `docker compose build` → `up -d` → prune تصاویر قدیمی.
-ممکن است build چند دقیقه طول بکشد (VM کم‌رم است) ولی **بدون downtime**: تا build تمام نشود،
-نسخهٔ قبلی به سرویس ادامه می‌دهد. migrationهای Prisma هم قبل از start خودکار اجرا می‌شوند.
+**چطور کار می‌کند (2026-08-16 — build در CI، نه روی VM):**
 
-**چرا cron-poll؟** رپو پابلیک است → نیازی به secret در GitHub نیست؛ VM فقط بیرون‌کِش می‌کند؛
-نیازی به پورت ورودی جدید یا webhook نیست (NSG فقط 22/80/443)؛ و چون در آفر دانشجویی ghcr/ACR
-بلاک است، build حتماً باید روی خود VM باشد — این روش همان build لوکال است، فقط خودکار.
+```
+push به main → GitHub Actions (.github/workflows/docker-build-push.yml)
+  → build تصویرهای web + cron روی runner قوی (بدون OOM/throttle)
+  → push به ghcr.io/biootak/fm-blog-{web,cron}:main
+→ cron-poll روی VM هر دقیقه origin/main را fetch می‌کند
+  → deploy/azure-update.sh: git pull → docker compose pull (با retry) → up -d → prune
+```
+
+**چرا build در CI به‌جای VM؟** B2ats_v2 (1GB RAM، 20% CPU پایه) نمی‌تواند `next build`
+پروژهٔ بزرگ را در زمان معقول انجام دهد (npm ci OOM می‌خورد و CPU throttle می‌شود — build
+قبلی ~۱ ساعت طول می‌کشید و تلاش اول مرد). CI تصویر را در ~۸-۱۲ دقیقه می‌سازد و VM فقط
+pull می‌کند (چند دقیقه). **بدون downtime:** تا pull تمام نشود، نسخهٔ قبلی سرویس می‌دهد.
+
+**امنیت تصویر عمومی ghcr:** build در CI به DB وصل نمی‌شود (cacheComponents: false →
+`next build` نیاز به DB ندارد) و AUTH_SECRET فقط placeholder است → تصویر حاوی هیچ
+داده/راز واقعی نیست؛ رازها فقط در runtime از `.env` روی VM می‌آیند.
+
+**چرا cron-poll؟** رپو پابلیک است → نیازی به secret در GitHub نیست؛ VM فقط بیرون‌کِش می‌کشد؛
+نیازی به پورت ورودی جدید یا webhook نیست (NSG فقط 22/80/443).
+اگر pull شکست بخورد (CI هنوز build تمام نکرده) → آپدیت ناموفق و نشانگر `.azure-last-deployed`
+نوشته نمی‌شود → دقیقهٔ بعد دوباره تلاش می‌شود تا تصویر ظاهر شود.
 
 ### نصب (یک‌بار، روی VM)
 
@@ -83,11 +97,12 @@ bash deploy/azure-update.sh
 
 ### ⚠️ نکته‌ها
 
-- **Rebuild روی VM کند است** (1GB RAM، CPU burst محدود) — انتظار چند دقیقه‌ای طبیعی است.
-  برای سرعت: `NODE_OPTIONS_BUILD` در `Dockerfile` (بیلدر کم‌رم) باید کامیت شده باشد،
-  وگرنه build روی VM ممکن است OOM بخورد.
-- فایل‌های `deploy/**` در `paths-ignore` وورک‌فلوهای قدیمی هستند → تغییر مستندات، deploy خودکار را
-  trigger نمی‌کند (درست است — هیچ نیازی به rebuild برای مستندات نیست).
+- **روش قدیمی (build روی VM) حذف شد** — `azure-update.sh` دیگر build نمی‌کند، فقط pull
+  می‌کند. اگر نیاز به build دستی روی VM بود (مثل دیباگ):
+  `docker compose --env-file .env -f deploy/docker-compose.azure.yml build`
+  (با `NODE_OPTIONS_BUILD=--max-old-space-size=2048` و صبر ~۱ ساعت — فقط دیباگ).
+- فایل‌های `deploy/**` در `paths-ignore` وورک‌فلو هستند → تغییر مستندات/اسکریپت‌های deploy،
+  تصویر را دوباره build نمی‌کند (درست است — تصویر فقط به کد اپ وابسته است).
 - وورک‌فلوهای قدیمی (`deploy-heroku.yml` و …) legacy هستند و بعد از کامل‌شدن cutover حذف می‌شوند.
 
 ---

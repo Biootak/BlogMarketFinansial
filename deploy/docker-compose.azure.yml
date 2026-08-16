@@ -1,29 +1,25 @@
 # ============================================================================
 # Docker Compose for Azure VM (fm-vm) — Financial Market Blog.
 # ----------------------------------------------------------------------------
-# تفاوت با docker-compose.yml ریشه: سرویس `db` حذف شده — دیتابیس روی
-# Azure Database for PostgreSQL (flexible server, B1ms رایگان) است و از طریق
-# DATABASE_URL داخل .env داده می‌شود (sslmode=require).
+# 2026-08-16: تصویرها دیگر روی VM build نمی‌شوند — GitHub Actions آن‌ها را
+# build و به ghcr.io push می‌کند (workflow: .github/workflows/docker-build-push.yml)
+# و این compose فقط pull می‌کند. دلیل: B2ats_v2 (1GB RAM / 20% CPU پایه) نمی‌تواند
+# next build را در زمان معقول انجام دهد (OOM + throttle).
+#
+# دیتابیس روی Azure Database for PostgreSQL (flexible server, B1ms رایگان) است
+# و از طریق DATABASE_URL داخل .env داده می‌شود (sslmode=require).
 #
 # قبل از up (روی VM):
 #   1) .env با همه متغیرهای Heroku + DATABASE_URL=postgresql://...azure... (sslmode=require)
-#   2) docker compose -f docker-compose.azure.yml build
-#   3) docker compose -f docker-compose.azure.yml up -d
+#   2) docker compose --env-file .env -f deploy/docker-compose.azure.yml pull
+#   3) docker compose --env-file .env -f deploy/docker-compose.azure.yml up -d
 #
-# NODE_OPTIONS_BUILD: روی VM های کم‌رم (B2ats_v2 = 1GB) heap بیلد را محدود می‌کند
-# تا `next build` OOM نخورد (با swap 8G).
+# pull_policy: always — هر `up -d` آخرین تصویر :main را دوباره می‌کشد.
 # ============================================================================
 services:
   web:
-    build:
-      context: ..
-      dockerfile: Dockerfile
-      args:
-        NODE_IMAGE: node:22-alpine
-        NODE_OPTIONS_BUILD: --max-old-space-size=2048
-        DATABASE_URL: ${DATABASE_URL}
-        AUTH_SECRET: ${AUTH_SECRET}
-    image: fm-blog-web:latest
+    image: ghcr.io/biootak/fm-blog-web:main
+    pull_policy: always
     ports:
       - "3000:3000"
     env_file:
@@ -52,12 +48,8 @@ services:
 
   cron:
     # Sidecar — همان کرون‌های cron-job.org را داخل VM اجرا می‌کند
-    build:
-      context: ..
-      dockerfile: Dockerfile.cron
-      args:
-        CRON_IMAGE: alpine:3.20
-    image: fm-blog-cron:latest
+    image: ghcr.io/biootak/fm-blog-cron:main
+    pull_policy: always
     environment:
       - APP_URL=http://web:3000
       - CRON_SECRET=${CRON_SECRET:?CRON_SECRET must be set}

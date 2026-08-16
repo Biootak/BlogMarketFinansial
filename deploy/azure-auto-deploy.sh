@@ -8,8 +8,11 @@
 # چرا cron-poll (به‌جای webhook/GitHub Actions)؟
 #   - صفر secret در GitHub؛ رپو پابلیک است و VM فقط بیرون‌کِش می‌کشد.
 #   - نیازی به پورت ورودی جدید نیست (NSG فقط 22/80/443) — webhook لازم ندارد.
-#   - در آفر دانشجویی Azure، ghcr/ACR بلاک است → build حتماً باید روی VM
-#     انجام شود؛ این روش همان build لوکال است، فقط خودکار شده.
+#
+# 2026-08-16: تصویرها در CI (ghcr.io) ساخته می‌شوند نه روی VM. اگر pull
+# شکست بخورد (CI هنوز build تمام نکرده) آپدیت ناموفق است → نشانگر
+# .azure-last-deployed نوشته نمی‌شود → دقیقهٔ بعد دوباره تلاش می‌شود تا
+# تصویر ظاهر شود و کانتینرها آپدیت شوند.
 #
 # نصب (یک‌بار، روی VM):
 #   sudo bash deploy/install-auto-deploy.sh
@@ -19,6 +22,8 @@ set -euo pipefail
 REPO_DIR="${AZURE_REPO_DIR:-$HOME/fm-blog}"
 BRANCH="${AZURE_DEPLOY_BRANCH:-main}"
 LOCK="/tmp/fm-blog-azure-deploy.lock"
+LAST_FILE="$REPO_DIR/.azure-last-deployed"
+LOG="${AZURE_DEPLOY_LOG:-/var/log/fm-blog-azure-deploy.log}"
 
 [[ -d "$REPO_DIR/.git" ]] || exit 0
 
@@ -29,9 +34,12 @@ git fetch origin "$BRANCH" >/dev/null 2>&1 || exit 0
 
 LOCAL="$(git rev-parse HEAD)"
 REMOTE="$(git rev-parse "origin/$BRANCH" 2>/dev/null || echo "$LOCAL")"
+LAST_DEPLOYED="$(cat "$LAST_FILE" 2>/dev/null || echo "")"
 
-# تغییری نیست → کاری نکن
-[[ "$LOCAL" = "$REMOTE" ]] && exit 0
+# commit جدیدی نیست و آخرین deploy موفق بوده → کاری نکن
+if [[ "$LOCAL" = "$REMOTE" ]] && [[ "$LOCAL" = "$LAST_DEPLOYED" ]]; then
+    exit 0
+fi
 
 # قفل — اگر دیپلوی دیگری (مثلاً دستی) در جریان است، این دور را رد کن
 if ! mkdir "$LOCK" 2>/dev/null; then
@@ -39,5 +47,10 @@ if ! mkdir "$LOCK" 2>/dev/null; then
 fi
 trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
 
-# commit جدید هست → دیپلوی استاندارد
-exec bash "$REPO_DIR/deploy/azure-update.sh"
+# commit جدید یا deploy قبلی ناقص → دیپلوی استاندارد
+if bash "$REPO_DIR/deploy/azure-update.sh"; then
+    echo "$LOCAL" > "$LAST_FILE"
+else
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️ آپدیت ناموفق — دقیقهٔ بعد دوباره تلاش می‌شود" >> "$LOG"
+    exit 1
+fi

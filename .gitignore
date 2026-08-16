@@ -299,3 +299,4 @@ public/data/market-rates.json
 
 # Local DB backups (contains real user rows — never commit)
 /.local-backups/
+.azure-last-deployed

@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Canonical Azure deploy — pull + build + redeploy (روش استاندارد دیپلوی).
+# Canonical Azure deploy — pull + redeploy (روش استاندارد دیپلوی).
 # ----------------------------------------------------------------------------
 # این اسکریپت روی Azure VM (fm-vm) اجرا می‌شود و سایت را به آخرین کد
-# `origin/main` می‌رساند: git pull → build تصویر → up -d → prune.
+# `origin/main` می‌رساند: git pull → docker compose pull → up -d → prune.
+#
+# تصویرها را GitHub Actions build و به ghcr.io push می‌کند (workflow:
+# .github/workflows/docker-build-push.yml) — اینجا فقط pull می‌شود.
 #
 # دو جور صدا زده می‌شود:
 #   ۱) خودکار — deploy/azure-auto-deploy.sh (cron هر دقیقه روی VM) وقتی commit
@@ -18,9 +21,10 @@
 #
 # امنیت/پایداری:
 #   - فقط fast-forward pull — clone دست‌کاری‌شده را نمی‌پوشاند.
-#   - `up -d` فقط در صورت تغییر image کانتینر را recreate می‌کند → بدون downtime
-#     (در طول build چند دقیقه‌ای، نسخهٔ قبلی به سرویس ادامه می‌دهد).
-#   - migrationهای Prisma خودکار اجرا می‌شوند (داخل compose، قبل از start).
+#   - pull با retry (۵ بار × ۳۰ ثانیه): بلافاصله بعد از push، CI هنوز دارد
+#     تصویر را build می‌کند؛ این retry فاصله را می‌بندد.
+#   - `up -d` فقط در صورت تغییر تصویر کانتینر را recreate می‌کند → بدون
+#     downtime (تا pull تمام نشود، نسخهٔ قبلی به سرویس ادامه می‌دهد).
 # ============================================================================
 set -euo pipefail
 
@@ -45,9 +49,21 @@ info "── آپدیت شروع شد (branch=$BRANCH, repo=$REPO_DIR) ──"
 git fetch origin "$BRANCH"
 git pull --ff-only origin "$BRANCH"
 
-# build تصویر جدید + بالا آوردن کانتینرها
-docker compose --env-file "$REPO_DIR/.env" \
-    -f "$REPO_DIR/deploy/docker-compose.azure.yml" build
+# pull تصویرهای جدید از ghcr — با retry تا CI build تمام شود
+for i in 1 2 3 4 5; do
+    if docker compose --env-file "$REPO_DIR/.env" \
+        -f "$REPO_DIR/deploy/docker-compose.azure.yml" pull; then
+        break
+    fi
+    info "⚠️ pull تلاش $i/5 ناموفق بود (CI هنوز در حال build؟) — ۳۰ ثانیه بعد دوباره..."
+    sleep 30
+    if [[ $i -eq 5 ]]; then
+        info "❌ pull بعد از ۵ تلاش ناموفق — نسخهٔ قبلی همچنان سرویس می‌دهد."
+        exit 1
+    fi
+done
+
+# بالا آوردن کانتینرها (فقط در صورت تغییر تصویر recreate می‌شوند)
 docker compose --env-file "$REPO_DIR/.env" \
     -f "$REPO_DIR/deploy/docker-compose.azure.yml" up -d
 
