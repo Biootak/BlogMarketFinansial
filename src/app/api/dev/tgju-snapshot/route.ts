@@ -56,16 +56,16 @@ const DISPLAY_FA_HINT: Record<string, string> = {
 };
 
 export async function GET(_request: NextRequest): Promise<NextResponse> {
-  // L1b fix: dev-only endpoint must still require an OWNER session, otherwise
-  // (if NODE_ENV is ever flipped to development) it would scrape and return
-  // internal market data to anyone without a login.
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'dev-only' }, { status: 404 });
-  }
+  // Auth check must come before NODE_ENV gate: if NODE_ENV is ever wrong in
+  // production (misconfigured deploy), an unauthenticated caller must still
+  // get a 403, not a data leak.
   const session = await auth();
   const role = session?.user?.role as Role | undefined;
   if (role !== Role.OWNER) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'dev-only' }, { status: 404 });
   }
 
   const t0 = Date.now();

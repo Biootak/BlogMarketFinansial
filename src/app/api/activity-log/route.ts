@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!['ADMIN', 'OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
+    if (!['OWNER', 'SUPERADMIN'].includes(session.user.role ?? '')) {
       return NextResponse.json(
         { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
         { status: 403 },

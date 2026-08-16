@@ -16,7 +16,7 @@ model User {
   status                String                @default("Active")
   password              String?
   emailVerified         DateTime?
-  phoneNumber           String?
+  phoneNumber           String?               @unique
   image                 String?
   imageWidth            Int?
   imageHeight           Int?
@@ -79,7 +79,6 @@ model User {
 
   @@index([status])
   @@index([role, status])
-  @@index([phoneNumber])
   @@index([exchangePartnerId])
 }
 
@@ -1058,7 +1057,7 @@ model Customer {
   @@index([exchangeId, status])
   @@index([kycStatus])
   @@index([nationalId])
-  @@index([phone])
+  @@unique([exchangeId, phone])
 }
 
 /// 2026-07-28: درخواست‌های structured مشتری به صرافی.
