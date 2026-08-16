@@ -121,6 +121,40 @@ bash deploy/azure-update.sh
 
 ---
 
+## 🐌 پرفورمنس — تشخیص 2026-08-17 (سایت کند بود)
+
+**اندازه‌گیری واقعی:** روی خود VM صفحهٔ اصلی در **۶ms** سرو می‌شود (ISR cache)
+و رندر اول ۳۱۳ms — سرور مشکلی ندارد. کندی از بیرون این است:
+
+| مؤلفه | مقدار | علت | وضعیت
+|---|---|---|---|
+| **RTT شبکه (ایران → westus2)** | ~۱.۲–۱.۳s | VM در westus2 است ولی مخاطب افغانستان/ایران | ⛔ نیاز به جابه‌جایی ریجن یا کش لبه |
+| **DB cross-region** | +۱۵۰ms/کوئری | Postgres در **Norway East** ولی VM در **westus2** (۷۰۰۰km) | ⛔ جابه‌جایی هر دو به یک ریجن نزدیک‌تر |
+| **brotli روی VM** | ۱۵s+ (timeout) | Next `compress: true` روی B2ats_v2 با burst تمام‌شده | ✅ فیکس شد: `compress:false` + nginx pin `Accept-Encoding: gzip` |
+| **کش HTML در Cloudflare** | `cf-cache-status: DYNAMIC` | بدون Cache Rule؛ هر بازدید به اورجین می‌رود | ⛔ **اقدام لازم کاربر: Cache Rule** (رانبوک زیر) |
+
+### ⚡ اقدام لازم (داشبورد Cloudflare — قابل‌انجام از کد نیست)
+
+1. Cloudflare → `financialmarket.page` → **Caching → Cache Rules → Create**
+2. **When incoming requests match:** `Hostname equals financialmarket.page` **AND** `URI Path starts with /`
+3. **Then:** Cache Eligibility → **Eligible for cache**؛ Edge TTL → **5 minutes**؛
+   Browser TTL → 5 minutes؛ **Cache by device type → On**
+4. Save. (هدر `s-maxage=300, stale-while-revalidate=86400` از قبل هست.)
+5. Effect: TTFB برای بازدیدکنندگان از ~۱.۳s به ~۰.۱–۰.۳s می‌رسد (لبهٔ ایران/افغانستان).
+
+### 🗺️ ریجن (میان‌مدت)
+
+- بهترین: جابه‌جایی **هم VM و هم Postgres** به یک ریجن نزدیک به افغانستان
+  (مثلاً `Qatar Central` / `UAE North` / `India Central`) — هر دو با هم، چون
+  DB و وب نباید از هم دور باشند. B1ms/B2ats رایگان آفر دانشجویی را اول با
+  `az postgres flexible-server list-skus` چک کن.
+- اگر ریجن رایگان در دسترس نبود → حداقل DB را به westus2 بیاور تا کوئری‌ها
+  cross-region نباشند.
+- راهکار دیگر: **کش لبه** (قسمت بالا) بخش عمدهٔ مشکل را بدون مهاجرت حل می‌کند —
+  اول Cache Rule، بعد مهاجرت ریجن.
+
+---
+
 ## 🔧 بکاپ و بازیابی
 
 - **بکاپ دیتابیس:** روی VM — اسکریپت pg_dump (مطابق BACKUP_S3_* فعلی به B2). (خودکارسازی بعد از تست اولیه)

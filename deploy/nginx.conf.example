@@ -130,6 +130,13 @@ server {
     # --- Proxy به Next.js ---
     location / {
         proxy_pass http://127.0.0.1:3000;
+        # ⛔ مهم (2026-08-17، Azure B2ats_v2): Accept-Encoding را به گزیپ pin کن.
+        # بدون این، Next `compress: true` (حالا در next.config.ts غیرفعال است)
+        # brotli سنگین را روی HTML بزرگ در هر درخواست اجرا می‌کرد → 15+ ثانیه
+        # TTFB روی VM با burst CPU تمام‌شده. با AE=gzip: Next فقط gzip می‌زند و
+        # استاتیک‌ها را precompressed .gz می‌دهد. فشرده‌سازی نهایی برای کلاینت
+        # روی Cloudflare است (brotli لبه، CPU رایگان).
+        proxy_set_header Accept-Encoding "gzip";
         # Early Hints: 103 را از backend به کلاینت بفرست (فقط NGINX 1.29+؛
         # و فقط وقتی backend خودش 103 تولید می‌کند — ر.ک بالای فایل).
         # early_hints $early_hints;

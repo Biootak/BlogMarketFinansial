@@ -58,7 +58,15 @@ const nextConfig: NextConfig = {
   // demand, so `next build` needs no DB connection. Public-page performance
   // comes from safeCache + the CDN `s-maxage` header above.
   cacheComponents: false,
-  compress: true,
+  // 2026-08-17 perf-fix (Azure B2ats_v2): `compress: true` باعث می‌شد Next
+  // brotli سطح بالا را روی HTML بزرگ (صفحه اصلی ~496KB) **در هر درخواست** اجرا
+  // کند. روی VM با burst CPU تمام‌شده (20% پایه) این = 15+ ثانیه TTFB / timeout
+  // (اندازه‌گیری واقعی 2026-08-17: br → 15s+؛ gzip → ~1.1s؛ خام → 1.3s).
+  // حالا فشرده‌سازی روی لبهٔ Cloudflare است (رایگان، CPU قوی): CF درخواستِ خام
+  // را می‌گیرد و برای کلاینت brotli می‌کند. استاتیک‌ها همچنان precompressed
+  // (.br/.gz) سرو می‌شوند چون مستقل از این گزینه‌اند و nginx با
+  // `proxy_set_header Accept-Encoding "gzip"` تضمین می‌کند Next .gz بدهد.
+  compress: false,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
 
