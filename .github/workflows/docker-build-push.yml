@@ -1,32 +1,19 @@
 name: Docker Build & Push (ghcr)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# روش دیپلوی Azure (استاندارد — 2026-08-16):
-#   push به main → این workflow روی runner قوی GitHub تصویرها را build و به
-#   ghcr.io push می‌کند → cron-poll روی VM هر دقیقه pull می‌کند (بدون build روی
-#   VM — B2ats_v2 با 1GB RAM نمی‌تواند next build را در زمان معقول انجام دهد).
-#
-# build در CI به DB متصل نمی‌شود (cacheComponents: false در next.config.ts —
-# «next build needs no DB connection»). بنابراین DATABASE_URL/AUTH_SECRET در
-# build فقط مقدارهای placeholder هستند؛ مقادیر واقعی در runtime از .env روی VM
-# می‌آیند. این یعنی image عمومی ghcr حاوی هیچ داده/راز واقعی نیست.
-#
-# مرجع: docs.github.com/actions/guides/publishing-docker-images
-# ─────────────────────────────────────────────────────────────────────────────
+# Azure deploy standard (2026-08-16):
+# push to main -> build web+cron images on a fast GitHub runner -> push to
+# ghcr.io -> the Azure VM cron-poll pulls every minute (no build on the VM).
+# Build needs no DB (cacheComponents: false), so build args are placeholders;
+# real secrets come from .env at runtime on the VM.
+# Reference: docs.github.com/actions/guides/publishing-docker-images
 
 on:
   push:
     branches: [main]
-    # تغییرات مستندات/build نباید تصویر را دوباره build کند
     paths-ignore:
       - '*.md'
-      - 'AGENTS*.md'
-      - 'PDK.md'
-      - 'pdk/**'
       - 'deploy/**'
       - 'docs/**'
-      - '.github/workflows/**'
-
   workflow_dispatch:
 
 permissions:
@@ -39,7 +26,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build & push images to ghcr
+    name: Build and push images to ghcr
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -47,7 +34,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # درایور docker-container → GHA cache (type=gha) مطمئن و بین run ها مشترک
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -58,14 +44,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & push web image
+      - name: Build and push web image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           push: true
-          tags: |
-            ghcr.io/${{ lower(github.repository_owner) }}/fm-blog-web:main
+          tags: ghcr.io/${{ lower(github.repository_owner) }}/fm-blog-web:main
           build-args: |
             NODE_IMAGE=node:22-alpine
             DATABASE_URL=postgresql://ci:ci@localhost:5432/ci
@@ -73,18 +58,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Build & push cron image
+      - name: Build and push cron image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile.cron
           push: true
-          tags: |
-            ghcr.io/${{ lower(github.repository_owner) }}/fm-blog-cron:main
+          tags: ghcr.io/${{ lower(github.repository_owner) }}/fm-blog-cron:main
           build-args: |
             CRON_IMAGE=alpine:3.20
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Deploy result
-        run: echo "✅ Images pushed — VM cron-poll picks them up within a minute."
