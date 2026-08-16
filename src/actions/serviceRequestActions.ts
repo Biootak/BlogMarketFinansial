@@ -288,16 +288,14 @@ export type ServiceRequestStatusValue =
   | 'CANCELLED'
   | 'EXPIRED';
 
-const SERVICE_REQUEST_TRANSITIONS: Record<
-  ServiceRequestStatusValue,
-  ServiceRequestStatusValue[]
-> = {
-  PENDING: ['IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED'],
-  IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
-  COMPLETED: [],
-  CANCELLED: [],
-  EXPIRED: [],
-};
+const SERVICE_REQUEST_TRANSITIONS: Record<ServiceRequestStatusValue, ServiceRequestStatusValue[]> =
+  {
+    PENDING: ['IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED'],
+    IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
+    COMPLETED: [],
+    CANCELLED: [],
+    EXPIRED: [],
+  };
 
 const STATUS_FA: Record<ServiceRequestStatusValue, string> = {
   PENDING: 'در انتظار بررسی',

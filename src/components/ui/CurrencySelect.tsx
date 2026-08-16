@@ -163,7 +163,7 @@ export function CurrencySelect({
     };
     // بستن panel فقط هنگام scroll خارج از panel — scroll داخل list ممنوع نیست
     const handleScroll = (e: Event) => {
-      if (panelRef.current && panelRef.current.contains(e.target as Node)) return;
+      if (panelRef.current?.contains(e.target as Node)) return;
       setOpen(false);
     };
     document.addEventListener('mousedown', handleClick);

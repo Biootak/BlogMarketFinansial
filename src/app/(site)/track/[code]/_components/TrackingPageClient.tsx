@@ -475,7 +475,9 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                   <div className={`${s.infoRow} ${s.infoRowHighlight ?? ''}`}>
                     <dt className={s.infoLabel}>مجموع نهایی تسویه</dt>
                     <dd className={s.infoValue} dir="ltr">
-                      <strong>{new Intl.NumberFormat('fa-AF').format(data.finalTotalAf)} افغانی</strong>
+                      <strong>
+                        {new Intl.NumberFormat('fa-AF').format(data.finalTotalAf)} افغانی
+                      </strong>
                       {data.paidAmountAf != null && <span className={s.paidTag}>پرداخت‌شده</span>}
                     </dd>
                   </div>
