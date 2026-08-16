@@ -656,6 +656,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--ds-space-3);
+  flex-wrap: wrap;
 }
 
 .cardIcon {
@@ -699,6 +700,18 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Persona badge — شخصیت سرویس (فوری / رزرو و…) */
+.personaBadge {
+  padding: 3px 10px;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--service-accent) 12%, var(--ds-surface));
+  color: var(--service-accent);
+  font-size: var(--ds-text-xs);
+  font-weight: 800;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* Coverage / soon badges */

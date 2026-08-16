@@ -54,6 +54,8 @@ export interface ExchangeServiceMeta {
   name: string;
   /** توضیح ۱ جمله‌ای — همان در همه جا استفاده می‌شود مگر صرافی override کند */
   description: string;
+  /** بج وضعیت شخصیت سرویس (مثلاً «فوری» برای شارژ، «رزرو» برای بلیط) — اختیاری */
+  personaBadge?: string;
   /** آیکن Lucide — فقط client-side استفاده می‌شود، نباید از Server→Client serialize شود */
   icon: LucideIcon;
   /** accent token — به جای hex از token های ds */
@@ -176,6 +178,7 @@ export const EXCHANGE_SERVICE_CATALOG: readonly ExchangeServiceMeta[] = [
     key: 'MOBILE_TOPUP',
     name: 'شارژ موبایل',
     description: 'شارژ فوری سیم‌کارت MTN، روشن، اتصالات و سایر اپراتورهای افغانستان.',
+    personaBadge: 'فوری',
     icon: Smartphone,
     accent: 'teal',
     group: 'specialty',
@@ -194,6 +197,7 @@ export const EXCHANGE_SERVICE_CATALOG: readonly ExchangeServiceMeta[] = [
     key: 'TRAVEL_TICKET',
     name: 'خرید بلیط سفر',
     description: 'رزرو و خرید بلیط هواپیما (Ariana، Kam Air) و اتوبوس بین‌شهری.',
+    personaBadge: 'رزرو',
     icon: Bus,
     accent: 'sky',
     group: 'specialty',

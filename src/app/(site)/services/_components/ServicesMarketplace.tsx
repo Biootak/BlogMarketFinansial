@@ -594,6 +594,7 @@ function ServiceCard({
           <h3 className={s.cardTitle}>{row.serviceName}</h3>
           {meta?.description && <p className={s.cardDesc}>{meta.description}</p>}
         </div>
+        {meta?.personaBadge && <span className={s.personaBadge}>{meta.personaBadge}</span>}
         {covered ? (
           <span className={s.coverageBadge} title={`${_faNum.format(row.count)} صرافی فعال`}>
             <CircleCheck size={12} aria-hidden />
