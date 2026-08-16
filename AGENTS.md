@@ -581,6 +581,27 @@ interface RouteErrorProps {
 4. **لایو پروب قبل از طراحی:** برای الهام از رقیب → `node scripts/pw-cmd.mjs browser_navigate '{"url":"..."}'` بعد `node scripts/pw-eval.mjs scripts/probes/live-design-probe.js` — مقادیر real را بگیر، حدس نزن.
 5. **Bento یکپارچه:** گرید کارت‌های سرویس با accent per-card (`--service-accent`) — حداکثر ۳ tone، بقیه از همان خانواده.
 
+### 🛒 Marketplace / سوپر-اپ — بررسی زنده MCP (Revolut × Careem — 2026-08-16)
+
+> **یاد گرفته شد 2026-08-16 — همان روز بررسی زنده روی revolut.com و careem.com**
+> برای صفحات «بازارچه خدمات» — الگوی سوپر-اپ از کد واقعی (نه اسکرین‌شات):
+
+| چک | Revolut (real) | Careem (real) | قانون ما |
+|-----|----------------|---------------|----------|
+| **H1** | Aeonik Pro **54px w500**، tracking **-1.2px**، leading 1.0 | CareemSans 700 | بازارچه: `clamp(1.9rem→2.9rem)` w800 tracking -0.03em — bold فارسی |
+| **ریتم بخش‌ها** | marginBlock **80px** بین sections | category grid بلافاصله زیر hero (32px) | زون‌ها با `--ds-space-10` + hairline جداکننده؛ هر زون هدر مختصر |
+| **دکمه** | pill radius 50px، transition `0.3s cubic-bezier(0.15, 0.5, 0.5, 1)` | radius 8px، `transform 0.3s ease-in-out` | transition یکسان: `--ds-duration-fast` + `--ds-ease-out-quart` |
+| **شروع سریع** | — | **category tiles** زیر hero — گرید آیکون‌های بزرگ با لینک مستقیم | **هر صفحه بازارچه: strip «شروع سریع»** — ۶ tile پرکاربرد → deep-link |
+| **Accent** | آبی `#376CD5` | سبز روشن `#00EB79` — **یک accent** | یک accent غالب در صفحه — emerald ما |
+| **انیمیشن سکون** | هیچ loop | هیچ loop | در سکون فقط ۱ ambient (dot-pulse) — بقیه transition-on-interaction |
+
+**قوانین عملی بازارچه (اجباری):**
+1. **۴ زون سقف** (قانون §3.7): hero signature → شروع سریع → کاتالوگ → utility. هر زون هدر خودش را دارد — تکراری ممنوع.
+2. **کارت پرچمدار:** اولین کارت گرید ۲ ستونه (`grid-column: span 2`) با گرادیان hairline لبه — بقیه استاندارد.
+3. **هر کارت CTA ثبت سفارش دارد** (حتی سرویس‌های بدون پوشش — «به‌زودی» state با border dashed).
+4. **شروع سریع = deep-link مستقیم** به `?service=X` — مسیر یک کلیک، نه scroll.
+5. **فیلتر:** segmented tabs برای گروه + چیپ اسکرول‌شونده برای سرویس — URL-sync (`?group=`/`?service=`) حفظ.
+
 ---
 
 ## 🔄 Rule Failure Loop (خودتصحیحی — اجباری)
