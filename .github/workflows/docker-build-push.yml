@@ -65,7 +65,7 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/fm-blog-web:main
+            ghcr.io/${{ lower(github.repository_owner) }}/fm-blog-web:main
           build-args: |
             NODE_IMAGE=node:22-alpine
             DATABASE_URL=postgresql://ci:ci@localhost:5432/ci
@@ -80,7 +80,7 @@ jobs:
           file: Dockerfile.cron
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/fm-blog-cron:main
+            ghcr.io/${{ lower(github.repository_owner) }}/fm-blog-cron:main
           build-args: |
             CRON_IMAGE=alpine:3.20
           cache-from: type=gha
