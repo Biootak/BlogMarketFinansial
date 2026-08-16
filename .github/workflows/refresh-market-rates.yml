@@ -27,17 +27,12 @@ jobs:
       - name: Install minimal deps for scraper
         run: npm ci --ignore-scripts --only=production 2>/dev/null || npm install --ignore-scripts
 
-      # DATABASE_URL از Heroku (source of truth) خوانده می‌شود — نه از یک secret
-      # جدا که ممکن است قدیمی شود. 2026-08-14: سکرت DATABASE_URL قدیمی شده بود
-      # (Auth failed) و workflow ۲۰+ ساعت fail می‌شد → snapshot کهنه → dyno خودش
-      # scrape می‌کرد → R14 مداوم. همین الگو در deploy-heroku.yml و backup-nightly.yml.
-      - name: Get production DATABASE_URL from Heroku
+      # DATABASE_URL مستقیماً از secret گیت‌هاب (Azure Postgres) — 2026-08-16
+      # بعد از مهاجرت Azure دیگر از Heroku API خوانده نمی‌شود.
+      - name: Set DATABASE_URL (Azure Postgres)
         id: db
         run: |
-          CONFIG=$(curl -sS -H "Accept: application/vnd.heroku+json; version=3" \
-            -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}" \
-            "https://api.heroku.com/apps/${{ secrets.HEROKU_APP_NAME }}/config-vars")
-          echo "database_url=$(echo "$CONFIG" | jq -r .DATABASE_URL)" >> "$GITHUB_OUTPUT"
+          echo "database_url=${{ secrets.DATABASE_URL }}" >> "$GITHUB_OUTPUT"
 
       - name: Setup Prisma client
         env:

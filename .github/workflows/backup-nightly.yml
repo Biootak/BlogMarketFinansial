@@ -22,15 +22,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # DATABASE_URL از Heroku خوانده می‌شود (مثل deploy-heroku.yml) تا همیشه
-      # با production همگام باشد — نه یک secret جدا که ممکن است قدیمی شود.
-      - name: Get production DATABASE_URL from Heroku
+      # DATABASE_URL مستقیماً از secret گیت‌هاب (Azure Postgres) — 2026-08-16
+      # بعد از مهاجرت Azure دیگر از Heroku API خوانده نمی‌شود.
+      - name: Set DATABASE_URL (Azure Postgres)
         id: db
         run: |
-          CONFIG=$(curl -sS -H "Accept: application/vnd.heroku+json; version=3" \
-            -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}" \
-            "https://api.heroku.com/apps/${{ secrets.HEROKU_APP_NAME }}/config-vars")
-          echo "database_url=$(echo "$CONFIG" | jq -r .DATABASE_URL)" >> "$GITHUB_OUTPUT"
+          echo "database_url=${{ secrets.DATABASE_URL }}" >> "$GITHUB_OUTPUT"
 
       # pg_dump باید ≥ نسخهٔ سرور باشد (سرور PostgreSQL 18.x است؛
       # postgresql-client پیش‌فرض ubuntu 16 است → از PGDG نسخهٔ 18 نصب می‌شود).
