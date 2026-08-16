@@ -22,6 +22,7 @@ services:
         NODE_IMAGE: node:22-alpine
         NODE_OPTIONS_BUILD: --max-old-space-size=2048
         DATABASE_URL: ${DATABASE_URL}
+        AUTH_SECRET: ${AUTH_SECRET}
     image: fm-blog-web:latest
     ports:
       - "3000:3000"
@@ -37,8 +38,11 @@ services:
       # آپلودها بیرون از image — با redeploy پاک نمی‌شوند
       - uploads_data:/app/public/uploads
     restart: always
-    # migrate deploy قبل از start — روی Azure دیتابیس آماده است و no-op می‌شود
-    command: sh -c "node node_modules/prisma/build/index.js migrate deploy && node server.js"
+    # 2026-08-16: دیتابیس Azure از قبل migrate شده (restore شامل _prisma_migrations)
+    # و CLI Prisma در تصویر standalone زنجیره‌ی وابستگی کامل ندارد (@prisma/config
+    # → effect). برای همین boot مستقیماً server.js است؛ مایگریشن‌های آینده را
+    # یک‌باره و دستی اجرا کنید (docker run --rm ... prisma migrate deploy).
+    command: sh -c "node server.js"
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
       interval: 30s

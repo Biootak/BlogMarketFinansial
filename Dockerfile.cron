@@ -1,8 +1,11 @@
 # ============================================================================
 # Sidecar cron image for self-hosted Docker deploy.
 # ----------------------------------------------------------------------------
-# به جای نصب system cron روی host، این image یک کانتینر کوچک cron دارد
-# که هر دقیقه endpointهای داخلی اپ را صدا می‌زند.
+# به جای نصب system cron روی host، این image یک کانتینر کوچک دارد که هر
+# دقیقه endpointهای داخلی اپ را صدا می‌زند.
+#
+# 2026-08-16: از dcron به حلقه‌ی shell مهاجرت شد — dcron در کانتینر Alpine
+# با «setpgid: Operation not permitted» کرش می‌کرد. ر.ک deploy/cron-loop.sh
 #
 # استفاده در docker-compose.yml:
 #   services:
@@ -20,15 +23,10 @@
 ARG CRON_IMAGE=registry.docker.ir/alpine:3.20
 FROM ${CRON_IMAGE}
 
-RUN apk add --no-cache dcron curl tzdata
+RUN apk add --no-cache curl
 
-# تنظیم timezone (در حالت production معمولاً Asia/Tehran نیاز است)
-ENV TZ=Asia/Tehran
+# حلقه‌ی cron (جایگزین dcron)
+COPY deploy/cron-loop.sh /usr/local/bin/cron-loop.sh
+RUN chmod 0755 /usr/local/bin/cron-loop.sh
 
-# کپی crontab — در build جایگزین می‌شود
-COPY deploy/crontab.docker /etc/crontabs/root
-
-# entrypoint: تنظیم tz، نصب crontab، اجرای cron در foreground
-RUN chmod 0644 /etc/crontabs/root && crontab /etc/crontabs/root
-
-CMD ["crond", "-f", "-d", "0"]
+CMD ["/usr/local/bin/cron-loop.sh"]

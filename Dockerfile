@@ -67,6 +67,11 @@ WORKDIR /app
 # overrides this with the in-cluster `db` hostname.
 ARG DATABASE_URL
 ENV DATABASE_URL=$DATABASE_URL
+# 2026-08-16: AUTH_SECRET در build لازم است — auth.ts در production fail-closed
+# است و route های 2FA در build collect می‌شوند (همان دلیل Dockerfile.heroku).
+# بدون آن build در prerender /api/2fa/qr خطا می‌دهد.
+ARG AUTH_SECRET
+ENV AUTH_SECRET=$AUTH_SECRET
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -78,6 +83,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # panics on `color-mix(in oklch, ...)`. Without this, the build would
 # crash on the modern OKLCH/color-mix tokens in globals.css.
 ENV NODE_ENV production
+# 2026-08-16: next.config.ts خروجی standalone را فقط با OUTPUT_STANDALONE=1
+# فعال می‌کند (کامنت داخل next.config). بدون آن `.next/standalone` ساخته نمی‌شود
+# و استیج runner (COPY .next/standalone) با خطای «not found» می‌شکند.
+# الگوی رسمی Docker/Next.js: docs.docker.com/guides/nextjs
+ENV OUTPUT_STANDALONE=1
 # 2026-08-16: محدود کردن heap در بیلد روی VPS های کم‌رم (مثلاً Azure B2ats_v2
 # با ۱GB RAM + swap). بدون این، `next build` روی چنین ماشینی OOM می‌خورد.
 # روی ماشین‌های معمولی مقدار خالی می‌ماند و رفتار قبلی حفظ می‌شود.
@@ -125,7 +135,11 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
+# 2026-08-16: کل اسکوپ @prisma (client + engines + debug + engines-version) را
+# کپی می‌کنیم — Prisma CLI (`prisma migrate deploy`) و خود PrismaClient در
+# runtime به زنجیره‌ی @prisma/engines → @prisma/debug نیاز دارند که standalone
+# آن را trace نمی‌کند. کپی کل اسکوپ از تعقیب تک‌تک پکیج‌ها مطمئن‌تر است.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 # 2026-08-04: sharp native binary. The standalone bundler does not
 # trace dynamically-loaded native addons, so we copy the full sharp
 # package (build/ + libvips binary) explicitly — without it, next/image
