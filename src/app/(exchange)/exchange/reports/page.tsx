@@ -26,9 +26,15 @@ export default async function ExchangeReportsPage() {
   const { exchange } = membership;
 
   const [txnResult, reportResult] = await Promise.all([
-    getTransactions(exchange.id, { limit: 100 }),
+    // P1-1: limit بالاتر — داده‌های کافی برای فیلتر client-side در ۳۰ روز اخیر
+    getTransactions(exchange.id, { limit: 500 }),
     getExchangeReport(exchange.id),
   ]);
+
+  // P1-2: primaryCurrency صرافی را برای نمایش KPI پاس می‌دهیم
+  const primaryCurrency = reportResult.success
+    ? reportResult.data.dominantCurrency
+    : (exchange.primaryCurrency ?? 'AFN');
 
   // ReportLite — فقط فیلدهایی که ReportsCockpit مصرف می‌کند
   const report = reportResult.success
@@ -37,12 +43,13 @@ export default async function ExchangeReportsPage() {
         totalFee: reportResult.data.totalFee,
         totalDeals: reportResult.data.totalDeals,
         pnlByCurrency: reportResult.data.pnlByCurrency,
+        // P2-2 fix: هر مشتری ارز واقعی خود را دارد (از reporting.ts می‌آید)
         topCustomers: reportResult.data.topCustomers.map((c) => ({
           id: c.customerId,
           name: c.fullName,
           dealCount: c.dealCount,
           totalVolume: c.totalVolume,
-          currency: reportResult.data?.pnlByCurrency[0]?.currency ?? 'AFN',
+          currency: c.currency,
         })),
         dailySummary: reportResult.data.dailySummary,
       }
@@ -67,6 +74,7 @@ export default async function ExchangeReportsPage() {
       <ReportsCockpit
         exchangeId={exchange.id}
         report={report}
+        primaryCurrency={primaryCurrency}
         txRows={txnResult.rows}
         txTotal={txnResult.total}
       />

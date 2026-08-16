@@ -40,6 +40,8 @@ interface ReportLite {
 interface Props {
   exchangeId: string;
   report: ReportLite;
+  /** ارز اصلی صرافی — برای نمایش label در KPI cells (P1-2 fix) */
+  primaryCurrency: string;
   txRows: import('@/actions/exchange-transactions').TransactionRow[];
   txTotal: number;
 }
@@ -55,7 +57,13 @@ const _fmtExact = (v: number): string =>
 
 const EMPTY_FILTER: FilterState = { search: '', currency: '', type: '', range: null };
 
-export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: Props) {
+export default function ReportsCockpit({
+  exchangeId,
+  report,
+  primaryCurrency,
+  txRows,
+  txTotal,
+}: Props) {
   const [exporting, setExporting] = useState(false);
   const [, startTransition] = useTransition();
   const [filter, setFilter] = useState<FilterState>(EMPTY_FILTER);
@@ -71,8 +79,7 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
       .map((d) => ({ date: new Date(d.date), volume: d.volume, dealCount: d.dealCount }));
   }, [report.dailySummary]);
 
-  const topCurrency = report.pnlByCurrency[0];
-  const primaryCurrency = topCurrency?.currency ?? 'AFN';
+  // primaryCurrency از prop می‌آید (ارز اصلی صرافی از DB) — نه hardcode
 
   // ── فیلتر client-side روی txRows — بدون هیچ navigation ──────────
   const filteredRows = useMemo(() => {
@@ -159,7 +166,8 @@ export default function ReportsCockpit({ exchangeId, report, txRows, txTotal }: 
             <span className={s.cellNumber} data-tone="amber">
               {fmtCompact(report.totalFee)}
             </span>
-            <span className={s.cellUnit}>IRR</span>
+            {/* P1-2 fix: ارز کارمزد از primaryCurrency صرافی، نه hardcoded IRR */}
+            <span className={s.cellUnit}>{primaryCurrency}</span>
           </div>
           <span className={s.cellMeta}>
             <span className={s.cellMetaLabel}>نرخ مؤثر</span>{' '}

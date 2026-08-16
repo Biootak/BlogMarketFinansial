@@ -32,11 +32,14 @@ const CURRENCY_OPTIONS: Array<{ value: string; code: string; label: string }> = 
   { value: 'TRY', code: 'TRY', label: 'لیر ترکیه' },
 ];
 
+// مقادیر باید با TX_KINDS در exchange-transactions.ts دقیقاً یکی باشند
 const TYPE_OPTIONS = [
   { value: '', label: 'همه' },
-  { value: 'BUY', label: 'خرید' },
-  { value: 'SELL', label: 'فروش' },
-  { value: 'TRANSFER', label: 'حواله' },
+  { value: 'DEPOSIT', label: 'واریز' },
+  { value: 'WITHDRAWAL', label: 'برداشت' },
+  { value: 'EXCHANGE', label: 'صرافی' },
+  { value: 'TRANSFER', label: 'انتقال' },
+  { value: 'FEE', label: 'کارمزد' },
 ];
 
 interface Props {
