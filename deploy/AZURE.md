@@ -115,9 +115,9 @@ bash deploy/azure-update.sh
 2. ✅ **Postgres:** `fm-pg` (norwayeast — نزدیک‌ترین ریجن مجاز به افغانستان، B1ms رایگان، PG16) + DB `blog` + فایروال (لوکال + VM).
 3. ✅ **دیتای:** dump از Heroku (pg_dump 18 — چون Heroku روی PG18 است) با حذف `_heroku` schema و خطوط ناسازگار (`transaction_timeout`، `pg_stat_statements`، `default_table_access_method`) → restore به Azure. تأیید: **88 جدول / 9209 ردیف / 15 مایگریشن Prisma**.
 4. ✅ **.env:** همه متغیرهای Heroku (S3/Filebase، بکاپ B2، AUTH_SECRET، TOTP_ENCRYPTION_KEY، Telegram، Resend...) + `DATABASE_URL`/`DIRECT_URL` → Azure.
-5. ⏳ **Build:** روی VM (ACR Tasks و ghcr هر دو در آفر بلاک/غیرضروری بودند → build لوکال روی VM با swap).
-6. ⏳ **nslookup/DNS:** رکورد A دامنه → `20.109.177.20` + TLS با certbot.
-7. ⏳ **Cutover:** OAuth callback های Google/GitHub → دامنه جدید، غیرفعال‌کردن cron-job.org، تست کامل، بعد حذف Heroku.
+5. ✅ **Build:** build لوکال روی VM با swap (نسخه اولیه) → سپس نهایی‌شده به CI: `docker-build-push.yml` روی GitHub Actions (build در runner قوی → ghcr.io/biootak/fm-blog-{web,cron}:main → VM فقط pull می‌کند).
+6. ✅ **nslookup/DNS:** رکورد A دامنه → `20.109.177.20` + TLS با certbot (renewal خودکار) — `bb3abcfc`.
+7. ✅ **Cutover:** OAuth callback های Google/GitHub → دامنه جدید؛ cron-job.org غیرفعال شد (scraping حالا روی VM اجرا می‌شود — `9a1273db`)؛ وورک‌فلوهای قدیمی Heroku/stability غیرفعال شدند (`192e131d`).
 
 ---
 
