@@ -19,6 +19,7 @@ import Empty from '@/components/Empty';
 import { Button } from '@/components/ui/button';
 import { type ExchangeServiceMeta, SERVICE_GROUPS, getServiceMeta } from '@/lib/exchange-services';
 import {
+  ArrowLeft,
   Banknote,
   ChevronLeft,
   CircleCheck,
@@ -49,20 +50,6 @@ const QUICK_ACTION_KEYS = [
   'MOBILE_TOPUP',
   'BILL_PAYMENT',
 ] as const;
-
-/** accent token map (از lib/exchange-services.ts) */
-const ACCENT_MAP: Record<string, string> = {
-  emerald: 'var(--nova-emerald)',
-  amber: 'var(--nova-amber)',
-  sky: 'var(--nova-cyan)',
-  violet: 'var(--nova-violet)',
-  rose: 'var(--nova-rose)',
-  teal: 'var(--nova-cyan)',
-  orange: 'var(--nova-amber)',
-  indigo: 'var(--nova-violet)',
-  lime: 'var(--nova-emerald)',
-  slate: 'var(--ds-text-muted)',
-};
 
 // ── Props ────────────────────────────────────────────────────────────────────
 type Props = {
@@ -130,17 +117,11 @@ function HeroConstellation() {
       <AmbientGrid className={s.constDots} />
       {CONSTELLATION.map((item, i) => {
         const meta = getServiceMeta(item.key);
-        const accent = ACCENT_MAP[meta?.accent ?? 'slate'];
         return (
           <span
             key={item.key}
             className={s.constTile}
-            style={
-              {
-                '--const-accent': accent,
-                animationDelay: `${200 + i * 90}ms`,
-              } as React.CSSProperties
-            }
+            style={{ animationDelay: `${200 + i * 90}ms` }}
             data-tile={i}
           >
             <ServiceIcon meta={meta} size={i === 1 ? 24 : 20} />
@@ -357,16 +338,9 @@ export default function ServicesMarketplace({
               const row = data.find((r) => r.serviceKey === key);
               if (!row) return null;
               const meta = getServiceMeta(row.serviceKey);
-              const accent = ACCENT_MAP[meta?.accent ?? 'slate'];
               return (
                 <li key={key}>
-                  <Link
-                    href={`/services/order?service=${row.serviceKey}`}
-                    className={s.quickTile}
-                    style={
-                      { '--qa-accent': accent, '--service-accent': accent } as React.CSSProperties
-                    }
-                  >
+                  <Link href={`/services/order?service=${row.serviceKey}`} className={s.quickTile}>
                     <span className={s.quickIcon} aria-hidden>
                       <ServiceIcon meta={meta} size={20} />
                     </span>
@@ -522,9 +496,9 @@ export default function ServicesMarketplace({
         </section>
       </RevealSection>
 
-      {/* ══════════ Zone 4 — چطور کار می‌کند (utility) ══════════ */}
+      {/* ══════════ Zone 4 — چطور کار می‌کند (utility — نوار تیره Stripe-style) ══════════ */}
       <RevealSection>
-        <section className={s.zone} aria-labelledby="how-title">
+        <section className={`${s.zone} ${s.band}`} aria-labelledby="how-title">
           <header className={s.zoneHeader}>
             <div>
               <h2 id="how-title" className={s.zoneTitle}>
@@ -532,6 +506,10 @@ export default function ServicesMarketplace({
               </h2>
               <p className={s.zoneSub}>از انتخاب تا انجام — سه قدم ساده</p>
             </div>
+            <Link href="/services/order" className={s.bandCta}>
+              ثبت سفارش آنلاین
+              <ArrowLeft size={15} strokeWidth={2.2} aria-hidden />
+            </Link>
           </header>
 
           <ol className={s.steps}>
@@ -584,17 +562,13 @@ function ServiceCard({
   trackClick: (serviceKey: string, exchangeId: string) => void;
 }) {
   const meta = getServiceMeta(row.serviceKey);
-  const accent = ACCENT_MAP[meta?.accent ?? 'slate'];
   const covered = row.count > 0;
   // solo (فیلتر یک سرویس) → همه صرافی‌ها؛ وگرنه حداکثر ۳
   const visibleExchanges = solo ? row.exchanges : row.exchanges.slice(0, 3);
   const hasMore = !solo && row.exchanges.length > 3;
 
   return (
-    <li
-      className={`${s.serviceCard} ${featured ? s.cardFeatured : ''} ${solo ? s.cardSolo : ''}`}
-      style={{ '--service-accent': accent } as React.CSSProperties}
-    >
+    <li className={`${s.serviceCard} ${featured ? s.cardFeatured : ''} ${solo ? s.cardSolo : ''}`}>
       <div className={s.cardTop}>
         <span className={s.cardIcon} aria-hidden>
           <ServiceIcon meta={meta} size={featured ? 26 : 20} />

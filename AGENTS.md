@@ -576,6 +576,7 @@ interface RouteErrorProps {
 
 **قوانین عملی (اجباری):**
 1. **Hero تایپوگرافی:** tracking منفی (`-0.02em` تا `-0.04em`) روی عنوان‌های بزرگ؛ وزن 300–400 برای فارسی فقط در سایزهای ≥ 34px؛ bold برای عنوان‌های کوچک‌تر.
+   > **به‌روزرسانی 2026-08-16 (بازخورد کاربر «دقیقاً مثل Stripe»):** hero لایت-ادیتوریال مجاز و ترجیح کاربر است — H1 ≥34px با `font-weight: 400` (Vazirmatn حداقل 400 است) + tracking منفی + leading 1.2؛ accent روی یک کلمه (مثل `titleAccent`). عناوین کوچک‌تر bold می‌مانند.
 2. **Restraint در انیمیشن:** حداکثر ۱ انیمیشن لوپ ambient در هر صفحه (dot-pulse یا coin) — بقیه حرکت‌ها transition-on-interaction.
 3. **Transition یکسان:** همه دکمه/کارت/اینپوت: `transition: … var(--ds-duration-fast) var(--ds-ease-out-quart)` — هرگز `0.2s ease` پراکنده.
 4. **لایو پروب قبل از طراحی:** برای الهام از رقیب → `node scripts/pw-cmd.mjs browser_navigate '{"url":"..."}'` بعد `node scripts/pw-eval.mjs scripts/probes/live-design-probe.js` — مقادیر real را بگیر، حدس نزن.
@@ -598,13 +599,50 @@ interface RouteErrorProps {
 **قوانین عملی بازارچه (اجباری):**
 1. **۴ زون سقف** (قانون §3.7): hero signature → شروع سریع → کاتالوگ → utility. هر زون هدر خودش را دارد — تکراری ممنوع.
 2. **کارت پرچمدار:** اولین کارت گرید ۲ ستونه (`grid-column: span 2`) با گرادیان hairline لبه — بقیه استاندارد.
-3. **هر کارت CTA ثبت سفارش دارد** (حتی سرویس‌های بدون پوشش — «به‌زودی» state با border dashed).
+3. **هر کارت CTA ثبت سفارش دارد** — سرویس‌های بدون صرافی همکار «ارائه مستقیم» هستند (توسط خود ما)، نه «به‌زودی»؛ همکارها additive هستند.
 4. **شروع سریع = deep-link مستقیم** به `?service=X` — مسیر یک کلیک، نه scroll.
 5. **فیلتر:** segmented tabs برای گروه + چیپ اسکرول‌شونده برای سرویس — URL-sync (`?group=`/`?service=`) حفظ.
+
+### 🎨 ریستریت رنگ — تکفام Stripe (یاد گرفته شد 2026-08-16 — بازخورد کاربر «انقدر رنگ»)
+
+> **یاد گرفته شد 2026-08-16 — بازخورد مستقیم کاربر روی بازارچه:** accent per-card (۸ رنگ) = شلوغی.
+> پروب زنده stripe.com همین را تأیید کرد: کل صفحه `section--white`، آیکون‌ها مونوکروم، یک accent واحد `#533afd` فقط برای تعاملات.
+
+| قانون | جزئیات |
+|-------|---------|
+| **بدون accent per-card** | آیکون‌های کارت/tile: `--ds-surface-recessed` + `--ds-text-primary` — مونوکروم. رنگ فقط برای تعامل و status.
+| **یک accent در هر صفحه** | `--ds-brand-*` فقط روی: CTA اصلی (solid)، تب/چیپ فعال، هاور لینک‌ها، hairline کارت پرچمدار، تایپوگرافی hero.
+| **بج‌ها خنثی** | persona/coverage/self بج‌ها: `--ds-surface-recessed` + border hairline + `--ds-text-muted` — شخصیت از متن می‌آید نه رنگ.
+| **کارت‌ها سفید روی سفید** | hairline border + elevation — هیچ tint رنگی داخل کارت (مثل stripe `modular-solutions-bento-card`).
+| **CTA کارت = outline** | border hairline + متن؛ هاور → برند. فقط یک CTA **solid** در کل صفحه (hero).
+| **امضای حرکت** | گرادیان hairline لبه کارت پرچمدار + ورود stagger — رنگ در حرکت است، نه در سکون.
+
+**H1 صفحه‌های محتوا:** وزن 300–400 فقط در سایزهای ≥34px و با tracking منفی؛ وگرنه w800 (فارسی).
+
+**دو تکنیک امضای Stripe (برای همه بازارچه‌ها/گرید کارت):**
+1. **گرادیان hairline لبه روی هاور:** `::after` با `padding: 1.5px` + `mask-composite: exclude` + `opacity 0→0.65` روی `:hover` — امضای `modular-solutions-bento-card__border-color-gradient` (opacity-only، بدون layout thrash).
+2. **نوار تیره انتهایی (drama flip):** آخرین زون utility با `--ds-color-canvas-dark` + متن `--ds-brand-on` + دکمه CTA سفید — یک نقطه تاریک در صفحه سفید (مثل `rgb(13,23,56)` استرایپ).
+
+### 🧵 Stripe Fiber — سیستم طراحی استخراج‌شده (live MCP + جستجوی وب 2026-08-16)
+
+| فیبر | مقدار | کاربرد ما |
+|------|--------|-----------|
+| **جوهر (ink)** | مشکی متن + نیلی `#0A2540`؛ نوار تیره `rgb(13,23,56)` | نوار تیره = `--ds-color-canvas-dark` |
+| **Accent** | بنفش `#533AFD` (live) / `#635BFF` (کلاسیک) — فقط تعاملات | `--ds-brand-*` فقط CTA/تب فعال/هاور |
+| **تینت سطح** | `rgb(229,237,245)` — تنها رنگ ثانویه کل صفحه | `--ds-surface-recessed` برای آیکون‌ها/بج‌ها |
+| **تایپوگرافی** | sohne-var؛ H1 48px w300 `-0.96px`؛ h2/h3 w300؛ heading محصول 18px w500 | فارسی: H1 w400 ≥34px، عناوین کوچک w700-800 |
+| **ریتم** | پایه 4px؛ فاصله سکشن 152–160px | زون‌ها `--ds-space-10` + hairline جداکننده |
+| **Radius** | 4px (تیز) | رامپ خودمان 8–24px (تطبیق فرهنگی) |
+| **CTA** | یک solid + یک ghost در هر سکشن | یک solid در هر صفحه (hero/band)، بقیه outline |
+| **حرکت** | 0.24s تعامل، sweep گرادیان 1000ms، ورود 800ms، سکون ≈ بدون loop | `--ds-duration-fast/base` + گرادیان hairline |
 
 ---
 
 ## 🔄 Rule Failure Loop (خودتصحیحی — اجباری)
+
+### گرادیان‌های نامرئی — `to inline-end` نامعتبر است (learned 2026-08-16)
+> **یاد گرفته شد 2026-08-16 — پروب زنده:** `getComputedStyle(::after).backgroundImage` روی ۸ فایل `none` برگشت چون `linear-gradient(to inline-end, …)` کلیدواژه منطقی است که در گرادیان‌ها وجود ندارد — کل declaration حذف می‌شود.
+> **قانون:** در `linear-gradient()`/`conic-gradient()` فقط جهت‌های فیزیکی (`to right`/`to left`/`90deg`) مجاز است؛ logical properties فقط برای `inset-*`/`margin-*`/`padding-*` هستند. هر گرادیان جدید با پروب `getComputedStyle().backgroundImage` تأیید شود.
 
 ### چه موقع فعال می‌شود؟
 - یک قانون AGENTS.md در عمل کار نکرد

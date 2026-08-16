@@ -1655,7 +1655,7 @@
     inset-inline-end: 0;
     block-size: 1px;
     background: linear-gradient(
-      to inline-end,
+      to right,
       transparent 5%,
       oklch(80% 0.06 240 / 0.6) 50%,
       transparent 95%

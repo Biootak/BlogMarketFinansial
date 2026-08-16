@@ -192,7 +192,7 @@
   inset-inline-end: 0;
   block-size: 1px;
   background: linear-gradient(
-    to inline-end,
+    to right,
     transparent,
     color-mix(in oklch, var(--ds-brand-500) 30%, transparent),
     transparent
@@ -294,7 +294,7 @@
   block-size: 1px;
   border-radius: var(--ds-radius-xl) var(--ds-radius-xl) 0 0;
   background: linear-gradient(
-    to inline-end,
+    to right,
     transparent 10%,
     color-mix(in oklch, var(--ds-border-subtle) 80%, transparent) 50%,
     transparent 90%
@@ -1207,7 +1207,7 @@
   inset-inline-start: 20%;
   inset-inline-end: 20%;
   block-size: 1.5px;
-  background: linear-gradient(to inline-end, transparent, var(--ds-brand-500), transparent);
+  background: linear-gradient(to right, transparent, var(--ds-brand-500), transparent);
   border-radius: var(--ds-radius-full);
 }
 

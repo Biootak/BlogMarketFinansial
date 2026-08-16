@@ -90,7 +90,7 @@
   inset-inline: 0;
   block-size: 2px;
   background: linear-gradient(
-    to inline-end,
+    to right,
     var(--ds-status-error-fg),
     var(--ds-status-pending-fg),
     var(--ds-status-success-fg)

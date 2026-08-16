@@ -522,7 +522,7 @@
   inset-block: 0;
   inset-inline-start: 0;
   background: linear-gradient(
-    to inline-end,
+    to right,
     var(--nova-up) 0%,
     color-mix(in oklch, var(--nova-cyan) 60%, var(--nova-up)) 100%
   );

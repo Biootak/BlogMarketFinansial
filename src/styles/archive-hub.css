@@ -2067,7 +2067,7 @@
     height: 2px;
     transform-origin: left center;
     transform: scaleX(0);
-    background: linear-gradient(to inline-end, oklch(60% 0.1 220), oklch(72% 0.1 200));
+    background: linear-gradient(to right, oklch(60% 0.1 220), oklch(72% 0.1 200));
     animation: arc-scroll-fill linear both;
     animation-timeline: scroll(root block);
     z-index: 2;

@@ -106,7 +106,7 @@
   inset-block-start: 0;
   inset-inline: 0;
   block-size: 2px;
-  background: linear-gradient(to inline-end, transparent, var(--ds-brand-500), transparent);
+  background: linear-gradient(to right, transparent, var(--ds-brand-500), transparent);
   opacity: 0.7;
   pointer-events: none;
 }

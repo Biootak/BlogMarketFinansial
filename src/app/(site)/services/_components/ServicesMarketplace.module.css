@@ -53,11 +53,19 @@
 }
 
 .title {
-  font-size: clamp(1.9rem, 4.2vw, 2.9rem);
-  font-weight: 800;
+  /* Stripe light-editorial: H1 48px w300 — Vazirmatn variable (100–900) پشتیبانی می‌کند.
+     قانون AGENTS.md: w300 فقط در سایزهای ≥ 34px — موبایل 28px با w400، دسکتاپ ≥34px با w300 */
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  font-weight: 400;
   letter-spacing: -0.03em;
-  line-height: 1.18;
+  line-height: 1.22;
   color: var(--ds-text-primary);
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-weight: 300;
+  }
 }
 
 .titleAccent {
@@ -231,7 +239,7 @@
   background: var(--ds-surface-elevated);
   border: 1.5px solid var(--ds-border-subtle);
   box-shadow: var(--ds-shadow-md);
-  color: var(--const-accent);
+  color: var(--ds-text-primary);
   opacity: 0;
   transform: translateY(12px) scale(0.9);
   animation: tile-in 480ms var(--ds-ease-out-quart) forwards;
@@ -249,7 +257,7 @@
 
 .constTile:hover {
   transform: translateY(-4px) scale(1.06);
-  border-color: color-mix(in oklch, var(--const-accent) 45%, var(--ds-border-strong));
+  border-color: var(--ds-brand-600);
   box-shadow: var(--ds-shadow-lg);
 }
 
@@ -264,8 +272,9 @@
   block-size: 58px;
   inset: 0;
   margin: auto;
-  background: color-mix(in oklch, var(--const-accent) 10%, var(--ds-surface-elevated));
-  border-color: color-mix(in oklch, var(--const-accent) 30%, var(--ds-border-subtle));
+  background: color-mix(in oklch, var(--ds-brand-600) 7%, var(--ds-surface-elevated));
+  border-color: var(--ds-brand-600);
+  color: var(--ds-brand-600);
 }
 
 .constTile[data-tile="2"] {
@@ -350,7 +359,7 @@
 
 .quickTile:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in oklch, var(--qa-accent) 40%, var(--ds-border-strong));
+  border-color: var(--ds-border-strong);
   box-shadow: var(--ds-shadow-md);
 }
 
@@ -365,8 +374,8 @@
   block-size: 42px;
   flex-shrink: 0;
   border-radius: var(--ds-radius-lg);
-  background: color-mix(in oklch, var(--qa-accent) 12%, var(--ds-surface));
-  color: var(--qa-accent);
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-secondary);
 }
 
 .quickText {
@@ -403,7 +412,6 @@
   font-size: var(--ds-text-xs);
   color: var(--ds-text-muted);
 }
-
 .quickArrow {
   margin-inline-start: auto;
   color: var(--ds-text-muted);
@@ -414,7 +422,7 @@
 
 .quickTile:hover .quickArrow {
   transform: translateX(-3px);
-  color: var(--qa-accent);
+  color: var(--ds-brand-600);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -606,9 +614,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--ds-space-4);
   list-style: none;
-}
-
-/* ─── Service card ────────────────────────────────────────────────────────── */
+} /* ─── Service card ────────────────────────────────────────────────────────── */
 .serviceCard {
   position: relative;
   display: flex;
@@ -623,21 +629,42 @@
     var(--ds-ease-out-quart);
 }
 
+/* امضای Stripe bento: گرادیان hairline لبه که روی هاور نمایان می‌شود (opacity-only) */
+.serviceCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--ds-brand-500) 35%,
+    var(--ds-brand-300) 65%,
+    transparent
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--ds-duration-slow) var(--ds-ease-out-quart);
+  pointer-events: none;
+}
+
 .serviceCard:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in oklch, var(--service-accent) 35%, var(--ds-border-strong));
+  border-color: var(--ds-border-strong);
   box-shadow: var(--ds-shadow-md);
 }
 
-/* Featured — اولین کارت، دو ستونه (hero of the grid) */
-.cardFeatured {
+.serviceCard:hover::after {
+  opacity: 0.65;
+}
+
+/* Featured — اولین کارت، دو ستونه (hero of the grid) */ .cardFeatured {
   grid-column: span 2;
   padding: var(--ds-space-6);
-  background: linear-gradient(
-      to inline-end,
-      color-mix(in oklch, var(--service-accent) 5%, transparent),
-      transparent 55%
-    ), var(--ds-surface);
+  background: var(--ds-surface);
 }
 
 .cardFeatured::before {
@@ -646,12 +673,8 @@
   inset-block-start: 0;
   inset-inline: 0;
   block-size: 2px;
-  background: linear-gradient(
-    to inline-end,
-    transparent,
-    color-mix(in oklch, var(--service-accent) 60%, transparent),
-    transparent
-  );
+  background: linear-gradient(to right, transparent, var(--ds-brand-500), transparent);
+  opacity: 0.55;
   border-start-start-radius: var(--ds-radius-xl);
   border-start-end-radius: var(--ds-radius-xl);
   pointer-events: none;
@@ -676,8 +699,8 @@
   block-size: 42px;
   flex-shrink: 0;
   border-radius: var(--ds-radius-lg);
-  background: color-mix(in oklch, var(--service-accent) 12%, var(--ds-surface));
-  color: var(--service-accent);
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-primary);
 }
 
 .cardFeatured .cardIcon {
@@ -712,16 +735,17 @@
   overflow: hidden;
 }
 
-/* Persona badge — شخصیت سرویس (فوری / رزرو و…) */
+/* Persona badge — شخصیت سرویس (فوری / رزرو و…) — تکفام */
 .personaBadge {
   padding: 3px 10px;
   border-radius: var(--ds-radius-full);
-  background: color-mix(in oklch, var(--service-accent) 12%, var(--ds-surface));
-  color: var(--service-accent);
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-muted);
   font-size: var(--ds-text-xs);
-  font-weight: 800;
+  font-weight: 700;
   flex-shrink: 0;
   white-space: nowrap;
+  border: 1px solid var(--ds-border-subtle);
 }
 
 /* Coverage / soon badges */
@@ -731,23 +755,25 @@
   gap: 4px;
   padding: 3px 10px;
   border-radius: var(--ds-radius-full);
-  background: color-mix(in oklch, var(--ds-brand-600) 10%, var(--ds-surface));
-  color: var(--ds-brand-600);
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-secondary);
   font-size: var(--ds-text-xs);
-  font-weight: 800;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
+  border: 1px solid var(--ds-border-subtle);
 }
 
 .selfBadge {
   padding: 3px 10px;
   border-radius: var(--ds-radius-full);
-  background: color-mix(in oklch, var(--ds-brand-600) 10%, var(--ds-surface));
-  color: var(--ds-brand-600);
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-secondary);
   font-size: var(--ds-text-xs);
-  font-weight: 800;
+  font-weight: 700;
   flex-shrink: 0;
   white-space: nowrap;
+  border: 1px solid var(--ds-border-subtle);
 }
 
 /* Exchange list */
@@ -832,9 +858,9 @@
   gap: var(--ds-space-2-5);
   margin-block-start: var(--ds-space-4);
   padding: var(--ds-space-3) var(--ds-space-4);
-  border: 1px solid color-mix(in oklch, var(--ds-brand-600) 22%, var(--ds-border-subtle));
+  border: 1px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-lg);
-  background: color-mix(in oklch, var(--ds-brand-600) 5%, var(--ds-surface));
+  background: var(--ds-surface-recessed);
 }
 
 .selfStateIcon {
@@ -859,7 +885,6 @@
   padding-block-start: var(--ds-space-4);
   border-block-start: 1px solid var(--ds-border-subtle);
 }
-
 .cardCta {
   display: inline-flex;
   align-items: center;
@@ -867,16 +892,19 @@
   min-block-size: 36px;
   padding-inline: 14px;
   border-radius: var(--ds-radius-full);
-  background: color-mix(in oklch, var(--service-accent) 10%, var(--ds-surface));
-  color: var(--service-accent);
+  border: 1.5px solid var(--ds-border-subtle);
+  background: var(--ds-surface);
+  color: var(--ds-text-primary);
   font-size: var(--ds-text-xs);
   font-weight: 700;
-  transition: background-color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
-    var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring);
 }
 
 .cardCta:hover {
-  background: color-mix(in oklch, var(--service-accent) 16%, var(--ds-surface));
+  border-color: var(--ds-brand-600);
+  color: var(--ds-brand-600);
   transform: translateY(-1px);
 }
 
@@ -970,6 +998,81 @@
 .stepCheck {
   color: var(--ds-brand-600);
   vertical-align: -2px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ZONE 4 (dark band) — نوار تیره انتهایی Stripe-style
+   ══════════════════════════════════════════════════════════════════════════ */
+.band {
+  border-block-start: none;
+  border-radius: var(--ds-radius-2xl);
+  background: var(--ds-color-canvas-dark);
+  padding-inline: var(--ds-space-8);
+  margin-block-end: var(--ds-space-2);
+}
+
+.band .zoneTitle {
+  color: var(--ds-brand-on);
+}
+
+.band .zoneSub {
+  color: color-mix(in oklch, var(--ds-brand-on) 62%, transparent);
+}
+
+.bandCta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  min-block-size: 44px;
+  padding-inline: 22px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-on);
+  color: var(--ds-color-canvas-dark);
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.bandCta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -8px oklch(0% 0 0 / 0.5);
+}
+
+.bandCta:active {
+  transform: scale(0.97);
+}
+
+.bandCta:focus-visible {
+  outline: 2px solid var(--ds-brand-300);
+  outline-offset: 2px;
+}
+
+.band .stepIcon {
+  background: color-mix(in oklch, var(--ds-brand-on) 10%, transparent);
+  color: var(--ds-brand-300);
+}
+
+.band .stepNum {
+  background: var(--ds-brand-500);
+  color: var(--ds-brand-on);
+}
+
+.band .stepTitle {
+  color: var(--ds-brand-on);
+}
+
+.band .stepBody {
+  color: color-mix(in oklch, var(--ds-brand-on) 70%, transparent);
+}
+
+.band .step:not(:last-child)::after {
+  background: color-mix(in oklch, var(--ds-brand-on) 14%, transparent);
+}
+
+.band .stepCheck {
+  color: var(--ds-brand-300);
 }
 
 /* ─── Scroll reveal ───────────────────────────────────────────────────────── */
