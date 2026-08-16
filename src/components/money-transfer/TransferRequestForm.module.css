@@ -1262,6 +1262,76 @@
   margin: 0;
 }
 
+/* خلاصه سفارش ثبت‌شده — hairline تکفام (الگوی تأیید استرایپ/وایز) */
+.successSummary {
+  inline-size: 100%;
+  max-inline-size: 300px;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-elevated);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  display: flex;
+  flex-direction: column;
+  text-align: start;
+}
+
+.successSummaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-2) 0;
+  font-size: var(--ds-text-xs);
+}
+
+.successSummaryRow:not(:last-child) {
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.successSummaryLabel {
+  color: var(--ds-text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.successSummaryValue {
+  color: var(--ds-text-primary);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* بعدش چه می‌شود — تایملاین مینیمال با نقطه */
+.successNext {
+  inline-size: 100%;
+  max-inline-size: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: start;
+}
+
+.successNext li {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  line-height: var(--ds-leading-normal);
+}
+
+.successNextDot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-600);
+  flex-shrink: 0;
+}
+
 .successActions {
   display: flex;
   gap: var(--ds-space-2);
@@ -1667,4 +1737,235 @@
 .guestNote svg {
   color: var(--ds-brand-500);
   flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* 2026-08-16 — Quote-at-checkout: رینگ TTL + پیش‌فاکتور زنده + فیلدهای سرویس */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── رینگ شمارش معکوس قفل نرخ — SVG، فقط stroke-dashoffset ── */
+.ttlRing {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  margin-inline-start: auto;
+}
+
+.ttlRing svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ttlTrack {
+  stroke: var(--ds-border-default);
+  stroke-width: 2.5;
+}
+
+.ttlFill {
+  stroke: var(--ds-brand-500);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.ttlRingDanger .ttlFill {
+  stroke: oklch(55% 0.19 27);
+}
+
+.ttlText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-secondary);
+  letter-spacing: 0;
+}
+
+.ttlRingDanger .ttlText {
+  color: oklch(55% 0.19 27);
+}
+
+/* ── جعبهٔ پیش‌فاکتور زنده — رسید با نرخ واقعی بازار ── */
+.quoteBox {
+  margin-block: var(--ds-space-4);
+  padding: var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface-recessed);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+}
+
+.quoteLoading {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+}
+
+.quoteLoading svg {
+  flex-shrink: 0;
+}
+
+.quoteNote {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  flex-wrap: wrap;
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+}
+
+.quoteRefresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px var(--ds-space-3);
+  border-radius: 999px;
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--ds-text-primary);
+  cursor: pointer;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.quoteRefresh:hover {
+  border-color: var(--ds-brand-500);
+  color: var(--ds-brand-600);
+}
+
+.quoteRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  padding-block: var(--ds-space-1);
+}
+
+.quoteRow + .quoteRow {
+  border-top: 1px solid var(--ds-border-subtle);
+}
+
+.quoteKey {
+  font-size: var(--ds-text-sm);
+  color: var(--ds-text-secondary);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.quoteVal {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+}
+
+.quoteRowTotal {
+  padding-block: var(--ds-space-2);
+}
+
+.quoteRowTotal .quoteKey {
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.quoteValTotal {
+  font-size: var(--ds-text-lg);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+}
+
+.quoteFeePct {
+  font-size: var(--ds-text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-muted);
+}
+
+.quoteUrgentTag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--ds-border-default);
+  color: var(--ds-text-muted);
+}
+
+.quoteMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: var(--ds-space-1);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+.quoteNoRate {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
+  line-height: 1.8;
+  color: var(--ds-text-secondary);
+}
+
+.quoteNoRate svg {
+  color: var(--ds-brand-500);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+/* ── اپراتورهای موبایل — چیپ‌های انتخاب ── */
+.operatorRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+}
+
+.operatorBtn {
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-radius: 999px;
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  cursor: pointer;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), background var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+}
+
+.operatorBtnActive,
+.operatorBtn:hover {
+  border-color: var(--ds-brand-500);
+  color: var(--ds-brand-600);
+}
+
+.operatorBtnActive {
+  background: var(--ds-surface-recessed);
+}
+
+.inputErr {
+  border-color: oklch(55% 0.19 27) !important;
+}
+
+/* ── ردیف های‌لایت رسید موفق ── */
+.successSummaryRowHighlight {
+  padding: var(--ds-space-2) calc(var(--ds-space-2) * -1);
+  border-top: 1px solid var(--ds-border-subtle);
+  font-weight: 700;
 }

@@ -44,12 +44,19 @@ interface Stats {
   inProgress: number;
   completed: number;
   cancelled: number;
+  expired: number;
   todayCount: number;
   urgent: number;
   pendingUrgent: number;
 }
 
-export type StatusFilter = 'ALL' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type StatusFilter =
+  | 'ALL'
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXPIRED';
 
 interface ServiceRequestsCommandBarProps {
   activeFilter: StatusFilter;
@@ -86,6 +93,11 @@ const STATUS_META: Record<
     label: 'لغو شده',
     icon: XCircle,
     getCount: (s) => s.cancelled,
+  },
+  EXPIRED: {
+    label: 'منقضی',
+    icon: XCircle,
+    getCount: (s) => s.expired,
   },
 };
 

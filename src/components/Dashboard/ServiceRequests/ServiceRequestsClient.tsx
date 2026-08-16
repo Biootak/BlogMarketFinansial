@@ -23,7 +23,13 @@ import ServiceRequestsCommandBar from './ServiceRequestsCommandBar';
 import ServiceRequestsStats from './ServiceRequestsStats';
 import ServiceRequestsTable from './ServiceRequestsTable';
 
-export type StatusFilter = 'ALL' | 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type StatusFilter =
+  | 'ALL'
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXPIRED';
 
 export default function ServiceRequestsClient() {
   const [filter, setFilter] = useState<StatusFilter>('ALL');

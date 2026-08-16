@@ -80,7 +80,7 @@ export default async function SettingsIndexPage() {
         title={`پیکربندی ${exchange.displayName ?? exchange.name}`}
         description="تنظیمات عملیاتی، امنیتی و ساعات کاری صرافی"
         icon="settings"
-        accent="indigo"
+        accent="emerald"
         variant="compact"
         meta={[
           { label: 'آخرین تغییر', value: `${_faNum.format(daysSinceUpdate)} روز پیش` },

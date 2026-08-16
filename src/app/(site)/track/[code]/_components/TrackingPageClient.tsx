@@ -61,6 +61,12 @@ const STATUS_CONFIG = {
     cls: t.statusCancelled,
     help: 'این درخواست لغو شده است. برای جزئیات بیشتر با پشتیبانی تماس بگیرید.',
   },
+  EXPIRED: {
+    label: 'منقضی شده',
+    icon: XCircle,
+    cls: t.statusCancelled,
+    help: 'قفل نرخ این سفارش منقضی شد و بی‌پاسخ ماند. لطفاً با نرخ جدید دوباره سفارش ثبت کنید.',
+  },
 } as const;
 
 const STEPS = ['PENDING', 'IN_PROGRESS', 'COMPLETED'] as const;
@@ -74,6 +80,7 @@ const STATUS_LABELS: Record<string, string> = {
   IN_PROGRESS: 'در حال انجام',
   COMPLETED: 'تکمیل شده',
   CANCELLED: 'لغو شده',
+  EXPIRED: 'منقضی شده',
 };
 
 const SERVICE_LABELS: Record<string, string> = {
@@ -94,7 +101,7 @@ const SERVICE_LABELS: Record<string, string> = {
 };
 
 function getStepClass(step: StepKey, status: StatusKey, terminalFrom: string | null): string {
-  if (status === 'CANCELLED') {
+  if (status === 'CANCELLED' || status === 'EXPIRED') {
     const stepIdx = STEPS.indexOf(step);
     const fromIdx = terminalFrom ? STEPS.indexOf(terminalFrom as StepKey) : -1;
     if (fromIdx !== -1 && stepIdx < fromIdx) return t.stepDone;
@@ -132,6 +139,16 @@ export interface TrackingData {
   externalTxId: string | null;
   createdAt: Date | string;
   updatedAt: Date | string;
+  /** 2026-08-16: ارقام اقتصادی — quote (قفل نرخ) و final (تسویهٔ نهایی) */
+  quoteRate: number | null;
+  quoteFeeAf: number | null;
+  quoteTotalAf: number | null;
+  paymentMethod: string | null;
+  finalRate: number | null;
+  finalFeeAf: number | null;
+  finalTotalAf: number | null;
+  paidAmountAf: number | null;
+  paidAt: Date | string | null;
   statusLogs: StatusLogEntry[];
 }
 
@@ -204,7 +221,12 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
   // تب مخفی بود پل نمی‌کند. دکمه‌ی رفرش دستی همیشه در دسترس است.
   const currentStatus = data?.status;
   useEffect(() => {
-    if (!currentStatus || currentStatus === 'COMPLETED' || currentStatus === 'CANCELLED') {
+    if (
+      !currentStatus ||
+      currentStatus === 'COMPLETED' ||
+      currentStatus === 'CANCELLED' ||
+      currentStatus === 'EXPIRED'
+    ) {
       return;
     }
     const id = setInterval(() => {
@@ -215,7 +237,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
 
   const status = data ? STATUS_CONFIG[data.status] : null;
   const StatusIcon = status?.icon;
-  const isCancelled = data?.status === 'CANCELLED';
+  const isCancelled = data?.status === 'CANCELLED' || data?.status === 'EXPIRED';
 
   // رسید چاپی فقط برای درخواست تکمیل‌شده
   const receiptData: ReceiptData | null =
@@ -233,6 +255,37 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
           lines: [
             { label: 'نوع سرویس', value: SERVICE_LABELS[data.serviceType] ?? data.serviceType },
             { label: 'تاریخ ثبت', value: formatDate(data.createdAt) },
+            ...(data.quoteRate != null
+              ? [
+                  {
+                    label: 'نرخ قفل‌شده',
+                    value: `${new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 2 }).format(data.quoteRate)} افغانی`,
+                  },
+                ]
+              : []),
+            ...(data.quoteFeeAf != null
+              ? [
+                  {
+                    label: 'کارمزد',
+                    value: `${new Intl.NumberFormat('fa-AF').format(data.quoteFeeAf)} افغانی`,
+                  },
+                ]
+              : []),
+            ...(data.finalTotalAf != null
+              ? [
+                  {
+                    label: 'مجموع نهایی تسویه',
+                    value: `${new Intl.NumberFormat('fa-AF').format(data.finalTotalAf)} افغانی`,
+                  },
+                ]
+              : data.quoteTotalAf != null
+                ? [
+                    {
+                      label: 'قابل پرداخت (قفل نرخ)',
+                      value: `${new Intl.NumberFormat('fa-AF').format(data.quoteTotalAf)} افغانی`,
+                    },
+                  ]
+                : []),
             ...(data.estimatedCompletionAt
               ? [{ label: 'زمان تخمینی تکمیل', value: formatDate(data.estimatedCompletionAt) }]
               : []),
@@ -244,7 +297,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
 
   // پیشرفت: PENDING=0, IN_PROGRESS=50, COMPLETED=100؛ لغو → آخرین مرحله‌ی رسیده
   const terminalLog = isCancelled
-    ? (data?.statusLogs.find((l) => l.toStatus === 'CANCELLED') ?? null)
+    ? (data?.statusLogs.find((l) => l.toStatus === 'CANCELLED' || l.toStatus === 'EXPIRED') ?? null)
     : null;
   const activeIdx = isCancelled
     ? STEPS.indexOf((terminalLog?.fromStatus ?? '') as StepKey)
@@ -391,6 +444,49 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                     </dd>
                   </div>
                 )}
+                {data.paymentMethod && (
+                  <div className={s.infoRow}>
+                    <dt className={s.infoLabel}>روش تسویه</dt>
+                    <dd className={s.infoValue}>
+                      {data.paymentMethod === 'BANK_TRANSFER' ? 'حواله بانکی' : 'نقدی / حضوری'}
+                    </dd>
+                  </div>
+                )}
+                {data.quoteRate != null && (
+                  <div className={s.infoRow}>
+                    <dt className={s.infoLabel}>نرخ قفل‌شده</dt>
+                    <dd className={s.infoValue} dir="ltr">
+                      {new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 2 }).format(
+                        data.quoteRate,
+                      )}{' '}
+                      افغانی
+                    </dd>
+                  </div>
+                )}
+                {data.quoteFeeAf != null && (
+                  <div className={s.infoRow}>
+                    <dt className={s.infoLabel}>کارمزد</dt>
+                    <dd className={s.infoValue} dir="ltr">
+                      {new Intl.NumberFormat('fa-AF').format(data.quoteFeeAf)} ؋
+                    </dd>
+                  </div>
+                )}
+                {data.finalTotalAf != null ? (
+                  <div className={`${s.infoRow} ${s.infoRowHighlight ?? ''}`}>
+                    <dt className={s.infoLabel}>مجموع نهایی تسویه</dt>
+                    <dd className={s.infoValue} dir="ltr">
+                      <strong>{new Intl.NumberFormat('fa-AF').format(data.finalTotalAf)} ؋</strong>
+                      {data.paidAmountAf != null && <span className={s.paidTag}>پرداخت‌شده</span>}
+                    </dd>
+                  </div>
+                ) : data.quoteTotalAf != null ? (
+                  <div className={s.infoRow}>
+                    <dt className={s.infoLabel}>قابل پرداخت (قفل نرخ)</dt>
+                    <dd className={s.infoValue} dir="ltr">
+                      {new Intl.NumberFormat('fa-AF').format(data.quoteTotalAf)} ؋
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
             </section>
 

@@ -299,7 +299,7 @@ export function UsersClient({
         title="کاربران"
         description={`${_faNum.format(totalCount)} کاربر در سیستم`}
         icon="users"
-        accent="indigo"
+        accent="emerald"
         actions={
           <button type="button" className={s.addBtn} onClick={openCreate}>
             <Plus className="size-4" aria-hidden />

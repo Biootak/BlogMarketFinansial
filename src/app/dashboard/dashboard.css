@@ -10,41 +10,19 @@
    210 (cyan) خنثای داده.
    ============================================================================ */
 
-/* @property --dash-angle: لازم برای انیمیشن conic-gradient در .dash-glow
-   بدون این تعریف، Firefox و Safari از انیمیشن typed custom property پشتیبانی
-   نمی‌کنند و conic border در آن‌ها ثابت می‌ماند. */
-@property --dash-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
 @layer utilities {
-  /* ---- Canvas: پس‌زمینه‌ی aurora کل ناحیه‌ی محتوا --------------------------- */
-  /* 2026-06-26: Premium glassmorphic canvas — visible lavender / indigo
-     ambient light on a smooth cool-tinted gradient. Layered with the
-     <AmbientBackground /> radial blobs (indigo / violet / cyan) for
-     atmospheric depth. Opacities dialed to 16–20% so the depth reads
-     immediately on first paint; the panes' glass layer still wins as
-     the focal element because it carries its own shadow + blur. */
+  /* ---- Canvas: پس‌زمینهٔ خنثی کل ناحیهٔ محتوا ----------------------------- */
+  /* 2026-08-16: فایبر استرایپ — کانواس تک‌فام (مونوکروم) بدون aurora/lavender.
+     رنگ فقط از token های برند سایت (emerald) برای تعامل می‌آید. */
   .dash-scope {
     position: relative;
     isolation: isolate;
-    color: oklch(25% 0.015 250);
-    background: radial-gradient(
-        ellipse 80% 60% at 100% 0%,
-        oklch(96% 0.02 280 / 0.25),
-        transparent 60%
-      ), radial-gradient(ellipse 60% 40% at 0% 100%, oklch(95% 0.015 200 / 0.15), transparent 50%),
-      var(--nova-canvas);
+    color: var(--ds-text-primary);
+    background: var(--nova-canvas);
   }
   .dark .dash-scope {
-    color: oklch(88% 0.008 245);
-    background: radial-gradient(
-        ellipse 80% 60% at 100% 0%,
-        oklch(20% 0.04 280 / 0.2),
-        transparent 60%
-      ), radial-gradient(ellipse 60% 40% at 0% 100%, oklch(18% 0.03 200 / 0.1), transparent 50%),
-      var(--nova-canvas);
+    color: var(--ds-text-primary);
+    background: var(--nova-canvas);
   }
 
   /* ---- Panel: سطح گلَس کارت‌ها --------------------------------------------- */
@@ -66,12 +44,12 @@
       var(--ds-ease-out-quart);
   }
   .dash-panel--hover:hover {
-    transform: translateY(-4px);
-    border-color: oklch(70% 0.12 245 / 0.5);
-    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.06) inset, 0 30px 70px -30px oklch(55% 0.16 255 / 0.45);
+    transform: translateY(-2px);
+    border-color: color-mix(in oklch, var(--nova-primary) 28%, var(--nova-line));
+    box-shadow: 0 1px 0 oklch(100% 0 0 / 0.06) inset, var(--nova-shadow-md);
   }
 
-  /* conic glow border روی hover / active */
+  /* امضای Stripe fiber — گرادیان hairline لبه روی hover (opacity-only، بدون چرخش) */
   .dash-glow {
     position: relative;
     isolation: isolate;
@@ -79,41 +57,28 @@
   .dash-glow::before {
     content: "";
     position: absolute;
-    inset: -1px;
+    inset: 0;
     border-radius: inherit;
-    padding: 1px;
-    background: conic-gradient(
-      from var(--dash-angle),
-      oklch(70% 0.16 255 / 0) 0%,
-      oklch(70% 0.16 255 / 0.6) 25%,
-      oklch(72% 0.14 165 / 0.5) 50%,
-      oklch(70% 0.16 255 / 0.6) 75%,
-      oklch(70% 0.16 255 / 0) 100%
+    padding: 1.5px;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--nova-primary) 35%,
+      color-mix(in oklch, var(--nova-primary) 55%, transparent) 65%,
+      transparent
     );
-    -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity var(--ds-duration-base) var(--ds-ease-out-quart);
+    transition: opacity var(--ds-duration-slow) var(--ds-ease-out-quart);
     pointer-events: none;
     z-index: 2;
   }
   .dash-glow:hover::before,
   .dash-glow:focus-within::before,
   .dash-glow[data-active="true"]::before {
-    opacity: 1;
-    animation: dash-spin 6s linear infinite;
-  }
-  @keyframes dash-spin {
-    to {
-      --dash-angle: 360deg;
-    }
-  }
-  @supports not (background: conic-gradient(from var(--dash-angle), black, black)) {
-    .dash-glow:hover::before {
-      opacity: 1;
-      animation: none;
-    }
+    opacity: 0.65;
   }
 
   /* ---- Accent tints (برای آیکن‌ها و trend) -------------------------------- */
@@ -125,7 +90,6 @@
     justify-content: center;
     border-radius: 0.625rem;
     color: oklch(45% 0.02 250);
-    box-shadow: 0 8px 20px -8px var(--dash-ico-glow, oklch(55% 0.16 255 / 0.6));
     transition: transform 200ms ease;
   }
   .dash-pane:hover .dash-ico {

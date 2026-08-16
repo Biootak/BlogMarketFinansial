@@ -1185,3 +1185,178 @@
     padding-block: var(--ds-space-8);
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STRIPE 2026 FIBER — قاب گرید hairline + تیکر + H1 دولایه + فلش امضا
+   (استخراج‌شده از capture واقعی stripe.com — دیتو 2026-08-16)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* قاب گرید: خطوط مویی عمودی کناره‌ی هر زون — امضای استرایپ */
+.frame {
+  border-inline: 1px solid var(--ds-border-subtle);
+}
+
+.band.frame {
+  border-color: color-mix(in oklch, var(--ds-brand-on) 12%, transparent);
+}
+
+/* خطوط مویی افقی بالاوپایین hero */
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  block-size: 1px;
+  background: var(--ds-border-subtle);
+  pointer-events: none;
+}
+
+.hero::before {
+  inset-block-start: 0;
+}
+
+.hero::after {
+  inset-block-end: 0;
+}
+
+/* تیکر — خط بالای H1 (مثل «Global GDP running on Stripe: 1.6%») */
+.ticker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin-block-end: var(--ds-space-4);
+  padding: 7px 14px;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-surface);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.ticker svg {
+  color: var(--ds-brand-600);
+}
+
+.tickerLabel {
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.tickerCount {
+  font-weight: 700;
+  color: var(--ds-brand-600);
+  font-variant-numeric: tabular-nums;
+}
+
+/* H1 دولایه با blend (multiply + hard-light) — کپی hero استرایپ */
+.title {
+  position: relative;
+}
+
+.titleBlend {
+  position: absolute;
+  inset: 0;
+  color: var(--ds-brand-500);
+  mix-blend-mode: hard-light;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.titleInk {
+  position: relative;
+  display: inline-block;
+  mix-blend-mode: multiply;
+}
+
+/* دکمه‌های تیز — استرایپ 4px؛ رامپ ما 12px (تطبیق فرهنگی) */
+.ctaPrimary,
+.ctaSecondary,
+.bandCta,
+.cardCta {
+  border-radius: var(--ds-radius-md);
+}
+
+/* فلش امضای استرایپ (native چپ‌نما برای RTL — mirror هندسه‌ی واقعی) */
+.stripeArrow {
+  inline-size: 12px;
+  block-size: 9px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.stripeArrowShaft {
+  transform: translateX(10px);
+  opacity: 0;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), opacity
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.stripeArrowHead {
+  opacity: 1;
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+a:hover .stripeArrowShaft,
+a:focus-visible .stripeArrowShaft {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+a:hover .stripeArrowHead,
+a:focus-visible .stripeArrowHead {
+  opacity: 1;
+}
+
+/* شروع سریع — گرید hairline (فاصله 1px با پس‌زمینه‌ی خط مویی) */
+.quickGrid {
+  gap: 1px;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-border-subtle);
+  overflow: hidden;
+}
+
+@media (min-width: 1025px) {
+  .quickGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.quickTile {
+  border: 0;
+  border-radius: 0;
+  background: var(--ds-surface);
+  box-shadow: none;
+}
+
+.quickTile:hover {
+  transform: none;
+  border-color: transparent;
+  box-shadow: none;
+  background: var(--ds-surface-elevated);
+}
+
+.quickTile:active {
+  transform: scale(0.98);
+}
+
+/* باند — گرادیان شعاعی شب-سرمه‌ای با درخشش برند (مثل n1077 استرایپ) */
+.band {
+  background: radial-gradient(
+      130% 170% at 50% 0%,
+      color-mix(in oklch, var(--ds-brand-500) 24%, transparent) 0%,
+      transparent 55%
+    ), var(--ds-color-canvas-dark);
+}
+
+/* ── 2026-08-16: قیمت واقعی روی کارت — نرخ زنده + کارمزد (مونوکروم) ── */
+.priceHint {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-muted);
+  letter-spacing: 0;
+}

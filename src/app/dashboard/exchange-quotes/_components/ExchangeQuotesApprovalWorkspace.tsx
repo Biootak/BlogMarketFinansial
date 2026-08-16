@@ -6,7 +6,7 @@
  * طراحی: Linear × Mercury × Bloomberg Terminal — Market Intelligence
  *
  * ویژگی‌ها:
- *  - AmbientBackground (emerald tone, low intensity)
+ *  - کانواس خنثی (فایبر استرایپ — بدون blob های رنگی)
  *  - Live status pulse bar (تعداد زنده / آخرین بروزرسانی)
  *  - View mode toggle: list ↔ grid
  *  - KPI strip با trend deltas + sparklines + gradient accent
@@ -33,7 +33,6 @@
 import type { QuoteRow } from '@/actions/exchange-quotes';
 import { approveQuote, rejectQuote } from '@/actions/exchange-quotes';
 import {
-  AmbientBackground,
   ConfirmDialog,
   ExportButton,
   MillionDollarEmpty,
@@ -1229,9 +1228,6 @@ export default function ExchangeQuotesApprovalWorkspace({ initialPending }: Prop
   return (
     <TooltipProvider>
       <div className={s.root} dir="rtl">
-        {/* ── Ambient Background (subtle) ── */}
-        <AmbientBackground colors={['cyan', 'indigo', 'cyan']} intensity="low" />
-
         {/* ── PageHeader (single, in workspace) ── */}
         <PageHeader
           variant="compact"

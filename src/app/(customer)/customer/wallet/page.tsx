@@ -40,7 +40,7 @@ export default async function CustomerWalletPage() {
         description="موجودی، حساب‌ها و تاریخچهٔ تراکنش‌ها"
         breadcrumb={[{ href: '/customer/dashboard', label: 'پنل مشتری' }, { label: 'کیف پول' }]}
         icon="wallet"
-        accent="indigo"
+        accent="emerald"
       />
       <CustomerWalletContent
         profile={profile}

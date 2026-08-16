@@ -47,7 +47,7 @@ export default async function ExchangeInsightsPage() {
         title="بینش‌های عملکردی"
         description="مقایسهٔ ادوار، الگوی فعالیت مشتریان، و توزیع تفصیلی تراکنش‌ها در یک نما."
         icon="bar-chart"
-        accent="indigo"
+        accent="emerald"
         variant="compact"
         actions={<BookmarkButton pageKey="exchange-insights" />}
       />

@@ -593,3 +593,100 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── 2026-08-16: Final terms editor — ارقام نهایی تسویه ── */
+.at-srq-final {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--at-line, #e2e8f0);
+  border-radius: 10px;
+  background: var(--at-surface-sunken, #f8fafc);
+}
+.at-srq-final__quote {
+  font-size: 12px;
+  color: var(--at-fg-muted, #64748b);
+  margin: 0;
+}
+.at-srq-final__quote--done {
+  color: var(--at-fg, #0f172a);
+  font-weight: 600;
+}
+.at-srq-final__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+.at-srq-final__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--at-fg-muted, #64748b);
+}
+.at-srq-final__field--req span::after {
+  content: " *";
+  color: #dc2626;
+}
+.at-srq-final__field input {
+  border: 1px solid var(--at-line, #e2e8f0);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  background: #fff;
+  color: var(--at-fg, #0f172a);
+}
+.at-srq-final__field input:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--at-accent, #163300) 45%, transparent);
+  outline-offset: 1px;
+}
+.at-srq-final__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.at-srq-final__seg {
+  display: inline-flex;
+  border: 1px solid var(--at-line, #e2e8f0);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.at-srq-final__seg button {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  color: var(--at-fg-muted, #64748b);
+  cursor: pointer;
+}
+.at-srq-final__seg button.is-active {
+  background: var(--at-fg, #0f172a);
+  color: #fff;
+}
+.at-srq-final__save {
+  padding: 7px 16px;
+  border-radius: 999px;
+  border: none;
+  background: var(--at-accent, #163300);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.at-srq-final__save:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.at-srq-final__msg {
+  margin: 0;
+  font-size: 12px;
+  color: #b91c1c;
+}
+.at-srq-final__msg.is-ok {
+  color: #15803d;
+}

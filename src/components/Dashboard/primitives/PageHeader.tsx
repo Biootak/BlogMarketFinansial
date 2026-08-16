@@ -162,7 +162,7 @@ export function PageHeader({
   eyebrow,
   actions,
   icon,
-  accent = 'indigo',
+  accent = 'emerald',
   variant = 'default',
   transition = 'none',
   className,

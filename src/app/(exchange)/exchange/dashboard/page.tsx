@@ -82,7 +82,7 @@ export default async function ExchangeDashboardPage() {
         title="داشبورد صراف"
         description="نمای کلی فعالیت صرافی در لحظه"
         icon="layout-dashboard"
-        accent="indigo"
+        accent="emerald"
         variant="compact"
         meta={[
           { label: 'حجم امروز', value: data.kpi.todayVolume },

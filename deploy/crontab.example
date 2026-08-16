@@ -58,3 +58,5 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # حذف:
 #   crontab -r    # یا فقط این خطوط را با crontab -e پاک کن
 # ============================================================
+# ---------- انقضای سفارش‌های بی‌پاسخ + هشدار SLA: هر ۵ دقیقه (2026-08-16) ----------
+*/5 * * * * curl -fsS -m 30 -H "Authorization: Bearer ${CRON_SECRET}" ${APP_URL}/api/cron/expire-service-requests >> /var/log/cron.log 2>&1

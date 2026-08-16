@@ -82,13 +82,14 @@ interface ServiceRequest {
   _count?: { notes: number; attachments: number };
 }
 
-type ServiceRequestStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+type ServiceRequestStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'EXPIRED';
 
 const STATUS_META: Record<ServiceRequestStatus, { label: string; cls: string }> = {
   PENDING: { label: 'در انتظار', cls: 'is-pending' },
   IN_PROGRESS: { label: 'در حال انجام', cls: 'is-progress' },
   COMPLETED: { label: 'تکمیل شده', cls: 'is-completed' },
   CANCELLED: { label: 'لغو شده', cls: 'is-cancelled' },
+  EXPIRED: { label: 'منقضی', cls: 'is-cancelled' },
 };
 
 const SERVICE_META: Record<string, { label: string; Icon: typeof HiGlobe }> = {
@@ -235,6 +236,10 @@ export default function ServiceRequestsTable({
       }
       fetchRequests();
       onDataChanged?.();
+    } else {
+      // 2026-08-16: گارد ماشین وضعیت — انتقال غیرمجاز به کارشناس نشان داده می‌شود
+      setBulkErrorMsg('error' in result ? result.error.message : 'تغییر وضعیت ناموفق بود');
+      setBulkErrorOpen(true);
     }
   };
 

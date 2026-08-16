@@ -2136,3 +2136,25 @@
   flex-shrink: 0;
   opacity: 0.8;
 }
+
+/* ── 2026-08-16: سفارش مجدد — CTA مکمل trackLink برای وضعیت‌های پایانی ── */
+.repeatLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+  text-decoration: none;
+  align-self: flex-start;
+  padding: 5px 10px;
+  border-radius: var(--ds-radius-md);
+  border: 1px solid var(--ds-border-default);
+  background: var(--ds-surface);
+  transition: border-color 130ms var(--ds-ease-out-quart), transform 150ms var(--ds-ease-out-quart);
+}
+.repeatLink:hover {
+  border-color: var(--ds-brand-500);
+  color: var(--ds-brand-600);
+  transform: translateY(-1px);
+}

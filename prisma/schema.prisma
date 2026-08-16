@@ -779,6 +779,28 @@ model ServiceRequest {
   estimatedCompletionAt DateTime?
   externalTxId          String?
   phoneVerified         Boolean                    @default(false)
+  // ── 2026-08-16: Quote-at-checkout — قیمت لحظه‌ای روی سفارش (Stripe-style) ──
+  /// نرخ قفل‌شده هنگام ثبت (1 واحد ارز = X افغانی) — null = سرویس بدون نرخ بازار
+  quoteRate             Decimal?                   @db.Decimal(20, 6)
+  /// کارمزد تخمینی پلتفرم (افغانی)
+  quoteFeeAf            Decimal?                   @db.Decimal(20, 2)
+  /// مجموع قابل پرداخت هنگام ثبت (افغانی)
+  quoteTotalAf          Decimal?                   @db.Decimal(20, 2)
+  /// انقضای قفل نرخ — بعد از این زمان نرخ دیگر تضمینی نیست
+  quoteExpiresAt        DateTime?
+  /// روش تسویه: CASH | BANK_TRANSFER
+  paymentMethod         String?
+  /// ارقام نهایی تسویه (ادمین پس از انجام ثبت می‌کند)
+  finalRate             Decimal?                   @db.Decimal(20, 6)
+  finalFeeAf            Decimal?                   @db.Decimal(20, 2)
+  finalTotalAf          Decimal?                   @db.Decimal(20, 2)
+  /// مبلغ واقعاً پرداخت‌شده (افغانی) + زمان
+  paidAmountAf          Decimal?                   @db.Decimal(20, 2)
+  paidAt                DateTime?
+  /// ضرب‌الاجل پاسخ اولیه — URGENT: 30 دقیقه، NORMAL: 120 دقیقه
+  slaDueAt              DateTime?
+  /// زمان ارتقای هشدار SLA (یک‌بار — cron ست می‌کند)
+  slaEscalatedAt        DateTime?
   emailVerified         Boolean                    @default(false)
   idempotencyKey        String?                    @unique
   user                  User?                      @relation(fields: [userId], references: [id], onDelete: SetNull)
@@ -1715,6 +1737,8 @@ enum ServiceRequestStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+  /// 2026-08-16: سفارش بی‌پاسخ که قفل نرخش منقضی شده — باید دوباره ثبت شود
+  EXPIRED
 }
 
 enum ServiceType {

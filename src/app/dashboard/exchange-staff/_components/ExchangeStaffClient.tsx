@@ -368,7 +368,7 @@ export default function ExchangeStaffClient({ staff: initialStaff, exchanges }: 
       <PageHeader
         variant="compact"
         icon="building"
-        accent="indigo"
+        accent="emerald"
         breadcrumb={[
           { label: 'داشبورد', href: '/dashboard' },
           { label: 'صراف‌ها', href: '/dashboard/exchanges' },

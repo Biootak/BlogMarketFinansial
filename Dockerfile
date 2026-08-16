@@ -78,6 +78,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 # panics on `color-mix(in oklch, ...)`. Without this, the build would
 # crash on the modern OKLCH/color-mix tokens in globals.css.
 ENV NODE_ENV production
+# 2026-08-16: محدود کردن heap در بیلد روی VPS های کم‌رم (مثلاً Azure B2ats_v2
+# با ۱GB RAM + swap). بدون این، `next build` روی چنین ماشینی OOM می‌خورد.
+# روی ماشین‌های معمولی مقدار خالی می‌ماند و رفتار قبلی حفظ می‌شود.
+ARG NODE_OPTIONS_BUILD=""
+ENV NODE_OPTIONS=${NODE_OPTIONS_BUILD}
 
 # Build the application. `next` is already installed in the deps
 # stage (it's in package.json dependencies), so we DO NOT reinstall it

@@ -36,7 +36,7 @@ export default async function CustomerDevicesPage() {
           { label: 'دستگاه‌ها' },
         ]}
         icon="device-phone-mobile"
-        accent="indigo"
+        accent="emerald"
         actions={<BookmarkButton pageKey="customer-devices" />}
       />
       <Section padding="none">

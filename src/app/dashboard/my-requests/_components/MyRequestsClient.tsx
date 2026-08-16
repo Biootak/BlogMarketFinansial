@@ -780,6 +780,19 @@ function TicketDetailPanel({
         <ArrowUpLeft size={11} aria-hidden />
       </a>
 
+      {/* سفارش مجدد — همان سرویس با deep-link آماده (نرخ لحظه‌ای دوباره قفل می‌شود) */}
+      {(localStatus === 'COMPLETED' ||
+        localStatus === 'CANCELLED' ||
+        localStatus === 'EXPIRED') && (
+        <a
+          href={`/services/order?service=${req.serviceType}&amount=${encodeURIComponent(req.amount)}&currency=${req.currency}`}
+          className={s.repeatLink}
+        >
+          <RotateCcw size={12} aria-hidden />
+          سفارش مجدد با نرخ جدید
+        </a>
+      )}
+
       {req.statusLogs.length > 0 && (
         <div className={s.timeline}>
           <div className={s.timelineHead}>
@@ -1327,7 +1340,7 @@ export default function MyRequestsClient() {
         title="درخواست‌های من"
         description="مرکز پیگیری و مدیریت سفارش‌های خدماتی"
         icon="clipboard-list"
-        accent="indigo"
+        accent="emerald"
         actions={
           <a href="/money-transfer" className={s.newBtn}>
             <Plus size={14} aria-hidden />

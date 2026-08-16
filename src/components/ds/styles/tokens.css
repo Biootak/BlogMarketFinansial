@@ -386,28 +386,31 @@
    Hue 265 = brand accent برای NOVA.
    ========================================================================== */
 :root {
-  /* ---- NOVA Colors (light mode) ---------------------------------------- */
-  --nova-primary: oklch(55% 0.14 265);
-  --nova-primary-hover: oklch(50% 0.14 265);
-  --nova-accent: oklch(55% 0.14 265); /* alias برند اصلی نووا */
+  /* ---- NOVA Colors (light mode) ----------------------------------------
+     برند داشبورد = emerald سایت (hue 165) — هماهنگ با --ds-brand-* و --at-accent.
+     (2026-08-16: از hue 265 indigo به hue 162 emerald — «رنگ‌های خود سایت»)
+     ----------------------------------------------------------------------- */
+  --nova-primary: oklch(52% 0.14 162);
+  --nova-primary-hover: oklch(46% 0.14 162);
+  --nova-accent: oklch(52% 0.14 162); /* alias برند اصلی — emerald سایت */
   --nova-on-accent: oklch(99% 0.005 240); /* متن روی سطوح accent — همیشه روشن */
-  --nova-ink: oklch(18% 0.006 265);
-  --nova-ink-2: oklch(42% 0.008 265);
-  --nova-muted: oklch(55% 0.008 265);
-  --nova-line: oklch(90% 0.006 265);
-  --nova-border: oklch(90% 0.006 265); /* alias مرزی */
+  --nova-ink: oklch(18% 0.006 250);
+  --nova-ink-2: oklch(42% 0.008 250);
+  --nova-muted: oklch(55% 0.008 250);
+  --nova-line: oklch(90% 0.006 250);
+  --nova-border: oklch(90% 0.006 250); /* alias مرزی */
   --nova-surface: oklch(100% 0 0 / 0.65);
   --nova-surface-solid: oklch(100% 0 0);
-  --nova-surface-2: oklch(96% 0.004 265);
-  --nova-canvas: oklch(98% 0.003 240);
+  --nova-surface-2: oklch(96% 0.004 250);
+  --nova-canvas: oklch(98% 0.003 245);
 
   /* Semantic trend colors */
   --nova-up: oklch(52% 0.14 162);
   --nova-up-bg: oklch(72% 0.14 165 / 0.14);
   --nova-down: oklch(55% 0.17 20);
   --nova-down-bg: oklch(68% 0.18 20 / 0.14);
-  --nova-flat: oklch(55% 0.02 265);
-  --nova-flat-bg: oklch(60% 0.02 265 / 0.12);
+  --nova-flat: oklch(55% 0.02 250);
+  --nova-flat-bg: oklch(60% 0.02 250 / 0.12);
 
   /* Semantic trend aliases (finance: up=green, down=red, flat=neutral) */
   --trend-up: var(--nova-up);
@@ -455,32 +458,32 @@
   --nova-shadow-sm: 0 1px 2px oklch(20% 0.01 265 / 0.04);
   --nova-shadow-md: 0 4px 12px -4px oklch(20% 0.01 265 / 0.08);
   --nova-shadow-lg: 0 12px 32px -8px oklch(20% 0.01 265 / 0.12);
-  --nova-glow: 0 0 0 1px oklch(55% 0.14 265 / 0.3), 0 8px 24px -8px oklch(55% 0.14 265 / 0.25);
+  --nova-glow: 0 0 0 1px oklch(52% 0.14 162 / 0.3), 0 8px 24px -8px oklch(52% 0.14 162 / 0.25);
   --nova-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .dark {
   /* ---- NOVA Colors (dark mode) ----------------------------------------- */
-  --nova-primary: oklch(65% 0.12 265);
-  --nova-primary-hover: oklch(60% 0.12 265);
-  --nova-accent: oklch(65% 0.12 265);
+  --nova-primary: oklch(72% 0.12 162);
+  --nova-primary-hover: oklch(66% 0.12 162);
+  --nova-accent: oklch(72% 0.12 162);
   --nova-on-accent: oklch(99% 0.005 240);
-  --nova-ink: oklch(93% 0.004 265);
-  --nova-ink-2: oklch(72% 0.006 265);
-  --nova-muted: oklch(58% 0.006 265);
-  --nova-line: oklch(28% 0.01 265);
-  --nova-border: oklch(28% 0.01 265);
-  --nova-surface: oklch(18% 0.01 265 / 0.6);
-  --nova-surface-solid: oklch(16% 0.008 265);
-  --nova-surface-2: oklch(22% 0.012 265);
+  --nova-ink: oklch(93% 0.004 250);
+  --nova-ink-2: oklch(72% 0.006 250);
+  --nova-muted: oklch(58% 0.006 250);
+  --nova-line: oklch(28% 0.01 250);
+  --nova-border: oklch(28% 0.01 250);
+  --nova-surface: oklch(18% 0.01 250 / 0.6);
+  --nova-surface-solid: oklch(16% 0.008 250);
+  --nova-surface-2: oklch(22% 0.012 250);
   --nova-canvas: oklch(12% 0.008 250);
 
   --nova-up: oklch(75% 0.12 162);
   --nova-up-bg: oklch(25% 0.05 165 / 0.2);
   --nova-down: oklch(72% 0.14 20);
   --nova-down-bg: oklch(25% 0.06 20 / 0.2);
-  --nova-flat: oklch(68% 0.01 265);
-  --nova-flat-bg: oklch(25% 0.005 265 / 0.15);
+  --nova-flat: oklch(68% 0.01 250);
+  --nova-flat-bg: oklch(25% 0.005 250 / 0.15);
 
   --nova-cyan: oklch(68% 0.1 220);
   --nova-rose: oklch(68% 0.12 25);
@@ -491,7 +494,7 @@
   --nova-shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.3);
   --nova-shadow-md: 0 4px 12px -4px oklch(0% 0 0 / 0.4);
   --nova-shadow-lg: 0 12px 32px -8px oklch(0% 0 0 / 0.5);
-  --nova-glow: 0 0 0 1px oklch(65% 0.12 265 / 0.4), 0 8px 24px -8px oklch(65% 0.12 265 / 0.35);
+  --nova-glow: 0 0 0 1px oklch(72% 0.12 162 / 0.4), 0 8px 24px -8px oklch(72% 0.12 162 / 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {

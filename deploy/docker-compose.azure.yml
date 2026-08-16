@@ -1,0 +1,67 @@
+# ============================================================================
+# Docker Compose for Azure VM (fm-vm) — Financial Market Blog.
+# ----------------------------------------------------------------------------
+# تفاوت با docker-compose.yml ریشه: سرویس `db` حذف شده — دیتابیس روی
+# Azure Database for PostgreSQL (flexible server, B1ms رایگان) است و از طریق
+# DATABASE_URL داخل .env داده می‌شود (sslmode=require).
+#
+# قبل از up (روی VM):
+#   1) .env با همه متغیرهای Heroku + DATABASE_URL=postgresql://...azure... (sslmode=require)
+#   2) docker compose -f docker-compose.azure.yml build
+#   3) docker compose -f docker-compose.azure.yml up -d
+#
+# NODE_OPTIONS_BUILD: روی VM های کم‌رم (B2ats_v2 = 1GB) heap بیلد را محدود می‌کند
+# تا `next build` OOM نخورد (با swap 8G).
+# ============================================================================
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        NODE_IMAGE: node:22-alpine
+        NODE_OPTIONS_BUILD: --max-old-space-size=2048
+        DATABASE_URL: ${DATABASE_URL}
+    image: fm-blog-web:latest
+    ports:
+      - "3000:3000"
+    env_file:
+      # نسبت به همین فایل (deploy/) — .env در ریشه رپو است
+      - ../.env
+    environment:
+      - NODE_ENV=production
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      # Next.js 16 image SSRF guard — IPv4-first DNS (همان کامنت compose ریشه)
+      - NODE_OPTIONS=--dns-result-order=ipv4first --max-old-space-size=256
+    volumes:
+      # آپلودها بیرون از image — با redeploy پاک نمی‌شوند
+      - uploads_data:/app/public/uploads
+    restart: always
+    # migrate deploy قبل از start — روی Azure دیتابیس آماده است و no-op می‌شود
+    command: sh -c "node node_modules/prisma/build/index.js migrate deploy && node server.js"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  cron:
+    # Sidecar — همان کرون‌های cron-job.org را داخل VM اجرا می‌کند
+    build:
+      context: ..
+      dockerfile: Dockerfile.cron
+      args:
+        CRON_IMAGE: alpine:3.20
+    image: fm-blog-cron:latest
+    environment:
+      - APP_URL=http://web:3000
+      - CRON_SECRET=${CRON_SECRET:?CRON_SECRET must be set}
+      - TZ=${TZ:-Asia/Tehran}
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  uploads_data:

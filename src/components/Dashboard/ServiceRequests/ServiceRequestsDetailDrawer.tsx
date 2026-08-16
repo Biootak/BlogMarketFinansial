@@ -21,6 +21,7 @@ import {
   addServiceRequestNote,
   deleteServiceRequestAttachment,
   getServiceRequestDetail,
+  setServiceRequestFinalTerms,
 } from '@/actions/serviceRequestActions';
 import { ConfirmDialog } from '@/components/Dashboard/primitives/ConfirmDialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -64,6 +65,13 @@ interface ServiceRequest {
   externalTxId?: string | null;
   metadata?: Record<string, string> | null;
   createdAt: Date | string;
+  /** 2026-08-16: ارقام اقتصادی — برای مقایسهٔ quote در برابر final */
+  quoteRate?: number | null;
+  quoteFeeAf?: number | null;
+  quoteTotalAf?: number | null;
+  finalTotalAf?: number | null;
+  paidAmountAf?: number | null;
+  paymentMethod?: string | null;
 }
 
 interface DetailData {
@@ -100,6 +108,7 @@ const STATUS_META = {
   IN_PROGRESS: { label: 'در حال انجام', Icon: HiOutlineRefresh, cls: 'is-progress' },
   COMPLETED: { label: 'تکمیل شده', Icon: HiOutlineCheckCircle, cls: 'is-completed' },
   CANCELLED: { label: 'لغو شده', Icon: HiOutlineXCircle, cls: 'is-cancelled' },
+  EXPIRED: { label: 'منقضی', Icon: HiOutlineXCircle, cls: 'is-cancelled' },
 } as const;
 
 type StatusKey = keyof typeof STATUS_META;
@@ -126,6 +135,7 @@ const STATUS_FA: Record<string, string> = {
   IN_PROGRESS: 'در حال انجام',
   COMPLETED: 'تکمیل شده',
   CANCELLED: 'لغو شده',
+  EXPIRED: 'منقضی (قفل نرخ گذشته)',
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────── //
@@ -552,6 +562,9 @@ export default function ServiceRequestsDetailDrawer({
                     </div>
                   )}
 
+                  {/* Final terms editor — ارقام نهایی تسویه (2026-08-16) */}
+                  <FinalTermsEditor request={request} onSaved={() => void loadDetail(request.id)} />
+
                   {/* Status changer */}
                   <div>
                     <p className="at-srq-drawer__section-label">تغییر وضعیت</p>
@@ -824,4 +837,159 @@ export default function ServiceRequestsDetailDrawer({
 
   if (typeof document === 'undefined') return null;
   return createPortal(content, document.body);
+}
+
+// ─── FinalTermsEditor — ارقام نهایی تسویه (2026-08-16) ─────────────────────── //
+// کارشناس نرخ/کارمزد/مبلغ واقعی تسویه را ثبت می‌کند — رسید واقعی مشتری همین
+// ارقام است. quote قفل‌شده کنار آن نمایش داده می‌شود تا انحراف دیده شود.
+
+const faNum = new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 2 });
+
+function FinalTermsEditor({
+  request,
+  onSaved,
+}: {
+  request: ServiceRequest;
+  onSaved: () => void;
+}) {
+  const [rate, setRate] = useState('');
+  const [fee, setFee] = useState('');
+  const [total, setTotal] = useState('');
+  const [paid, setPaid] = useState('');
+  const [method, setMethod] = useState<'CASH' | 'BANK_TRANSFER'>(
+    request.paymentMethod === 'BANK_TRANSFER' ? 'BANK_TRANSFER' : 'CASH',
+  );
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const save = async () => {
+    const totalNum = Number(total.replace(/[^\d.]/g, ''));
+    if (!Number.isFinite(totalNum) || totalNum <= 0) {
+      setMsg({ ok: false, text: 'مجموع نهایی (افغانی) الزامی است.' });
+      return;
+    }
+    setSaving(true);
+    setMsg(null);
+    const toNum = (v: string) => {
+      const n = Number(v.replace(/[^\d.]/g, ''));
+      return v.trim() !== '' && Number.isFinite(n) ? n : undefined;
+    };
+    const res = await setServiceRequestFinalTerms(request.id, {
+      finalTotalAf: totalNum,
+      finalRate: toNum(rate) ?? null,
+      finalFeeAf: toNum(fee) ?? null,
+      paidAmountAf: toNum(paid) ?? null,
+      paymentMethod: method,
+    });
+    setSaving(false);
+    if (res.success) {
+      setMsg({ ok: true, text: 'ارقام نهایی ثبت شد — رسید مشتری به‌روز شد.' });
+      onSaved();
+    } else {
+      setMsg({ ok: false, text: 'error' in res ? res.error.message : 'ثبت ناموفق بود.' });
+    }
+  };
+
+  return (
+    <div className="at-srq-final">
+      <p className="at-srq-drawer__section-label">ارقام نهایی تسویه</p>
+      {request.quoteTotalAf != null && (
+        <p className="at-srq-final__quote">
+          قفل نرخ ثبت‌شده:{' '}
+          <span dir="ltr" className="tabular-nums">
+            {faNum.format(request.quoteTotalAf)} ؋
+          </span>
+          {request.quoteRate != null && (
+            <span dir="ltr" className="tabular-nums">
+              {' '}
+              (نرخ {faNum.format(request.quoteRate)})
+            </span>
+          )}
+        </p>
+      )}
+      {request.finalTotalAf != null && (
+        <p className="at-srq-final__quote at-srq-final__quote--done">
+          ثبت‌شدهٔ فعلی:{' '}
+          <span dir="ltr" className="tabular-nums">
+            {faNum.format(request.finalTotalAf)} ؋
+          </span>
+          {request.paidAmountAf != null && ' — پرداخت‌شده'}
+        </p>
+      )}
+      <div className="at-srq-final__grid">
+        <label className="at-srq-final__field">
+          <span>نرخ نهایی</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            dir="ltr"
+            value={rate}
+            onChange={(e) => setRate(e.target.value)}
+            placeholder={request.quoteRate != null ? faNum.format(request.quoteRate) : '71.4'}
+          />
+        </label>
+        <label className="at-srq-final__field">
+          <span>کارمزد (؋)</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            dir="ltr"
+            value={fee}
+            onChange={(e) => setFee(e.target.value)}
+            placeholder={request.quoteFeeAf != null ? faNum.format(request.quoteFeeAf) : '500'}
+          />
+        </label>
+        <label className="at-srq-final__field at-srq-final__field--req">
+          <span>مجموع نهایی (؋) *</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            dir="ltr"
+            value={total}
+            onChange={(e) => setTotal(e.target.value)}
+            placeholder={request.quoteTotalAf != null ? faNum.format(request.quoteTotalAf) : '7500'}
+          />
+        </label>
+        <label className="at-srq-final__field">
+          <span>پرداخت‌شده (؋)</span>
+          <input
+            type="text"
+            inputMode="decimal"
+            dir="ltr"
+            value={paid}
+            onChange={(e) => setPaid(e.target.value)}
+            placeholder="اختیاری"
+          />
+        </label>
+      </div>
+      <div className="at-srq-final__row">
+        <div className="at-srq-final__seg">
+          <button
+            type="button"
+            aria-pressed={method === 'CASH'}
+            className={method === 'CASH' ? 'is-active' : ''}
+            onClick={() => setMethod('CASH')}
+          >
+            نقدی
+          </button>
+          <button
+            type="button"
+            aria-pressed={method === 'BANK_TRANSFER'}
+            className={method === 'BANK_TRANSFER' ? 'is-active' : ''}
+            onClick={() => setMethod('BANK_TRANSFER')}
+          >
+            حواله بانکی
+          </button>
+        </div>
+        <button type="button" className="at-srq-final__save" onClick={save} disabled={saving}>
+          {saving ? 'در حال ثبت…' : 'ثبت ارقام'}
+        </button>
+      </div>
+      {msg && (
+        <p className={`at-srq-final__msg${msg.ok ? ' is-ok' : ''}`} aria-live="polite">
+          {msg.text}
+        </p>
+      )}
+    </div>
+  );
 }

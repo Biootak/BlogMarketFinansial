@@ -37,6 +37,7 @@
   ],
   "exclude": [
     "node_modules",
+    "tmp",
     ".next/cache",
     ".next/server",
     ".next/static",

@@ -111,7 +111,7 @@ export default function PlanPicker({ currentPlan, planExpiresAt }: Props) {
         description="پلن فعلی خود را ارتقاء دهید یا تغییر دهید"
         breadcrumb={[{ label: 'داشبورد', href: '/dashboard' }, { label: 'اشتراک' }]}
         icon="credit-card"
-        accent="indigo"
+        accent="emerald"
       />
 
       {/* Current plan banner */}

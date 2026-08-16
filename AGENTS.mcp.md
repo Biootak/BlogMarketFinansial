@@ -153,3 +153,40 @@ mavis-trash E:\path\to\file.tsx
 >
 > ⛔ **هرگز از صفر کانفیگ نکن.** سند کامل + تله‌ها + بازسازی: **`AGENTS.playwright.md`**.
 > درایور: `scripts/playwright-open.mjs` (خودترمیم — SDK را خودش نصب می‌کند).
+
+---
+
+# Ditto MCP — کپی سایت مرجع به کد (نصب شد 2026-08-16)
+
+> **ditto.site**: یک URL عمومی را به پروژهٔ Next.js/Vite قابل‌اجرا تبدیل می‌کند (capture→code، بدون حدس LLM).
+> برای الهام/Reference از طرح‌های میلیون‌دلاری (مثل stripe.com) قبل از بازطراحی UI.
+
+## Config (نصب‌شده در `.mcp.json` + `DITTO_API_KEY` در `.env`)
+
+```json
+"ditto": {
+  "url": "https://api.ditto.site/mcp",
+  "headers": { "Authorization": "Bearer ${DITTO_API_KEY}" },
+  "type": "http"
+}
+```
+
+## 8 ابزار
+
+`clone_website`, `get_clone_status`, `get_clone_result`, `list_clone_files`, `read_clone_files`, `get_clone_bundle`, `list_clones`, `cancel_clone`.
+
+## نکات عملی
+
+- **Streamable HTTP:** کلاینت باید `Accept: application/json, text/event-stream` بفرستد؛ وگرنه `-32000 Not Acceptable` برمی‌گردد.
+- **در Freebuff ابزارهای MCP به agent وصل نمی‌شوند** → برای استفاده از این سشن، مستقیم REST صدا بزن (همان endpoint، Bearer همان key):
+  ```bash
+  curl -sS -X POST https://api.ditto.site/v1/clones \
+    -H "Authorization: Bearer $DITTO_API_KEY" -H "content-type: application/json" \
+    -d '{"url":"https://example.com/","options":{"mode":"single","framework":"next","styling":"tailwind"}}'
+  ```
+- داک رسمی: `github.com/ion-design/ditto.site` (REST + unpack CLI + local service).
+- **Responsible use:** فقط سایت‌هایی که حق بازبینی/کپی داریم.
+
+## Restart
+
+بعد از ویرایش `.mcp.json`، سشن MCP کلاینت (Trae/ZCode/...) را ری‌استارت کن تا `ditto` لود شود.

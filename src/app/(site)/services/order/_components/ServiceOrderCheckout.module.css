@@ -1,7 +1,8 @@
 /* ============================================================================
-   ServiceOrderCheckout.module.css — جریان ثبت سفارش (checkout pattern)
+   ServiceOrderCheckout.module.css — 2026-08-16 rebuild «Order Ticket»
    ─────────────────────────────────────────────────────────────────────────────
-   Stripe-checkout focus: فرم + پنل خلاصه sticky زنده.
+   Stripe-checkout focus: فرم + تیکت سفارش (رسید زنده) در ریل کناری.
+   امضا: خط پارگی بلیت (tear line) با ناچ‌های گود‌شده قبل از CTA.
    Tokens only · RTL logical properties · depth via hairline + elevation tiers
    ============================================================================ */
 
@@ -39,7 +40,7 @@
 /* ─── Header — متمرکز، بدون دکوراسیون ─────────────────────────────────────── */
 .header {
   margin-block-start: var(--ds-space-2);
-  margin-block-end: var(--ds-space-8);
+  margin-block-end: var(--ds-space-6);
 }
 
 .eyebrow {
@@ -82,6 +83,74 @@
   font-size: var(--ds-text-base);
   line-height: 1.7;
   color: var(--ds-text-secondary);
+}
+
+/* ─── Market strip — استریک نرخ زندهٔ بازار (SSR) ──────────────────────────── */
+.marketStrip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3) var(--ds-space-5);
+  margin-block-end: var(--ds-space-7);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface);
+  font-size: var(--ds-text-xs);
+}
+
+.marketStripDot {
+  inline-size: 7px;
+  block-size: 7px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-500);
+  flex-shrink: 0;
+  /* تنها انیمیشن ambient صفحه — pulse ملایم */
+  animation: market-pulse 2.8s ease-in-out infinite;
+}
+
+@keyframes market-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.marketItem {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.marketCode {
+  font-weight: 700;
+  color: var(--ds-text-secondary);
+}
+
+.marketRate {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ds-text-primary);
+}
+
+.marketChange {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.marketUp {
+  color: var(--ds-brand-600);
+}
+
+.marketDown {
+  color: var(--ds-text-muted);
 }
 
 /* ─── Two-column checkout grid ─────────────────────────────────────────────── */
@@ -157,8 +226,12 @@
   gap: var(--ds-space-4);
 }
 
-/* ─── Summary card ─────────────────────────────────────────────────────────── */
-.summary {
+/* ════════════════════════════════════════════════════════════════════════════ */
+/* Order Ticket — رسید زنده (امضای صفحه)                                          */
+/* ════════════════════════════════════════════════════════════════════════════ */
+
+.ticket {
+  position: relative;
   border: 1.5px solid var(--ds-border-subtle);
   border-radius: var(--ds-radius-xl);
   background: var(--ds-surface);
@@ -170,7 +243,19 @@
     -12px color-mix(in oklch, var(--ds-text-primary) 10%, transparent);
 }
 
-.summaryTitle {
+.ticketHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+}
+
+.ticketHeadLocked {
+  padding-block-end: var(--ds-space-3);
+  border-block-end: 1px dashed var(--ds-border-default);
+}
+
+.ticketTitle {
   font-size: var(--ds-text-xs);
   font-weight: 700;
   color: var(--ds-text-muted);
@@ -178,24 +263,42 @@
   text-transform: uppercase;
 }
 
-/* سرویس */
-.summaryService {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-3);
-  padding-block-end: var(--ds-space-4);
-  border-block-end: 1px solid var(--ds-border-subtle);
-}
-
-.serviceIcon {
+.ticketBadge {
   display: grid;
   place-items: center;
-  inline-size: 36px;
-  block-size: 36px;
-  flex-shrink: 0;
-  border-radius: var(--ds-radius-lg);
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-surface-recessed);
+  color: var(--ds-text-secondary);
+}
+
+.ticketBadgeSuccess {
+  display: grid;
+  place-items: center;
+  inline-size: 28px;
+  block-size: 28px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-600);
+  color: var(--ds-surface);
+}
+
+.lockPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--ds-radius-full);
   background: color-mix(in oklch, var(--ds-brand-600) 10%, var(--ds-surface));
   color: var(--ds-brand-600);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ── سرویس ── */
+.ticketService {
+  padding-block-end: var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
 }
 
 .serviceLabel {
@@ -211,7 +314,7 @@
   line-height: 1.5;
 }
 
-/* مبلغ */
+/* ── مبلغ ── */
 .amountBlock {
   display: flex;
   flex-direction: column;
@@ -241,12 +344,51 @@
   color: var(--ds-text-muted);
 }
 
-.amountNote {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
+/* ── تفکیک قیمت زنده ── */
+.ticketBreakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-recessed);
 }
 
-/* جزئیات */
+.breakRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+}
+
+.breakRow span:first-child {
+  color: var(--ds-text-muted);
+  font-weight: 600;
+}
+
+.breakRow span:last-child {
+  color: var(--ds-text-primary);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.breakRowTotal {
+  padding-block-start: var(--ds-space-2);
+  border-block-start: 1px dashed var(--ds-border-default);
+}
+
+.breakRowTotal span:first-child {
+  color: var(--ds-text-primary);
+  font-weight: 800;
+}
+
+.breakTotalVal {
+  font-size: var(--ds-text-lg);
+  font-weight: 800;
+}
+
+/* ── جزئیات ساده ── */
 .summaryRows {
   display: flex;
   flex-direction: column;
@@ -288,17 +430,99 @@
   font-weight: 700;
 }
 
-/* فوتر */
-.summaryFooter {
+.payMethodRow {
   display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-3);
-  margin-block-start: auto;
-  padding-block-start: var(--ds-space-4);
-  border-block-start: 1px solid var(--ds-border-subtle);
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
 }
 
-.footerNote {
+.payMethodRow svg {
+  color: var(--ds-brand-600);
+  flex-shrink: 0;
+}
+
+/* ── خط پارگی بلیت (tear line) + ناچ‌ها — امضای بصری تیکت ── */
+.ticketTear {
+  position: relative;
+  margin-block-start: auto;
+  padding-block-start: var(--ds-space-4);
+}
+
+.ticketTear::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 14px;
+  block-size: 0;
+  border-block-start: 2px dashed var(--ds-border-default);
+}
+
+/* ناچ‌های گود‌شده دو طرف خط پارگی — حس بلیت فیزیکی */
+.ticketTear::after {
+  content: "";
+  position: absolute;
+  inset-block-start: -6px;
+  inset-inline-start: -6px;
+  inline-size: 13px;
+  block-size: 13px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-canvas);
+  box-shadow: inset 0 0 0 1.5px var(--ds-border-subtle);
+}
+
+.ticketNotchEnd {
+  position: absolute;
+  inset-block-start: -6px;
+  inset-inline-end: -6px;
+  inline-size: 13px;
+  block-size: 13px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-canvas);
+  box-shadow: inset 0 0 0 1.5px var(--ds-border-subtle);
+}
+
+/* ── CTA داخل تیکت — تنها CTA solid صفحه ── */
+.ticketCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ds-space-2);
+  inline-size: 100%;
+  min-block-size: 48px;
+  padding: var(--ds-space-3) var(--ds-space-4);
+  border: none;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-600);
+  color: var(--ds-surface);
+  font-size: var(--ds-text-sm);
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform var(--ds-duration-fast) var(--ds-ease-out-quart), background
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+}
+
+.ticketCta strong {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.ticketCta:hover {
+  background: var(--ds-brand-700, var(--ds-brand-600));
+  transform: translateY(-1px);
+}
+
+.ticketCta:active {
+  transform: scale(0.98);
+}
+
+.ticketCta:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--ds-brand-600) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.ticketHint {
   display: flex;
   align-items: center;
   gap: var(--ds-space-2);
@@ -307,11 +531,95 @@
   line-height: 1.6;
 }
 
-.footerNote svg {
+.ticketHint svg {
   color: var(--ds-brand-600);
   flex-shrink: 0;
 }
 
+/* ── Empty state ── */
+.ticketEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border: 1px dashed var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-elevated);
+}
+
+.emptyText {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.emptyHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: 1.6;
+}
+
+.ticketMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.ticketMeta li {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.ticketMeta svg {
+  color: var(--ds-brand-600);
+  flex-shrink: 0;
+}
+
+/* ── Success state ── */
+.ticketSuccessBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-600) 25%, transparent);
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--ds-brand-600) 6%, var(--ds-surface));
+}
+
+.successTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+}
+
+.successCode {
+  font-size: var(--ds-text-lg);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ds-brand-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.successHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: 1.6;
+}
+
+.successTrackLink {
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-brand-600);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── مخاطب سریع ── */
 .contactRow {
   display: flex;
   gap: var(--ds-space-2);
@@ -348,96 +656,7 @@
   outline-offset: 2px;
 }
 
-/* ─── Empty state ──────────────────────────────────────────────────────────── */
-.summaryEmpty {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ds-space-2);
-  padding: var(--ds-space-4);
-  border: 1px dashed var(--ds-border-subtle);
-  border-radius: var(--ds-radius-lg);
-  background: var(--ds-surface-elevated);
-}
-
-.emptyIcon {
-  color: var(--ds-brand-500);
-}
-
-.emptyText {
-  font-size: var(--ds-text-sm);
-  font-weight: 700;
-  color: var(--ds-text-primary);
-}
-
-.emptyHint {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  line-height: 1.6;
-}
-
-.summaryMeta {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ds-space-2);
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-secondary);
-}
-
-.summaryMeta li {
-  display: flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-}
-
-.summaryMeta svg {
-  color: var(--ds-brand-600);
-  flex-shrink: 0;
-}
-
-/* ─── Success state ────────────────────────────────────────────────────────── */
-.summarySuccess {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--ds-space-2);
-  padding: var(--ds-space-4);
-  border: 1px solid color-mix(in oklch, var(--ds-brand-600) 25%, transparent);
-  border-radius: var(--ds-radius-lg);
-  background: color-mix(in oklch, var(--ds-brand-600) 6%, var(--ds-surface));
-}
-
-.successBadge {
-  display: grid;
-  place-items: center;
-  inline-size: 32px;
-  block-size: 32px;
-  border-radius: var(--ds-radius-full);
-  background: var(--ds-brand-600);
-  color: var(--ds-surface);
-}
-
-.successTitle {
-  font-size: var(--ds-text-sm);
-  font-weight: 800;
-  color: var(--ds-text-primary);
-}
-
-.successCode {
-  font-size: var(--ds-text-lg);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--ds-brand-600);
-  font-variant-numeric: tabular-nums;
-}
-
-.successHint {
-  font-size: var(--ds-text-xs);
-  color: var(--ds-text-muted);
-  line-height: 1.6;
-}
-
-/* ─── Responsive ───────────────────────────────────────────────────────────── */
+/* ─── Responsive — موبایل اول ──────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .grid {
     grid-template-columns: 1fr;
@@ -458,5 +677,16 @@
   .page {
     padding-block-start: var(--ds-space-4);
     padding-inline: var(--ds-space-3);
+  }
+
+  .ticket {
+    padding: var(--ds-space-4);
+  }
+
+  .marketStrip {
+    gap: var(--ds-space-2) var(--ds-space-4);
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
   }
 }

@@ -9,13 +9,19 @@ import {
   serviceRequestReceiptEmail,
   serviceRequestStatusEmail,
 } from '@/lib/email/templates';
+import {
+  type OrderQuote,
+  SLA_MINUTES,
+  computeOrderQuote,
+  verifyQuoteToken,
+} from '@/lib/order-quote';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireRole } from '@/lib/require-auth';
 import { revalidateTag } from '@/lib/revalidate';
 import { safeCache } from '@/lib/safe-cache';
 import type { FintechActionResult } from '@/types/types';
-import { Role } from '@prisma/client';
+import { type Prisma, Role } from '@prisma/client';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
@@ -266,9 +272,106 @@ const ServiceRequestInputSchema = z.object({
     .optional()
     .transform((val) => (val ? sanitizeInput(val) : null)),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
+  /// 2026-08-16: توکن پیش‌فاکتور امضاشده (HMAC) — نرخ/کارمزد قفل‌شده checkout
+  quoteToken: z.string().min(10).max(800).optional().nullable(),
+  /// 2026-08-16: روش تسویه انتخابی مشتری
+  paymentMethod: z.enum(['CASH', 'BANK_TRANSFER']).optional(),
   /// 2026-07-28: درخواست مستقیم از صفحه صرافی — اختیاری.
   targetExchangeId: z.string().min(1).max(40).optional().nullable(),
 });
+
+// ─── ماشین وضعیت — انتقال‌های مجاز (2026-08-16) ──────────────────────────── //
+export type ServiceRequestStatusValue =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXPIRED';
+
+export const SERVICE_REQUEST_TRANSITIONS: Record<
+  ServiceRequestStatusValue,
+  ServiceRequestStatusValue[]
+> = {
+  PENDING: ['IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'EXPIRED'],
+  IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
+  COMPLETED: [],
+  CANCELLED: [],
+  EXPIRED: [],
+};
+
+const STATUS_FA: Record<ServiceRequestStatusValue, string> = {
+  PENDING: 'در انتظار بررسی',
+  IN_PROGRESS: 'در حال انجام',
+  COMPLETED: 'تکمیل شده',
+  CANCELLED: 'لغو شده',
+  EXPIRED: 'منقضی شده',
+};
+
+const STATUS_EMOJI: Record<ServiceRequestStatusValue, string> = {
+  PENDING: '⏳',
+  IN_PROGRESS: '🔄',
+  COMPLETED: '✅',
+  CANCELLED: '❌',
+  EXPIRED: '⌛',
+};
+
+// ─── Quote-at-checkout: پیش‌فاکتور لحظه‌ای (2026-08-16) ───────────────────── //
+
+const OrderQuoteInputActionSchema = z.object({
+  serviceType: z.enum([
+    'INTERNATIONAL_TRANSFER',
+    'ONLINE_PAYMENT',
+    'TUITION_PAYMENT',
+    'FREELANCE_INCOME',
+    'SOFTWARE_PURCHASE',
+    'GIFT_CARD',
+    'CURRENCY_BUY',
+    'CURRENCY_SELL',
+    'CRYPTO_BUY',
+    'CRYPTO_SELL',
+    'PAYPAL_TRANSFER',
+    'MOBILE_TOPUP',
+    'BILL_PAYMENT',
+    'TRAVEL_TICKET',
+    'OTHER',
+  ]),
+  amount: z.string().min(1).max(50),
+  currency: z.string().min(1).max(10),
+  urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
+});
+
+/** پیش‌فاکتور لحظه‌ای: نرخ واقعی بازار + کارمزد پلتفرم + توکن امضاشده با TTL */
+export async function getOrderQuote(
+  input: z.infer<typeof OrderQuoteInputActionSchema>,
+): Promise<FintechActionResult<OrderQuote>> {
+  const headersList = await headers();
+  const ip =
+    headersList.get('x-forwarded-for')?.split(',').pop()?.trim() ||
+    headersList.get('x-real-ip') ||
+    'unknown';
+  const rateResult = await checkRateLimit(`order-quote:${ip}`, 'api');
+  if (!rateResult.success) {
+    return {
+      success: false,
+      error: { code: 'RATE_LIMIT_EXCEEDED', message: 'درخواست‌های شما بیش از حد مجاز است.' },
+    };
+  }
+  const parsed = OrderQuoteInputActionSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0].message },
+    };
+  }
+  const quote = await computeOrderQuote(parsed.data);
+  if (!quote) {
+    return {
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: 'مبلغ نامعتبر است.' },
+    };
+  }
+  return { success: true, data: quote };
+}
 
 export type ServiceRequestInput = z.infer<typeof ServiceRequestInputSchema>;
 
@@ -278,6 +381,10 @@ export type ServiceRequestClientInput = {
   currency: string;
   urgency?: 'NORMAL' | 'URGENT';
   idempotencyKey?: string | null;
+  /// 2026-08-16: توکن پیش‌فاکتور امضاشده از checkout
+  quoteToken?: string | null;
+  /// 2026-08-16: روش تسویه — CASH | BANK_TRANSFER
+  paymentMethod?: 'CASH' | 'BANK_TRANSFER';
   fullName?: string | null;
   phone?: string | null;
   email?: string | null;
@@ -383,6 +490,48 @@ export async function createServiceRequest(
       }
     }
 
+    // ── 2026-08-16: تأیید توکن پیش‌فاکتور (نرخ قفل‌شده) ─────────────────────
+    // توکن فقط امضای سرور را قبول می‌کند — دستکاری نرخ/کارمزد سمت کلاینت
+    // این‌جا متوقف می‌شود. انقضا هم داخل verifyQuoteToken چک می‌شود.
+    let quoteFields: {
+      quoteRate: number | null;
+      quoteFeeAf: number | null;
+      quoteTotalAf: number | null;
+      quoteExpiresAt: Date;
+    } | null = null;
+    if (data.quoteToken) {
+      const payload = verifyQuoteToken(data.quoteToken);
+      if (!payload) {
+        return {
+          success: false,
+          error: {
+            code: 'QUOTE_EXPIRED',
+            message: 'قفل نرخ منقضی شده است. لطفاً نرخ را به‌روزرسانی و دوباره تأیید کنید.',
+          },
+        };
+      }
+      // توکن باید دقیقاً همان سفارش باشد که کاربر دید
+      if (
+        payload.serviceType !== data.serviceType ||
+        payload.currency !== data.currency.toUpperCase() ||
+        payload.urgency !== data.urgency
+      ) {
+        return {
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'پیش‌فاکتور با جزئیات سفارش هم‌خوان نیست. دوباره تلاش کنید.',
+          },
+        };
+      }
+      quoteFields = {
+        quoteRate: payload.rate,
+        quoteFeeAf: payload.feeAf,
+        quoteTotalAf: payload.totalAf ?? payload.receiveAf,
+        quoteExpiresAt: new Date(payload.exp * 1000),
+      };
+    }
+
     const trackingCode = generateTrackingCode();
 
     const session = await auth();
@@ -480,6 +629,16 @@ export async function createServiceRequest(
           targetExchangeId,
           metadata: Object.keys(metadataClean).length > 0 ? metadataClean : undefined,
           ...(data.idempotencyKey ? { idempotencyKey: data.idempotencyKey } : {}),
+          ...(data.paymentMethod ? { paymentMethod: data.paymentMethod } : {}),
+          ...(quoteFields
+            ? {
+                quoteRate: quoteFields.quoteRate,
+                quoteFeeAf: quoteFields.quoteFeeAf,
+                quoteTotalAf: quoteFields.quoteTotalAf,
+                quoteExpiresAt: quoteFields.quoteExpiresAt,
+              }
+            : {}),
+          slaDueAt: new Date(Date.now() + SLA_MINUTES[data.urgency] * 60 * 1000),
         },
         select: { id: true },
       });
@@ -516,8 +675,11 @@ export async function createServiceRequest(
 
     // Telegram notification (fire-and-forget)
     const urgencyLabel = data.urgency === 'URGENT' ? '🔴 فوری' : '⚪ عادی';
+    const quoteLine = quoteFields?.quoteTotalAf
+      ? `\nقفل نرخ: ${quoteFields.quoteRate ?? '—'} | کارمزد: ${quoteFields.quoteFeeAf ?? '—'} افغانی | مجموع: ${quoteFields.quoteTotalAf} افغانی`
+      : '';
     const notificationMessage =
-      `*درخواست جدید خدمات*\n\nکد پیگیری: ${trackingCode}\nنام: ${data.fullName}\nتماس: ${data.phone}\n${data.email ? `ایمیل: ${data.email}` : ''}\n\n${serviceTypeLabels[data.serviceType] || data.serviceType}\nمبلغ: ${data.amount} ${data.currency}\nاولویت: ${urgencyLabel}\nروش تماس: ${data.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'}\n${data.description ? `توضیحات: ${data.description}` : ''}\n\nمشاهده در داشبورد: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests`.trim();
+      `*درخواست جدید خدمات*\n\nکد پیگیری: ${trackingCode}\nنام: ${data.fullName}\nتماس: ${data.phone}\n${data.email ? `ایمیل: ${data.email}` : ''}\n\n${serviceTypeLabels[data.serviceType] || data.serviceType}\nمبلغ: ${data.amount} ${data.currency}\nاولویت: ${urgencyLabel}\nروش تماس: ${data.contactMethod === 'telegram' ? 'تلگرام' : 'واتساپ'}${quoteLine}\n${data.description ? `توضیحات: ${data.description}` : ''}\n\nمشاهده در داشبورد: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests`.trim();
     await sendTelegramNotification(notificationMessage);
 
     // H4: resolvedEmail null safety
@@ -563,6 +725,16 @@ export async function getServiceRequestByTrackingCode(trackingCode: string): Pro
     externalTxId: string | null;
     createdAt: Date;
     updatedAt: Date;
+    /** 2026-08-16: ارقام اقتصادی سفارش — quote (قفل نرخ) و final (تسویه) */
+    quoteRate: number | null;
+    quoteFeeAf: number | null;
+    quoteTotalAf: number | null;
+    paymentMethod: string | null;
+    finalRate: number | null;
+    finalFeeAf: number | null;
+    finalTotalAf: number | null;
+    paidAmountAf: number | null;
+    paidAt: Date | null;
     statusLogs: Array<{
       fromStatus: string | null;
       toStatus: string;
@@ -617,6 +789,15 @@ export async function getServiceRequestByTrackingCode(trackingCode: string): Pro
         contactMethod: true,
         estimatedCompletionAt: true,
         externalTxId: true,
+        quoteRate: true,
+        quoteFeeAf: true,
+        quoteTotalAf: true,
+        paymentMethod: true,
+        finalRate: true,
+        finalFeeAf: true,
+        finalTotalAf: true,
+        paidAmountAf: true,
+        paidAt: true,
         createdAt: true,
         updatedAt: true,
         statusLogs: {
@@ -634,7 +815,22 @@ export async function getServiceRequestByTrackingCode(trackingCode: string): Pro
     }
 
     const maskedName = `${request.fullName.charAt(0)}***`;
-    return { success: true, data: { ...request, fullName: maskedName } };
+    // Decimal → number (Server Action serialization-safe)
+    const dec = (v: Prisma.Decimal | null): number | null => (v == null ? null : v.toNumber());
+    return {
+      success: true,
+      data: {
+        ...request,
+        fullName: maskedName,
+        quoteRate: dec(request.quoteRate),
+        quoteFeeAf: dec(request.quoteFeeAf),
+        quoteTotalAf: dec(request.quoteTotalAf),
+        finalRate: dec(request.finalRate),
+        finalFeeAf: dec(request.finalFeeAf),
+        finalTotalAf: dec(request.finalTotalAf),
+        paidAmountAf: dec(request.paidAmountAf),
+      },
+    };
   } catch {
     return { success: false, error: { code: 'SERVER_ERROR', message: 'خطایی رخ داد.' } };
   }
@@ -699,7 +895,7 @@ export async function getServiceRequests(params?: {
 // ─── Admin: Update request status ────────────────────────────────────────── //
 export async function updateServiceRequestStatus(
   id: string,
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
+  status: ServiceRequestStatusValue,
   adminNotes?: string,
 ): Promise<FintechActionResult<void>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
@@ -719,14 +915,40 @@ export async function updateServiceRequestStatus(
         amount: true,
         currency: true,
         externalTxId: true,
+        quoteRate: true,
+        quoteFeeAf: true,
+        quoteTotalAf: true,
       },
     });
     if (!existing)
       return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد.' } };
 
+    // 2026-08-16: گارد ماشین وضعیت — انتقال غیرمجاز رد می‌شود
+    const allowed = SERVICE_REQUEST_TRANSITIONS[existing.status as ServiceRequestStatusValue] ?? [];
+    if (!allowed.includes(status)) {
+      return {
+        success: false,
+        error: {
+          code: 'CONFLICT',
+          message: `انتقال وضعیت از «${STATUS_FA[existing.status as ServiceRequestStatusValue] ?? existing.status}» به «${STATUS_FA[status]}» مجاز نیست.`,
+        },
+      };
+    }
+
+    // تکمیل بدون ارقام نهایی → ارقام قفل نرخ به‌عنوان پیش‌فرض تسویه ثبت می‌شود
+    // (رسید واقعی همیشه عدد دارد — حتی اگر کارشناس تغییری ندهد)
+    const finalDefaults =
+      status === 'COMPLETED' && existing.quoteTotalAf
+        ? {
+            finalRate: existing.quoteRate,
+            finalFeeAf: existing.quoteFeeAf,
+            finalTotalAf: existing.quoteTotalAf,
+          }
+        : {};
+
     const request = await prisma.serviceRequest.update({
       where: { id },
-      data: { status, ...(adminNotes !== undefined ? { adminNotes } : {}) },
+      data: { status, ...(adminNotes !== undefined ? { adminNotes } : {}), ...finalDefaults },
     });
 
     await prisma.serviceRequestStatusLog.create({
@@ -748,22 +970,10 @@ export async function updateServiceRequestStatus(
     });
 
     // Notification logic (unchanged)
-    const statusEmoji: Record<string, string> = {
-      PENDING: '⏳',
-      IN_PROGRESS: '🔄',
-      COMPLETED: '✅',
-      CANCELLED: '❌',
-    };
-    const statusFa: Record<string, string> = {
-      PENDING: 'در انتظار بررسی',
-      IN_PROGRESS: 'در حال انجام',
-      COMPLETED: 'تکمیل شده',
-      CANCELLED: 'لغو شده',
-    };
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? '';
     const trackingUrl = `${appUrl}/track/${existing.trackingCode}`;
     const pushMsg =
-      `${statusEmoji[status] ?? '📋'} *تغییر وضعیت درخواست*\n\nکد: \\\`${existing.trackingCode}\\\`\nمشتری: ${existing.fullName}\nتماس: ${existing.phone}\nوضعیت جدید: *${statusFa[status] ?? status}*\n${adminNotes ? `یادداشت: ${adminNotes}` : ''}\n${existing.externalTxId ? `شناسه تراکنش: ${existing.externalTxId}` : ''}\n\n🔗 ${trackingUrl}`.trim();
+      `${STATUS_EMOJI[status] ?? '📋'} *تغییر وضعیت درخواست*\n\nکد: \\\`${existing.trackingCode}\\\`\nمشتری: ${existing.fullName}\nتماس: ${existing.phone}\nوضعیت جدید: *${STATUS_FA[status] ?? status}*\n${adminNotes ? `یادداشت: ${adminNotes}` : ''}\n${existing.externalTxId ? `شناسه تراکنش: ${existing.externalTxId}` : ''}\n\n🔗 ${trackingUrl}`.trim();
     void sendTelegramNotification(pushMsg);
 
     if (existing.email) {
@@ -911,8 +1121,8 @@ export async function getServiceRequestRecentActivity(
 // ─── Admin: Bulk status update ────────────────────────────────────────────── //
 export async function bulkUpdateServiceRequestStatus(
   ids: string[],
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED',
-): Promise<FintechActionResult<{ count: number }>> {
+  status: ServiceRequestStatusValue,
+): Promise<FintechActionResult<{ count: number; skipped: number }>> {
   const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
   if (!authCheck.success)
     return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
@@ -926,12 +1136,26 @@ export async function bulkUpdateServiceRequestStatus(
       where: { id: { in: ids } },
       select: { id: true, status: true },
     });
+    // 2026-08-16: فقط ردیف‌هایی که ماشین وضعیت اجازه انتقال می‌دهد
+    const eligible = existing.filter((r) =>
+      (SERVICE_REQUEST_TRANSITIONS[r.status as ServiceRequestStatusValue] ?? []).includes(status),
+    );
+    const eligibleIds = eligible.map((r) => r.id);
+    if (eligibleIds.length === 0) {
+      return {
+        success: false,
+        error: {
+          code: 'CONFLICT',
+          message: 'هیچ‌کدام از این درخواست‌ها اجازهٔ انتقال به این وضعیت را ندارند.',
+        },
+      };
+    }
     const result = await prisma.serviceRequest.updateMany({
-      where: { id: { in: ids } },
+      where: { id: { in: eligibleIds } },
       data: { status },
     });
     await prisma.serviceRequestStatusLog.createMany({
-      data: existing.map((r) => ({
+      data: eligible.map((r) => ({
         id: randomBytes(8).toString('hex'),
         requestId: r.id,
         fromStatus: r.status,
@@ -942,16 +1166,193 @@ export async function bulkUpdateServiceRequestStatus(
     await prisma.systemLog.create({
       data: {
         level: 'INFO',
-        message: `Bulk update: ${result.count} requests set to ${status} by ${authCheck.user.id}`,
+        message: `Bulk update: ${result.count} requests set to ${status} by ${authCheck.user.id} (${existing.length - result.count} skipped by state machine)`,
         source: 'ServiceRequest',
       },
     });
     revalidateTag('service-requests');
-    return { success: true, data: { count: result.count } };
+    return {
+      success: true,
+      data: { count: result.count, skipped: existing.length - result.count },
+    };
   } catch {
     return {
       success: false,
       error: { code: 'SERVER_ERROR', message: 'خطا در به‌روزرسانی گروهی رخ داد.' },
+    };
+  }
+}
+
+// ─── Cron: انقضای سفارش‌های بی‌پاسخ + ارتقای هشدار SLA (2026-08-16) ────────── //
+
+/** مهلت بعد از انقضای قفل نرخ که هنوز سفارش قابل پاسخ است (دقیقه) */
+const QUOTE_EXPIRY_GRACE_MIN = 30;
+/** سفارش PENDING بدون قفل نرخ (سفارش‌های قدیمی flow قبل) بعد از این مدت منقضی می‌شود */
+const LEGACY_STALE_HOURS = 48;
+
+export async function expireStaleServiceRequests(): Promise<{
+  expired: number;
+  escalated: number;
+}> {
+  const now = Date.now();
+  const graceAgo = new Date(now - QUOTE_EXPIRY_GRACE_MIN * 60 * 1000);
+  const legacyAgo = new Date(now - LEGACY_STALE_HOURS * 3600 * 1000);
+
+  // ۱) انقضا: PENDING که قفل نرخش + فرصت گذشته، یا legacy قدیمی بی‌پاسخ
+  const toExpire = await prisma.serviceRequest.findMany({
+    where: {
+      status: 'PENDING',
+      OR: [
+        { quoteExpiresAt: { lt: graceAgo } },
+        { quoteExpiresAt: null, createdAt: { lt: legacyAgo } },
+      ],
+    },
+    select: { id: true, trackingCode: true, fullName: true, email: true, status: true },
+    take: 200,
+  });
+
+  for (const req of toExpire) {
+    await prisma.serviceRequest.update({ where: { id: req.id }, data: { status: 'EXPIRED' } });
+    await prisma.serviceRequestStatusLog.create({
+      data: {
+        requestId: req.id,
+        fromStatus: 'PENDING',
+        toStatus: 'EXPIRED',
+        changedBy: 'system',
+        note: 'قفل نرخ منقضی شد و درخواست بی‌پاسخ ماند — توسط cron بسته شد',
+      },
+    });
+    if (req.email) {
+      await trySendEmail(async () => {
+        const provider = await getEmailProviderAsync();
+        await provider.send(
+          serviceRequestStatusEmail({
+            to: req.email as string,
+            fullName: req.fullName,
+            trackingCode: req.trackingCode,
+            newStatus: 'EXPIRED',
+            adminNote: 'قفل نرخ منقضی شد. برای نرخ جدید دوباره سفارش ثبت کنید.',
+            appUrl: process.env.NEXT_PUBLIC_APP_URL ?? '',
+          }),
+        );
+      });
+    }
+  }
+  if (toExpire.length > 0) {
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Cron expired ${toExpire.length} stale service requests`,
+        source: 'ServiceRequest',
+      },
+    });
+  }
+
+  // ۲) ارتقای SLA: PENDING که ضرب‌الاجلش گذشته و هنوز هشدار نشده — یک‌بار
+  const toEscalate = await prisma.serviceRequest.findMany({
+    where: { status: 'PENDING', slaDueAt: { lt: new Date(now) }, slaEscalatedAt: null },
+    select: { id: true, trackingCode: true, urgency: true, slaDueAt: true },
+    take: 100,
+  });
+  for (const req of toEscalate) {
+    await prisma.serviceRequest.update({
+      where: { id: req.id },
+      data: { slaEscalatedAt: new Date(now) },
+    });
+  }
+  if (toEscalate.length > 0) {
+    await sendTelegramNotification(
+      `⚠️ *هشدار SLA*\n\n${toEscalate.length} سفارش PENDING از ضرب‌الاجل پاسخ عبور کرده‌اند:\n${toEscalate
+        .map((r) => `• \\\`${r.trackingCode}\\\` (${r.urgency === 'URGENT' ? 'فوری' : 'عادی'})`)
+        .join('\n')}\n\nداشبورد: ${process.env.NEXT_PUBLIC_APP_URL}/dashboard/service-requests`,
+    );
+    await prisma.systemLog.create({
+      data: {
+        level: 'WARN',
+        message: `Cron SLA escalation: ${toEscalate.length} overdue PENDING requests`,
+        source: 'ServiceRequest',
+      },
+    });
+  }
+
+  revalidateTag('service-requests');
+  return { expired: toExpire.length, escalated: toEscalate.length };
+}
+
+// ─── Admin: ارقام نهایی تسویه (2026-08-16) ────────────────────────────────── //
+
+const FinalTermsSchema = z.object({
+  finalRate: z.number().min(0).max(1_000_000_000).nullable().optional(),
+  finalFeeAf: z.number().min(0).max(1_000_000_000).nullable().optional(),
+  finalTotalAf: z.number().min(0).max(10_000_000_000),
+  paidAmountAf: z.number().min(0).max(10_000_000_000).nullable().optional(),
+  paymentMethod: z.enum(['CASH', 'BANK_TRANSFER']).optional(),
+});
+
+export type FinalTermsInput = z.infer<typeof FinalTermsSchema>;
+
+/**
+ * ثبت ارقام نهایی تسویه توسط کارشناس — نرخ/کارمزد/مبلغ واقعی که انجام شد.
+ * paidAmountAf داده شد → paidAt هم ثبت می‌شود (رسید واقعی).
+ */
+export async function setServiceRequestFinalTerms(
+  id: string,
+  input: FinalTermsInput,
+): Promise<FintechActionResult<void>> {
+  const authCheck = await requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN, Role.SUPPORT]);
+  if (!authCheck.success)
+    return { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } };
+
+  const parsed = FinalTermsSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: { code: 'VALIDATION_ERROR', message: parsed.error.errors[0].message },
+    };
+  }
+  const d = parsed.data;
+  try {
+    const existing = await prisma.serviceRequest.findUnique({
+      where: { id },
+      select: { trackingCode: true, status: true },
+    });
+    if (!existing)
+      return { success: false, error: { code: 'NOT_FOUND', message: 'درخواست یافت نشد.' } };
+
+    await prisma.serviceRequest.update({
+      where: { id },
+      data: {
+        finalRate: d.finalRate ?? undefined,
+        finalFeeAf: d.finalFeeAf ?? undefined,
+        finalTotalAf: d.finalTotalAf,
+        paidAmountAf: d.paidAmountAf ?? undefined,
+        paidAt: d.paidAmountAf != null ? new Date() : undefined,
+        ...(d.paymentMethod ? { paymentMethod: d.paymentMethod } : {}),
+      },
+    });
+
+    await prisma.serviceRequestStatusLog.create({
+      data: {
+        requestId: id,
+        fromStatus: existing.status,
+        toStatus: existing.status,
+        changedBy: authCheck.user.id,
+        note: `ارقام نهایی ثبت شد: مجموع ${d.finalTotalAf} افغانی${d.paidAmountAf != null ? ` (پرداخت‌شده: ${d.paidAmountAf})` : ''}`,
+      },
+    });
+    await prisma.systemLog.create({
+      data: {
+        level: 'INFO',
+        message: `Final terms set for ${existing.trackingCode}: total=${d.finalTotalAf} by ${authCheck.user.id}`,
+        source: 'ServiceRequest',
+      },
+    });
+    revalidateTag('service-requests');
+    return { success: true, data: undefined };
+  } catch {
+    return {
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'ثبت ارقام نهایی ناموفق بود.' },
     };
   }
 }
@@ -1048,6 +1449,7 @@ export async function getServiceRequestStats(): Promise<
     inProgress: number;
     completed: number;
     cancelled: number;
+    expired: number;
     todayCount: number;
     urgent: number;
     pendingUrgent: number;
@@ -1070,6 +1472,7 @@ export async function getServiceRequestStats(): Promise<
       IN_PROGRESS: 0,
       COMPLETED: 0,
       CANCELLED: 0,
+      EXPIRED: 0,
     };
     let total = 0;
     for (const row of byStatus) {
@@ -1084,6 +1487,7 @@ export async function getServiceRequestStats(): Promise<
         inProgress: counts.IN_PROGRESS,
         completed: counts.COMPLETED,
         cancelled: counts.CANCELLED,
+        expired: counts.EXPIRED,
         todayCount,
         urgent: urgentCount,
         pendingUrgent: pendingUrgentCount,

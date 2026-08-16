@@ -249,6 +249,7 @@ const STATUS_LABELS: Record<string, string> = {
   IN_PROGRESS: 'در حال انجام',
   COMPLETED: 'تکمیل شده',
   CANCELLED: 'لغو شده',
+  EXPIRED: 'منقضی شده — قفل نرخ گذشته؛ لطفاً دوباره سفارش ثبت کنید',
 };
 
 export function serviceRequestStatusEmail(args: ServiceRequestStatusEmailArgs): EmailMessage {

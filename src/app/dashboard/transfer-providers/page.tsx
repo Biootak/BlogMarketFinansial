@@ -33,7 +33,7 @@ export default async function TransferProvidersPage() {
         description="مدیریت صرافی‌های جدول مقایسه نرخ و فعال‌سازی provider ها"
         eyebrow="مدیریت"
         icon="layers"
-        accent="indigo"
+        accent="emerald"
       />
       <TransferProvidersWorkspace initialRows={rows} />
     </div>

@@ -283,7 +283,7 @@ export default function UserDetail({ user, financials, currentUserId, currentUse
         title="نمای ۳۶۰° کاربر"
         description="هویت، فعالیت، محتوا، امنیت و ممیزی — همه در یک نگاه"
         icon="user-circle"
-        accent="indigo"
+        accent="emerald"
       />
 
       {/* ── Hero / Identity ───────────────────────────────────────── */}

@@ -25,7 +25,7 @@ export default async function BillingAddressPage() {
         description="مدیریت آدرس دریافت صورتحساب و فاکتورها"
         eyebrow="حساب کاربری"
         icon="key-round"
-        accent="indigo"
+        accent="emerald"
       />
       <BillingAddressForm initial={initial} />
     </div>

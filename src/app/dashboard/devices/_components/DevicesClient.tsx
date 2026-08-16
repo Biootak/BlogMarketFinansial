@@ -357,7 +357,7 @@ export function DevicesClient({ devices: initial, securityLogs: initialLogs }: P
         eyebrow="امنیت حساب"
         breadcrumb={[{ href: '/dashboard', label: 'داشبورد' }, { label: 'دستگاه‌ها' }]}
         icon="shield-check"
-        accent="indigo"
+        accent="emerald"
       />
 
       {error && (

@@ -19,7 +19,6 @@ import Empty from '@/components/Empty';
 import { Button } from '@/components/ui/button';
 import { type ExchangeServiceMeta, SERVICE_GROUPS, getServiceMeta } from '@/lib/exchange-services';
 import {
-  ArrowLeft,
   Banknote,
   ChevronLeft,
   CircleCheck,
@@ -28,7 +27,6 @@ import {
   Filter,
   MousePointerClick,
   PhoneCall,
-  Plus,
   Search,
   ShieldCheck,
   Sparkles,
@@ -57,6 +55,8 @@ type Props = {
   initialService?: string;
   initialExchange?: string;
   initialGroup?: string;
+  /** 2026-08-16: قیمت واقعی هر سرویس — نرخ زندهٔ دلار + کارمزد (از سرور) */
+  priceHints?: Record<string, string>;
 };
 
 // ── ServiceIcon ──────────────────────────────────────────────────────────────
@@ -66,6 +66,61 @@ function ServiceIcon({
 }: { meta: ExchangeServiceMeta | undefined; size?: number }) {
   const Icon = meta?.icon ?? Banknote;
   return <Icon size={size} strokeWidth={1.75} aria-hidden />;
+}
+
+// ── StripeArrow — امضای فلش Stripe (shaft + head؛ هاور: shaft slide-in) ──────
+// کپی از SVG واقعی stripe.com (capture دیتو 2026): shaft از بیرون می‌آید و head ظاهر می‌شود.
+function StripeArrow({ className }: { className?: string }) {
+  return (
+    <svg
+      className={`${s.stripeArrow} ${className ?? ''}`}
+      viewBox="0 0 12 9"
+      fill="none"
+      aria-hidden
+      focusable="false"
+    >
+      <rect
+        className={s.stripeArrowShaft}
+        x="9"
+        y="3.375"
+        width="13"
+        height="1.75"
+        fill="currentColor"
+      />
+      <path
+        className={s.stripeArrowHead}
+        d="M7.15234 3.63379L6.54102 4.25L7.15234 4.86621L10.75781 8.49902L12 7.2666L9.00684 4.24902L12 1.23242L10.75781 0L7.15234 3.63379Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+// ── useCountUp — شمارندهٔ زنده با ease-out (مثل تیکر «۱.۶٪» استرایپ) ─────────
+function useCountUp(target: number, duration = 900) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (target <= 0) {
+      setValue(0);
+      return;
+    }
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - (1 - p) ** 3;
+      setValue(Math.round(target * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+  return value;
+}
+
+function StatValue({ value }: { value: number }) {
+  const v = useCountUp(value);
+  return <strong className={s.heroStatValue}>{_faNum.format(v)}</strong>;
 }
 
 // ── Ambient SVG Grid (Linear dot-pulse — خانواده سایت) ──────────────────────
@@ -173,6 +228,7 @@ export default function ServicesMarketplace({
   initialService,
   initialExchange,
   initialGroup,
+  priceHints,
 }: Props) {
   const router = useRouter();
 
@@ -260,21 +316,31 @@ export default function ServicesMarketplace({
 
   return (
     <main className={s.root} dir="rtl">
-      {/* ══════════ Zone 1 — Hero signature ══════════ */}
+      {/* ══════════ Zone 1 — Hero signature (قاب گرید Stripe + H1 دولایه + تیکر) ══════════ */}
       <header className={s.hero}>
-        <div className={s.heroInner}>
+        <div className={`${s.heroInner} ${s.frame}`}>
           <div className={s.heroText}>
-            <div className={s.eyebrowWrap}>
-              <span className={s.eyebrow}>
-                <Zap size={11} strokeWidth={2.2} aria-hidden />
-                <span>بازارچه خدمات آنلاین</span>
+            {/* تیکر بالای H1 — مثل «Global GDP running on Stripe» */}
+            <div className={s.ticker}>
+              <Zap size={12} strokeWidth={2.2} aria-hidden />
+              <span className={s.tickerLabel}>بازارچه خدمات آنلاین</span>
+              <span className={s.tickerCount}>
+                {_faNum.format(totalServices)} سرویس · {_faNum.format(totalExchanges)} صرافی
               </span>
             </div>
 
+            {/* H1 دولایه با blend (multiply + hard-light) — کپی از hero استرایپ */}
             <h1 className={s.title}>
-              هر خدمت مالی که نیاز دارید،
-              <br />
-              <span className={s.titleAccent}>یک بازارچه، همه صرافی‌ها</span>
+              <span className={s.titleBlend} aria-hidden>
+                هر خدمت مالی که نیاز دارید،
+                <br />
+                <span className={s.titleAccent}>یک بازارچه، همه صرافی‌ها</span>
+              </span>
+              <span className={s.titleInk}>
+                هر خدمت مالی که نیاز دارید،
+                <br />
+                <span className={s.titleAccentInk}>یک بازارچه، همه صرافی‌ها</span>
+              </span>
             </h1>
 
             <p className={s.sub}>
@@ -284,8 +350,8 @@ export default function ServicesMarketplace({
 
             <div className={s.ctaRow}>
               <Link href="/services/order" className={s.ctaPrimary}>
-                <Plus size={15} strokeWidth={2.2} aria-hidden />
                 <span>ثبت سفارش</span>
+                <StripeArrow />
               </Link>
               <Link href="/services/compare" className={s.ctaSecondary}>
                 <Filter size={14} strokeWidth={1.9} aria-hidden />
@@ -295,12 +361,12 @@ export default function ServicesMarketplace({
 
             <div className={s.heroStats} role="list">
               <span className={s.heroStat} role="listitem">
-                <strong className={s.heroStatValue}>{_faNum.format(totalExchanges)}</strong>
+                <StatValue value={totalExchanges} />
                 <span className={s.heroStatLabel}>صرافی فعال</span>
               </span>
               <span className={s.heroStatDivider} aria-hidden />
               <span className={s.heroStat} role="listitem">
-                <strong className={s.heroStatValue}>{_faNum.format(totalServices)}</strong>
+                <StatValue value={totalServices} />
                 <span className={s.heroStatLabel}>نوع سرویس</span>
               </span>
               <span className={s.heroStatDivider} aria-hidden />
@@ -320,7 +386,7 @@ export default function ServicesMarketplace({
 
       {/* ══════════ Zone 2 — شروع سریع (quick actions) ══════════ */}
       <RevealSection>
-        <section className={s.zone} aria-labelledby="quick-title">
+        <section className={`${s.zone} ${s.frame}`} aria-labelledby="quick-title">
           <header className={s.zoneHeader}>
             <div>
               <h2 id="quick-title" className={s.zoneTitle}>
@@ -357,7 +423,7 @@ export default function ServicesMarketplace({
                         {row.count > 0 ? `${_faNum.format(row.count)} صرافی فعال` : 'توسط خود ما'}
                       </span>
                     </span>
-                    <ChevronLeft size={15} strokeWidth={2} className={s.quickArrow} aria-hidden />
+                    <StripeArrow className={s.quickArrow} />
                   </Link>
                 </li>
               );
@@ -368,7 +434,11 @@ export default function ServicesMarketplace({
 
       {/* ══════════ Zone 3 — بازارچه (catalog) ══════════ */}
       <RevealSection>
-        <section className={s.zone} id="services-grid" aria-labelledby="catalog-title">
+        <section
+          className={`${s.zone} ${s.frame}`}
+          id="services-grid"
+          aria-labelledby="catalog-title"
+        >
           <header className={s.catalogHeader}>
             <div>
               <h2 id="catalog-title" className={s.zoneTitle}>
@@ -488,6 +558,7 @@ export default function ServicesMarketplace({
                     featured={featured}
                     solo={solo}
                     trackClick={trackExchangeClick}
+                    priceHint={priceHints?.[row.serviceKey]}
                   />
                 );
               })}
@@ -496,9 +567,9 @@ export default function ServicesMarketplace({
         </section>
       </RevealSection>
 
-      {/* ══════════ Zone 4 — چطور کار می‌کند (utility — نوار تیره Stripe-style) ══════════ */}
+      {/* ══════════ Zone 4 — چطور کار می‌کند (utility — باند تیره Stripe-style) ══════════ */}
       <RevealSection>
-        <section className={`${s.zone} ${s.band}`} aria-labelledby="how-title">
+        <section className={`${s.zone} ${s.band} ${s.frame}`} aria-labelledby="how-title">
           <header className={s.zoneHeader}>
             <div>
               <h2 id="how-title" className={s.zoneTitle}>
@@ -508,7 +579,7 @@ export default function ServicesMarketplace({
             </div>
             <Link href="/services/order" className={s.bandCta}>
               ثبت سفارش آنلاین
-              <ArrowLeft size={15} strokeWidth={2.2} aria-hidden />
+              <StripeArrow />
             </Link>
           </header>
 
@@ -555,11 +626,13 @@ function ServiceCard({
   featured,
   solo,
   trackClick,
+  priceHint,
 }: {
   row: MarketplaceRow;
   featured: boolean;
   solo: boolean;
   trackClick: (serviceKey: string, exchangeId: string) => void;
+  priceHint?: string;
 }) {
   const meta = getServiceMeta(row.serviceKey);
   const covered = row.count > 0;
@@ -627,9 +700,10 @@ function ServiceCard({
       )}
 
       <div className={s.cardFoot}>
+        {priceHint && <p className={s.priceHint}>{priceHint}</p>}
         <Link href={`/services/order?service=${row.serviceKey}`} className={s.cardCta}>
           ثبت درخواست
-          <ChevronLeft size={13} strokeWidth={2.2} aria-hidden />
+          <StripeArrow />
         </Link>
         {hasMore && (
           <Link href={`/services?service=${row.serviceKey}`} className={s.cardLink}>

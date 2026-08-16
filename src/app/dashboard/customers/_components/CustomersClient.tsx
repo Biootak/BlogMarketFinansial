@@ -580,7 +580,7 @@ export default function CustomersClient({
           description="مدیریت مشتریان، KYC، تراکنش‌ها و وضعیت حساب"
           eyebrow="فین‌تک"
           icon="users"
-          accent="indigo"
+          accent="emerald"
           actions={
             currentExchangeId ? (
               <Button size="sm" onClick={openAdd}>

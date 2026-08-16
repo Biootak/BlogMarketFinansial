@@ -938,7 +938,7 @@ export default function CustomerDashboardContent({ data }: { data: CustomerDashb
         description={`${profile.exchange.name}${profile.exchange.city ? ` · ${profile.exchange.city}` : ''}`}
         eyebrow="اتاق کنترل"
         icon="layout-dashboard"
-        accent="indigo"
+        accent="emerald"
         actions={
           <Link href="/customer/transfer" className={s.headerCta}>
             <Sparkles size={13} aria-hidden />

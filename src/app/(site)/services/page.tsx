@@ -14,6 +14,7 @@
  */
 
 import { getMarketplaceCatalog } from '@/actions/exchange-services';
+import { SERVICE_FEE_PERCENT, findMarketRate } from '@/lib/order-quote';
 import type { Metadata } from 'next';
 import ServicesMarketplace from './_components/ServicesMarketplace';
 
@@ -42,12 +43,25 @@ export default async function ServicesMarketplacePage({
   const sp = await searchParams;
   const data = await getMarketplaceCatalog();
 
+  // ── قیمت واقعی روی کارت‌ها (2026-08-16): نرخ زندهٔ دلار + کارمزد پلتفرم ──
+  const usd = await findMarketRate('USD');
+  const rateNum = new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 2 });
+  const feeNum = new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 1 });
+  const usdLine = usd ? `نرخ دلار امروز ${rateNum.format(usd.sell)} افغانی` : null;
+
+  const priceHints: Record<string, string> = {};
+  for (const [key, fee] of Object.entries(SERVICE_FEE_PERCENT)) {
+    const feeLine = `کارمزد ${feeNum.format(fee)}٪${key.includes('URGENT') ? '' : ''}`;
+    priceHints[key] = usdLine ? `${usdLine} · ${feeLine}` : feeLine;
+  }
+
   return (
     <ServicesMarketplace
       data={data}
       initialService={sp.service}
       initialExchange={sp.exchange}
       initialGroup={sp.group}
+      priceHints={priceHints}
     />
   );
 }

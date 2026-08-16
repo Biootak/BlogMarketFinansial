@@ -1,19 +1,23 @@
 'use client';
 
 /**
- * TransferRequestForm — 2026-07-19 redesign
- * ─────────────────────────────────────────
- * معماری جدید: Session-first, 2-step + پیش‌فاکتور
+ * TransferRequestForm — 2026-08-16 rebuild (Quote-at-checkout)
+ * ─────────────────────────────────────────────────────────────────────────────
+ * معماری جدید: Session-first, 2-step + پیش‌فاکتور زندهٔ امضاشده
  *
  * Step 0: انتخاب نوع سرویس (grid کارت‌ها)
- * Step 1: جزئیات سرویس (مبلغ + فیلدهای شرطی)
- * Step 2: پیش‌فاکتور — نمایش خلاصه + تأیید کاربر
+ * Step 1: جزئیات سرویس (مبلغ + فیلدهای شرطیِ هر سرویس — شارژ/قبض/بلیط/گیفت‌کارت)
+ * Step 2: قفل نرخ — پیش‌فاکتور لحظه‌ای از بازار + شمارش معکوس TTL + روش تسویه
  *
- * اطلاعات کاربر (نام، موبایل، ایمیل) از session می‌آیند — هیچ فرمی نمایش نمی‌شود.
- * اگر کاربر شماره موبایل نداشته باشد → badge "تکمیل پروفایل" نمایش داده می‌شود.
+ * نرخ/کارمزد از سرور می‌آید (امضاشده با HMAC) — کلاینت فقط نمایش می‌دهد.
+ * اطلاعات کاربر (نام، موبایل، ایمیل) از session — هیچ فرم تماسی نمایش نمی‌شود.
  */
 
-import { createServiceRequest, getUserServiceProfile } from '@/actions/serviceRequestActions';
+import {
+  createServiceRequest,
+  getOrderQuote,
+  getUserServiceProfile,
+} from '@/actions/serviceRequestActions';
 import {
   CONVERTER_PREFILL_KEY,
   type ConverterPrefill,
@@ -26,32 +30,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { OrderQuote } from '@/lib/order-quote';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   AlertCircle,
   ArrowLeft,
-  ArrowLeftRight,
   ArrowRight,
   BadgeCheck,
-  Bitcoin,
-  Bus,
   Check,
   CircleAlert,
   Copy,
-  CreditCard,
-  DollarSign,
   Globe,
+  Lock,
   LogIn,
   Mail,
   Phone,
   ReceiptText,
+  RefreshCw,
   Send,
   ShieldCheck,
-  Smartphone,
-  TrendingDown,
-  TrendingUp,
   User,
-  Wallet,
 } from 'lucide-react';
 import { type FC, useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -59,6 +57,33 @@ import { FaTelegram, FaWhatsapp } from 'react-icons/fa';
 import { z } from 'zod';
 import PhoneVerifyModal from './PhoneVerifyModal';
 import s from './TransferRequestForm.module.css';
+import {
+  BILL_TYPES,
+  DESTINATION_COUNTRIES,
+  DIGITAL_PAYMENT_PLATFORMS,
+  GIFT_CARD_BRANDS,
+  MOBILE_OPERATORS,
+  SERVICE_OPTIONS,
+  type ServiceTypeKey,
+  TRAVEL_ROUTES,
+  getAmountLabel,
+  getCurrencyList,
+  getDefaultCurrency,
+  isCryptoCode,
+  needsBillFields,
+  needsCryptoFields,
+  needsDestinationCountry,
+  needsGiftCardFields,
+  needsMobileFields,
+  needsPlatformFields,
+  needsTravelFields,
+  needsWebsiteField,
+  normalizeCurrency,
+} from './serviceOrderOptions';
+
+// سازگاری importers قبلی (ServiceOrderCheckout و money-transfer)
+export { SERVICE_OPTIONS } from './serviceOrderOptions';
+export type { ServiceTypeKey, ServiceOption } from './serviceOrderOptions';
 
 /** برگشت به همین فرم بعد از ورود/ثبت‌نام */
 const AUTH_CALLBACK = encodeURIComponent('/money-transfer#contact');
@@ -80,203 +105,12 @@ interface FormDraft {
   urgency?: 'NORMAL' | 'URGENT';
 }
 
-// ─── Service Types ────────────────────────────────────────────────────────── //
+type PaymentMethod = 'CASH' | 'BANK_TRANSFER';
 
-export type ServiceTypeKey =
-  | 'INTERNATIONAL_TRANSFER'
-  | 'CURRENCY_BUY'
-  | 'CURRENCY_SELL'
-  | 'CRYPTO_BUY'
-  | 'CRYPTO_SELL'
-  | 'PAYPAL_TRANSFER'
-  | 'ONLINE_PAYMENT'
-  | 'TUITION_PAYMENT'
-  | 'FREELANCE_INCOME'
-  | 'SOFTWARE_PURCHASE'
-  | 'GIFT_CARD'
-  | 'MOBILE_TOPUP'
-  | 'BILL_PAYMENT'
-  | 'TRAVEL_TICKET'
-  | 'OTHER';
-
-export interface ServiceOption {
-  key: ServiceTypeKey;
-  label: string;
-  sublabel: string;
-  icon: React.ElementType;
-  group: 'transfer' | 'currency' | 'crypto' | 'digital';
-}
-
-export const SERVICE_OPTIONS: ServiceOption[] = [
-  {
-    key: 'INTERNATIONAL_TRANSFER',
-    label: 'حواله بین‌المللی',
-    sublabel: 'انتقال پول به خارج از کشور',
-    icon: Globe,
-    group: 'transfer',
-  },
-  {
-    key: 'CURRENCY_BUY',
-    label: 'خرید ارز',
-    sublabel: 'دلار، یورو، درهم و سایر ارزها',
-    icon: TrendingUp,
-    group: 'currency',
-  },
-  {
-    key: 'CURRENCY_SELL',
-    label: 'فروش ارز',
-    sublabel: 'تبدیل ارز خارجی به افغانی/ریال',
-    icon: TrendingDown,
-    group: 'currency',
-  },
-  {
-    key: 'CRYPTO_BUY',
-    label: 'خرید ارز دیجیتال',
-    sublabel: 'بیت‌کوین، اتریوم، تتر و…',
-    icon: Bitcoin,
-    group: 'crypto',
-  },
-  {
-    key: 'CRYPTO_SELL',
-    label: 'فروش ارز دیجیتال',
-    sublabel: 'تبدیل کریپتو به پول نقد',
-    icon: Wallet,
-    group: 'crypto',
-  },
-  {
-    key: 'PAYPAL_TRANSFER',
-    label: 'پی‌پال / اسکریل',
-    sublabel: 'انتقال از/به پی‌پال، اسکریل، وایز',
-    icon: CreditCard,
-    group: 'digital',
-  },
-  {
-    key: 'ONLINE_PAYMENT',
-    label: 'پرداخت آنلاین',
-    sublabel: 'پرداخت فاکتور / سایت خارجی',
-    icon: DollarSign,
-    group: 'digital',
-  },
-  {
-    key: 'MOBILE_TOPUP',
-    label: 'شارژ موبایل',
-    sublabel: 'MTN، روشن، اتصالات، سلام',
-    icon: Smartphone,
-    group: 'digital',
-  },
-  {
-    key: 'BILL_PAYMENT',
-    label: 'پرداخت قبض',
-    sublabel: 'برق DABS، آب، مخابرات',
-    icon: ReceiptText,
-    group: 'digital',
-  },
-  {
-    key: 'TRAVEL_TICKET',
-    label: 'خرید بلیط سفر',
-    sublabel: 'هواپیما Ariana/Kam Air و اتوبوس بین‌شهری',
-    icon: Bus,
-    group: 'digital',
-  },
-  {
-    key: 'OTHER',
-    label: 'سایر خدمات',
-    sublabel: 'شهریه، فریلنسر، نرم‌افزار، گیفت‌کارت',
-    icon: ArrowLeftRight,
-    group: 'digital',
-  },
-];
-
-// ─── Data ─────────────────────────────────────────────────────────────────── //
-
-const DESTINATION_COUNTRIES = [
-  { value: 'afghanistan', label: 'افغانستان', flag: '🇦🇫' },
-  { value: 'iran', label: 'ایران', flag: '🇮🇷' },
-  { value: 'pakistan', label: 'پاکستان', flag: '🇵🇰' },
-  { value: 'uae', label: 'امارات', flag: '🇦🇪' },
-  { value: 'turkey', label: 'ترکیه', flag: '🇹🇷' },
-  { value: 'germany', label: 'آلمان', flag: '🇩🇪' },
-  { value: 'usa', label: 'آمریکا', flag: '🇺🇸' },
-  { value: 'uk', label: 'انگلستان', flag: '🇬🇧' },
-  { value: 'canada', label: 'کانادا', flag: '🇨🇦' },
-  { value: 'australia', label: 'استرالیا', flag: '🇦🇺' },
-  { value: 'sweden', label: 'سوئد', flag: '🇸🇪' },
-  { value: 'norway', label: 'نروژ', flag: '🇳🇴' },
-  { value: 'netherlands', label: 'هلند', flag: '🇳🇱' },
-  { value: 'tajikistan', label: 'تاجیکستان', flag: '🇹🇯' },
-  { value: 'malaysia', label: 'مالزی', flag: '🇲🇾' },
-  { value: 'qatar', label: 'قطر', flag: '🇶🇦' },
-  { value: 'saudi_arabia', label: 'عربستان', flag: '🇸🇦' },
-  { value: 'other', label: 'سایر کشورها', flag: '🌍' },
-];
-
-const FIAT_CURRENCIES = [
-  { value: 'USD', code: 'USD', label: 'دلار آمریکا', symbol: '$' },
-  { value: 'AED', code: 'AED', label: 'درهم امارات', symbol: 'د.إ' },
-  { value: 'EUR', code: 'EUR', label: 'یورو', symbol: '€' },
-  { value: 'GBP', code: 'GBP', label: 'پوند', symbol: '£' },
-  { value: 'CAD', code: 'CAD', label: 'دلار کانادا', symbol: 'C$' },
-  { value: 'AUD', code: 'AUD', label: 'دلار استرالیا', symbol: 'A$' },
-  { value: 'TRY', code: 'TRY', label: 'لیر ترکیه', symbol: '₺' },
-  { value: 'AFN', code: 'AFN', label: 'افغانی', symbol: '؋' },
-  { value: 'IRR', code: 'IRR', label: 'ریال ایران', symbol: '﷼' },
-  { value: 'OTHER', code: '···', label: 'سایر ارز', symbol: '¤' },
-];
-
-const CRYPTO_CURRENCIES = [
-  { value: 'USDT', code: 'USDT', label: 'تتر', symbol: '₮' },
-  { value: 'BTC', code: 'BTC', label: 'بیت‌کوین', symbol: '₿' },
-  { value: 'ETH', code: 'ETH', label: 'اتریوم', symbol: 'Ξ' },
-  { value: 'BNB', code: 'BNB', label: 'بایننس کوین', symbol: 'B' },
-  { value: 'TRX', code: 'TRX', label: 'ترون', symbol: '♦' },
-  { value: 'TON', code: 'TON', label: 'تون', symbol: '◎' },
-  { value: 'USDC', code: 'USDC', label: 'یو‌اس‌دی‌سی', symbol: '$' },
-  { value: 'OTHER', code: '···', label: 'سایر کوین', symbol: '¤' },
-];
-
-// H1-fix: هنجارسازی عنوان فارسی/لاتین ارز از پارامتر query مگامنو.
-// عنوان آیتم مگامنو می‌تواند «دلار آمریکا»، «یورو» یا کد لاتین باشد.
-function normalizeCurrency(raw: string): string {
-  const t = raw.trim();
-  if (!t) return '';
-  const up = t.toUpperCase();
-  // کد استاندارد ۳ حرفی
-  if (/^[A-Z]{3,5}$/.test(up)) return up;
-  // نقشه عنوان فارسی → کد
-  const faMap: Record<string, string> = {
-    دلار: 'USD',
-    'دلار آمریکا': 'USD',
-    'دلار امریکا': 'USD',
-    یورو: 'EUR',
-    پوند: 'GBP',
-    درهم: 'AED',
-    لیر: 'TRY',
-    فرانک: 'CHF',
-    افغانی: 'AFN',
-    ریال: 'IRR',
-    'ریال ایران': 'IRR',
-    روپیه: 'PKR',
-    ین: 'JPY',
-    یوان: 'CNY',
-  };
-  const faHit = Object.entries(faMap).find(([k]) => t.includes(k));
-  if (faHit) return faHit[1];
-  return up;
-}
-
-function isCryptoCode(code?: string | null): boolean {
-  if (!code) return false;
-  return /^(USDT|BTC|ETH|BNB|TRX|TON|USDC|SOL|XRP|ADA|DOGE)$/i.test(code.toUpperCase());
-}
-
-const DIGITAL_PAYMENT_PLATFORMS = [
-  { value: 'paypal', label: 'PayPal' },
-  { value: 'skrill', label: 'Skrill' },
-  { value: 'wise', label: 'Wise' },
-  { value: 'neteller', label: 'Neteller' },
-  { value: 'perfectmoney', label: 'Perfect Money' },
-  { value: 'other', label: 'سایر' },
-];
+const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  CASH: 'نقدی / حضوری',
+  BANK_TRANSFER: 'حواله بانکی',
+};
 
 // ─── Schema ────────────────────────────────────────────────────────────────── //
 
@@ -293,13 +127,24 @@ const RequestSchema = z.object({
   cryptoNetwork: z.string().max(50).optional(),
   platformName: z.string().optional(),
   platformUsername: z.string().max(100).optional(),
+  websiteUrl: z.string().max(300).optional(),
+  softwareName: z.string().max(150).optional(),
+  giftCardBrand: z.string().optional(),
   urgency: z.enum(['NORMAL', 'URGENT']).default('NORMAL'),
   description: z.string().max(500).optional(),
+  // ── فیلدهای سرویس‌های افغانی (2026-08-16) ──
+  mobileOperator: z.string().optional(),
+  mobileNumber: z.string().max(20).optional(),
+  billType: z.string().optional(),
+  billAccountNumber: z.string().max(60).optional(),
+  travelRoute: z.string().optional(),
+  travelDate: z.string().max(40).optional(),
 });
 
 type RequestFormData = z.infer<typeof RequestSchema>;
 
-// ─── Profile snapshot (از getUserServiceProfile) ──────────────────────────── //
+// ─── Profile snapshot ──────────────────────────────────────────────────────── //
+
 interface UserProfile {
   name: string;
   phone: string | null;
@@ -316,47 +161,52 @@ export interface TransferRequestFormProps {
   initialService?: ServiceTypeKey | null;
   initialAmount?: string;
   initialCurrency?: string;
+  /** 2026-08-16: صرافی‌های همکارِ هر سرویس (routing بازارچه) — serviceKey → [] */
+  exchangeOptions?: Record<string, Array<{ id: string; name: string }>>;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────── //
 
-function getDefaultCurrency(svcType: ServiceTypeKey): string {
-  if (svcType === 'CRYPTO_BUY' || svcType === 'CRYPTO_SELL') return 'USDT';
-  return 'USD';
-}
-
-function getCurrencyList(svcType: ServiceTypeKey) {
-  if (svcType === 'CRYPTO_BUY' || svcType === 'CRYPTO_SELL') return CRYPTO_CURRENCIES;
-  return FIAT_CURRENCIES;
-}
-
-function needsDestinationCountry(svcType: ServiceTypeKey) {
-  return svcType === 'INTERNATIONAL_TRANSFER';
-}
-
-function needsCryptoFields(svcType: ServiceTypeKey) {
-  return svcType === 'CRYPTO_BUY' || svcType === 'CRYPTO_SELL';
-}
-
-function needsPlatformFields(svcType: ServiceTypeKey) {
-  return (
-    svcType === 'PAYPAL_TRANSFER' || svcType === 'ONLINE_PAYMENT' || svcType === 'FREELANCE_INCOME'
-  );
-}
-
-function getAmountLabel(svcType: ServiceTypeKey): string {
-  if (svcType === 'CURRENCY_BUY') return 'مبلغ خرید';
-  if (svcType === 'CURRENCY_SELL') return 'مبلغ فروش';
-  if (svcType === 'CRYPTO_BUY') return 'مقدار خرید';
-  if (svcType === 'CRYPTO_SELL') return 'مقدار فروش';
-  return 'مبلغ';
-}
-
-// mask کردن شماره موبایل برای نمایش
 function maskPhone(phone: string): string {
   if (phone.length <= 4) return phone;
   return `${phone.slice(0, 4)}****${phone.slice(-3)}`;
 }
+
+/** قالب‌بندی افغانی با جداکننده فارسی — بدون رقم ساختگی */
+const afFmt = new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 0 });
+
+function fmtAf(n: number | null | undefined): string {
+  return n == null ? '—' : afFmt.format(n);
+}
+
+// ─── TTL Ring — رینگ شمارش معکوس قفل نرخ (SVG، فقط stroke-dashoffset) ─────── //
+
+const TTLRing: FC<{ secondsLeft: number; total: number }> = ({ secondsLeft, total }) => {
+  const r = 15;
+  const c = 2 * Math.PI * r;
+  const frac = total > 0 ? Math.max(secondsLeft, 0) / total : 0;
+  const danger = secondsLeft <= 60;
+  return (
+    <span className={`${s.ttlRing} ${danger ? s.ttlRingDanger : ''}`} role="timer" aria-live="off">
+      <svg viewBox="0 0 36 36" aria-hidden="true">
+        <circle className={s.ttlTrack} cx="18" cy="18" r={r} fill="none" />
+        <circle
+          className={s.ttlFill}
+          cx="18"
+          cy="18"
+          r={r}
+          fill="none"
+          strokeDasharray={c}
+          strokeDashoffset={c * (1 - frac)}
+          style={{ transition: 'stroke-dashoffset 1s linear' }}
+        />
+      </svg>
+      <span className={s.ttlText} dir="ltr">
+        {`${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, '0')}`}
+      </span>
+    </span>
+  );
+};
 
 // ─── Component ────────────────────────────────────────────────────────────── //
 
@@ -366,8 +216,9 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
   initialService,
   initialAmount,
   initialCurrency,
+  exchangeOptions,
 }) => {
-  // step 0 = service picker, 1 = details, 2 = پیش‌فاکتور / review
+  // step 0 = service picker, 1 = details, 2 = قفل نرخ و پرداخت
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [selectedService, setSelectedService] = useState<ServiceTypeKey | null>(null);
   const [panelDir, setPanelDir] = useState<'fwd' | 'back'>('fwd');
@@ -381,9 +232,18 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
   // اطلاعات user از server
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
-  // وضعیت احراز هویت — برای مهمان‌ها پیام ورود نمایش می‌دهیم (نه خطای مبهم)
   const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'guest'>('loading');
   const [showPhoneModal, setShowPhoneModal] = useState(false);
+
+  // ── Quote-at-checkout (2026-08-16) ──
+  const [quote, setQuote] = useState<OrderQuote | null>(null);
+  const [quoteState, setQuoteState] = useState<'idle' | 'loading' | 'ready' | 'expired' | 'error'>(
+    'idle',
+  );
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
+  const [targetExchangeId, setTargetExchangeId] = useState<string>('');
+  const [submittedQuote, setSubmittedQuote] = useState<OrderQuote | null>(null);
 
   const idempotencyKey = useRef(crypto.randomUUID());
   const autoSubmitPending = useRef(false);
@@ -399,7 +259,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
     formState: { errors },
   } = useForm<RequestFormData>({
     resolver: zodResolver(RequestSchema),
-    mode: 'onChange', // validation زنده — خطا همان لحظه که تایپ می‌شود دیده شود
+    mode: 'onChange',
     defaultValues: {
       serviceType: '',
       currency: 'USD',
@@ -412,12 +272,14 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
   const destination = watch('destinationCountry');
   const platform = watch('platformName');
   const urgency = watch('urgency');
+  const mobileOperator = watch('mobileOperator');
 
   const svcType = selectedService ?? 'INTERNATIONAL_TRANSFER';
   const currencyList = getCurrencyList(svcType);
   const currencyMeta = currencyList.find((c) => c.value === currency) ?? currencyList[0];
   const countryMeta = DESTINATION_COUNTRIES.find((c) => c.value === destination);
   const svcOption = SERVICE_OPTIONS.find((x) => x.key === svcType);
+  const partnerExchanges = exchangeOptions?.[svcType] ?? [];
 
   // ── بارگذاری پروفایل کاربر (بار اول + pre-fill) ─────────────────────────── //
   const prefillApplied = useRef(false);
@@ -425,10 +287,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
     if (prefillApplied.current) return;
     prefillApplied.current = true;
 
-    // بارگذاری پروفایل
     setProfileLoading(true);
-    // H10: prefill race fix — getServiceProfile data درون res.data است
-    // H9: FintechActionResult بازگشتی → .data برای دسترسی به مقادیر
     getUserServiceProfile()
       .then((res) => {
         setProfileLoading(false);
@@ -436,7 +295,6 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
           setUserProfile(res.data);
           setAuthState('authenticated');
         } else if (res.error?.code === 'UNAUTHENTICATED') {
-          // کاربر مهمان — فرم باید پیام ورود نشان دهد
           setAuthState('guest');
         }
       })
@@ -445,7 +303,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
         setAuthState('guest');
       });
 
-    // بازیابی پیش‌نویس فرم (بعد از ثبت‌نام/ورود برگشت — بدون از دست دادن اطلاعات)
+    // بازیابی پیش‌نویس فرم (بعد از ثبت‌نام/ورود برگشت)
     try {
       const draftRaw = sessionStorage.getItem(TRANSFER_FORM_DRAFT_KEY);
       if (draftRaw) {
@@ -465,14 +323,14 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
           if (draft.cryptoNetwork) setValue('cryptoNetwork', draft.cryptoNetwork);
           setPanelDir('fwd');
           setStep(2);
-          return; // پیش‌نویس مهم‌تر از prefill هیرو است
+          return;
         }
       }
     } catch {
       // sessionStorage parse error
     }
 
-    // deep-link از /services/order (اولویت بعد از پیش‌نویس — قبل از prefill هیرو)
+    // deep-link از /services/order
     if (initialService && SERVICE_OPTIONS.some((o) => o.key === initialService)) {
       setSelectedService(initialService);
       setValue('serviceType', initialService);
@@ -489,11 +347,6 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
       if (raw) sessionStorage.removeItem(CONVERTER_PREFILL_KEY);
       const prefill = raw ? (JSON.parse(raw) as ConverterPrefill) : null;
 
-      // H1-fix (2026-08-01): مگامنوی «بازار» لینک
-      // /money-transfer?currency=X&type=INTERNATIONAL_TRANSFER#contact می‌سازد.
-      // هیچ کامپوننتی این پارامترها را نمی‌خواند — prefill از مگامنو گم می‌شد.
-      // حالا هر دو منبع (sessionStorage + query params) با اولویت sessionStorage
-      // خوانده می‌شوند تا کلیک روی نرخ مگامنو به فرم پیش‌پر با ارز درست برسد.
       const urlCurr = new URLSearchParams(window.location.search).get('currency');
       const urlType = new URLSearchParams(window.location.search).get('type');
 
@@ -504,15 +357,12 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
           ? prefill?.fromCode
           : (toCode ?? (urlCurr ? normalizeCurrency(urlCurr) : null));
       const isCrypto = isCryptoPrefill || isCryptoCode(targetCode);
-      const currList = isCrypto ? CRYPTO_CURRENCIES : FIAT_CURRENCIES;
+      const currList = isCrypto ? getCurrencyList('CRYPTO_BUY') : getCurrencyList('CURRENCY_BUY');
       const matched = currList.find(
         (c) => c.value.toUpperCase() === (targetCode ?? '').toUpperCase(),
       );
       const currencyVal = matched?.value ?? (isCrypto ? 'USDT' : 'USD');
 
-      // از query param type (مگامنو) → service؛ وگرنه از prefill category
-      // 2026-08-12: اگر نه prefill هست نه urlType/urlCurr، یعنی کاربر مستقیم
-      // به صفحه آمده — هیچ pre-fill‌ای نباید انجام شود و step باید روی ۰ بماند.
       const hasPrefillData = !!(prefill || urlType || urlCurr);
       if (!hasPrefillData) return;
 
@@ -525,7 +375,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
         service = 'INTERNATIONAL_TRANSFER';
       }
 
-      const faMap: Record<string, string> = {
+      const faDigits: Record<string, string> = {
         '۰': '0',
         '۱': '1',
         '۲': '2',
@@ -539,7 +389,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
       };
       const latinAmount = (prefill?.amount ?? '')
         .split('')
-        .map((ch) => faMap[ch] ?? ch)
+        .map((ch) => faDigits[ch] ?? ch)
         .join('')
         .replace(/[^\d.]/g, '');
 
@@ -559,36 +409,74 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
     setSelectedService(key);
     setValue('serviceType', key);
     setValue('currency', getDefaultCurrency(key));
-    // فیلدهای شرطی سرویس قبلی را پاک کن — در غیر این صورت مقادیر قدیمی
-    // (مثلاً آدرس کیف پول سرویس کریپتو قبلی) بی‌صدا با درخواست جدید ارسال می‌شوند.
+    // فیلدهای شرطی سرویس قبلی پاک شوند — مقادیر قدیمی نباید بی‌صدا ارسال شوند
     setValue('destinationCountry', '');
     setValue('bankName', '');
     setValue('walletAddress', '');
     setValue('cryptoNetwork', '');
     setValue('platformName', '');
     setValue('platformUsername', '');
+    setValue('websiteUrl', '');
+    setValue('softwareName', '');
+    setValue('giftCardBrand', '');
+    setValue('mobileOperator', '');
+    setValue('mobileNumber', '');
+    setValue('billType', '');
+    setValue('billAccountNumber', '');
+    setValue('travelRoute', '');
+    setValue('travelDate', '');
+    setTargetExchangeId('');
+    setQuote(null);
+    setQuoteState('idle');
     setPanelDir('fwd');
     setStep(1);
   };
 
   // ── Navigation ─────────────────────────────────────────────────────────── //
+  const fetchQuote = useCallback(async (): Promise<OrderQuote | null> => {
+    if (!selectedService || !amount) return null;
+    setQuoteState('loading');
+    const res = await getOrderQuote({
+      serviceType: selectedService,
+      amount,
+      currency: currency || 'USD',
+      urgency: urgency ?? 'NORMAL',
+    });
+    if (!res.success) {
+      setQuoteState('error');
+      return null;
+    }
+    setQuote(res.data);
+    setQuoteState('ready');
+    setSecondsLeft(res.data.ttlSeconds);
+    return res.data;
+  }, [selectedService, amount, currency, urgency]);
+
   const goNext = useCallback(async () => {
     if (step === 1) {
       const ok = await trigger(['amount', 'currency']);
       if (!ok) return;
-      // کشور مقصد برای حواله «الزامی» است (در UI با * مشخص شده) ولی در اسکیمای
-      // سراسری optional است — این‌جا صریح enforce می‌شود.
       if (needsDestinationCountry(svcType) && !watch('destinationCountry')) {
-        setError('destinationCountry', {
+        setError('destinationCountry', { type: 'required', message: 'کشور مقصد را انتخاب کنید' });
+        return;
+      }
+      // فیلدهای الزامی سرویس‌های افغانی — بدون این‌ها سفارش بی‌معناست
+      if (needsMobileFields(svcType) && !watch('mobileNumber')) {
+        setError('mobileNumber', { type: 'required', message: 'شماره موبایل را وارد کنید' });
+        return;
+      }
+      if (needsBillFields(svcType) && !watch('billAccountNumber')) {
+        setError('billAccountNumber', {
           type: 'required',
-          message: 'کشور مقصد را انتخاب کنید',
+          message: 'شماره حساب قبض را وارد کنید',
         });
         return;
       }
       setPanelDir('fwd');
       setStep(2);
+      void fetchQuote();
     }
-  }, [step, svcType, trigger, watch, setError]);
+  }, [step, svcType, trigger, watch, setError, fetchQuote]);
 
   const goBack = useCallback(() => {
     setPanelDir('back');
@@ -601,7 +489,22 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
     }
   }, [step, setValue]);
 
-  // ذخیره پیش‌نویس فرم — قبل از رفتن به ثبت‌نام (تدریجی، بدون از دست دادن ورودی)
+  // شمارش معکوس قفل نرخ — فقط وقتی quote آماده است
+  useEffect(() => {
+    if (quoteState !== 'ready' || !quote) return;
+    const t = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          setQuoteState('expired');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [quoteState, quote]);
+
+  // ذخیره پیش‌نویس فرم — قبل از رفتن به ثبت‌نام
   const saveDraft = useCallback(() => {
     try {
       const v = watch();
@@ -627,34 +530,48 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
   // ── Submit ─────────────────────────────────────────────────────────────── //
   const doSubmit = useCallback(async () => {
     if (step !== 2) return;
-    // مهمان → تدریجی: پیش‌نویس را نگه دار و به ثبت‌نام ببر (گیتِ نهایی، تأیید موبایل است)
     if (authState === 'guest') {
       saveDraft();
       window.location.href = `/auth?callbackUrl=${AUTH_CALLBACK}`;
       return;
     }
-    // اگر شماره موبایل ندارد → modal باز کن، submit نکن
     if (userProfile && !userProfile.phone) {
       setShowPhoneModal(true);
       return;
     }
-    // دفاع دوم برای کشور مقصد — در صورتی که کاربر از مرحلهٔ ۱ رد شده باشد
     if (needsDestinationCountry(svcType) && !watch('destinationCountry')) {
       setFormError('برای حواله بین‌المللی کشور مقصد را انتخاب کنید.');
       setSubmitShake(true);
       setTimeout(() => setSubmitShake(false), 400);
       return;
     }
+    // نرخ قفل‌شده باید تازه باشد — منقضی شده یعنی نرخ بازار عوض شده
+    let activeQuote = quote;
+    if (quoteState === 'expired' || !activeQuote) {
+      activeQuote = await fetchQuote();
+      if (!activeQuote) {
+        setFormError('نرخ لحظه‌ای در دسترس نیست. لطفاً دوباره تلاش کنید.');
+        return;
+      }
+    }
     setSubmitting(true);
     setFormError('');
     try {
       const formVals = watch();
+      // مسیر + تاریخ سفر در یک رشتهٔ ساخت‌یافته (productName سمت سرور)
+      const travelInfo =
+        svcType === 'TRAVEL_TICKET' && formVals.travelRoute
+          ? `${TRAVEL_ROUTES.find((r) => r.value === formVals.travelRoute)?.label ?? formVals.travelRoute}${formVals.travelDate ? ` — تاریخ: ${formVals.travelDate}` : ''}`
+          : undefined;
       const res = await createServiceRequest({
         serviceType: svcType,
         amount: formVals.amount,
         currency: formVals.currency,
         urgency: formVals.urgency,
         idempotencyKey: idempotencyKey.current,
+        quoteToken: activeQuote.rateAvailable ? activeQuote.token : null,
+        paymentMethod,
+        ...(targetExchangeId ? { targetExchangeId } : {}),
         ...(formVals.destinationCountry ? { destinationCountry: formVals.destinationCountry } : {}),
         ...(formVals.bankName ? { bankName: formVals.bankName } : {}),
         ...(formVals.description ? { description: formVals.description } : {}),
@@ -662,18 +579,30 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
         ...(formVals.cryptoNetwork ? { cryptoNetwork: formVals.cryptoNetwork } : {}),
         ...(formVals.platformName ? { platformName: formVals.platformName } : {}),
         ...(formVals.platformUsername ? { platformUsername: formVals.platformUsername } : {}),
+        ...(formVals.websiteUrl ? { websiteUrl: formVals.websiteUrl } : {}),
+        ...(formVals.softwareName ? { softwareName: formVals.softwareName } : {}),
+        ...(formVals.giftCardBrand ? { giftCardBrand: formVals.giftCardBrand } : {}),
+        ...(formVals.mobileOperator ? { mobileOperator: formVals.mobileOperator } : {}),
+        ...(formVals.mobileNumber ? { mobileNumber: formVals.mobileNumber } : {}),
+        ...(formVals.billType ? { billType: formVals.billType } : {}),
+        ...(formVals.billAccountNumber ? { billAccountNumber: formVals.billAccountNumber } : {}),
+        ...(travelInfo ? { productName: travelInfo } : {}),
       });
       if (!res.success) {
-        // اگر شماره موبایل نداشت (race condition) → modal باز کن
         if (res.error.code === 'PHONE_REQUIRED') {
           setShowPhoneModal(true);
           return;
         }
-        // race: authState هنوز loading بود ولی سرور فهمید مهمان است
-        // (فرم هیچ‌جا نام/شماره نمی‌گیرد — MISSING_CONTACT یعنی حساب لازم است)
         if (res.error.code === 'MISSING_CONTACT') {
           saveDraft();
           window.location.href = `/auth?callbackUrl=${AUTH_CALLBACK}`;
+          return;
+        }
+        if (res.error.code === 'QUOTE_EXPIRED') {
+          setQuoteState('expired');
+          setFormError(res.error.message);
+          setSubmitShake(true);
+          setTimeout(() => setSubmitShake(false), 400);
           return;
         }
         setFormError(res.error.message);
@@ -681,6 +610,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
         setTimeout(() => setSubmitShake(false), 400);
         return;
       }
+      setSubmittedQuote(activeQuote);
       setTrackingCode(res.data.trackingCode);
       setSuccess(true);
     } catch {
@@ -690,10 +620,28 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
     } finally {
       setSubmitting(false);
     }
-  }, [step, userProfile, svcType, watch, authState, saveDraft]);
+  }, [
+    step,
+    userProfile,
+    svcType,
+    watch,
+    authState,
+    saveDraft,
+    quote,
+    quoteState,
+    fetchQuote,
+    paymentMethod,
+    targetExchangeId,
+  ]);
+
+  // دکمهٔ CTA داخل پنل «تیکت سفارش» (صفحه checkout) از طریق event فرم را submit می‌کند
+  useEffect(() => {
+    const onSubmitRequest = () => void doSubmit();
+    window.addEventListener('mt:submit-request', onSubmitRequest);
+    return () => window.removeEventListener('mt:submit-request', onSubmitRequest);
+  }, [doSubmit]);
 
   // ── Live sync برای پنل «خلاصه سفارش» در صفحه /services/order ───────────────
-  // فرم فقط منتشر می‌کند؛ پنل خلاصه شنونده است — بدون prop-drilling.
   useEffect(() => {
     const payload = {
       service: svcType,
@@ -707,6 +655,13 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
       urgency,
       success,
       trackingCode,
+      // 2026-08-16: ارقام واقعی برای رسید زنده
+      quoteAvailable: quote?.rateAvailable ?? false,
+      rate: quote?.rate ?? null,
+      feeAf: quote?.feeAf ?? null,
+      totalAf: quote?.totalAf ?? quote?.receiveAf ?? null,
+      paymentMethodLabel: PAYMENT_METHOD_LABEL[paymentMethod],
+      partnerExchange: partnerExchanges.find((e) => e.id === targetExchangeId)?.name ?? null,
     };
     window.dispatchEvent(new CustomEvent('mt:form-sync', { detail: payload }));
   }, [
@@ -721,6 +676,10 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
     urgency,
     success,
     trackingCode,
+    quote,
+    paymentMethod,
+    partnerExchanges,
+    targetExchangeId,
   ]);
 
   // ── Auto-submit بعد از تأیید موبایل ──────────────────────────────────── //
@@ -744,14 +703,20 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
     setTrackingCode('');
     setFormError('');
     setPanelDir('fwd');
+    setQuote(null);
+    setSubmittedQuote(null);
+    setQuoteState('idle');
+    setPaymentMethod('CASH');
+    setTargetExchangeId('');
     idempotencyKey.current = crypto.randomUUID();
     reset();
   };
 
   // ══════════════════════════════════════════════════════════════════════════ //
-  // SUCCESS SCREEN
+  // SUCCESS SCREEN — رسید واقعی با ارقام قفل‌شده
   // ══════════════════════════════════════════════════════════════════════════ //
   if (success && trackingCode) {
+    const finalQuote = submittedQuote ?? quote;
     return (
       <div className={s.successWrap}>
         <div className={s.successRing} aria-hidden="true">
@@ -761,10 +726,10 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
           </svg>
         </div>
 
-        <h3 className={s.successTitle}>درخواست ثبت شد</h3>
+        <h3 className={s.successTitle}>سفارش با نرخ قفل‌شده ثبت شد</h3>
         <p className={s.successSubtitle}>
-          {userProfile?.name ? `${userProfile.name}، ` : ''}تیم ما در کمتر از ۳۰ دقیقه با شما تماس
-          می‌گیرد.
+          {userProfile?.name ? `${userProfile.name}، ` : ''}کارشناس ما در کمتر از{' '}
+          {urgency === 'URGENT' ? '۳۰ دقیقه' : '۲ ساعت'} با شما تماس می‌گیرد.
         </p>
 
         <div className={s.codeCard}>
@@ -784,11 +749,78 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
           </div>
         </div>
 
+        {/* رسید واقعی — ارقام قفل‌شده + روش تسویه */}
+        <div className={s.successSummary}>
+          <div className={s.successSummaryRow}>
+            <span className={s.successSummaryLabel}>سرویس</span>
+            <span className={s.successSummaryValue}>{svcOption?.label}</span>
+          </div>
+          <div className={s.successSummaryRow}>
+            <span className={s.successSummaryLabel}>مبلغ</span>
+            <span className={s.successSummaryValue} dir="ltr">
+              {amount} {currencyMeta?.label}
+            </span>
+          </div>
+          {finalQuote?.rateAvailable && finalQuote.rate != null && (
+            <div className={s.successSummaryRow}>
+              <span className={s.successSummaryLabel}>نرخ قفل‌شده</span>
+              <span className={s.successSummaryValue} dir="ltr">
+                {new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 2 }).format(
+                  finalQuote.rate,
+                )}{' '}
+                افغانی
+              </span>
+            </div>
+          )}
+          {finalQuote?.feeAf != null && (
+            <div className={s.successSummaryRow}>
+              <span className={s.successSummaryLabel}>کارمزد</span>
+              <span className={s.successSummaryValue}>{fmtAf(finalQuote.feeAf)} افغانی</span>
+            </div>
+          )}
+          {finalQuote?.totalAf != null && (
+            <div className={`${s.successSummaryRow} ${s.successSummaryRowHighlight}`}>
+              <span className={s.successSummaryLabel}>قابل پرداخت</span>
+              <span className={s.successSummaryValue} dir="ltr">
+                {fmtAf(finalQuote.totalAf)} ؋
+              </span>
+            </div>
+          )}
+          {finalQuote?.receiveAf != null && (
+            <div className={`${s.successSummaryRow} ${s.successSummaryRowHighlight}`}>
+              <span className={s.successSummaryLabel}>دریافتی شما</span>
+              <span className={s.successSummaryValue} dir="ltr">
+                {fmtAf(finalQuote.receiveAf)} ؋
+              </span>
+            </div>
+          )}
+          <div className={s.successSummaryRow}>
+            <span className={s.successSummaryLabel}>تسویه</span>
+            <span className={s.successSummaryValue}>{PAYMENT_METHOD_LABEL[paymentMethod]}</span>
+          </div>
+        </div>
+
+        <ol className={s.successNext} aria-label="مراحل بعدی">
+          <li>
+            <span className={s.successNextDot} aria-hidden="true" />
+            تماس کارشناس {urgency === 'URGENT' ? 'در کمتر از ۳۰ دقیقه' : 'در کمتر از ۲ ساعت'}
+          </li>
+          <li>
+            <span className={s.successNextDot} aria-hidden="true" />
+            {paymentMethod === 'BANK_TRANSFER'
+              ? 'جزئیات حساب برای حواله بانکی پیام می‌شود'
+              : 'تسویه نقدی هنگام تحویل سفارش'}
+          </li>
+          <li>
+            <span className={s.successNextDot} aria-hidden="true" />
+            انجام سفارش و اطلاع‌رسانی
+          </li>
+        </ol>
+
         <div className={s.successActions}>
           <button type="button" onClick={resetAll} className={s.btnOutline}>
-            درخواست جدید
+            سفارش جدید
           </button>
-          {/* /track/[code] هر دو نوع کد (معامله و درخواست سرویس) را پشتیبانی می‌کند */}
           <a href={`/track/${trackingCode}`} className={s.btnFill}>
             مشاهده وضعیت ←
           </a>
@@ -821,8 +853,8 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
       <div className={s.formRoot}>
         {/* ── Progress bar (step 1-2) ──────────────────────────────────── */}
         {step >= 1 && (
-          <ol className={s.progress} aria-label="مراحل ثبت درخواست">
-            {['جزئیات', 'پیش‌فاکتور'].map((label, i) => {
+          <ol className={s.progress} aria-label="مراحل ثبت سفارش">
+            {['جزئیات', 'قفل نرخ و پرداخت'].map((label, i) => {
               const n = (i + 1) as 1 | 2;
               const done = step > n;
               const current = step === n;
@@ -881,7 +913,6 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
           {/* ════════════ STEP 1: Service Details ════════════ */}
           {step === 1 && selectedService && (
             <div className={s.stepBody}>
-              {/* سرویس انتخابی */}
               <div className={s.recapStrip}>
                 {(() => {
                   const Icon = svcOption?.icon ?? Globe;
@@ -927,12 +958,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                 {amount && !errors.amount && (
                   <div className={s.amountPreview} aria-live="polite">
                     <ShieldCheck size={12} className={s.previewIcon} aria-hidden="true" />
-                    <span>
-                      <strong dir="ltr">
-                        {amount} {currencyMeta.label}
-                      </strong>{' '}
-                      — نرخ دقیق توسط کارشناس تأیید می‌شود
-                    </span>
+                    <span>در مرحلهٔ بعد نرخ لحظه‌ای بازار قفل می‌شود — بدون هزینهٔ پنهان</span>
                   </div>
                 )}
               </div>
@@ -993,7 +1019,6 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                       placeholder="مثلاً: Kabul Bank, Bank Melli …"
                     />
                   </div>
-                  {/* مقاصد پرکاربرد */}
                   <div className={s.popularRow} aria-label="مقاصد پرکاربرد">
                     {['afghanistan', 'uae', 'usa', 'uk', 'turkey'].map((v) => {
                       const c = DESTINATION_COUNTRIES.find((x) => x.value === v);
@@ -1003,15 +1028,9 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                           key={v}
                           type="button"
                           className={`${s.popularBtn} ${destination === v ? s.popularBtnActive : ''}`}
-                          onClick={() => {
-                            const el = document.querySelector<HTMLSelectElement>(
-                              `#${CSS.escape(`${formId}-country`)}`,
-                            );
-                            if (el) {
-                              el.value = v;
-                              el.dispatchEvent(new Event('change', { bubbles: true }));
-                            }
-                          }}
+                          onClick={() =>
+                            setValue('destinationCountry', v, { shouldValidate: true })
+                          }
                           aria-pressed={destination === v}
                         >
                           <span>{c.flag}</span>
@@ -1021,6 +1040,222 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                     })}
                   </div>
                 </>
+              )}
+
+              {/* شارژ موبایل — اپراتور + شماره */}
+              {needsMobileFields(selectedService) && (
+                <>
+                  <div className={s.fieldGroup}>
+                    <label className={s.fieldLabel} htmlFor={`${formId}-operator`}>
+                      اپراتور{' '}
+                      <span className={s.req} aria-hidden="true">
+                        *
+                      </span>
+                    </label>
+                    <div className={s.operatorRow}>
+                      {MOBILE_OPERATORS.map((op) => (
+                        <button
+                          key={op.value}
+                          type="button"
+                          className={`${s.operatorBtn} ${mobileOperator === op.value ? s.operatorBtnActive : ''}`}
+                          onClick={() => setValue('mobileOperator', op.value)}
+                          aria-pressed={mobileOperator === op.value}
+                        >
+                          {op.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className={s.fieldGroup}>
+                    <label className={s.fieldLabel} htmlFor={`${formId}-mnumber`}>
+                      شماره‌ای که شارژ می‌شود{' '}
+                      <span className={s.req} aria-hidden="true">
+                        *
+                      </span>
+                    </label>
+                    <input
+                      id={`${formId}-mnumber`}
+                      type="tel"
+                      {...register('mobileNumber')}
+                      className={`${s.input} ${errors.mobileNumber ? s.inputErr : ''}`}
+                      dir="ltr"
+                      placeholder="07XX XXX XXX"
+                      inputMode="tel"
+                      autoComplete="tel"
+                    />
+                    {errors.mobileNumber && (
+                      <p className={s.fieldError} role="alert">
+                        {errors.mobileNumber.message}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* پرداخت قبض — نوع + شماره حساب */}
+              {needsBillFields(selectedService) && (
+                <>
+                  <div className={s.fieldGroup}>
+                    <label className={s.fieldLabel} htmlFor={`${formId}-billtype`}>
+                      نوع قبض{' '}
+                      <span className={s.req} aria-hidden="true">
+                        *
+                      </span>
+                    </label>
+                    <div className={s.selectBox}>
+                      <Select
+                        value={watch('billType')}
+                        onValueChange={(v) => setValue('billType', v, { shouldValidate: true })}
+                      >
+                        <SelectTrigger
+                          id={`${formId}-billtype`}
+                          className={s.select}
+                          aria-label="نوع قبض"
+                        >
+                          <SelectValue placeholder="انتخاب نوع قبض" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BILL_TYPES.map((b) => (
+                            <SelectItem key={b.value} value={b.value}>
+                              {b.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className={s.fieldGroup}>
+                    <label className={s.fieldLabel} htmlFor={`${formId}-billacct`}>
+                      شماره حساب / شناسه قبض{' '}
+                      <span className={s.req} aria-hidden="true">
+                        *
+                      </span>
+                    </label>
+                    <input
+                      id={`${formId}-billacct`}
+                      type="text"
+                      {...register('billAccountNumber')}
+                      className={`${s.input} ${errors.billAccountNumber ? s.inputErr : ''}`}
+                      dir="ltr"
+                      placeholder="مثلاً: 1234-5678"
+                    />
+                    {errors.billAccountNumber && (
+                      <p className={s.fieldError} role="alert">
+                        {errors.billAccountNumber.message}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {/* بلیط سفر — مسیر + تاریخ */}
+              {needsTravelFields(selectedService) && (
+                <>
+                  <div className={s.fieldGroup}>
+                    <label className={s.fieldLabel} htmlFor={`${formId}-route`}>
+                      مسیر سفر{' '}
+                      <span className={s.req} aria-hidden="true">
+                        *
+                      </span>
+                    </label>
+                    <div className={s.selectBox}>
+                      <Select
+                        value={watch('travelRoute')}
+                        onValueChange={(v) => setValue('travelRoute', v, { shouldValidate: true })}
+                      >
+                        <SelectTrigger
+                          id={`${formId}-route`}
+                          className={s.select}
+                          aria-label="مسیر سفر"
+                        >
+                          <SelectValue placeholder="انتخاب مسیر" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TRAVEL_ROUTES.map((r) => (
+                            <SelectItem key={r.value} value={r.value}>
+                              {r.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className={s.fieldGroup}>
+                    <label className={s.fieldLabel} htmlFor={`${formId}-tdate`}>
+                      تاریخ سفر <span className={s.optional}>(شمسی — مثلاً ۱۴۰۵/۰۶/۲۵)</span>
+                    </label>
+                    <input
+                      id={`${formId}-tdate`}
+                      type="text"
+                      {...register('travelDate')}
+                      className={s.input}
+                      placeholder="۱۴۰۵/۰۶/۲۵"
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* گیفت‌کارت — برند */}
+              {needsGiftCardFields(selectedService) && (
+                <div className={s.fieldGroup}>
+                  <label className={s.fieldLabel} htmlFor={`${formId}-gcard`}>
+                    برند گیفت‌کارت
+                  </label>
+                  <div className={s.selectBox}>
+                    <Select
+                      value={watch('giftCardBrand')}
+                      onValueChange={(v) => setValue('giftCardBrand', v, { shouldValidate: true })}
+                    >
+                      <SelectTrigger
+                        id={`${formId}-gcard`}
+                        className={s.select}
+                        aria-label="برند گیفت‌کارت"
+                      >
+                        <SelectValue placeholder="انتخاب برند" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GIFT_CARD_BRANDS.map((g) => (
+                          <SelectItem key={g.value} value={g.value}>
+                            {g.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* آدرس سایت (پرداخت آنلاین / نرم‌افزار / گیفت‌کارت) */}
+              {needsWebsiteField(selectedService) && (
+                <div className={s.fieldGroup}>
+                  <label className={s.fieldLabel} htmlFor={`${formId}-url`}>
+                    آدرس سایت / محصول <span className={s.optional}>(اختیاری)</span>
+                  </label>
+                  <input
+                    id={`${formId}-url`}
+                    type="url"
+                    {...register('websiteUrl')}
+                    className={s.input}
+                    dir="ltr"
+                    placeholder="https://example.com/checkout"
+                  />
+                </div>
+              )}
+
+              {/* نرم‌افزار */}
+              {selectedService === 'SOFTWARE_PURCHASE' && (
+                <div className={s.fieldGroup}>
+                  <label className={s.fieldLabel} htmlFor={`${formId}-sw`}>
+                    نام نرم‌افزار / اشتراک
+                  </label>
+                  <input
+                    id={`${formId}-sw`}
+                    type="text"
+                    {...register('softwareName')}
+                    className={s.input}
+                    placeholder="مثلاً: Windows 11 Pro / ChatGPT Plus"
+                  />
+                </div>
               )}
 
               {/* کیف پول کریپتو */}
@@ -1118,12 +1353,15 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
             </div>
           )}
 
-          {/* ════════════ STEP 2: پیش‌فاکتور / Review ════════════ */}
+          {/* ════════════ STEP 2: قفل نرخ و پرداخت ════════════ */}
           {step === 2 && (
             <div className={s.stepBody}>
               <div className={s.invoiceHeader}>
                 <ReceiptText size={16} className={s.invoiceIcon} aria-hidden="true" />
-                <span className={s.invoiceTitle}>پیش‌فاکتور درخواست</span>
+                <span className={s.invoiceTitle}>قفل نرخ و تأیید</span>
+                {quoteState === 'ready' && quote?.rateAvailable && (
+                  <TTLRing secondsLeft={secondsLeft} total={quote.ttlSeconds} />
+                )}
               </div>
 
               {/* ردیف‌های فاکتور */}
@@ -1149,36 +1387,201 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                 )}
               </dl>
 
-              {/* سرعت پردازش — toggle عادی/فوری (قبلاً فیلد مرده بود) */}
+              {/* پیش‌فاکتور زنده — نرخ واقعی بازار */}
+              <div className={s.quoteBox} aria-live="polite">
+                {quoteState === 'loading' && (
+                  <div className={s.quoteLoading}>
+                    <span className={s.spinner} aria-hidden="true" />
+                    <span>دریافت نرخ لحظه‌ای بازار…</span>
+                  </div>
+                )}
+                {quoteState === 'error' && (
+                  <div className={s.quoteNote} role="alert">
+                    <CircleAlert size={14} aria-hidden="true" />
+                    <span>نرخ لحظه‌ای در دسترس نیست — دوباره تلاش کنید.</span>
+                    <button
+                      type="button"
+                      className={s.quoteRefresh}
+                      onClick={() => void fetchQuote()}
+                    >
+                      <RefreshCw size={13} aria-hidden="true" /> تلاش مجدد
+                    </button>
+                  </div>
+                )}
+                {quoteState === 'expired' && (
+                  <div className={s.quoteNote} role="alert">
+                    <CircleAlert size={14} aria-hidden="true" />
+                    <span>قفل نرخ منقضی شد — نرخ بازار ممکن است تغییر کرده باشد.</span>
+                    <button
+                      type="button"
+                      className={s.quoteRefresh}
+                      onClick={() => void fetchQuote()}
+                    >
+                      <RefreshCw size={13} aria-hidden="true" /> به‌روزرسانی نرخ
+                    </button>
+                  </div>
+                )}
+                {quoteState === 'ready' &&
+                  quote &&
+                  (quote.rateAvailable ? (
+                    <>
+                      <div className={s.quoteRow}>
+                        <span className={s.quoteKey}>نرخ بازار (سرای شهزاده)</span>
+                        <span className={s.quoteVal} dir="ltr">
+                          {new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 2 }).format(
+                            quote.rate ?? 0,
+                          )}{' '}
+                          افغانی
+                        </span>
+                      </div>
+                      {quote.baseAf != null && (
+                        <div className={s.quoteRow}>
+                          <span className={s.quoteKey}>معادل افغانی</span>
+                          <span className={s.quoteVal} dir="ltr">
+                            {fmtAf(quote.baseAf)} ؋
+                          </span>
+                        </div>
+                      )}
+                      <div className={s.quoteRow}>
+                        <span className={s.quoteKey}>
+                          کارمزد پلتفرم
+                          <span className={s.quoteFeePct} dir="ltr">
+                            {new Intl.NumberFormat('fa-AF', {
+                              maximumFractionDigits: 1,
+                            }).format(quote.feePercent)}
+                            ٪
+                          </span>
+                          {urgency === 'URGENT' && (
+                            <span className={s.quoteUrgentTag}>شامل فوری</span>
+                          )}
+                        </span>
+                        <span className={s.quoteVal} dir="ltr">
+                          {fmtAf(quote.feeAf)} ؋
+                        </span>
+                      </div>
+                      <div className={`${s.quoteRow} ${s.quoteRowTotal}`}>
+                        <span className={s.quoteKey}>
+                          {quote.direction === 'RECEIVE_AFN' ? 'دریافتی شما' : 'قابل پرداخت'}
+                        </span>
+                        <span
+                          className={s.quoteValTotal}
+                          dir="ltr"
+                          key={`${quote.totalAf ?? 0}-${quote.receiveAf ?? 0}`}
+                        >
+                          <span className="anim-fade-in-up">
+                            {fmtAf(quote.totalAf ?? quote.receiveAf)} ؋
+                          </span>
+                        </span>
+                      </div>
+                      <p className={s.quoteMeta}>
+                        <Lock size={11} aria-hidden="true" />
+                        نرخ تا پایان شمارش معکوس قفل است — منبع: بازار کابل
+                        {quote.rateUpdatedAt ? ' · به‌روزرسانی زنده' : ''}
+                      </p>
+                    </>
+                  ) : (
+                    <div className={s.quoteNoRate}>
+                      <ShieldCheck size={14} aria-hidden="true" />
+                      <span>
+                        برای این سرویس نرخ لحظه‌ای ثبت نشده — کارشناس هنگام تماس، نرخ روز را قفل
+                        می‌کند. کارمزد پلتفرم{' '}
+                        <strong dir="ltr">
+                          {new Intl.NumberFormat('fa-AF', { maximumFractionDigits: 1 }).format(
+                            quote.feePercent,
+                          )}
+                          ٪
+                        </strong>{' '}
+                        است.
+                      </span>
+                    </div>
+                  ))}
+              </div>
+
+              {/* سرعت پردازش — با کارمزد واقعی فوری */}
               <div className={s.urgencyRow}>
                 <span className={s.urgencyLabel}>سرعت پردازش</span>
                 <div className={s.urgencyToggle}>
                   <button
                     type="button"
                     aria-pressed={urgency !== 'URGENT'}
-                    onClick={() => setValue('urgency', 'NORMAL', { shouldValidate: true })}
+                    onClick={() => {
+                      setValue('urgency', 'NORMAL', { shouldValidate: true });
+                      if (quoteState === 'ready') void fetchQuote();
+                    }}
                     className={`${s.urgencyBtn} ${urgency !== 'URGENT' ? s.urgencyBtnActive : ''}`}
                   >
                     <span className={s.urgencyBtnTitle}>عادی</span>
-                    <span className={s.urgencyBtnHint}>ترتیب استاندارد</span>
+                    <span className={s.urgencyBtnHint}>پاسخ تا ۲ ساعت</span>
                   </button>
                   <button
                     type="button"
                     aria-pressed={urgency === 'URGENT'}
-                    onClick={() => setValue('urgency', 'URGENT', { shouldValidate: true })}
+                    onClick={() => {
+                      setValue('urgency', 'URGENT', { shouldValidate: true });
+                      if (quoteState === 'ready') void fetchQuote();
+                    }}
                     className={`${s.urgencyBtn} ${urgency === 'URGENT' ? s.urgencyBtnActive : ''}`}
                   >
                     <span className={s.urgencyBtnTitle}>فوری</span>
-                    <span className={s.urgencyBtnHint}>اولویت با درخواست شما</span>
+                    <span className={s.urgencyBtnHint}>پاسخ تا ۳۰ دقیقه</span>
                   </button>
                 </div>
               </div>
+
+              {/* روش تسویه */}
+              <div className={s.urgencyRow}>
+                <span className={s.urgencyLabel}>روش تسویه</span>
+                <div className={s.urgencyToggle}>
+                  {(['CASH', 'BANK_TRANSFER'] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      aria-pressed={paymentMethod === m}
+                      onClick={() => setPaymentMethod(m)}
+                      className={`${s.urgencyBtn} ${paymentMethod === m ? s.urgencyBtnActive : ''}`}
+                    >
+                      <span className={s.urgencyBtnTitle}>{PAYMENT_METHOD_LABEL[m]}</span>
+                      <span className={s.urgencyBtnHint}>
+                        {m === 'CASH' ? 'تحویل در دفتر / کارشناس' : 'جزئیات حساب پیام می‌شود'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* کارگزین: پلتفرم یا صرافی همکار (routing بازارچه) */}
+              {partnerExchanges.length > 0 && (
+                <div className={s.fieldGroup}>
+                  <label className={s.fieldLabel} htmlFor={`${formId}-exchange`}>
+                    انجام سفارش توسط
+                  </label>
+                  <div className={s.selectBox}>
+                    <Select value={targetExchangeId} onValueChange={(v) => setTargetExchangeId(v)}>
+                      <SelectTrigger
+                        id={`${formId}-exchange`}
+                        className={s.select}
+                        aria-label="انجام سفارش توسط"
+                      >
+                        <SelectValue placeholder="پلتفرم (ارائه مستقیم)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="platform">پلتفرم — ارائه مستقیم (پیش‌فرض)</SelectItem>
+                        {partnerExchanges.map((ex) => (
+                          <SelectItem key={ex.id} value={ex.id}>
+                            {ex.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
 
               {/* اطلاعات کاربر — از session، نه از فرم */}
               {authState === 'guest' ? (
                 <p className={s.guestNote} role="note">
                   <LogIn size={13} aria-hidden="true" />
-                  برای ثبت درخواست باید شمارهٔ موبایل تأیید شود — با «ثبت‌نام و ادامه» شروع کنید.
+                  برای ثبت سفارش باید شمارهٔ موبایل تأیید شود — با «ثبت‌نام و ادامه» شروع کنید.
                 </p>
               ) : (
                 <div className={s.userCard}>
@@ -1239,12 +1642,12 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                 </div>
               )}
 
-              {/* هشدار اگر موبایل نداشت — با trigger برای modal */}
+              {/* هشدار اگر موبایل نداشت */}
               {userProfile && !userProfile.phone && (
                 <div className={s.phoneAlert} role="alert">
                   <CircleAlert size={14} aria-hidden="true" />
                   <span>
-                    برای ثبت درخواست شماره موبایل نیاز است.{' '}
+                    برای ثبت سفارش شماره موبایل نیاز است.{' '}
                     <button
                       type="button"
                       className={s.phoneAlertLink}
@@ -1277,7 +1680,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
 
             {step === 1 ? (
               <button type="button" onClick={goNext} className={s.btnNext}>
-                ادامه
+                ادامه و دریافت نرخ
                 <ArrowLeft size={14} aria-hidden="true" />
               </button>
             ) : (
@@ -1290,21 +1693,28 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                 {submitting ? (
                   <>
                     <span className={s.spinner} aria-hidden="true" />
-                    <span>در حال ارسال…</span>
+                    <span>در حال ثبت…</span>
                   </>
                 ) : userProfile && !userProfile.phone ? (
                   <>
                     <Phone size={14} aria-hidden="true" />
-                    <span>تأیید موبایل و ثبت درخواست</span>
+                    <span>تأیید موبایل و ثبت سفارش</span>
                   </>
                 ) : authState === 'guest' ? (
                   <>
                     <LogIn size={14} aria-hidden="true" />
                     <span>ثبت‌نام و ادامه</span>
                   </>
+                ) : quote?.rateAvailable && quote.totalAf != null ? (
+                  <>
+                    <span>
+                      تأیید و پرداخت <strong dir="ltr">{fmtAf(quote.totalAf)}</strong> افغانی
+                    </span>
+                    <Send size={14} aria-hidden="true" style={{ transform: 'scaleX(-1)' }} />
+                  </>
                 ) : (
                   <>
-                    <span>تأیید و ثبت درخواست</span>
+                    <span>تأیید و ثبت سفارش</span>
                     <Send size={14} aria-hidden="true" style={{ transform: 'scaleX(-1)' }} />
                   </>
                 )}
@@ -1318,10 +1728,8 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
       {showPhoneModal && (
         <PhoneVerifyModal
           onVerified={(phone) => {
-            // آپدیت state — phone تأیید شد
             setUserProfile((prev) => (prev ? { ...prev, phone, phoneVerified: true } : prev));
             setShowPhoneModal(false);
-            // autoSubmitPending را true کن؛ useEffect پس از render submit را اجرا می‌کند
             autoSubmitPending.current = true;
           }}
           onClose={() => setShowPhoneModal(false)}
