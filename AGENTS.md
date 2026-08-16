@@ -490,6 +490,73 @@ interface RouteErrorProps {
 
 ---
 
+## 🎬 Motion Blueprint (always-on — بدون dependency جدید)
+
+> **یاد گرفته شد 2026-08-16 (بررسی زنده MCP از Revolut + Wise + Linear)**
+> تمام animation بزرگ‌ها با CSS + حداقل JS — هیچ Framer، GSAP، Lottie نیست.
+
+### یافته‌های دقیق از کد واقعی (نه تئوری)
+
+| سایت | تکنیک اصلی | ابزار |
+|------|------------|-------|
+| **Revolut** | CSS tokens برای timing: `--rui-duration-xs:100ms` تا `--rui-duration-xl:900ms`؛ easing default: `cubic-bezier(0.15,0.5,0.5,1)`؛ bounce: `cubic-bezier(0.175,0.885,0.21,1.65)` | فقط CSS — بدون lib |
+| **Linear** | ۲۵ SVG circle، هر کدام یک `@keyframes` مستقل با `animation-delay` متفاوت → موج نور | فقط CSS keyframes |
+| **Wise** | IntersectionObserver + class toggle برای scroll-reveal؛ `cubic-bezier(0.8,0.05,0.2,0.95)` برای nav | CSS + 10 خط JS |
+
+### Tokens موجود در پروژه (استفاده کنید — نه hardcode)
+
+```css
+/* Duration */
+--ds-duration-fast: 180ms;    /* hover، focus */
+--ds-duration-base: 280ms;    /* component enter/exit */
+--ds-duration-slow: 420ms;    /* modal، slide */
+--ds-duration-page: 600ms;    /* page transition */
+
+/* Easing */
+--ds-ease-out-quart: cubic-bezier(0.22, 1, 0.36, 1);      /* default همه چیز */
+--ds-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);       /* bounce/overshoot */
+--ds-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);         /* hero animations */
+--ds-ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);    /* accordion/panel */
+```
+
+### Keyframes و utilities موجود در globals.css (استفاده — هرگز تکرار نکنید)
+
+```
+.anim-fade-in-up    → motion-fade-in-up 320ms ease-out-quart
+.anim-fade-in       → motion-fade-in 240ms
+.anim-fade-in-right → motion-fade-in-right 280ms
+.stagger-children   → هر فرزند با nth-child delay متفاوت
+.anim-aurora-a/b    → blob های ambient (32-36s slow)
+.anim-ping-soft     → pulse dot
+```
+
+### قوانین Motion (اجباری — همه UI)
+
+| قانون | جزئیات |
+|-------|---------|
+| **فقط opacity + transform** | هرگز width/height/top/left/margin/padding animate نکنید — layout thrash |
+| **بدون dependency** | Framer، GSAP، Lottie، AOS ممنوع — CSS + IntersectionObserver کافی است |
+| **Scroll-reveal** | IntersectionObserver + class toggle (`reveal` → `reveal visible`) — نه AOS |
+| **Stagger** | `stagger-children` utility موجود — یا CSS `nth-child` با `animation-delay` |
+| **Ambient SVG** | نه blur blob؛ نه gradient noise — فقط SVG circles/paths با opacity keyframe |
+| **Spring tap** | `.spring-press:active { transform: scale(0.96); transition: 100ms spring }` |
+| **prefers-reduced-motion** | global در `tokens.css:221` — هرگز per-component block اضافه نکنید |
+| **will-change** | فقط روی المان‌هایی که واقعاً GPU layer نیاز دارند — aurora blobs فقط |
+
+### تکنیک Linear Grid (Signature Moment)
+
+```css
+/* ۲۵ نقطه SVG در hero — هر کدام keyframe مستقل */
+@keyframes ds-dot-pulse-N {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.9; }
+}
+/* N را از 0 تا 24 بگذارید، با animation-delay: calc(N * 112ms) */
+/* duration: 2800ms linear infinite — موج نور بدون JS */
+```
+
+---
+
 ## 🔄 Rule Failure Loop (خودتصحیحی — اجباری)
 
 ### چه موقع فعال می‌شود؟
@@ -542,6 +609,7 @@ interface RouteErrorProps {
 | 2026-08 | **UI/UX Pro Max Skill تنظیم شد:** Skill local در `.claude/skills/ui-ux-pro-max/` نصب شده؛ Design System با `--variance 6 --density 8` برای fintech/RTL/dark در `design-system/afghanistan-exchange-market/MASTER.md` persist شد؛ `AGENTS.ui-ux-skill.md` با قوانین P1–P10 از SKILL.md و وضعیت انطباق پروژه ایجاد شد؛ `AUDIT.md` با gap report نوشته شد. در هر سشن UI باید `AGENTS.ui-ux-skill.md` خوانده شود. |
 | 2026-08-14 | **📖 Pre-Code Rule Reading اضافه شد:** خواندن قوانین قبل از هر کد (حتی یک خط) اجباری؛ گیت شفاف در پیام؛ اینترنت-اول برای هر تغییر UI؛ حق کاربر برای trigger «قوانین را بخوان». یاد گرفته شد از گزارش مستقیم کاربر. |
 | 2026-08-14 | **اینترنت-اول به همهٔ کد گسترش یافت:** قبل از هر کد (حتی یک خط) — UI/UX، فرانت، بک‌اند، معماری، انتخاب ابزار/کتابخانه — حداقل یک `web_search` با تاریخ (سال جاری) + منبع رسمی؛ مقایسهٔ جایگزین‌های 2026 قبل از انتخاب ابزار. یاد گرفته شد از گزارش کاربر. |
+| 2026-08-16 | **Motion Blueprint (بررسی زنده MCP از Revolut+Wise+Linear):** تکنیک‌های animation بزرگ‌ها دقیقاً مستند شد و قانون «بدون dependency جدید» تأیید شد. ر.ک §Motion Blueprint. |
 
 ---
 

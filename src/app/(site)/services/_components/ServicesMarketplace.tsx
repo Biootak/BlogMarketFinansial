@@ -1,29 +1,49 @@
 'use client';
 
 /**
- * ServicesMarketplace — UI component for /services central hub.
+ * ServicesMarketplace — بازارچه مرکزی خدمات آنلاین صرافی‌ها.
  *
- *  Pattern: Marketplace hub
- *  - Hero: توضیح + counters (صرافی‌ها، خدمات، درخواست‌های فعال)
- *  - Filter bar: chip-tabs برای گروه + service
- *  - Result list: گروه‌بندی بر اساس serviceGroup
- *  - Empty state برای فیلتر بدون نتیجه
- *
- *  URL state: query params ?service=...&group=... (برای اشتراک‌گذاری)
+ * طراحی: Wise-style clarity + Linear-style ambient SVG + Revolut-style spring tokens
+ * Motion: CSS-only (opacity + transform) — بدون Framer/GSAP/Lottie
+ * Stagger: .stagger-children از globals.css
+ * Scroll reveal: IntersectionObserver + class toggle
+ * Ambient: SVG grid نقطه‌ای در hero (Linear pattern)
  */
 
 import { type MarketplaceRow, logServiceClick } from '@/actions/exchange-services';
 import Empty from '@/components/Empty';
 import { Button } from '@/components/ui/button';
 import { type ExchangeServiceMeta, SERVICE_GROUPS, getServiceMeta } from '@/lib/exchange-services';
-import { Banknote, Filter, Plus, Search } from 'lucide-react';
+import {
+  Banknote,
+  ChevronLeft,
+  Filter,
+  Plus,
+  Search,
+  Zap,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import s from './ServicesMarketplace.module.css';
 
 const _faNum = new Intl.NumberFormat('fa-IR');
 
+// ── accent token map (از lib/exchange-services.ts) ──────────────────────────
+const ACCENT_MAP: Record<string, string> = {
+  emerald: 'var(--nova-emerald)',
+  amber: 'var(--nova-amber)',
+  sky: 'var(--nova-cyan)',
+  violet: 'var(--nova-violet)',
+  rose: 'var(--nova-rose)',
+  teal: 'var(--nova-cyan)',
+  orange: 'var(--nova-amber)',
+  indigo: 'var(--nova-violet)',
+  lime: 'var(--nova-emerald)',
+  slate: 'var(--ds-text-muted)',
+};
+
+// ── Props ────────────────────────────────────────────────────────────────────
 type Props = {
   data: MarketplaceRow[];
   initialService?: string;
@@ -31,19 +51,90 @@ type Props = {
   initialGroup?: string;
 };
 
+// ── ServiceIcon ──────────────────────────────────────────────────────────────
 function ServiceIcon({
   meta,
-  size = 18,
-  strokeWidth = 1.8,
+  size = 20,
 }: {
   meta: ExchangeServiceMeta | undefined;
   size?: number;
-  strokeWidth?: number;
 }) {
   const Icon = meta?.icon ?? Banknote;
-  return <Icon size={size} strokeWidth={strokeWidth} aria-hidden />;
+  return <Icon size={size} strokeWidth={1.75} aria-hidden />;
 }
 
+// ── Ambient SVG Grid (Linear-style) ─────────────────────────────────────────
+// ۱۵ نقطه در ۳×۵ grid — هر کدام pulse مستقل با delay متفاوت
+function AmbientGrid() {
+  const COLS = 5;
+  const ROWS = 3;
+  const DELAY_STEP = 160; // ms بین هر نقطه
+  return (
+    <svg
+      className={s.ambientGrid}
+      viewBox="0 0 200 120"
+      fill="none"
+      aria-hidden
+      focusable="false"
+    >
+      {Array.from({ length: ROWS }, (_, row) =>
+        Array.from({ length: COLS }, (_, col) => {
+          const index = row * COLS + col;
+          const cx = 20 + col * 40;
+          const cy = 20 + row * 40;
+          return (
+            <circle
+              key={`${row}-${col}`}
+              cx={cx}
+              cy={cy}
+              r="2"
+              className={s.ambientDot}
+              style={{ animationDelay: `${index * DELAY_STEP}ms` }}
+            />
+          );
+        }),
+      )}
+    </svg>
+  );
+}
+
+// ── ScrollReveal hook ────────────────────────────────────────────────────────
+function useScrollReveal(ref: React.RefObject<Element | null>) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          el.classList.add(s.revealed);
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.08 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+}
+
+// ── RevealSection wrapper ────────────────────────────────────────────────────
+function RevealSection({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useScrollReveal(ref as React.RefObject<Element>);
+  return (
+    <div ref={ref} className={`${s.revealSection} ${className ?? ''}`}>
+      {children}
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function ServicesMarketplace({
   data,
   initialService,
@@ -52,13 +143,12 @@ export default function ServicesMarketplace({
 }: Props) {
   const router = useRouter();
 
-  // ── state از URL (synced) ─────────────────────────────────────────
   const [activeGroup, setActiveGroup] = useState<string>(initialGroup ?? 'all');
   const [activeService, setActiveService] = useState<string>(initialService ?? 'all');
   const [exchangeQuery, setExchangeQuery] = useState<string>(initialExchange ?? '');
   const [searchInput, setSearchInput] = useState<string>(initialExchange ?? '');
 
-  // ── URL sync ─────────────────────────────────────────────────────
+  // URL sync
   useEffect(() => {
     const params = new URLSearchParams();
     if (activeGroup !== 'all') params.set('group', activeGroup);
@@ -66,23 +156,19 @@ export default function ServicesMarketplace({
     if (exchangeQuery) params.set('exchange', exchangeQuery);
     const qs = params.toString();
     const url = qs ? `/services?${qs}` : '/services';
-    // فقط اگر تغییر کرده
-    if (
-      typeof window !== 'undefined' &&
-      window.location.pathname + window.location.search !== url
-    ) {
+    if (typeof window !== 'undefined' && window.location.pathname + window.location.search !== url) {
       router.replace(url, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeGroup, activeService, exchangeQuery]);
 
-  // ── debounce search input ─────────────────────────────────────────
+  // debounce search
   useEffect(() => {
     const t = setTimeout(() => setExchangeQuery(searchInput.trim()), 250);
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  // ── filter ────────────────────────────────────────────────────────
+  // filter
   const filtered = useMemo(() => {
     return data
       .map((row) => {
@@ -101,7 +187,7 @@ export default function ServicesMarketplace({
       .filter((r): r is MarketplaceRow => r !== null);
   }, [data, activeGroup, activeService, exchangeQuery]);
 
-  // ── counters ─────────────────────────────────────────────────────
+  // counters
   const totalExchanges = useMemo(() => {
     const set = new Set<string>();
     for (const row of data) for (const e of row.exchanges) set.add(e.id);
@@ -117,8 +203,6 @@ export default function ServicesMarketplace({
     setExchangeQuery('');
   }, []);
 
-  // Fire-and-forget analytics — وقتی کاربر از بازارچه روی یک صرافی کلیک می‌کند
-  // source='marketplace' تا بفهمیم کدام سرویس‌ها مشتری را به صرافی می‌رسانند
   const trackExchangeClick = (serviceKey: string, exchangeId: string) => {
     void logServiceClick({
       serviceKey,
@@ -128,139 +212,150 @@ export default function ServicesMarketplace({
     });
   };
 
-  // ── سرویس‌های قابل فیلتر بر اساس group فعال ───────────────────────
   const availableServices = useMemo(() => {
     if (activeGroup === 'all') return data;
     return data.filter((r) => r.serviceGroup === activeGroup);
   }, [data, activeGroup]);
 
+  const hasFilter = activeGroup !== 'all' || activeService !== 'all' || exchangeQuery.length > 0;
+
   return (
     <main className={s.root} dir="rtl">
-      {/* ── Hero ─────────────────────────────────────────── */}
-      <header className={s.hero}>
-        <div className={s.heroInner}>
-          <span className={s.eyebrow}>
-            <Search size={12} strokeWidth={1.9} aria-hidden />
-            <span>خدمات صرافی‌ها</span>
-          </span>
-          <h1 className={s.title}>
-            پیدا کردن صرافی مناسب برای هر خدمت — <span className={s.titleAccent}>در یک نگاه</span>
-          </h1>
-          <p className={s.sub}>
-            همه خدمات آنلاین صرافی‌ها را در یک صفحه ببینید. فیلتر کنید، مقایسه کنید، درخواست ثبت
-            کنید.
-          </p>
 
-          {/* Counters */}
-          <div className={s.counters} role="list">
-            <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>{_faNum.format(totalExchanges)}</span>
-              <span className={s.counterLabel}>صرافی فعال</span>
-            </div>
-            <span className={s.counterDivider} aria-hidden />
-            <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>{_faNum.format(totalServices)}</span>
-              <span className={s.counterLabel}>خدمت</span>
-            </div>
-            <span className={s.counterDivider} aria-hidden />
-            <div className={s.counter} role="listitem">
-              <span className={s.counterValue}>{_faNum.format(totalMatches)}</span>
-              <span className={s.counterLabel}>صرافی-خدمت</span>
-            </div>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <header className={s.hero}>
+        <AmbientGrid />
+        <div className={s.heroInner}>
+
+          {/* eyebrow pill */}
+          <div className={s.eyebrowWrap}>
+            <span className={s.eyebrow}>
+              <Zap size={11} strokeWidth={2.2} aria-hidden />
+              <span>بازارچه خدمات</span>
+            </span>
           </div>
 
-          <div className={s.heroCta}>
-            <Link href="/services/compare" className={s.compareLink}>
-              <Filter size={14} strokeWidth={1.9} aria-hidden />
-              <span>مشاهده جدول مقایسه</span>
-            </Link>
-            {/* R14-fix (2026-07-29): ثبت درخواست سریع — primary CTA در hero.
-                کاربران می‌توانند بدون لاگین از طریق exchangeServiceRequestDialog ثبت کنند. */}
+          {/* headline */}
+          <h1 className={s.title}>
+            هر خدمت مالی که نیاز دارید —
+            <br />
+            <span className={s.titleAccent}>یک صفحه، همه صرافی‌ها</span>
+          </h1>
+
+          <p className={s.sub}>
+            خرید ارز، حواله، پرداخت آنلاین و ده‌ها سرویس دیگر. صرافی مناسب را پیدا کنید و
+            درخواست ثبت کنید.
+          </p>
+
+          {/* counters strip */}
+          <div className={s.counters} role="list">
+            <CounterItem value={totalExchanges} label="صرافی فعال" />
+            <span className={s.counterDivider} aria-hidden />
+            <CounterItem value={totalServices} label="نوع سرویس" />
+            <span className={s.counterDivider} aria-hidden />
+            <CounterItem value={totalMatches} label="سرویس–صرافی" highlight />
+          </div>
+
+          {/* CTA row */}
+          <div className={s.ctaRow}>
             <button
               type="button"
-              className={s.primaryLink}
+              className={s.ctaPrimary}
               onClick={() => {
-                // به اولین سرویس فعال scroll + auto-open dialog از exchange card
-                const target = document.getElementById('services-grid');
-                target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('services-grid')?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'start',
+                });
               }}
-              aria-label="ثبت درخواست جدید"
             >
-              <Plus size={14} strokeWidth={2.2} aria-hidden />
-              <span>ثبت درخواست جدید</span>
+              <Plus size={15} strokeWidth={2.2} aria-hidden />
+              <span>ثبت درخواست</span>
             </button>
-            <span className={s.heroHint}>برای مقایسه همزمان همه صرافی‌ها در یک نگاه</span>
+            <Link href="/services/compare" className={s.ctaSecondary}>
+              <Filter size={14} strokeWidth={1.9} aria-hidden />
+              <span>جدول مقایسه</span>
+            </Link>
           </div>
         </div>
       </header>
 
-      {/* ── Filter Bar ──────────────────────────────────── */}
-      <div className={s.filterBar} role="search">
+      {/* ── Filter Bar ──────────────────────────────────────────────────── */}
+      <div className={s.filterBar} role="search" aria-label="فیلتر سرویس‌ها">
         <div className={s.filterInner}>
-          {/* Search input */}
+
+          {/* Search */}
           <label className={s.searchField}>
-            <Search size={16} strokeWidth={1.8} aria-hidden />
+            <Search size={15} strokeWidth={1.8} aria-hidden />
             <input
               type="search"
               className={s.searchInput}
-              placeholder="جستجوی نام صرافی یا شهر..."
+              placeholder="جستجوی نام صرافی یا شهر…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               aria-label="جستجوی صرافی"
             />
+            {searchInput && (
+              <button
+                type="button"
+                className={s.searchClear}
+                onClick={() => setSearchInput('')}
+                aria-label="پاک کردن جستجو"
+              >
+                ×
+              </button>
+            )}
           </label>
 
           {/* Group chips */}
-          <div className={s.chips} role="tablist" aria-label="گروه خدمات">
-            <Chip
-              active={activeGroup === 'all'}
-              onClick={() => {
-                setActiveGroup('all');
-                setActiveService('all');
-              }}
-            >
-              همه گروه‌ها
+          <div className={s.chipRow} role="tablist" aria-label="گروه سرویس">
+            <Chip active={activeGroup === 'all'} onClick={() => { setActiveGroup('all'); setActiveService('all'); }}>
+              همه
             </Chip>
             {Object.entries(SERVICE_GROUPS).map(([key, meta]) => (
               <Chip
                 key={key}
                 active={activeGroup === key}
-                onClick={() => {
-                  setActiveGroup(key);
-                  setActiveService('all');
-                }}
+                onClick={() => { setActiveGroup(key); setActiveService('all'); }}
               >
                 {meta.label}
               </Chip>
             ))}
           </div>
 
-          {/* Service chips (dynamic based on group) */}
+          {/* Service sub-chips */}
           {availableServices.length > 0 && (
-            <div className={s.chips} role="tablist" aria-label="خدمت">
-              <Chip
-                active={activeService === 'all'}
-                onClick={() => setActiveService('all')}
-                variant="sub"
-              >
-                همه خدمات
+            <div className={s.chipRowSub} role="tablist" aria-label="نوع سرویس">
+              <Chip active={activeService === 'all'} onClick={() => setActiveService('all')} sub>
+                همه سرویس‌ها
               </Chip>
               {availableServices.map((row) => (
                 <Chip
                   key={row.serviceKey}
                   active={activeService === row.serviceKey}
                   onClick={() => setActiveService(row.serviceKey)}
-                  variant="sub"
+                  sub
                 >
                   {row.serviceName}
                 </Chip>
               ))}
             </div>
           )}
+
+          {/* Active filter badge */}
+          {hasFilter && (
+            <div className={s.filterMeta}>
+              <span className={s.filterCount}>
+                {_faNum.format(filtered.length)} گروه سرویس · {_faNum.format(totalMatches)} نتیجه
+              </span>
+              <button type="button" className={s.clearBtn} onClick={resetFilters}>
+                پاک کردن فیلترها
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Result ──────────────────────────────────────── */}
+      {/* ── Results ─────────────────────────────────────────────────────── */}
       <div className={s.resultWrap} id="services-grid">
         {filtered.length === 0 ? (
           <Empty
@@ -275,67 +370,113 @@ export default function ServicesMarketplace({
           />
         ) : (
           <div className={s.groups}>
-            {groupByGroup(filtered).map((group) => (
-              <section key={group.key} className={s.group} aria-labelledby={`grp-${group.key}`}>
-                <header className={s.groupHeader}>
-                  <h2 id={`grp-${group.key}`} className={s.groupTitle}>
-                    {SERVICE_GROUPS[group.key as ExchangeServiceMeta['group']]?.label ?? group.key}
-                  </h2>
-                  <span className={s.groupCount}>{_faNum.format(group.services.length)} خدمت</span>
-                </header>
+            {groupByGroup(filtered).map((group, gIdx) => {
+              const groupMeta = SERVICE_GROUPS[group.key as ExchangeServiceMeta['group']];
+              return (
+                <RevealSection key={group.key}>
+                  <section aria-labelledby={`grp-${group.key}`}>
 
-                <ul className={s.serviceList}>
-                  {group.services.map((row) => {
-                    const meta = getServiceMeta(row.serviceKey);
-                    return (
-                      <li key={row.serviceKey} className={s.serviceCard}>
-                        <header className={s.serviceHeader}>
-                          <div className={s.serviceIcon} aria-hidden>
-                            <ServiceIcon meta={meta} />
-                          </div>
-                          <div className={s.serviceHeaderText}>
-                            <h3 className={s.serviceName}>{row.serviceName}</h3>
-                            <p className={s.serviceMeta}>
-                              <span>{_faNum.format(row.count)} صرافی</span>
-                            </p>
-                          </div>
-                        </header>
+                    {/* Group header */}
+                    <header className={s.groupHeader}>
+                      <div className={s.groupHeaderLeft}>
+                        <h2 id={`grp-${group.key}`} className={s.groupTitle}>
+                          {groupMeta?.label ?? group.key}
+                        </h2>
+                        {groupMeta?.description && (
+                          <p className={s.groupDesc}>{groupMeta.description}</p>
+                        )}
+                      </div>
+                      <span className={s.groupBadge}>
+                        {_faNum.format(group.services.length)} سرویس
+                      </span>
+                    </header>
 
-                        <ul className={s.exchangeList}>
-                          {row.exchanges.map((ex) => (
-                            <li key={ex.id} className={s.exchangeItem}>
-                              <Link
-                                href={`/exchanges/${ex.slug}#services`}
-                                className={s.exchangeLink}
-                                onClick={() => trackExchangeClick(row.serviceKey, ex.id)}
-                              >
-                                <span className={s.exchangeLogo} aria-hidden>
-                                  {ex.logoUrl ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img src={ex.logoUrl} alt="" loading="lazy" />
-                                  ) : (
-                                    <span className={s.exchangeLogoFallback}>
-                                      {(ex.name[0] ?? '?').toUpperCase()}
+                    {/* Service cards grid */}
+                    <ul className={`${s.serviceGrid} stagger-children`}>
+                      {group.services.map((row, sIdx) => {
+                        const meta = getServiceMeta(row.serviceKey);
+                        const accentColor = ACCENT_MAP[meta?.accent ?? 'slate'] ?? 'var(--ds-text-muted)';
+                        return (
+                          <li
+                            key={row.serviceKey}
+                            className={s.serviceCard}
+                            style={{ '--service-accent': accentColor } as React.CSSProperties}
+                          >
+                            {/* Card header */}
+                            <div className={s.cardHeader}>
+                              <span className={s.cardIcon} aria-hidden>
+                                <ServiceIcon meta={meta} size={22} />
+                              </span>
+                              <div className={s.cardHeaderText}>
+                                <h3 className={s.cardTitle}>{row.serviceName}</h3>
+                                {meta?.description && (
+                                  <p className={s.cardDesc}>{meta.description}</p>
+                                )}
+                              </div>
+                              <span className={s.cardBadge}>
+                                {_faNum.format(row.count)}
+                              </span>
+                            </div>
+
+                            {/* Exchange list */}
+                            <ul className={s.exchangeList}>
+                              {row.exchanges.map((ex) => (
+                                <li key={ex.id}>
+                                  <Link
+                                    href={ex.ctaHref ?? `/exchanges/${ex.slug}#services`}
+                                    className={s.exchangeItem}
+                                    onClick={() => trackExchangeClick(row.serviceKey, ex.id)}
+                                  >
+                                    {/* Logo */}
+                                    <span className={s.exchangeLogo} aria-hidden>
+                                      {ex.logoUrl ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img src={ex.logoUrl} alt="" loading="lazy" />
+                                      ) : (
+                                        <span className={s.exchangeLogoFallback}>
+                                          {(ex.name[0] ?? '?').toUpperCase()}
+                                        </span>
+                                      )}
                                     </span>
-                                  )}
-                                </span>
-                                <span className={s.exchangeInfo}>
-                                  <span className={s.exchangeName}>{ex.name}</span>
-                                  {ex.city && <span className={s.exchangeCity}>{ex.city}</span>}
-                                </span>
-                                <span className={s.exchangeArrow} aria-hidden>
-                                  ←
-                                </span>
+
+                                    {/* Info */}
+                                    <span className={s.exchangeInfo}>
+                                      <span className={s.exchangeName}>{ex.name}</span>
+                                      {ex.city && (
+                                        <span className={s.exchangeCity}>{ex.city}</span>
+                                      )}
+                                    </span>
+
+                                    {/* Arrow */}
+                                    <ChevronLeft
+                                      size={14}
+                                      strokeWidth={2}
+                                      className={s.exchangeArrow}
+                                      aria-hidden
+                                    />
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+
+                            {/* Card footer link */}
+                            <div className={s.cardFooter}>
+                              <Link
+                                href={`/services?service=${row.serviceKey}`}
+                                className={s.cardFooterLink}
+                              >
+                                مشاهده همه صرافی‌ها
+                                <ChevronLeft size={12} strokeWidth={2} aria-hidden />
                               </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            ))}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                </RevealSection>
+              );
+            })}
           </div>
         )}
       </div>
@@ -343,18 +484,35 @@ export default function ServicesMarketplace({
   );
 }
 
-/* ── Sub-components ──────────────────────────────────────────── */
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function CounterItem({
+  value,
+  label,
+  highlight,
+}: {
+  value: number;
+  label: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className={`${s.counter} ${highlight ? s.counterHighlight : ''}`} role="listitem">
+      <span className={s.counterValue}>{_faNum.format(value)}</span>
+      <span className={s.counterLabel}>{label}</span>
+    </div>
+  );
+}
 
 function Chip({
   active,
   onClick,
   children,
-  variant = 'primary',
+  sub,
 }: {
   active: boolean;
   onClick: () => void;
   children: React.ReactNode;
-  variant?: 'primary' | 'sub';
+  sub?: boolean;
 }) {
   return (
     <button
@@ -362,14 +520,14 @@ function Chip({
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`${s.chip} ${s[`chip_${variant}`] ?? ''} ${active ? s.chipActive : ''}`}
+      className={`${s.chip} ${sub ? s.chipSub : ''} ${active ? s.chipActive : ''}`}
     >
       {children}
     </button>
   );
 }
 
-/* ── Helpers ──────────────────────────────────────────────── */
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 type Grouped = Array<{ key: string; services: MarketplaceRow[] }>;
 
