@@ -49,7 +49,9 @@ trap 'rmdir "$LOCK" 2>/dev/null || true' EXIT
 
 # commit جدید یا deploy قبلی ناقص → دیپلوی استاندارد
 if bash "$REPO_DIR/deploy/azure-update.sh"; then
-    echo "$LOCAL" > "$LAST_FILE"
+    # 2026-08-16: HEAD را بعد از pull بنویس (LOCAL قبل از pull گرفته شده بود —
+    # باگ: marker قدیمی می‌ماند و هر دقیقه deploy بی‌فایده دوباره اجرا می‌شد).
+    echo "$(git rev-parse HEAD)" > "$LAST_FILE"
 else
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️ آپدیت ناموفق — دقیقهٔ بعد دوباره تلاش می‌شود" >> "$LOG"
     exit 1
