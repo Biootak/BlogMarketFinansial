@@ -138,15 +138,17 @@ export default function RootLayout({
         <link rel="preconnect" href="https://i.pravatar.cc" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
         <link rel="dns-prefetch" href="https://avatars.githubusercontent.com" />
-        {/* 2026-08-14 fix: `<Script strategy="beforeInteractive">` به‌جای
-            `<script>` خام — اسکریپت از سمت سرور مستقیم داخل HTML اولیهٔ head
-            تزریق می‌شود (دقیقاً همان رفتاری که Speculation Rules نیاز دارد) و
-            چون در درخت hydration ریاکت نیست، هشدار React 19 «Encountered a
-            script tag» را تولید نمی‌کند. قبل‌تر یک <script> خام بود که همین
-            هشدار را می‌داد. */}
+        {/* 2026-08-16 fix: strategy حذف شد (پیش‌فرض afterInteractive) — الگوی
+            رسمی Vercel KB برای Speculation Rules. `beforeInteractive` تنها
+            مسیری بود که next/script یک <script> واقعی در درخت React رندر می‌کرد
+            و React 19.2 (Next 16.3.1) موقع ساخت عنصر، خطای «Encountered a
+            script tag while rendering React component» می‌داد (speculationrules
+            در isScriptDataBlock به‌عنوان data block شناخته نمی‌شود) — حتی باعث
+            crash صفحه در اولین لود سرد می‌شد. with afterInteractive اسکریپت
+            بعد از hydration داخل head تزریق می‌شود — برای prerender-on-hover
+            (eagerness: moderate) کاملاً کافی است. */}
         <Script
           id="speculation-rules"
-          strategy="beforeInteractive"
           type="speculationrules"
           // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON استاتیک از regex ثابت — هیچ ورودی کاربری ندارد (Speculation Rules رسمی Chrome)
           dangerouslySetInnerHTML={{
