@@ -236,7 +236,8 @@ export default function ServicesMarketplace({
                 e.city?.toLowerCase().includes(exchangeQuery.toLowerCase()),
             )
           : row.exchanges;
-        // سرویس‌های پوشش‌داده‌نشده (count 0): بدون جستجوی صرافی دیده شوند (به‌زودی)
+        // سرویس‌های بدون صرافی همکار (count 0): توسط خود ما ارائه می‌شوند —
+        // فقط هنگام جستجوی نام صرافی (که با آن‌ها منطبق نیست) حذف می‌شوند.
         if (filteredExchanges.length === 0 && exchangeQuery) return null;
         return { ...row, exchanges: filteredExchanges, count: filteredExchanges.length };
       })
@@ -377,11 +378,9 @@ export default function ServicesMarketplace({
                             {meta.personaBadge}
                           </span>
                         )}
-                      </span>
+                      </span>{' '}
                       <span className={s.quickSub}>
-                        {row.count > 0
-                          ? `${_faNum.format(row.count)} صرافی فعال`
-                          : 'درخواست آنلاین'}
+                        {row.count > 0 ? `${_faNum.format(row.count)} صرافی فعال` : 'توسط خود ما'}
                       </span>
                     </span>
                     <ChevronLeft size={15} strokeWidth={2} className={s.quickArrow} aria-hidden />
@@ -402,8 +401,9 @@ export default function ServicesMarketplace({
                 همه سرویس‌ها
               </h2>
               <p className={s.zoneSub}>
-                {_faNum.format(totalServices)} سرویس · {_faNum.format(totalMatches)} سرویس–صرافی
-                فعال
+                {totalMatches > 0
+                  ? `${_faNum.format(totalServices)} سرویس · ${_faNum.format(totalMatches)} سرویس–صرافی فعال`
+                  : `${_faNum.format(totalServices)} سرویس — همه توسط خود ما ارائه می‌شوند`}
               </p>
             </div>
 
@@ -592,7 +592,7 @@ function ServiceCard({
 
   return (
     <li
-      className={`${s.serviceCard} ${featured ? s.cardFeatured : ''} ${!covered ? s.cardEmpty : ''} ${solo ? s.cardSolo : ''}`}
+      className={`${s.serviceCard} ${featured ? s.cardFeatured : ''} ${solo ? s.cardSolo : ''}`}
       style={{ '--service-accent': accent } as React.CSSProperties}
     >
       <div className={s.cardTop}>
@@ -610,7 +610,7 @@ function ServiceCard({
             {_faNum.format(row.count)}
           </span>
         ) : (
-          <span className={s.soonBadge}>به‌زودی</span>
+          <span className={s.selfBadge}>ارائه مستقیم</span>
         )}
       </div>
 
@@ -643,9 +643,11 @@ function ServiceCard({
           ))}
         </ul>
       ) : (
-        <div className={s.emptyState}>
-          <p className={s.emptyText}>
-            هنوز صرافی فعالی این سرویس را ارائه نمی‌دهد — اما می‌توانید همین حالا درخواست ثبت کنید.
+        <div className={s.selfState}>
+          <ShieldCheck size={13} className={s.selfStateIcon} aria-hidden />
+          <p className={s.selfStateText}>
+            این سرویس توسط کارشناسان خود ما انجام می‌شود — صرافی‌های همکار اگر بپیوندند، همین‌جا اضافه
+            می‌شوند.
           </p>
         </div>
       )}
