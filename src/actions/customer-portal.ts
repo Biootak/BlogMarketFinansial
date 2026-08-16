@@ -420,6 +420,17 @@ export async function getCustomerTransactions(opts: {
     'CANCELLED',
   ]);
 
+  // IDOR-fix: اگر accountId پاس شده، ابتدا ownership را تأیید کن.
+  // customerId داخل where هست ولی اگر schema تغییر کند یا یک account
+  // به چند customer وصل شود، این guard از data leakage جلوگیری می‌کند.
+  if (opts.accountId) {
+    const ownedAccount = await prisma.fintechAccount.findFirst({
+      where: { id: opts.accountId, customerId: access.customerId },
+      select: { id: true },
+    });
+    if (!ownedAccount) return { rows: [], total: 0, hasMore: false };
+  }
+
   const where = {
     customerId: access.customerId,
     ...(opts.kind && VALID_KINDS.has(opts.kind) ? { kind: opts.kind as TransactionKind } : {}),
@@ -1740,6 +1751,8 @@ export async function getCustomerAccountById(
 export async function getAccountLedger(
   accountId: string,
   limit = 20,
+  // DoS-fix: limit بدون cap خطرناک است — کاربر می‌تواند limit=999999 بفرستد.
+  // Math.min در caller هم نیست پس اینجا enforce می‌کنیم.
 ): Promise<
   Array<{
     id: string;
@@ -1761,10 +1774,12 @@ export async function getAccountLedger(
   });
   if (!account) return [];
 
+  const safeLimit = Math.min(100, Math.max(1, limit));
+
   const rows = await prisma.ledgerEntry.findMany({
     where: { accountId },
     orderBy: { createdAt: 'desc' },
-    take: limit,
+    take: safeLimit,
     select: {
       id: true,
       direction: true,

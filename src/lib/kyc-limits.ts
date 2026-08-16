@@ -133,9 +133,12 @@ export async function assertOutgoingKycLimit(params: {
     select: { amount: true, currency: true },
   });
 
+  // Precision-fix: t.amount در DB به صورت BigInt ذخیره می‌شود.
+  // Number(BigInt) برای مقادیر > 2^53 دقت خود را از دست می‌دهد.
+  // از .toString() برای تبدیل بدون precision loss استفاده می‌کنیم.
   let usedTodayAf = 0;
   for (const t of todayTxns) {
-    usedTodayAf += await toAfn(exchangeId, t.currency, Number(t.amount));
+    usedTodayAf += await toAfn(exchangeId, t.currency, Number(t.amount.toString()));
   }
 
   // سقف روزانه را با یک margin امنیتی ۵٪ اعمال می‌کنیم تا race condition

@@ -262,7 +262,17 @@ export async function submitQuote(
   raw: unknown,
 ): Promise<FintechActionResult<QuoteRow>> {
   // ── P0-6: rate-limit روی submitQuote ──────────────────────────────────────
-  const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  // IP-fix: از rightmost XFF + x-real-ip fallback استفاده می‌کنیم تا spoofing ممکن نباشد.
+  // .split(',').pop() به تنهایی کافی نیست — مهاجم می‌تواند هدر را دستکاری کند.
+  const _xff0 = (await headers()).get('x-forwarded-for') ?? '';
+  const ip =
+    _xff0
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .at(-1) ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`quote-submit:${ip}:${exchangeId}`, 'api');
   if (!rl.success) {
     return {

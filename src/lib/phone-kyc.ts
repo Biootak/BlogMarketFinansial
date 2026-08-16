@@ -101,7 +101,23 @@ export async function autoVerifyPhoneFromTelegram(
     if (customer.status === 'FROZEN' || customer.status === 'CLOSED') {
       return { ok: false, reason: 'account-blocked' };
     }
-    if (customer.kycLevel !== 'NONE') return { ok: false, reason: 'already-verified' };
+
+    // KYC-expiry-fix: اگر kycLevel != NONE است، باید بررسی کنیم آیا منقضی شده.
+    // اگر منقضی شده → reset می‌کنیم و اجازه re-verify می‌دهیم.
+    // اگر هنوز معتبر است → already-verified برمی‌گردانیم.
+    if (customer.kycLevel !== 'NONE') {
+      const latestVerification = await prisma.kycVerification.findFirst({
+        where: { customerId: customer.id, level: 'LEVEL_1', status: 'APPROVED' },
+        orderBy: { createdAt: 'desc' },
+        select: { expiresAt: true },
+      });
+      // اگر هیچ verification معتبری وجود ندارد یا منقضی شده → اجازه re-verify
+      const isExpired =
+        !latestVerification ||
+        (latestVerification.expiresAt != null && latestVerification.expiresAt < new Date());
+      if (!isExpired) return { ok: false, reason: 'already-verified' };
+      // منقضی شده — ادامه می‌دهیم تا KYC جدید ثبت شود
+    }
 
     const { v4: createId } = await import('uuid');
     const now = new Date();

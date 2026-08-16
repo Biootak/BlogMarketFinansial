@@ -276,7 +276,16 @@ export async function createTransaction(
   raw: unknown,
 ): Promise<FintechActionResult<TransactionRow>> {
   // A1-24 (C1): rate-limit واقعی — header قبلاً دروغ می‌گفت
-  const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  // IP-fix: rightmost XFF + x-real-ip fallback — جلوگیری از IP spoofing در rate-limit.
+  const _xffTxn = (await headers()).get('x-forwarded-for') ?? '';
+  const ip =
+    _xffTxn
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .at(-1) ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
   const rl = await checkRateLimit(`create-txn:${ip}:${exchangeId}`, 'api');
   if (!rl.success) {
     return {

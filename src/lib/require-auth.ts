@@ -45,13 +45,15 @@ export async function requireRole(allowed: Role[]): Promise<AuthResult> {
 }
 
 export async function requireAdmin(): Promise<AuthResult> {
-  // R1/R2-fix: SUPERADMIN treated identically to OWNER across all auth checks
+  // دسترسی platform staff: ADMIN / SUPERADMIN / OWNER — برای عملیات مدیریتی عمومی
+  // (market-rates، exchange-quotes، role-actions، ...).
+  // SUPERADMIN عمداً اینجا اجازه دارد چون platform staff است.
   return requireRole([Role.ADMIN, Role.OWNER, Role.SUPERADMIN]);
 }
 
 export async function requireSuperAdmin(): Promise<AuthResult> {
-  // OWNER only. SUPERADMIN is an elevated ADMIN, not an OWNER alias: it must
-  // NOT reach owner-level surfaces (site settings, reports).
+  // فقط OWNER — برای تنظیمات سطح سایت (site settings، billing، owner-only reports).
+  // SUPERADMIN عمداً اینجا مجاز نیست — این یک gate انحصاری OWNER است.
   return requireRole([Role.OWNER]);
 }
 

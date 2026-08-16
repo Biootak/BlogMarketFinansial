@@ -161,7 +161,8 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
   const { recipientUserId, amountCents, currency, note, idempotencyKey } = parsed.data;
   const senderCustomer = await prisma.customer.findFirst({
     where: { userId: auth.user.id },
-    select: { id: true },
+    // exchangeId برای cross-exchange isolation check
+    select: { id: true, exchangeId: true },
   });
 
   if (!senderCustomer) {
@@ -201,6 +202,8 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
         id: true,
         kycLevel: true,
         kycStatus: true,
+        // P2-fix: exchangeId برای بررسی cross-exchange isolation
+        exchangeId: true,
         FintechAccount: { where: { currency, status: 'ACTIVE' }, select: { id: true } },
       },
     }),
@@ -231,6 +234,18 @@ export async function initiateTransfer(raw: unknown): Promise<FintechActionResul
       error: {
         code: 'RECIPIENT_KYC_REQUIRED',
         message: 'گیرنده احراز هویت (KYC) تأییدشده ندارد و قادر به دریافت وجه نیست',
+      },
+    };
+  }
+
+  // P2-fix: isolation — گیرنده و فرستنده باید در یک صرافی باشند.
+  // انتقال بین مشتریان صرافی‌های مختلف نباید مجاز باشد.
+  if (senderCustomer.exchangeId !== recipientCustomer.exchangeId) {
+    return {
+      success: false,
+      error: {
+        code: 'EXCHANGE_MISMATCH',
+        message: 'انتقال به مشتری صرافی دیگر امکان‌پذیر نیست',
       },
     };
   }

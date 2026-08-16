@@ -174,8 +174,10 @@ export async function updateCustomerBeneficiary(
     return { success: false, error: { code: 'NOT_FOUND', message: 'مخاطب یافت نشد' } };
   }
 
+  // IDOR-fix: where باید هم id هم customerId داشته باشد تا update اتمیک باشد
+  // و مهاجم نتواند با دانستن id، beneficiary کاربر دیگر را تغییر دهد.
   await prisma.beneficiary.update({
-    where: { id },
+    where: { id, customerId: auth.customerId },
     data: { ...(name ? { name } : {}), note: note ?? null },
   });
 

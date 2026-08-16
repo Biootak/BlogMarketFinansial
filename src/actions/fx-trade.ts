@@ -246,7 +246,16 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
     return { success: false, error: { code: limitCheck.code, message: limitCheck.error } };
   }
 
-  const ip = (await headers()).get('x-forwarded-for')?.split(',').pop()?.trim() ?? 'unknown';
+  // IP-fix: rightmost XFF + x-real-ip fallback — جلوگیری از IP spoofing در fraud screen.
+  const _xffFx = (await headers()).get('x-forwarded-for') ?? '';
+  const ip =
+    _xffFx
+      .split(',')
+      .map((p) => p.trim())
+      .filter(Boolean)
+      .at(-1) ??
+    (await headers()).get('x-real-ip')?.trim() ??
+    'unknown';
 
   // Fraud screening قبل از ثبت تراکنش تبدیل ارز
   const fraudRisk = await screenTransaction({

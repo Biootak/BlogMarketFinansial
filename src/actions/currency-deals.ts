@@ -1020,10 +1020,16 @@ export async function completeDeal(
           if (fromAccount) {
             const fromAmountBig = BigInt(new Decimal(deal.fromAmount.toString()).toFixed(0));
             const newFromBalance = fromAccount.balance - fromAmountBig;
+            // B-DEAL-BAL fix: اگر موجودی کافی نباشد، transaction باید rollback شود
+            // نه اینکه balance به صفر clamp شود — این باعث می‌شد مشتری بدون موجودی
+            // معامله کند و دفتر حسابداری نامتوازن شود.
+            if (newFromBalance < BigInt(0)) {
+              throw new Error('DEAL_INSUFFICIENT_BALANCE');
+            }
             await tx.fintechAccount.update({
               where: { id: fromAccount.id },
               data: {
-                balance: newFromBalance < BigInt(0) ? BigInt(0) : newFromBalance,
+                balance: newFromBalance,
                 updatedAt: new Date(),
               },
             });
@@ -1037,7 +1043,7 @@ export async function completeDeal(
                 direction: 'DEBIT',
                 amount: fromAmountBig,
                 currency: deal.fromCurrency,
-                runningBalance: newFromBalance < BigInt(0) ? BigInt(0) : newFromBalance,
+                runningBalance: newFromBalance,
                 description: `تکمیل معامله ارزی (مبدا) — کد: ${dealId.slice(-8)}`,
                 createdById: access.userId,
               },
@@ -1054,6 +1060,15 @@ export async function completeDeal(
         error: {
           code: 'FEE_EXCEEDS_AMOUNT',
           message: 'کارمزد از مبلغ معامله بیشتر است — لطفاً فیلد کارمزد را بررسی کنید',
+        },
+      };
+    }
+    if (msg === 'DEAL_INSUFFICIENT_BALANCE') {
+      return {
+        success: false,
+        error: {
+          code: 'INSUFFICIENT_BALANCE',
+          message: 'موجودی حساب مشتری برای تکمیل این معامله کافی نیست',
         },
       };
     }
