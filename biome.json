@@ -402,6 +402,7 @@
         "src/app/(exchange)/exchange/**",
         "src/app/(customer)/customer/**",
         "src/app/(site)/services/**",
+        "src/app/(site)/money-transfer/**",
         "src/app/(site)/exchanges/**",
         "src/app/(site)/feedback/**",
         "src/app/(site)/faq/**",

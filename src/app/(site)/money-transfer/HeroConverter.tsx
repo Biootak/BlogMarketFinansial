@@ -163,6 +163,43 @@ function getResultFormatter(minFrac: number, maxFrac: number): Intl.NumberFormat
   return fmt;
 }
 
+/* ── Ambient dot grid — Linear-style signature (2026-08-16 Motion Blueprint)
+   Replaces the old static grid-drift div: each dot pulses on its own cycle
+   with a wave delay, opacity-only (no layout thrash), infinite. */
+function AmbientDotGrid() {
+  const COLS = 4;
+  const ROWS = 8;
+  const DELAY_STEP = 120; // ms between dots → wave travels down the hero
+  return (
+    <svg
+      className={styles.ambientGrid}
+      viewBox="0 0 160 320"
+      preserveAspectRatio="xMidYMid slice"
+      fill="none"
+      aria-hidden
+      focusable="false"
+    >
+      {Array.from({ length: ROWS }, (_, row) =>
+        Array.from({ length: COLS }, (_, col) => {
+          const index = row * COLS + col;
+          const cx = 20 + col * 40;
+          const cy = 20 + row * 40;
+          return (
+            <circle
+              key={`${row}-${col}`}
+              cx={cx}
+              cy={cy}
+              r="2"
+              className={styles.ambientDot}
+              style={{ animationDelay: `${index * DELAY_STEP}ms` }}
+            />
+          );
+        }),
+      )}
+    </svg>
+  );
+}
+
 export default function HeroConverter({
   pairs,
   spreadStats,
@@ -348,7 +385,7 @@ export default function HeroConverter({
 
   return (
     <section dir={dir} aria-labelledby="hero-converter-title" className="mt-hero dark">
-      <div className="mt-hero__grid" aria-hidden />
+      <AmbientDotGrid />
       <div className="mt-hero__spotlight" aria-hidden />
 
       <div className="container relative z-10 mt-hero__container">

@@ -6,6 +6,36 @@
  * micro-interactions, hover lift, and a breathing live-dot.
  */
 
+/* ── Ambient pulsing dot grid (Linear-style signature, 2026-08-16) ─────────
+ * Replaces the static hairline-grid drift with the Motion Blueprint dot wave:
+ * each dot pulses opacity-only on its own 2800ms cycle, staggered 120ms per
+ * dot so the light travels across the hero. Tokens-only; no layout props
+ * animated; global prefers-reduced-motion clamp in tokens.css covers it. */
+@keyframes mtDotPulse {
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.ambientGrid {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+}
+
+.ambientDot {
+  fill: oklch(90% 0.015 200 / 0.9);
+  animation: mtDotPulse 2800ms linear infinite;
+}
+
 /* Signature gradient ring — drawn via mask so it never touches layout.
  * This is the "wow": a thin self-illuminating accent that reads as trust/fintech
  * without heavy glow or excessive glass (per AGENTS.ui-design.md). */
