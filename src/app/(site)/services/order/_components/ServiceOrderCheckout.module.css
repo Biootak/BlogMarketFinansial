@@ -61,12 +61,19 @@
 }
 
 .title {
+  /* Stripe light-editorial — H1 لایت: w300 دسکتاپ (≥34px) / w400 موبایل (Vazirmatn variable) */
   margin-block-start: var(--ds-space-3);
   font-size: clamp(1.75rem, 4vw, 2.5rem);
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: -0.03em;
   line-height: 1.15;
   color: var(--ds-text-primary);
+}
+
+@media (min-width: 768px) {
+  .title {
+    font-weight: 300;
+  }
 }
 
 .subtitle {
@@ -99,7 +106,7 @@
   overflow: hidden;
 }
 
-/* گرادیان hairline نازک روی لبه — signature subtle */
+/* گرادیان hairline نازک روی لبه — سکون: top hairline ملایم */
 .formCard::before {
   content: "";
   position: absolute;
@@ -107,8 +114,34 @@
   inset-inline: 0;
   block-size: 2px;
   background: linear-gradient(to right, transparent, var(--ds-brand-500), transparent);
-  opacity: 0.7;
+  opacity: 0.45;
   pointer-events: none;
+}
+
+/* امضای Stripe bento: گرادیان hairline لبه که روی هاور نمایان می‌شود (opacity-only) */
+.formCard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--ds-brand-500) 35%,
+    var(--ds-brand-300) 65%,
+    transparent
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--ds-duration-slow) var(--ds-ease-out-quart);
+  pointer-events: none;
+}
+
+.formCard:hover::after {
+  opacity: 0.65;
 }
 
 .formCardInner {

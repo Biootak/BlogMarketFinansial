@@ -619,7 +619,7 @@ interface RouteErrorProps {
 
 **H1 صفحه‌های محتوا:** وزن 300–400 فقط در سایزهای ≥34px و با tracking منفی؛ وگرنه w800 (فارسی).
 
-**دو تکنیک امضای Stripe (برای همه بازارچه‌ها/گرید کارت):**
+**دو تکنیک امضای Stripe (برای همه بازارچه‌ها/گرید کارت + کارت فرم checkout):**
 1. **گرادیان hairline لبه روی هاور:** `::after` با `padding: 1.5px` + `mask-composite: exclude` + `opacity 0→0.65` روی `:hover` — امضای `modular-solutions-bento-card__border-color-gradient` (opacity-only، بدون layout thrash).
 2. **نوار تیره انتهایی (drama flip):** آخرین زون utility با `--ds-color-canvas-dark` + متن `--ds-brand-on` + دکمه CTA سفید — یک نقطه تاریک در صفحه سفید (مثل `rgb(13,23,56)` استرایپ).
 
