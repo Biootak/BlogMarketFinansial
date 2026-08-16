@@ -10,6 +10,7 @@
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
 import type { FintechActionResult } from '@/types/types';
+import { Decimal } from '@prisma/client/runtime/library';
 import { z } from 'zod';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -113,11 +114,12 @@ export async function getExchangeReport(
   const deals = allDeals;
 
   // P&L by currency
+  // از Decimal.js برای تبدیل دقیق استفاده می‌کنیم — Number() روی Decimal بزرگ precision می‌بازد
   const pnlMap = new Map<string, PnLByCurrency>();
   for (const d of deals) {
     const cur = d.fromCurrency;
-    const vol = Number(d.fromAmount);
-    const fee = Number(d.feeAmount ?? 0);
+    const vol = new Decimal(d.fromAmount.toString()).toNumber();
+    const fee = new Decimal(d.feeAmount.toString()).toNumber();
     if (!pnlMap.has(cur)) {
       pnlMap.set(cur, { currency: cur, totalVolume: 0, totalFee: 0, dealCount: 0, avgDealSize: 0 });
     }
@@ -144,8 +146,8 @@ export async function getExchangeReport(
     // biome-ignore lint/style/noNonNullAssertion: guaranteed by Map.set above
     const day = dailyMap.get(dateStr)!;
     day.dealCount += 1;
-    day.volume += Number(d.fromAmount);
-    day.fee += Number(d.feeAmount ?? 0);
+    day.volume += new Decimal(d.fromAmount.toString()).toNumber();
+    day.fee += new Decimal(d.feeAmount.toString()).toNumber();
   }
   const dailySummary = [...dailyMap.values()].sort((a, b) => a.date.localeCompare(b.date));
 
@@ -167,7 +169,7 @@ export async function getExchangeReport(
     // biome-ignore lint/style/noNonNullAssertion: guaranteed by Map.set above
     const c = customerMap.get(key)!;
     c.dealCount += 1;
-    c.totalVolume += Number(d.fromAmount);
+    c.totalVolume += new Decimal(d.fromAmount.toString()).toNumber();
   }
   const topCustomers = [...customerMap.values()]
     .sort((a, b) => b.totalVolume - a.totalVolume)
@@ -278,10 +280,10 @@ export async function generateReportCsv(
     d.customerName,
     d.customerPhone,
     d.fromCurrency,
-    Number(d.fromAmount).toFixed(2),
+    new Decimal(d.fromAmount.toString()).toFixed(2),
     d.toCurrency,
-    d.toAmount ? Number(d.toAmount).toFixed(2) : '',
-    d.feeAmount ? Number(d.feeAmount).toFixed(2) : '0',
+    d.toAmount ? new Decimal(d.toAmount.toString()).toFixed(2) : '',
+    new Decimal(d.feeAmount.toString()).toFixed(2),
   ]);
 
   const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
