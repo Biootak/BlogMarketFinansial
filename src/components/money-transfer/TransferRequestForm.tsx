@@ -34,6 +34,7 @@ import {
   ArrowRight,
   BadgeCheck,
   Bitcoin,
+  Bus,
   Check,
   CircleAlert,
   Copy,
@@ -81,7 +82,7 @@ interface FormDraft {
 
 // ─── Service Types ────────────────────────────────────────────────────────── //
 
-type ServiceTypeKey =
+export type ServiceTypeKey =
   | 'INTERNATIONAL_TRANSFER'
   | 'CURRENCY_BUY'
   | 'CURRENCY_SELL'
@@ -95,9 +96,10 @@ type ServiceTypeKey =
   | 'GIFT_CARD'
   | 'MOBILE_TOPUP'
   | 'BILL_PAYMENT'
+  | 'TRAVEL_TICKET'
   | 'OTHER';
 
-interface ServiceOption {
+export interface ServiceOption {
   key: ServiceTypeKey;
   label: string;
   sublabel: string;
@@ -105,7 +107,7 @@ interface ServiceOption {
   group: 'transfer' | 'currency' | 'crypto' | 'digital';
 }
 
-const SERVICE_OPTIONS: ServiceOption[] = [
+export const SERVICE_OPTIONS: ServiceOption[] = [
   {
     key: 'INTERNATIONAL_TRANSFER',
     label: 'حواله بین‌المللی',
@@ -167,6 +169,13 @@ const SERVICE_OPTIONS: ServiceOption[] = [
     label: 'پرداخت قبض',
     sublabel: 'برق DABS، آب، مخابرات',
     icon: ReceiptText,
+    group: 'digital',
+  },
+  {
+    key: 'TRAVEL_TICKET',
+    label: 'خرید بلیط سفر',
+    sublabel: 'هواپیما Ariana/Kam Air و اتوبوس بین‌شهری',
+    icon: Bus,
     group: 'digital',
   },
   {
@@ -300,9 +309,13 @@ interface UserProfile {
 
 // ─── Props ────────────────────────────────────────────────────────────────── //
 
-interface Props {
+export interface TransferRequestFormProps {
   telegramLink?: string | null;
   whatsappLink?: string | null;
+  /** deep-link از صفحه /services/order — سرویس از قبل انتخاب شده */
+  initialService?: ServiceTypeKey | null;
+  initialAmount?: string;
+  initialCurrency?: string;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────── //
@@ -347,7 +360,13 @@ function maskPhone(phone: string): string {
 
 // ─── Component ────────────────────────────────────────────────────────────── //
 
-const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
+const TransferRequestForm: FC<TransferRequestFormProps> = ({
+  telegramLink,
+  whatsappLink,
+  initialService,
+  initialAmount,
+  initialCurrency,
+}) => {
   // step 0 = service picker, 1 = details, 2 = پیش‌فاکتور / review
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [selectedService, setSelectedService] = useState<ServiceTypeKey | null>(null);
@@ -392,6 +411,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
   const currency = watch('currency');
   const destination = watch('destinationCountry');
   const platform = watch('platformName');
+  const urgency = watch('urgency');
 
   const svcType = selectedService ?? 'INTERNATIONAL_TRANSFER';
   const currencyList = getCurrencyList(svcType);
@@ -450,6 +470,17 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
       }
     } catch {
       // sessionStorage parse error
+    }
+
+    // deep-link از /services/order (اولویت بعد از پیش‌نویس — قبل از prefill هیرو)
+    if (initialService && SERVICE_OPTIONS.some((o) => o.key === initialService)) {
+      setSelectedService(initialService);
+      setValue('serviceType', initialService);
+      setValue('currency', initialCurrency ?? getDefaultCurrency(initialService));
+      if (initialAmount) setValue('amount', initialAmount);
+      setPanelDir('fwd');
+      setStep(1);
+      return;
     }
 
     // pre-fill از HeroConverter
@@ -521,7 +552,7 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
     } catch {
       // sessionStorage parse error
     }
-  }, [setValue]);
+  }, [setValue, initialService, initialAmount, initialCurrency]);
 
   // ── Service selection ──────────────────────────────────────────────────── //
   const selectService = (key: ServiceTypeKey) => {
@@ -660,6 +691,37 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
       setSubmitting(false);
     }
   }, [step, userProfile, svcType, watch, authState, saveDraft]);
+
+  // ── Live sync برای پنل «خلاصه سفارش» در صفحه /services/order ───────────────
+  // فرم فقط منتشر می‌کند؛ پنل خلاصه شنونده است — بدون prop-drilling.
+  useEffect(() => {
+    const payload = {
+      service: svcType,
+      serviceLabel: svcOption?.label ?? '',
+      step,
+      amount: amount ?? '',
+      currency,
+      currencyLabel: currencyMeta?.label ?? '',
+      destination: destination ?? '',
+      destinationLabel: countryMeta ? `${countryMeta.flag} ${countryMeta.label}` : '',
+      urgency,
+      success,
+      trackingCode,
+    };
+    window.dispatchEvent(new CustomEvent('mt:form-sync', { detail: payload }));
+  }, [
+    svcType,
+    svcOption,
+    step,
+    amount,
+    currency,
+    currencyMeta,
+    destination,
+    countryMeta,
+    urgency,
+    success,
+    trackingCode,
+  ]);
 
   // ── Auto-submit بعد از تأیید موبایل ──────────────────────────────────── //
   useEffect(() => {
@@ -1086,6 +1148,31 @@ const TransferRequestForm: FC<Props> = ({ telegramLink, whatsappLink }) => {
                   </div>
                 )}
               </dl>
+
+              {/* سرعت پردازش — toggle عادی/فوری (قبلاً فیلد مرده بود) */}
+              <div className={s.urgencyRow}>
+                <span className={s.urgencyLabel}>سرعت پردازش</span>
+                <div className={s.urgencyToggle}>
+                  <button
+                    type="button"
+                    aria-pressed={urgency !== 'URGENT'}
+                    onClick={() => setValue('urgency', 'NORMAL', { shouldValidate: true })}
+                    className={`${s.urgencyBtn} ${urgency !== 'URGENT' ? s.urgencyBtnActive : ''}`}
+                  >
+                    <span className={s.urgencyBtnTitle}>عادی</span>
+                    <span className={s.urgencyBtnHint}>ترتیب استاندارد</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={urgency === 'URGENT'}
+                    onClick={() => setValue('urgency', 'URGENT', { shouldValidate: true })}
+                    className={`${s.urgencyBtn} ${urgency === 'URGENT' ? s.urgencyBtnActive : ''}`}
+                  >
+                    <span className={s.urgencyBtnTitle}>فوری</span>
+                    <span className={s.urgencyBtnHint}>اولویت با درخواست شما</span>
+                  </button>
+                </div>
+              </div>
 
               {/* اطلاعات کاربر — از session، نه از فرم */}
               {authState === 'guest' ? (

@@ -710,6 +710,44 @@
   color: var(--nova-emerald);
 }
 
+/* ── Empty coverage state (کاتالوگ کامل — 2026-08-16) ─────────────────────
+ * سرویس‌های تازه کاتالوگ (شارژ، قبض، بلیط) که هنوز صرافی فعالی ندارند: یک
+ * state ظریف با CTA ثبت درخواست به‌جای لیست خالی. */
+.exchangeEmpty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2-5) var(--ds-space-3);
+  border-radius: var(--ds-radius-md);
+  background: var(--ds-canvas-subtle);
+  border: 1px dashed
+    color-mix(in oklch, var(--service-accent, var(--nova-emerald)) 25%, transparent);
+}
+
+.exchangeEmptyText {
+  font-size: var(--ds-text-xs);
+  line-height: var(--ds-leading-relaxed);
+  color: var(--ds-text-secondary);
+}
+
+.exchangeEmptyCta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-1);
+  font-size: var(--ds-text-xs);
+  font-weight: var(--ds-weight-bold);
+  color: var(--service-accent, var(--nova-emerald));
+  text-decoration: none;
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
+}
+
+.exchangeEmptyCta:hover {
+  color: color-mix(in oklch, var(--service-accent, var(--nova-emerald)) 75%, var(--ds-text-primary));
+  transform: translateX(-2px);
+}
+
 /* ── Dark mode ───────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
   .filterBar {

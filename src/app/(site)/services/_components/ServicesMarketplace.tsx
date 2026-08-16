@@ -171,7 +171,10 @@ export default function ServicesMarketplace({
                 e.city?.toLowerCase().includes(exchangeQuery.toLowerCase()),
             )
           : row.exchanges;
-        if (filteredExchanges.length === 0) return null;
+        // سرویس‌های پوشش‌داده‌نشده (count 0 — شارژ/قبض/بلیط و…): بدون جستجوی
+        // صرافی باید دیده شوند (حالت «به‌زودی»)، اما هنگام جستجوی نام صرافی
+        // که با آن‌ها منطبق نیست حذف می‌شوند.
+        if (filteredExchanges.length === 0 && exchangeQuery) return null;
         return { ...row, exchanges: filteredExchanges, count: filteredExchanges.length };
       })
       .filter((r): r is MarketplaceRow => r !== null);
@@ -409,58 +412,80 @@ export default function ServicesMarketplace({
                                   <p className={s.cardDesc}>{meta.description}</p>
                                 )}
                               </div>
-                              <span className={s.cardBadge}>{_faNum.format(row.count)}</span>
+                              <span className={s.cardBadge}>
+                                {row.count > 0 ? _faNum.format(row.count) : 'به‌زودی'}
+                              </span>
                             </div>
 
-                            {/* Exchange list */}
+                            {/* Exchange list — یا صرافی‌های فعال، یا حالت «به‌زودی» برای سرویس‌های تازه کاتالوگ */}
                             <ul className={s.exchangeList}>
-                              {row.exchanges.map((ex) => (
-                                <li key={ex.id}>
+                              {row.count === 0 ? (
+                                <li className={s.exchangeEmpty}>
+                                  <span className={s.exchangeEmptyText}>
+                                    هنوز صرافی فعالی این سرویس را ارائه نمی‌دهد — اما می‌توانید همین
+                                    حالا درخواست ثبت کنید.
+                                  </span>
                                   <Link
-                                    href={ex.ctaHref ?? `/exchanges/${ex.slug}#services`}
-                                    className={s.exchangeItem}
-                                    onClick={() => trackExchangeClick(row.serviceKey, ex.id)}
+                                    href={`/services/order?service=${row.serviceKey}`}
+                                    className={s.exchangeEmptyCta}
                                   >
-                                    {/* Logo */}
-                                    <span className={s.exchangeLogo} aria-hidden>
-                                      {ex.logoUrl ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img src={ex.logoUrl} alt="" loading="lazy" />
-                                      ) : (
-                                        <span className={s.exchangeLogoFallback}>
-                                          {(ex.name[0] ?? '?').toUpperCase()}
-                                        </span>
-                                      )}
-                                    </span>
-
-                                    {/* Info */}
-                                    <span className={s.exchangeInfo}>
-                                      <span className={s.exchangeName}>{ex.name}</span>
-                                      {ex.city && <span className={s.exchangeCity}>{ex.city}</span>}
-                                    </span>
-
-                                    {/* Arrow */}
-                                    <ChevronLeft
-                                      size={14}
-                                      strokeWidth={2}
-                                      className={s.exchangeArrow}
-                                      aria-hidden
-                                    />
+                                    ثبت درخواست
+                                    <ChevronLeft size={12} strokeWidth={2} aria-hidden />
                                   </Link>
                                 </li>
-                              ))}
+                              ) : (
+                                row.exchanges.map((ex) => (
+                                  <li key={ex.id}>
+                                    <Link
+                                      href={ex.ctaHref ?? `/exchanges/${ex.slug}#services`}
+                                      className={s.exchangeItem}
+                                      onClick={() => trackExchangeClick(row.serviceKey, ex.id)}
+                                    >
+                                      {/* Logo */}
+                                      <span className={s.exchangeLogo} aria-hidden>
+                                        {ex.logoUrl ? (
+                                          // eslint-disable-next-line @next/next/no-img-element
+                                          <img src={ex.logoUrl} alt="" loading="lazy" />
+                                        ) : (
+                                          <span className={s.exchangeLogoFallback}>
+                                            {(ex.name[0] ?? '?').toUpperCase()}
+                                          </span>
+                                        )}
+                                      </span>
+
+                                      {/* Info */}
+                                      <span className={s.exchangeInfo}>
+                                        <span className={s.exchangeName}>{ex.name}</span>
+                                        {ex.city && (
+                                          <span className={s.exchangeCity}>{ex.city}</span>
+                                        )}
+                                      </span>
+
+                                      {/* Arrow */}
+                                      <ChevronLeft
+                                        size={14}
+                                        strokeWidth={2}
+                                        className={s.exchangeArrow}
+                                        aria-hidden
+                                      />
+                                    </Link>
+                                  </li>
+                                ))
+                              )}
                             </ul>
 
-                            {/* Card footer link */}
-                            <div className={s.cardFooter}>
-                              <Link
-                                href={`/services?service=${row.serviceKey}`}
-                                className={s.cardFooterLink}
-                              >
-                                مشاهده همه صرافی‌ها
-                                <ChevronLeft size={12} strokeWidth={2} aria-hidden />
-                              </Link>
-                            </div>
+                            {/* Card footer link — فقط وقتی صرافی فعال دارد */}
+                            {row.count > 0 && (
+                              <div className={s.cardFooter}>
+                                <Link
+                                  href={`/services?service=${row.serviceKey}`}
+                                  className={s.cardFooterLink}
+                                >
+                                  مشاهده همه صرافی‌ها
+                                  <ChevronLeft size={12} strokeWidth={2} aria-hidden />
+                                </Link>
+                              </div>
+                            )}
                           </li>
                         );
                       })}

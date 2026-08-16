@@ -62,6 +62,7 @@ const serviceTypeLabels: Record<string, string> = {
   PAYPAL_TRANSFER: 'انتقال پی‌پال / اسکریل',
   MOBILE_TOPUP: 'شارژ موبایل',
   BILL_PAYMENT: 'پرداخت قبض',
+  TRAVEL_TICKET: 'خرید بلیط سفر',
   OTHER: 'سایر خدمات',
 };
 
@@ -171,6 +172,7 @@ const ServiceRequestInputSchema = z.object({
     'PAYPAL_TRANSFER',
     'MOBILE_TOPUP',
     'BILL_PAYMENT',
+    'TRAVEL_TICKET',
     'OTHER',
   ]),
   amount: z
@@ -1001,6 +1003,7 @@ export async function exportServiceRequestsCsv(params?: {
       GIFT_CARD: 'گیفت کارت',
       MOBILE_TOPUP: 'شارژ موبایل',
       BILL_PAYMENT: 'پرداخت قبض',
+      TRAVEL_TICKET: 'خرید بلیط سفر',
       OTHER: 'سایر',
     };
     const statusLabel: Record<string, string> = {

@@ -13,18 +13,19 @@
  *  - لیست گروه‌بندی شده بر اساس serviceGroup
  */
 
-import { getMarketplaceData } from '@/actions/exchange-services';
+import { getMarketplaceCatalog } from '@/actions/exchange-services';
 import type { Metadata } from 'next';
 import ServicesMarketplace from './_components/ServicesMarketplace';
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: 'خدمات آنلاین صرافی‌ها',
-  description: 'خدمات آنلاین صرافی‌ها — خرید و فروش ارز، حواله، پرداخت، رمزارز و سایر خدمات.',
+  title: 'خدمات مالی و پرداخت آنلاین',
+  description:
+    'خرید و فروش ارز، حواله، پرداخت آنلاین، شارژ موبایل، پرداخت قبض، بلیط سفر، شهریه و رمزارز — همه خدمات صرافی‌های افغانستان در یک صفحه.',
   openGraph: {
-    title: 'خدمات آنلاین صرافی‌ها',
-    description: 'پیدا کردن صرافی مناسب برای هر خدمت — در یک نگاه.',
+    title: 'خدمات مالی و پرداخت آنلاین',
+    description: 'همه خدمات مالی — ارز، حواله، پرداخت آنلاین، شارژ، قبض و بلیط — در یک نگاه.',
     type: 'website',
   },
 };
@@ -39,7 +40,7 @@ export default async function ServicesMarketplacePage({
   searchParams,
 }: { searchParams: SearchParams }) {
   const sp = await searchParams;
-  const data = await getMarketplaceData();
+  const data = await getMarketplaceCatalog();
 
   return (
     <ServicesMarketplace

@@ -184,6 +184,45 @@ export const getMarketplaceData = safeCache(
   { key: 'exchange-services:marketplace:v1', ttl: 180, tags: ['exchange-services', 'exchanges'] },
 );
 
+/**
+ * کاتالوگ کامل سرویس‌ها برای بازارچه — 2026-08-16.
+ *
+ * هر سرویس در EXCHANGE_SERVICE_CATALOG همیشه نمایش داده می‌شود (منبع حقیقت =
+ * کاتالوگ)، حتی اگر هنوز هیچ صرافی فعالی آن را ارائه ندهد. برای سرویس‌های
+ * پوشش‌داده‌نشده count=0 و exchanges=[] برمی‌گردد تا UI حالت «به‌زودی» نشان دهد
+ * (شارژ موبایل، پرداخت قبض، بلیط سفر و… بدون نیاز به دیتای DB دیده شوند).
+ */
+export const getMarketplaceCatalog = safeCache(
+  async (): Promise<MarketplaceRow[]> => {
+    const covered = await getMarketplaceData();
+    const coveredKeys = new Set(covered.map((r) => r.serviceKey));
+    const uncovered: MarketplaceRow[] = EXCHANGE_SERVICE_CATALOG.filter(
+      (m) => !coveredKeys.has(m.key),
+    ).map((m) => ({
+      serviceKey: m.key,
+      serviceName: m.name,
+      serviceGroup: m.group,
+      exchanges: [],
+      count: 0,
+    }));
+    const groupOrder: Record<ExchangeServiceMeta['group'], number> = {
+      currency: 1,
+      transfer: 2,
+      payment: 3,
+      crypto: 4,
+      specialty: 5,
+    };
+    return [...covered, ...uncovered].sort((a, b) => {
+      const ga = groupOrder[a.serviceGroup];
+      const gb = groupOrder[b.serviceGroup];
+      if (ga !== gb) return ga - gb;
+      return a.serviceName.localeCompare(b.serviceName, 'fa');
+    });
+  },
+  [],
+  { key: 'exchange-services:catalog:v1', ttl: 180, tags: ['exchange-services', 'exchanges'] },
+);
+
 // ─── READ — Exchange dashboard (همه سرویس‌ها، شامل inactive) ─────────────────
 
 /**

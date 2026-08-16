@@ -1,0 +1,429 @@
+/* ============================================================================
+   ServiceOrderCheckout.module.css — جریان ثبت سفارش (checkout pattern)
+   ─────────────────────────────────────────────────────────────────────────────
+   Stripe-checkout focus: فرم + پنل خلاصه sticky زنده.
+   Tokens only · RTL logical properties · depth via hairline + elevation tiers
+   ============================================================================ */
+
+.page {
+  max-width: 1080px;
+  margin-inline: auto;
+  padding-block: var(--ds-space-6) var(--ds-space-12);
+  padding-inline: var(--ds-space-4);
+}
+
+/* ─── Back link ────────────────────────────────────────────────────────────── */
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
+  min-block-size: 44px;
+}
+
+.backLink:hover {
+  color: var(--ds-brand-600);
+  transform: translateX(-2px);
+}
+
+.backLink:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--ds-brand-600) 55%, transparent);
+  outline-offset: 2px;
+  border-radius: var(--ds-radius-sm);
+}
+
+/* ─── Header — متمرکز، بدون دکوراسیون ─────────────────────────────────────── */
+.header {
+  margin-block-start: var(--ds-space-2);
+  margin-block-end: var(--ds-space-8);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-brand-600);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.eyebrowDot {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-600);
+}
+
+.title {
+  margin-block-start: var(--ds-space-3);
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--ds-text-primary);
+}
+
+.subtitle {
+  margin-block-start: var(--ds-space-3);
+  max-width: 480px;
+  font-size: var(--ds-text-base);
+  line-height: 1.7;
+  color: var(--ds-text-secondary);
+}
+
+/* ─── Two-column checkout grid ─────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--ds-space-6);
+  align-items: start;
+}
+
+.formCol {
+  min-width: 0;
+}
+
+.formCard {
+  position: relative;
+  border: 1.5px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-2xl);
+  background: var(--ds-surface);
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 4%, transparent), 0 12px 32px
+    -12px color-mix(in oklch, var(--ds-text-primary) 12%, transparent);
+  overflow: hidden;
+}
+
+/* گرادیان hairline نازک روی لبه — signature subtle */
+.formCard::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  background: linear-gradient(to inline-end, transparent, var(--ds-brand-500), transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.formCardInner {
+  padding: var(--ds-space-6);
+}
+
+.asideCol {
+  min-width: 0;
+  position: sticky;
+  inset-block-start: var(--ds-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+}
+
+/* ─── Summary card ─────────────────────────────────────────────────────────── */
+.summary {
+  border: 1.5px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-xl);
+  background: var(--ds-surface);
+  padding: var(--ds-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-4);
+  box-shadow: 0 1px 2px color-mix(in oklch, var(--ds-text-primary) 3%, transparent), 0 8px 24px
+    -12px color-mix(in oklch, var(--ds-text-primary) 10%, transparent);
+}
+
+.summaryTitle {
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+  color: var(--ds-text-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* سرویس */
+.summaryService {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding-block-end: var(--ds-space-4);
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.serviceIcon {
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  flex-shrink: 0;
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--ds-brand-600) 10%, var(--ds-surface));
+  color: var(--ds-brand-600);
+}
+
+.serviceLabel {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.serviceSub {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  margin-block-start: 2px;
+  line-height: 1.5;
+}
+
+/* مبلغ */
+.amountBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.amount {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ds-text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.amountCurrency {
+  font-size: var(--ds-text-sm);
+  font-weight: 600;
+  color: var(--ds-text-muted);
+  margin-inline-start: var(--ds-space-2);
+  letter-spacing: 0;
+}
+
+.amountPlaceholder {
+  font-size: var(--ds-text-lg);
+  font-weight: 700;
+  color: var(--ds-text-muted);
+}
+
+.amountNote {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+}
+
+/* جزئیات */
+.summaryRows {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  overflow: hidden;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ds-space-2) var(--ds-space-3);
+  font-size: var(--ds-text-xs);
+}
+
+.summaryRow:not(:last-child) {
+  border-block-end: 1px solid var(--ds-border-subtle);
+}
+
+.summaryRow dt {
+  color: var(--ds-text-muted);
+  font-weight: 600;
+}
+
+.summaryRow dd {
+  color: var(--ds-text-primary);
+  font-weight: 700;
+}
+
+.urgentBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--ds-radius-full);
+  background: color-mix(in oklch, var(--ds-brand-600) 12%, var(--ds-surface));
+  color: var(--ds-brand-600);
+  font-size: var(--ds-text-xs);
+  font-weight: 700;
+}
+
+/* فوتر */
+.summaryFooter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-3);
+  margin-block-start: auto;
+  padding-block-start: var(--ds-space-4);
+  border-block-start: 1px solid var(--ds-border-subtle);
+}
+
+.footerNote {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+  line-height: 1.6;
+}
+
+.footerNote svg {
+  color: var(--ds-brand-600);
+  flex-shrink: 0;
+}
+
+.contactRow {
+  display: flex;
+  gap: var(--ds-space-2);
+}
+
+.contactBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: var(--ds-radius-full);
+  font-size: var(--ds-text-xs);
+  font-weight: 600;
+  color: var(--ds-text-secondary);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+  min-block-size: 36px;
+}
+
+.contactBtn:hover {
+  border-color: var(--ds-border-strong);
+  color: var(--ds-text-primary);
+  transform: translateY(-1px);
+}
+
+.contactBtn:active {
+  transform: scale(0.97);
+}
+
+.contactBtn:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--ds-brand-600) 55%, transparent);
+  outline-offset: 2px;
+}
+
+/* ─── Empty state ──────────────────────────────────────────────────────────── */
+.summaryEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border: 1px dashed var(--ds-border-subtle);
+  border-radius: var(--ds-radius-lg);
+  background: var(--ds-surface-elevated);
+}
+
+.emptyIcon {
+  color: var(--ds-brand-500);
+}
+
+.emptyText {
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  color: var(--ds-text-primary);
+}
+
+.emptyHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: 1.6;
+}
+
+.summaryMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ds-space-2);
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-secondary);
+}
+
+.summaryMeta li {
+  display: flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.summaryMeta svg {
+  color: var(--ds-brand-600);
+  flex-shrink: 0;
+}
+
+/* ─── Success state ────────────────────────────────────────────────────────── */
+.summarySuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border: 1px solid color-mix(in oklch, var(--ds-brand-600) 25%, transparent);
+  border-radius: var(--ds-radius-lg);
+  background: color-mix(in oklch, var(--ds-brand-600) 6%, var(--ds-surface));
+}
+
+.successBadge {
+  display: grid;
+  place-items: center;
+  inline-size: 32px;
+  block-size: 32px;
+  border-radius: var(--ds-radius-full);
+  background: var(--ds-brand-600);
+  color: var(--ds-surface);
+}
+
+.successTitle {
+  font-size: var(--ds-text-sm);
+  font-weight: 800;
+  color: var(--ds-text-primary);
+}
+
+.successCode {
+  font-size: var(--ds-text-lg);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--ds-brand-600);
+  font-variant-numeric: tabular-nums;
+}
+
+.successHint {
+  font-size: var(--ds-text-xs);
+  color: var(--ds-text-muted);
+  line-height: 1.6;
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: var(--ds-space-5);
+  }
+
+  .asideCol {
+    position: static;
+    inset-block-start: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .formCardInner {
+    padding: var(--ds-space-4);
+  }
+
+  .page {
+    padding-block-start: var(--ds-space-4);
+    padding-inline: var(--ds-space-3);
+  }
+}

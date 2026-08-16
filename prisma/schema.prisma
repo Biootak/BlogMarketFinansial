@@ -1734,6 +1734,8 @@ enum ServiceType {
   MOBILE_TOPUP
   /// 2026-08-16: پرداخت قبض (برق DABS، آب، مخابرات)
   BILL_PAYMENT
+  /// 2026-08-16: خرید بلیط سفر (هواپیما Ariana/Kam Air، اتوبوس)
+  TRAVEL_TICKET
 }
 
 enum RequestUrgency {

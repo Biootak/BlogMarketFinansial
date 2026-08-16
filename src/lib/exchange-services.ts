@@ -18,6 +18,7 @@
 import {
   Banknote,
   Bitcoin,
+  Bus,
   Coins,
   CreditCard,
   Gift,
@@ -43,7 +44,8 @@ export type ExchangeServiceKey =
   | 'PAYPAL_TRANSFER'
   | 'SOFTWARE_PURCHASE'
   | 'MOBILE_TOPUP'
-  | 'BILL_PAYMENT';
+  | 'BILL_PAYMENT'
+  | 'TRAVEL_TICKET';
 
 export interface ExchangeServiceMeta {
   /** کلید canonical — همان مقدار ServiceType enum */
@@ -187,6 +189,15 @@ export const EXCHANGE_SERVICE_CATALOG: readonly ExchangeServiceMeta[] = [
     accent: 'amber',
     group: 'payment',
     defaultOrder: 120,
+  },
+  {
+    key: 'TRAVEL_TICKET',
+    name: 'خرید بلیط سفر',
+    description: 'رزرو و خرید بلیط هواپیما (Ariana، Kam Air) و اتوبوس بین‌شهری.',
+    icon: Bus,
+    accent: 'sky',
+    group: 'specialty',
+    defaultOrder: 130,
   },
 ] as const;
 
