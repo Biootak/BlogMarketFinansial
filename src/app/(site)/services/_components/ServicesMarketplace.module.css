@@ -376,11 +376,27 @@
   min-width: 0;
 }
 
+.quickNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .quickName {
   font-size: var(--ds-text-sm);
   font-weight: 700;
   color: var(--ds-text-primary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* بج شخصیت در tile — فشرده‌تر از کارت */
+.quickBadge {
+  padding: 1px 8px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .quickSub {

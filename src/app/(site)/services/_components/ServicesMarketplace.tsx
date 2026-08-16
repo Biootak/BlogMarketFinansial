@@ -362,13 +362,22 @@ export default function ServicesMarketplace({
                   <Link
                     href={`/services/order?service=${row.serviceKey}`}
                     className={s.quickTile}
-                    style={{ '--qa-accent': accent } as React.CSSProperties}
+                    style={
+                      { '--qa-accent': accent, '--service-accent': accent } as React.CSSProperties
+                    }
                   >
                     <span className={s.quickIcon} aria-hidden>
                       <ServiceIcon meta={meta} size={20} />
                     </span>
                     <span className={s.quickText}>
-                      <span className={s.quickName}>{row.serviceName}</span>
+                      <span className={s.quickNameRow}>
+                        <span className={s.quickName}>{row.serviceName}</span>
+                        {meta?.personaBadge && (
+                          <span className={`${s.personaBadge} ${s.quickBadge}`}>
+                            {meta.personaBadge}
+                          </span>
+                        )}
+                      </span>
                       <span className={s.quickSub}>
                         {row.count > 0
                           ? `${_faNum.format(row.count)} صرافی فعال`
