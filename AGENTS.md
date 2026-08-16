@@ -610,6 +610,7 @@ interface RouteErrorProps {
 | 2026-08-14 | **📖 Pre-Code Rule Reading اضافه شد:** خواندن قوانین قبل از هر کد (حتی یک خط) اجباری؛ گیت شفاف در پیام؛ اینترنت-اول برای هر تغییر UI؛ حق کاربر برای trigger «قوانین را بخوان». یاد گرفته شد از گزارش مستقیم کاربر. |
 | 2026-08-14 | **اینترنت-اول به همهٔ کد گسترش یافت:** قبل از هر کد (حتی یک خط) — UI/UX، فرانت، بک‌اند، معماری، انتخاب ابزار/کتابخانه — حداقل یک `web_search` با تاریخ (سال جاری) + منبع رسمی؛ مقایسهٔ جایگزین‌های 2026 قبل از انتخاب ابزار. یاد گرفته شد از گزارش کاربر. |
 | 2026-08-16 | **Motion Blueprint (بررسی زنده MCP از Revolut+Wise+Linear):** تکنیک‌های animation بزرگ‌ها دقیقاً مستند شد و قانون «بدون dependency جدید» تأیید شد. ر.ک §Motion Blueprint. |
+| 2026-08-16 | **Deploy استاندارد — push→GitHub→Azure:** روش دیپلوی سایت تعیین و مستند شد: آپدیت فقط با `git push origin main`؛ روی Azure VM cron-poll هر دقیقه pull+build می‌کند. مرجع واحد: `deploy/AZURE.md` §دیپلوی روزمره + اسکریپت‌های `deploy/azure-update.sh` / `azure-auto-deploy.sh` / `install-auto-deploy.sh`. `AGENTS.commands.md` به‌روز شد؛ Heroku/`deploy-heroku.yml` منسوخ. |
 
 ---
 

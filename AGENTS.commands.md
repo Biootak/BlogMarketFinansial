@@ -52,11 +52,18 @@ Postgres is provided by `docker-compose.yml` (`registry.docker.ir/library/postgr
 ## Tests & CI
 
 - Tests: `npm test` (vitest) — unit tests in `src/lib/*.test.ts`.
-- CI exists in `.github/workflows/`: `deploy-heroku.yml` (deploy به Heroku) و `dependency-safety.yml`.
-- **Deploy به Heroku فقط از یک روش:** push به `main` (Container stack + GitHub Actions).
-  سند کامل و مرجع واحد: `deploy/HEROKU.md`. از buildpack استفاده نکن.
-- Cron ها (نرخ بازار، پست‌های زمان‌بندی‌شده، backup) + keep-alive روی **cron-job.org** هستند
-  (`.github/workflows/cron.yml` حذف شد). جزئیات در `deploy/HEROKU.md` مرحله ۵.
+- CI exists in `.github/workflows/`: `dependency-safety.yml` و چند وورک‌فلو legacy (ر.ک زیر).
+- **Deploy به Azure (روش فعلی و استاندارد — فقط همین را استفاده کن):** آپدیت سایت فقط با
+  **push به `main`** انجام می‌شود؛ روی Azure VM یک cron-poll هر دقیقه `origin/main` را
+  fetch می‌کند و در صورت commit جدید `deploy/azure-update.sh` را اجرا می‌کند
+  (pull → compose build → up -d → prune). هیچ secret/دستور دستی لازم نیست.
+  مرجع واحد و سند کامل: **`deploy/AZURE.md` §دیپلوی روزمره**. اسکریپت‌ها:
+  `deploy/azure-update.sh` (دیپلوی استاندارد)، `deploy/azure-auto-deploy.sh` (poll)،
+  `deploy/install-auto-deploy.sh` (نصب یک‌بار cron روی VM).
+- **Heroku منسوخ شد** (مهاجرت به Azure در جریان — سند قدیمی: `deploy/HEROKU.md`).
+  `deploy-heroku.yml` دیگر نباید استفاده شود؛ بعد از کامل‌شدن cutover حذف می‌شود.
+- Cron ها (نرخ بازار، پست‌های زمان‌بندی‌شده، backup) حالا داخل کانتینر cron کنار اپ روی
+  Azure VM اجرا می‌شوند (`deploy/docker-compose.azure.yml` سرویس `cron`).
 
 ## Error/status pages — canonical architecture (must-follow)
 
