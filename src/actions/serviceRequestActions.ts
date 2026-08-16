@@ -288,7 +288,7 @@ export type ServiceRequestStatusValue =
   | 'CANCELLED'
   | 'EXPIRED';
 
-export const SERVICE_REQUEST_TRANSITIONS: Record<
+const SERVICE_REQUEST_TRANSITIONS: Record<
   ServiceRequestStatusValue,
   ServiceRequestStatusValue[]
 > = {
