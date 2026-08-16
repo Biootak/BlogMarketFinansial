@@ -102,13 +102,26 @@ async function loadRate(
   return null;
 }
 
+const FxQuoteSchema = z.object({
+  fromCurrency: z.enum(CURRENCIES),
+  toCurrency: z.enum(CURRENCIES),
+});
+
 export async function getFxQuote(raw: { fromCurrency: Currency; toCurrency: Currency }): Promise<
   FintechActionResult<FxQuote>
 > {
+  // Server Action args از کلاینت با type-check نمی‌آیند — runtime validation اجباری است.
+  const parsed = FxQuoteSchema.safeParse(raw);
+  if (!parsed.success)
+    return {
+      success: false,
+      error: { code: 'INVALID_INPUT', message: 'ارز نامعتبر است' },
+    };
+  const { fromCurrency, toCurrency } = parsed.data;
   const auth = await requireUser();
   if (!auth.success)
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد حساب شوید' } };
-  if (raw.fromCurrency === raw.toCurrency)
+  if (fromCurrency === toCurrency)
     return {
       success: false,
       error: { code: 'INVALID_PAIR', message: 'ارز مبدأ و مقصد یکسان است' },
@@ -119,7 +132,7 @@ export async function getFxQuote(raw: { fromCurrency: Currency; toCurrency: Curr
   });
   if (!customer)
     return { success: false, error: { code: 'NO_CUSTOMER', message: 'پروفایل مشتری یافت نشد' } };
-  const snapshot = await loadRate(customer.exchangeId, raw.fromCurrency, raw.toCurrency);
+  const snapshot = await loadRate(customer.exchangeId, fromCurrency, toCurrency);
   if (!snapshot)
     return {
       success: false,
@@ -128,8 +141,8 @@ export async function getFxQuote(raw: { fromCurrency: Currency; toCurrency: Curr
   return {
     success: true,
     data: {
-      fromCurrency: raw.fromCurrency,
-      toCurrency: raw.toCurrency,
+      fromCurrency,
+      toCurrency,
       rate: snapshot.rate,
       feePercent: FEE_BPS / 100,
       minAmountCents: 100_00,
