@@ -1730,6 +1730,10 @@ enum ServiceType {
   CRYPTO_BUY
   CRYPTO_SELL
   PAYPAL_TRANSFER
+  /// 2026-08-16: شارژ موبایل (MTN، روشن، اتصالات) — پربسامدترین نیاز بازار افغانستان
+  MOBILE_TOPUP
+  /// 2026-08-16: پرداخت قبض (برق DABS، آب، مخابرات)
+  BILL_PAYMENT
 }
 
 enum RequestUrgency {

@@ -46,6 +46,7 @@ import {
   ReceiptText,
   Send,
   ShieldCheck,
+  Smartphone,
   TrendingDown,
   TrendingUp,
   User,
@@ -92,6 +93,8 @@ type ServiceTypeKey =
   | 'FREELANCE_INCOME'
   | 'SOFTWARE_PURCHASE'
   | 'GIFT_CARD'
+  | 'MOBILE_TOPUP'
+  | 'BILL_PAYMENT'
   | 'OTHER';
 
 interface ServiceOption {
@@ -150,6 +153,20 @@ const SERVICE_OPTIONS: ServiceOption[] = [
     label: 'پرداخت آنلاین',
     sublabel: 'پرداخت فاکتور / سایت خارجی',
     icon: DollarSign,
+    group: 'digital',
+  },
+  {
+    key: 'MOBILE_TOPUP',
+    label: 'شارژ موبایل',
+    sublabel: 'MTN، روشن، اتصالات، سلام',
+    icon: Smartphone,
+    group: 'digital',
+  },
+  {
+    key: 'BILL_PAYMENT',
+    label: 'پرداخت قبض',
+    sublabel: 'برق DABS، آب، مخابرات',
+    icon: ReceiptText,
     group: 'digital',
   },
   {

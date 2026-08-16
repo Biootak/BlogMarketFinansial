@@ -67,6 +67,8 @@ const serviceTypeLabels: Record<string, string> = {
   CRYPTO_BUY: 'کریپتو خرید',
   CRYPTO_SELL: 'کریپتو فروش',
   PAYPAL_TRANSFER: 'پی‌پال',
+  MOBILE_TOPUP: 'شارژ موبایل',
+  BILL_PAYMENT: 'قبض',
   OTHER: 'سایر',
 };
 

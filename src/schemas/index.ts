@@ -257,6 +257,8 @@ export const ServiceRequestSchema = z.object({
     'CRYPTO_BUY',
     'CRYPTO_SELL',
     'PAYPAL_TRANSFER',
+    'MOBILE_TOPUP',
+    'BILL_PAYMENT',
     'OTHER',
   ]),
   amount: z.string().min(1, 'لطفاً مبلغ را وارد کنید').max(50, 'مبلغ نامعتبر است'),
@@ -281,6 +283,12 @@ export const ServiceRequestSchema = z.object({
   // Gift Card fields
   giftCardBrand: z.string().optional(),
   giftCardRegion: z.string().optional(),
+  // Mobile Top-up fields
+  mobileOperator: z.string().optional(),
+  mobileNumber: z.string().optional(),
+  // Bill Payment fields
+  billType: z.string().optional(),
+  billAccountNumber: z.string().optional(),
 });
 
 export type ServiceRequestFormData = z.infer<typeof ServiceRequestSchema>;

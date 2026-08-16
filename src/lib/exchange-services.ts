@@ -25,7 +25,9 @@ import {
   GraduationCap,
   Layers,
   type LucideIcon,
+  Receipt,
   ShoppingBag,
+  Smartphone,
   Wallet,
 } from 'lucide-react';
 
@@ -39,7 +41,9 @@ export type ExchangeServiceKey =
   | 'CRYPTO_BUY'
   | 'CRYPTO_SELL'
   | 'PAYPAL_TRANSFER'
-  | 'SOFTWARE_PURCHASE';
+  | 'SOFTWARE_PURCHASE'
+  | 'MOBILE_TOPUP'
+  | 'BILL_PAYMENT';
 
 export interface ExchangeServiceMeta {
   /** کلید canonical — همان مقدار ServiceType enum */
@@ -166,6 +170,24 @@ export const EXCHANGE_SERVICE_CATALOG: readonly ExchangeServiceMeta[] = [
     group: 'specialty',
     defaultOrder: 100,
   },
+  {
+    key: 'MOBILE_TOPUP',
+    name: 'شارژ موبایل',
+    description: 'شارژ فوری سیم‌کارت MTN، روشن، اتصالات و سایر اپراتورهای افغانستان.',
+    icon: Smartphone,
+    accent: 'teal',
+    group: 'specialty',
+    defaultOrder: 110,
+  },
+  {
+    key: 'BILL_PAYMENT',
+    name: 'پرداخت قبض',
+    description: 'پرداخت قبض برق DABS، آب، مخابرات و سایر خدمات دولتی.',
+    icon: Receipt,
+    accent: 'amber',
+    group: 'payment',
+    defaultOrder: 120,
+  },
 ] as const;
 
 const CATALOG_INDEX: Record<ExchangeServiceKey, ExchangeServiceMeta> =
@@ -207,6 +229,6 @@ export const SERVICE_GROUPS: Record<
   },
   specialty: {
     label: 'سرویس‌های ویژه',
-    description: 'گیفت کارت، لایسنس و سایر خدمات',
+    description: 'گیفت کارت، لایسنس، شارژ موبایل و سایر خدمات',
   },
 };

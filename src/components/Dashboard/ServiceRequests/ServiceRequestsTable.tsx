@@ -49,6 +49,7 @@ import {
   HiClipboardList,
   HiCreditCard,
   HiDesktopComputer,
+  HiDeviceMobile,
   HiEye,
   HiGlobe,
   HiOutlineAnnotation,
@@ -102,6 +103,8 @@ const SERVICE_META: Record<string, { label: string; Icon: typeof HiGlobe }> = {
   CRYPTO_BUY: { label: 'خرید ارز دیجیتال', Icon: HiDesktopComputer },
   CRYPTO_SELL: { label: 'فروش ارز دیجیتال', Icon: HiDesktopComputer },
   PAYPAL_TRANSFER: { label: 'پی‌پال / اسکریل', Icon: HiCreditCard },
+  MOBILE_TOPUP: { label: 'شارژ موبایل', Icon: HiDeviceMobile },
+  BILL_PAYMENT: { label: 'پرداخت قبض', Icon: HiClipboardList },
   OTHER: { label: 'سایر', Icon: HiClipboardList },
 };
 

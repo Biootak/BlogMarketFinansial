@@ -152,6 +152,8 @@ const SERVICE_TYPE_LABELS: Record<string, string> = {
   CRYPTO_BUY: 'خرید ارز دیجیتال',
   CRYPTO_SELL: 'فروش ارز دیجیتال',
   PAYPAL_TRANSFER: 'انتقال پی‌پال',
+  MOBILE_TOPUP: 'شارژ موبایل',
+  BILL_PAYMENT: 'پرداخت قبض',
   OTHER: 'سایر خدمات',
 };
 

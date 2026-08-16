@@ -7,7 +7,16 @@
  * scroll-reveal با IntersectionObserver (بدون motion library)
  */
 
-import { CreditCard, Globe, GraduationCap, ShoppingBag, Sparkles, Wallet } from 'lucide-react';
+import {
+  CreditCard,
+  Globe,
+  GraduationCap,
+  Receipt,
+  ShoppingBag,
+  Smartphone,
+  Sparkles,
+  Wallet,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import s from './ServicesList.module.css';
@@ -59,6 +68,18 @@ const SERVICES: Service[] = [
     title: 'خرید نرم‌افزار',
     description: 'تهیه اشتراک و لایسنس برنامه‌های خارجی و سرویس‌های آنلاین',
     accentClass: 'rose',
+  },
+  {
+    icon: Smartphone,
+    title: 'شارژ موبایل',
+    description: 'شارژ فوری سیم‌کارت MTN، روشن، اتصالات و سایر اپراتورهای افغانستان',
+    accentClass: 'brand',
+  },
+  {
+    icon: Receipt,
+    title: 'پرداخت قبض',
+    description: 'پرداخت قبض برق DABS، آب، مخابرات و سایر خدمات دولتی',
+    accentClass: 'emerald',
   },
   {
     icon: Sparkles,

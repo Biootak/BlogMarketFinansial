@@ -60,6 +60,8 @@ const serviceTypeLabels: Record<string, string> = {
   CRYPTO_BUY: 'خرید ارز دیجیتال',
   CRYPTO_SELL: 'فروش ارز دیجیتال',
   PAYPAL_TRANSFER: 'انتقال پی‌پال / اسکریل',
+  MOBILE_TOPUP: 'شارژ موبایل',
+  BILL_PAYMENT: 'پرداخت قبض',
   OTHER: 'سایر خدمات',
 };
 
@@ -167,6 +169,8 @@ const ServiceRequestInputSchema = z.object({
     'CRYPTO_BUY',
     'CRYPTO_SELL',
     'PAYPAL_TRANSFER',
+    'MOBILE_TOPUP',
+    'BILL_PAYMENT',
     'OTHER',
   ]),
   amount: z
@@ -236,6 +240,24 @@ const ServiceRequestInputSchema = z.object({
     .string()
     .optional()
     .transform((val) => val || null),
+  // Mobile Top-up fields
+  mobileOperator: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  mobileNumber: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  // Bill Payment fields
+  billType: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
+  billAccountNumber: z
+    .string()
+    .optional()
+    .transform((val) => val || null),
   description: z
     .string()
     .max(500)
@@ -268,6 +290,10 @@ export type ServiceRequestClientInput = {
   subscriptionType?: string | null;
   giftCardBrand?: string | null;
   giftCardRegion?: string | null;
+  mobileOperator?: string | null;
+  mobileNumber?: string | null;
+  billType?: string | null;
+  billAccountNumber?: string | null;
   websiteUrl?: string | null;
   productName?: string | null;
   universityName?: string | null;
@@ -409,6 +435,10 @@ export async function createServiceRequest(
       subscriptionType: data.subscriptionType ?? null,
       giftCardBrand: data.giftCardBrand ?? null,
       giftCardRegion: data.giftCardRegion ?? null,
+      mobileOperator: data.mobileOperator ?? null,
+      mobileNumber: data.mobileNumber ?? null,
+      billType: data.billType ?? null,
+      billAccountNumber: data.billAccountNumber ?? null,
     };
     const metadataClean = Object.fromEntries(
       Object.entries(metadata).filter(([, v]) => v !== null),
@@ -969,6 +999,8 @@ export async function exportServiceRequestsCsv(params?: {
       FREELANCE_INCOME: 'نقد کردن درآمد',
       SOFTWARE_PURCHASE: 'خرید نرم‌افزار',
       GIFT_CARD: 'گیفت کارت',
+      MOBILE_TOPUP: 'شارژ موبایل',
+      BILL_PAYMENT: 'پرداخت قبض',
       OTHER: 'سایر',
     };
     const statusLabel: Record<string, string> = {

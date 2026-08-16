@@ -14,14 +14,7 @@ import { type MarketplaceRow, logServiceClick } from '@/actions/exchange-service
 import Empty from '@/components/Empty';
 import { Button } from '@/components/ui/button';
 import { type ExchangeServiceMeta, SERVICE_GROUPS, getServiceMeta } from '@/lib/exchange-services';
-import {
-  Banknote,
-  ChevronLeft,
-  Filter,
-  Plus,
-  Search,
-  Zap,
-} from 'lucide-react';
+import { Banknote, ChevronLeft, Filter, Plus, Search, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -70,13 +63,7 @@ function AmbientGrid() {
   const ROWS = 3;
   const DELAY_STEP = 160; // ms بین هر نقطه
   return (
-    <svg
-      className={s.ambientGrid}
-      viewBox="0 0 200 120"
-      fill="none"
-      aria-hidden
-      focusable="false"
-    >
+    <svg className={s.ambientGrid} viewBox="0 0 200 120" fill="none" aria-hidden focusable="false">
       {Array.from({ length: ROWS }, (_, row) =>
         Array.from({ length: COLS }, (_, col) => {
           const index = row * COLS + col;
@@ -156,7 +143,10 @@ export default function ServicesMarketplace({
     if (exchangeQuery) params.set('exchange', exchangeQuery);
     const qs = params.toString();
     const url = qs ? `/services?${qs}` : '/services';
-    if (typeof window !== 'undefined' && window.location.pathname + window.location.search !== url) {
+    if (
+      typeof window !== 'undefined' &&
+      window.location.pathname + window.location.search !== url
+    ) {
       router.replace(url, { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -221,12 +211,10 @@ export default function ServicesMarketplace({
 
   return (
     <main className={s.root} dir="rtl">
-
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <header className={s.hero}>
         <AmbientGrid />
         <div className={s.heroInner}>
-
           {/* eyebrow pill */}
           <div className={s.eyebrowWrap}>
             <span className={s.eyebrow}>
@@ -243,8 +231,8 @@ export default function ServicesMarketplace({
           </h1>
 
           <p className={s.sub}>
-            خرید ارز، حواله، پرداخت آنلاین و ده‌ها سرویس دیگر. صرافی مناسب را پیدا کنید و
-            درخواست ثبت کنید.
+            خرید ارز، حواله، پرداخت آنلاین و ده‌ها سرویس دیگر. صرافی مناسب را پیدا کنید و درخواست ثبت
+            کنید.
           </p>
 
           {/* counters strip */}
@@ -282,7 +270,6 @@ export default function ServicesMarketplace({
       {/* ── Filter Bar ──────────────────────────────────────────────────── */}
       <div className={s.filterBar} role="search" aria-label="فیلتر سرویس‌ها">
         <div className={s.filterInner}>
-
           {/* Search */}
           <label className={s.searchField}>
             <Search size={15} strokeWidth={1.8} aria-hidden />
@@ -308,14 +295,23 @@ export default function ServicesMarketplace({
 
           {/* Group chips */}
           <div className={s.chipRow} role="tablist" aria-label="گروه سرویس">
-            <Chip active={activeGroup === 'all'} onClick={() => { setActiveGroup('all'); setActiveService('all'); }}>
+            <Chip
+              active={activeGroup === 'all'}
+              onClick={() => {
+                setActiveGroup('all');
+                setActiveService('all');
+              }}
+            >
               همه
             </Chip>
             {Object.entries(SERVICE_GROUPS).map(([key, meta]) => (
               <Chip
                 key={key}
                 active={activeGroup === key}
-                onClick={() => { setActiveGroup(key); setActiveService('all'); }}
+                onClick={() => {
+                  setActiveGroup(key);
+                  setActiveService('all');
+                }}
               >
                 {meta.label}
               </Chip>
@@ -370,12 +366,11 @@ export default function ServicesMarketplace({
           />
         ) : (
           <div className={s.groups}>
-            {groupByGroup(filtered).map((group, gIdx) => {
+            {groupByGroup(filtered).map((group) => {
               const groupMeta = SERVICE_GROUPS[group.key as ExchangeServiceMeta['group']];
               return (
                 <RevealSection key={group.key}>
                   <section aria-labelledby={`grp-${group.key}`}>
-
                     {/* Group header */}
                     <header className={s.groupHeader}>
                       <div className={s.groupHeaderLeft}>
@@ -393,9 +388,10 @@ export default function ServicesMarketplace({
 
                     {/* Service cards grid */}
                     <ul className={`${s.serviceGrid} stagger-children`}>
-                      {group.services.map((row, sIdx) => {
+                      {group.services.map((row) => {
                         const meta = getServiceMeta(row.serviceKey);
-                        const accentColor = ACCENT_MAP[meta?.accent ?? 'slate'] ?? 'var(--ds-text-muted)';
+                        const accentColor =
+                          ACCENT_MAP[meta?.accent ?? 'slate'] ?? 'var(--ds-text-muted)';
                         return (
                           <li
                             key={row.serviceKey}
@@ -413,9 +409,7 @@ export default function ServicesMarketplace({
                                   <p className={s.cardDesc}>{meta.description}</p>
                                 )}
                               </div>
-                              <span className={s.cardBadge}>
-                                {_faNum.format(row.count)}
-                              </span>
+                              <span className={s.cardBadge}>{_faNum.format(row.count)}</span>
                             </div>
 
                             {/* Exchange list */}
@@ -442,9 +436,7 @@ export default function ServicesMarketplace({
                                     {/* Info */}
                                     <span className={s.exchangeInfo}>
                                       <span className={s.exchangeName}>{ex.name}</span>
-                                      {ex.city && (
-                                        <span className={s.exchangeCity}>{ex.city}</span>
-                                      )}
+                                      {ex.city && <span className={s.exchangeCity}>{ex.city}</span>}
                                     </span>
 
                                     {/* Arrow */}

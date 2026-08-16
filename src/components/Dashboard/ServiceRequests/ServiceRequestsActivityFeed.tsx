@@ -71,6 +71,8 @@ const SERVICE_LABEL: Record<string, string> = {
   CRYPTO_BUY: 'خرید ارز دیجیتال',
   CRYPTO_SELL: 'فروش ارز دیجیتال',
   PAYPAL_TRANSFER: 'پی‌پال / اسکریل',
+  MOBILE_TOPUP: 'شارژ موبایل',
+  BILL_PAYMENT: 'پرداخت قبض',
   OTHER: 'سایر',
 };
 

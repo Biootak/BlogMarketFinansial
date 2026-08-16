@@ -30,12 +30,14 @@
 
 /* subtle radial glow — نه blob، نه blur */
 .hero::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 80% 20%, oklch(58% 0.12 165 / 0.06) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 40% at 20% 80%, oklch(62% 0.12 220 / 0.05) 0%, transparent 60%);
+  background: radial-gradient(
+      ellipse 60% 50% at 80% 20%,
+      oklch(58% 0.12 165 / 0.06) 0%,
+      transparent 70%
+    ), radial-gradient(ellipse 40% 40% at 20% 80%, oklch(62% 0.12 220 / 0.05) 0%, transparent 60%);
   pointer-events: none;
 }
 
@@ -52,8 +54,13 @@
 
 /* ── Ambient SVG Grid (Linear-style) ───────────────────────────────── */
 @keyframes dot-pulse {
-  0%, 100% { opacity: 0.12; }
-  50%       { opacity: 0.75; }
+  0%,
+  100% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.75;
+  }
 }
 
 .ambientGrid {
@@ -107,11 +114,7 @@
 }
 
 .titleAccent {
-  background: linear-gradient(
-    to left,
-    var(--nova-emerald),
-    oklch(62% 0.12 200)
-  );
+  background: linear-gradient(to left, var(--nova-emerald), oklch(62% 0.12 200));
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -192,11 +195,7 @@
   align-items: center;
   gap: var(--ds-space-2);
   padding: 11px 22px;
-  background: linear-gradient(
-    135deg,
-    var(--nova-emerald) 0%,
-    oklch(62% 0.12 200) 100%
-  );
+  background: linear-gradient(135deg, var(--nova-emerald) 0%, oklch(62% 0.12 200) 100%);
   border: 1px solid transparent;
   border-radius: var(--ds-radius-full);
   color: oklch(99% 0.005 165);
@@ -205,9 +204,8 @@
   font-weight: var(--ds-weight-bold);
   cursor: pointer;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 18px -8px oklch(58% 0.12 165 / 0.45);
-  transition:
-    transform var(--ds-duration-fast) var(--ds-ease-spring),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: transform var(--ds-duration-fast) var(--ds-ease-spring), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .ctaPrimary:hover {
@@ -232,10 +230,9 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   text-decoration: none;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring);
 }
 
 .ctaSecondary:hover {
@@ -276,9 +273,8 @@
   border-radius: var(--ds-radius-lg);
   color: var(--ds-text-muted);
   max-width: 440px;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out-quart);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-fast) var(--ds-ease-out-quart);
 }
 
 .searchField:focus-within {
@@ -343,11 +339,9 @@
   color: var(--ds-text-secondary);
   cursor: pointer;
   white-space: nowrap;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), color var(--ds-duration-fast)
+    var(--ds-ease-out-quart), transform var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .chip:hover {
@@ -427,9 +421,8 @@
 .revealSection {
   opacity: 0;
   transform: translateY(20px);
-  transition:
-    opacity var(--ds-duration-slow) var(--ds-ease-out-quart),
-    transform var(--ds-duration-slow) var(--ds-ease-out-quart);
+  transition: opacity var(--ds-duration-slow) var(--ds-ease-out-quart), transform
+    var(--ds-duration-slow) var(--ds-ease-out-quart);
 }
 
 .revealSection.revealed {
@@ -515,14 +508,17 @@
   flex-direction: column;
   gap: 0;
   overflow: hidden;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    box-shadow var(--ds-duration-base) var(--ds-ease-out-quart),
-    transform var(--ds-duration-base) var(--ds-ease-spring);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out-quart), box-shadow
+    var(--ds-duration-base) var(--ds-ease-out-quart), transform var(--ds-duration-base)
+    var(--ds-ease-spring);
 }
 
 .serviceCard:hover {
-  border-color: color-mix(in oklch, var(--service-accent, var(--ds-border-default)) 40%, var(--ds-border-default));
+  border-color: color-mix(
+    in oklch,
+    var(--service-accent, var(--ds-border-default)) 40%,
+    var(--ds-border-default)
+  );
   box-shadow: 0 4px 16px -4px oklch(58% 0.12 165 / 0.1), var(--ds-shadow-sm);
   transform: translateY(-2px);
 }
@@ -612,10 +608,9 @@
   border: 1px solid transparent;
   border-radius: var(--ds-radius-md);
   text-decoration: none;
-  transition:
-    background var(--ds-duration-fast) var(--ds-ease-out-quart),
-    border-color var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), transform var(--ds-duration-fast)
+    var(--ds-ease-spring);
 }
 
 .exchangeItem:hover {
@@ -684,9 +679,8 @@
   color: color-mix(in oklch, var(--service-accent, var(--nova-emerald)) 70%, transparent);
   opacity: 0;
   transform: translateX(4px);
-  transition:
-    opacity var(--ds-duration-fast) var(--ds-ease-out-quart),
-    transform var(--ds-duration-fast) var(--ds-ease-spring);
+  transition: opacity var(--ds-duration-fast) var(--ds-ease-out-quart), transform
+    var(--ds-duration-fast) var(--ds-ease-spring);
 }
 
 .exchangeItem:hover .exchangeArrow {

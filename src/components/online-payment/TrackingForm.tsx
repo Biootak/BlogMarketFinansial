@@ -31,6 +31,14 @@ const SERVICE_LABELS: Record<string, string> = {
   TUITION_PAYMENT: 'پرداخت شهریه',
   FREELANCE_INCOME: 'نقد کردن درآمد فریلنسری',
   SOFTWARE_PURCHASE: 'خرید نرم‌افزار/اشتراک',
+  GIFT_CARD: 'گیفت کارت',
+  CURRENCY_BUY: 'خرید ارز',
+  CURRENCY_SELL: 'فروش ارز',
+  CRYPTO_BUY: 'خرید ارز دیجیتال',
+  CRYPTO_SELL: 'فروش ارز دیجیتال',
+  PAYPAL_TRANSFER: 'انتقال پی‌پال / اسکریل',
+  MOBILE_TOPUP: 'شارژ موبایل',
+  BILL_PAYMENT: 'پرداخت قبض',
   OTHER: 'سایر خدمات',
 };
 

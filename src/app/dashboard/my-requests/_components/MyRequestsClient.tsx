@@ -147,6 +147,8 @@ const SERVICE_LABELS: Record<string, string> = {
   CRYPTO_BUY: 'خرید کریپتو',
   CRYPTO_SELL: 'فروش کریپتو',
   PAYPAL_TRANSFER: 'پی‌پال / اسکریل',
+  MOBILE_TOPUP: 'شارژ موبایل',
+  BILL_PAYMENT: 'پرداخت قبض',
   OTHER: 'سایر خدمات',
 };
 

@@ -46,9 +46,11 @@ import {
   GraduationCap,
   KeyRound,
   Mail,
+  Receipt,
   RotateCcw,
   ShieldCheck,
   ShoppingBag,
+  Smartphone,
   Sparkles,
   UserPlus,
   Wallet,
@@ -95,6 +97,18 @@ const SERVICE_TYPES: ServiceOption[] = [
     label: 'خرید نرم‌افزار',
     icon: ShoppingBag,
     color: 'oklch(58% 0.18 15)',
+  },
+  {
+    value: 'MOBILE_TOPUP',
+    label: 'شارژ موبایل',
+    icon: Smartphone,
+    color: 'oklch(55% 0.18 195)',
+  },
+  {
+    value: 'BILL_PAYMENT',
+    label: 'پرداخت قبض',
+    icon: Receipt,
+    color: 'oklch(60% 0.18 75)',
   },
   { value: 'OTHER', label: 'سایر خدمات', icon: Sparkles, color: 'var(--ds-brand-600)' },
 ];
@@ -236,6 +250,10 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
       subscriptionType: '',
       giftCardBrand: '',
       giftCardRegion: '',
+      mobileOperator: '',
+      mobileNumber: '',
+      billType: '',
+      billAccountNumber: '',
     },
   });
 
@@ -861,6 +879,82 @@ const ServiceRequestForm: FC<ServiceRequestFormProps> = ({
                       )}
                     />
                   </div>
+                </Field>
+              </div>
+            </ConditionalSection>
+
+            <ConditionalSection open={serviceType === 'MOBILE_TOPUP'}>
+              <Divider label="اطلاعات شارژ موبایل (اختیاری)" />
+              <div className={s.fieldRow}>
+                <Field id="mobileOperator" label="اپراتور">
+                  <div className={`${s.selectWrap} ${s.selectWrapRadix}`}>
+                    <Controller
+                      control={control}
+                      name="mobileOperator"
+                      render={({ field }) => (
+                        <Select value={field.value || undefined} onValueChange={field.onChange}>
+                          <SelectTrigger id="mobileOperator" className={s.select}>
+                            <SelectValue placeholder="انتخاب اپراتور" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mtn">MTN افغانستان</SelectItem>
+                            <SelectItem value="roshan">روشن</SelectItem>
+                            <SelectItem value="etisalat">اتصالات</SelectItem>
+                            <SelectItem value="salam">سلام</SelectItem>
+                            <SelectItem value="other">سایر</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
+                </Field>
+                <Field id="mobileNumber" label="شماره موبایل">
+                  <input
+                    id="mobileNumber"
+                    type="tel"
+                    {...register('mobileNumber')}
+                    className={s.input}
+                    placeholder="۰۷۰۱۲۳۴۵۶۷"
+                    dir="ltr"
+                  />
+                </Field>
+              </div>
+            </ConditionalSection>
+
+            <ConditionalSection open={serviceType === 'BILL_PAYMENT'}>
+              <Divider label="اطلاعات قبض (اختیاری)" />
+              <div className={s.fieldRow}>
+                <Field id="billType" label="نوع قبض">
+                  <div className={`${s.selectWrap} ${s.selectWrapRadix}`}>
+                    <Controller
+                      control={control}
+                      name="billType"
+                      render={({ field }) => (
+                        <Select value={field.value || undefined} onValueChange={field.onChange}>
+                          <SelectTrigger id="billType" className={s.select}>
+                            <SelectValue placeholder="انتخاب نوع قبض" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="dabs">برق DABS</SelectItem>
+                            <SelectItem value="water">آب</SelectItem>
+                            <SelectItem value="telecom">مخابرات</SelectItem>
+                            <SelectItem value="internet">اینترنت</SelectItem>
+                            <SelectItem value="other">سایر</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </div>
+                </Field>
+                <Field id="billAccountNumber" label="شماره حساب / مشترک">
+                  <input
+                    id="billAccountNumber"
+                    type="text"
+                    {...register('billAccountNumber')}
+                    className={s.input}
+                    placeholder="شماره حساب مشترک"
+                    dir="ltr"
+                  />
                 </Field>
               </div>
             </ConditionalSection>
