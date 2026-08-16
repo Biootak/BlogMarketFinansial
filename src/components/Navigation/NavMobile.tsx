@@ -79,7 +79,6 @@ const NAVBAR_LINKS: readonly MobileNavItem[] = [
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
   { id: 'political-news', name: 'اخبار سیاسی', href: '/archive/category/political-news' },
   { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
-  { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
   { id: 'services', name: 'سرویس‌ها', href: '/services' },
   { id: 'exchanges', name: 'صرافی‌ها', href: '/exchanges' },
   { id: 'apply-exchange', name: 'ثبت صرافی', href: '/apply-exchange' },

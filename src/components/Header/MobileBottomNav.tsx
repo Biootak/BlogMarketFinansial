@@ -67,7 +67,7 @@ const buildItems = (loggedIn: boolean): NavItem[] => [
     href: '/exchanges',
     label: 'بازار',
     icon: Newspaper,
-    matchPrefixes: ['/exchanges', '/exchange-rates', '/money-transfer', '/online-payment'],
+    matchPrefixes: ['/exchanges', '/exchange-rates', '/money-transfer'],
   },
   {
     id: 'search',

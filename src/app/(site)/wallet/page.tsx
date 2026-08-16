@@ -138,9 +138,9 @@ export default async function WalletPage() {
               <Wallet size={16} strokeWidth={1.75} aria-hidden />
               شروع کنید
             </Link>
-            <Link href="/online-payment" className={s.ctaSecondary}>
+            <Link href="/services" className={s.ctaSecondary}>
               <BarChart2 size={16} strokeWidth={1.5} aria-hidden />
-              <span>پرداخت آنلاین</span>
+              <span>مشاهده خدمات</span>
               <ArrowLeft size={15} strokeWidth={1.5} aria-hidden />
             </Link>
           </div>

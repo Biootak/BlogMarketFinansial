@@ -142,7 +142,7 @@ function formatDate(d: Date | string): string {
 
 function fmtLimit(val: string | null): string {
   if (!val) return '—';
-  return `${_faNum.format(Number(val))} ؋`;
+  return `${_faNum.format(Number(val))} افغانی`;
 }
 
 /** آواتار رنگی از نام — deterministic از charCode */

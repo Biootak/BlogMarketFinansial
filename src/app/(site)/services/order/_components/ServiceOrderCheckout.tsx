@@ -234,7 +234,7 @@ function OrderTicket({
           {payload.feeAf != null && (
             <div className={s.breakRow}>
               <span>کارمزد</span>
-              <span dir="ltr">{new Intl.NumberFormat('fa-AF').format(payload.feeAf)} ؋</span>
+              <span dir="ltr">{new Intl.NumberFormat('fa-AF').format(payload.feeAf)} افغانی</span>
             </div>
           )}
           {payload.totalAf != null && (
@@ -242,7 +242,7 @@ function OrderTicket({
               <span>{payload.urgency === 'URGENT' ? 'فوری · قابل پرداخت' : 'قابل پرداخت'}</span>
               <span dir="ltr" key={payload.totalAf} className={s.breakTotalVal}>
                 <span className="anim-fade-in-up">
-                  {new Intl.NumberFormat('fa-AF').format(payload.totalAf)} ؋
+                  {new Intl.NumberFormat('fa-AF').format(payload.totalAf)} افغانی
                 </span>
               </span>
             </div>

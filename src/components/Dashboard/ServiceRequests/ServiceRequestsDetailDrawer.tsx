@@ -897,7 +897,7 @@ function FinalTermsEditor({
         <p className="at-srq-final__quote">
           قفل نرخ ثبت‌شده:{' '}
           <span dir="ltr" className="tabular-nums">
-            {faNum.format(request.quoteTotalAf)} ؋
+            {faNum.format(request.quoteTotalAf)} افغانی
           </span>
           {request.quoteRate != null && (
             <span dir="ltr" className="tabular-nums">
@@ -911,7 +911,7 @@ function FinalTermsEditor({
         <p className="at-srq-final__quote at-srq-final__quote--done">
           ثبت‌شدهٔ فعلی:{' '}
           <span dir="ltr" className="tabular-nums">
-            {faNum.format(request.finalTotalAf)} ؋
+            {faNum.format(request.finalTotalAf)} افغانی
           </span>
           {request.paidAmountAf != null && ' — پرداخت‌شده'}
         </p>
@@ -929,7 +929,7 @@ function FinalTermsEditor({
           />
         </label>
         <label className="at-srq-final__field">
-          <span>کارمزد (؋)</span>
+          <span>کارمزد (افغانی)</span>
           <input
             type="text"
             inputMode="decimal"
@@ -940,7 +940,7 @@ function FinalTermsEditor({
           />
         </label>
         <label className="at-srq-final__field at-srq-final__field--req">
-          <span>مجموع نهایی (؋) *</span>
+          <span>مجموع نهایی (افغانی) *</span>
           <input
             type="text"
             inputMode="decimal"
@@ -951,7 +951,7 @@ function FinalTermsEditor({
           />
         </label>
         <label className="at-srq-final__field">
-          <span>پرداخت‌شده (؋)</span>
+          <span>پرداخت‌شده (افغانی)</span>
           <input
             type="text"
             inputMode="decimal"

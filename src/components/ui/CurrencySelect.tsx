@@ -161,8 +161,11 @@ export function CurrencySelect({
         setOpen(false);
       }
     };
-    // بستن panel هنگام scroll — چون position:fixed موقعیتش جابجا نمی‌شود
-    const handleScroll = () => setOpen(false);
+    // بستن panel فقط هنگام scroll خارج از panel — scroll داخل list ممنوع نیست
+    const handleScroll = (e: Event) => {
+      if (panelRef.current && panelRef.current.contains(e.target as Node)) return;
+      setOpen(false);
+    };
     document.addEventListener('mousedown', handleClick);
     window.addEventListener('scroll', handleScroll, { passive: true, capture: true });
     return () => {

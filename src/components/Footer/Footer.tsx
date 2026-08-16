@@ -37,7 +37,6 @@ const widgetMenus: WidgetFooterMenu[] = [
       { href: '/kyc', label: 'احراز هویت' },
       { href: '/beneficiaries', label: 'مخاطبان انتقال' },
       { href: '/money-transfer', label: 'حواله ارزی' },
-      { href: '/online-payment', label: 'پرداخت آنلاین' },
     ],
   },
   {

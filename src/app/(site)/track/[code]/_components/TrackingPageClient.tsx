@@ -467,7 +467,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                   <div className={s.infoRow}>
                     <dt className={s.infoLabel}>کارمزد</dt>
                     <dd className={s.infoValue} dir="ltr">
-                      {new Intl.NumberFormat('fa-AF').format(data.quoteFeeAf)} ؋
+                      {new Intl.NumberFormat('fa-AF').format(data.quoteFeeAf)} افغانی
                     </dd>
                   </div>
                 )}
@@ -475,7 +475,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                   <div className={`${s.infoRow} ${s.infoRowHighlight ?? ''}`}>
                     <dt className={s.infoLabel}>مجموع نهایی تسویه</dt>
                     <dd className={s.infoValue} dir="ltr">
-                      <strong>{new Intl.NumberFormat('fa-AF').format(data.finalTotalAf)} ؋</strong>
+                      <strong>{new Intl.NumberFormat('fa-AF').format(data.finalTotalAf)} افغانی</strong>
                       {data.paidAmountAf != null && <span className={s.paidTag}>پرداخت‌شده</span>}
                     </dd>
                   </div>
@@ -483,7 +483,7 @@ export default function TrackingPageClient({ code, initialData, initialError }: 
                   <div className={s.infoRow}>
                     <dt className={s.infoLabel}>قابل پرداخت (قفل نرخ)</dt>
                     <dd className={s.infoValue} dir="ltr">
-                      {new Intl.NumberFormat('fa-AF').format(data.quoteTotalAf)} ؋
+                      {new Intl.NumberFormat('fa-AF').format(data.quoteTotalAf)} افغانی
                     </dd>
                   </div>
                 ) : null}

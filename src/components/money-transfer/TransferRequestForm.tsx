@@ -782,7 +782,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
             <div className={`${s.successSummaryRow} ${s.successSummaryRowHighlight}`}>
               <span className={s.successSummaryLabel}>قابل پرداخت</span>
               <span className={s.successSummaryValue} dir="ltr">
-                {fmtAf(finalQuote.totalAf)} ؋
+                {fmtAf(finalQuote.totalAf)} افغانی
               </span>
             </div>
           )}
@@ -790,7 +790,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
             <div className={`${s.successSummaryRow} ${s.successSummaryRowHighlight}`}>
               <span className={s.successSummaryLabel}>دریافتی شما</span>
               <span className={s.successSummaryValue} dir="ltr">
-                {fmtAf(finalQuote.receiveAf)} ؋
+                {fmtAf(finalQuote.receiveAf)} افغانی
               </span>
             </div>
           )}
@@ -1438,7 +1438,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                         <div className={s.quoteRow}>
                           <span className={s.quoteKey}>معادل افغانی</span>
                           <span className={s.quoteVal} dir="ltr">
-                            {fmtAf(quote.baseAf)} ؋
+                            {fmtAf(quote.baseAf)} افغانی
                           </span>
                         </div>
                       )}
@@ -1456,7 +1456,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                           )}
                         </span>
                         <span className={s.quoteVal} dir="ltr">
-                          {fmtAf(quote.feeAf)} ؋
+                          {fmtAf(quote.feeAf)} افغانی
                         </span>
                       </div>
                       <div className={`${s.quoteRow} ${s.quoteRowTotal}`}>
@@ -1469,7 +1469,7 @@ const TransferRequestForm: FC<TransferRequestFormProps> = ({
                           key={`${quote.totalAf ?? 0}-${quote.receiveAf ?? 0}`}
                         >
                           <span className="anim-fade-in-up">
-                            {fmtAf(quote.totalAf ?? quote.receiveAf)} ؋
+                            {fmtAf(quote.totalAf ?? quote.receiveAf)} افغانی
                           </span>
                         </span>
                       </div>

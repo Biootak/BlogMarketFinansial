@@ -168,13 +168,6 @@ export const SECTIONS: SectionDef[] = [
         tone: 'violet',
       },
       {
-        label: 'پرداخت آنلاین',
-        path: '/online-payment',
-        description: 'درگاه‌های پرداخت آنلاین پشتیبانی‌شده',
-        icon: <CreditCard size={S} />,
-        tone: 'violet',
-      },
-      {
         label: 'خدمات',
         path: '/services',
         description: 'معرفی کامل خدمات پلتفرم',

@@ -78,7 +78,6 @@ const NAVBAR_LINKS: readonly NavItem[] = [
   },
   { id: 'stock', name: 'بورس و سهام', href: '/archive/category/stock' },
   { id: 'money-transfer', name: 'حواله', href: '/money-transfer' },
-  { id: 'online-payment', name: 'پرداخت آنلاین', href: '/online-payment' },
   { id: 'urgent', name: 'اخبار فوری', href: '/archive/category/news-urgent' },
   { id: 'terms', name: 'قوانین', href: '/terms' },
 ] as const;

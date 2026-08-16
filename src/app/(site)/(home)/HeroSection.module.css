@@ -29,10 +29,22 @@
       ellipse 70% 55% at 105% -5%,
       color-mix(in oklch, var(--fiber-ink-300) 20%, transparent) 0%,
       transparent 60%
-    ), radial-gradient(ellipse 55% 40% at -8% 110%, color-mix(in oklch, var(--ds-brand-600) 14%, transparent) 0%, transparent 60%),
-    radial-gradient(ellipse 35% 45% at 55% 115%, color-mix(in oklch, var(--fiber-ink-200) 8%, transparent) 0%, transparent 60%),
-    radial-gradient(ellipse 90% 60% at 50% 0%, color-mix(in oklch, var(--ds-brand-600) 4%, transparent) 0%, transparent 55%),
-    var(--ds-canvas);
+    ),
+    radial-gradient(
+      ellipse 55% 40% at -8% 110%,
+      color-mix(in oklch, var(--ds-brand-600) 14%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 35% 45% at 55% 115%,
+      color-mix(in oklch, var(--fiber-ink-200) 8%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 90% 60% at 50% 0%,
+      color-mix(in oklch, var(--ds-brand-600) 4%, transparent) 0%,
+      transparent 55%
+    ), var(--ds-canvas);
 }
 
 /* ── Ambient SVG stroke — signature wow moment ──────────────────── */
@@ -161,7 +173,8 @@
   border: 1.5px solid color-mix(in oklch, var(--ds-brand-600) 30%, transparent);
   background: oklch(100% 0 0 / 0.72);
   backdrop-filter: blur(16px) saturate(2);
-  box-shadow: 0 2px 12px -4px color-mix(in oklch, var(--ds-brand-600) 20%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  box-shadow: 0 2px 12px -4px color-mix(in oklch, var(--ds-brand-600) 20%, transparent), inset 0 1px
+    0 oklch(100% 0 0 / 0.9);
   font-size: clamp(12px, 3.2vw, 13.5px);
   font-weight: var(--ds-weight-semibold);
   color: var(--ds-text-secondary);
@@ -173,7 +186,8 @@
 
 .badge:hover {
   border-color: color-mix(in oklch, var(--ds-brand-600) 55%, transparent);
-  box-shadow: 0 4px 20px -6px color-mix(in oklch, var(--ds-brand-600) 30%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  box-shadow: 0 4px 20px -6px color-mix(in oklch, var(--ds-brand-600) 30%, transparent), inset 0 1px
+    0 oklch(100% 0 0 / 0.9);
 }
 
 :global(.dark) .badge {
@@ -186,7 +200,8 @@
 
 :global(.dark) .badge:hover {
   border-color: color-mix(in oklch, var(--ds-brand-600) 65%, transparent);
-  box-shadow: 0 4px 20px -6px color-mix(in oklch, var(--ds-brand-600) 25%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.08);
+  box-shadow: 0 4px 20px -6px color-mix(in oklch, var(--ds-brand-600) 25%, transparent), inset 0 1px
+    0 oklch(100% 0 0 / 0.08);
 }
 
 /* dot با glow ring */
@@ -195,7 +210,8 @@
   height: 9px;
   border-radius: 9999px;
   background: var(--ds-brand-600);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 25%, transparent), 0 0 10px color-mix(in oklch, var(--ds-brand-500) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 25%, transparent), 0 0 10px
+    color-mix(in oklch, var(--ds-brand-500) 50%, transparent);
   animation: livePulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -441,8 +457,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   min-height: 46px;
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-600) 40%, transparent), 0 8px 28px -8px color-mix(in oklch, var(--ds-brand-600) 50%, transparent), inset
-    0 1px 0 oklch(100% 0 0 / 0.15);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-600) 40%, transparent), 0 8px 28px -8px
+    color-mix(in oklch, var(--ds-brand-600) 50%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.15);
   transition: background var(--ds-duration-fast) var(--ds-ease-out-quart), transform
     var(--ds-duration-fast) var(--ds-ease-spring), box-shadow var(--ds-duration-base)
     var(--ds-ease-out-quart);
@@ -452,14 +468,14 @@
 .ctaPrimary:hover {
   background: linear-gradient(135deg, var(--ds-brand-700) 0%, oklch(48% 0.16 162) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-600) 50%, transparent), 0 14px 40px -12px color-mix(in oklch, var(--ds-brand-600) 60%, transparent),
-    inset 0 1px 0 oklch(100% 0 0 / 0.18);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-600) 50%, transparent), 0 14px 40px -12px
+    color-mix(in oklch, var(--ds-brand-600) 60%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.18);
 }
 
 .ctaPrimary:active {
   transform: scale(0.97) translateY(0);
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-600) 35%, transparent), 0 4px 12px -4px color-mix(in oklch, var(--ds-brand-600) 30%, transparent), inset
-    0 1px 0 oklch(100% 0 0 / 0.12);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-600) 35%, transparent), 0 4px 12px -4px
+    color-mix(in oklch, var(--ds-brand-600) 30%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.12);
 }
 
 /* ── Secondary CTA — glass */
@@ -487,7 +503,8 @@
   border-color: var(--ds-brand-400);
   background: oklch(100% 0 0 / 0.78);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px -6px color-mix(in oklch, var(--ds-brand-600) 15%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.9);
+  box-shadow: 0 4px 16px -6px color-mix(in oklch, var(--ds-brand-600) 15%, transparent), inset 0 1px
+    0 oklch(100% 0 0 / 0.9);
 }
 
 .ctaSecondary:active {
@@ -523,7 +540,8 @@
   font-size: var(--ds-text-sm);
   font-weight: var(--ds-weight-semibold);
   min-height: 46px;
-  box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-brand-600) 8%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.6);
+  box-shadow: 0 1px 3px color-mix(in oklch, var(--ds-brand-600) 8%, transparent), inset 0 1px 0
+    oklch(100% 0 0 / 0.6);
   transition: background var(--ds-duration-fast), border-color var(--ds-duration-fast), transform
     var(--ds-duration-fast) var(--ds-ease-spring), box-shadow var(--ds-duration-fast);
   white-space: nowrap;
@@ -533,7 +551,8 @@
   background: color-mix(in oklch, var(--ds-brand-600) 25%, transparent);
   border-color: color-mix(in oklch, var(--ds-brand-600) 60%, transparent);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px -6px color-mix(in oklch, var(--ds-brand-600) 30%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.7);
+  box-shadow: 0 6px 20px -6px color-mix(in oklch, var(--ds-brand-600) 30%, transparent), inset 0 1px
+    0 oklch(100% 0 0 / 0.7);
 }
 
 .ctaAction:active {
@@ -570,7 +589,11 @@
   width: clamp(200px, 28vw, 340px);
   aspect-ratio: 1;
   border-radius: 9999px;
-  background: radial-gradient(circle, color-mix(in oklch, var(--fiber-ink-300) 22%, transparent) 0%, transparent 65%);
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--fiber-ink-300) 22%, transparent) 0%,
+    transparent 65%
+  );
   pointer-events: none;
   z-index: 0;
   animation: orbDrift 8s ease-in-out infinite;
@@ -583,7 +606,11 @@
   width: clamp(140px, 18vw, 220px);
   aspect-ratio: 1;
   border-radius: 9999px;
-  background: radial-gradient(circle, color-mix(in oklch, var(--ds-brand-600) 17%, transparent) 0%, transparent 65%);
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--ds-brand-600) 17%, transparent) 0%,
+    transparent 65%
+  );
   pointer-events: none;
   z-index: 0;
   animation: orbDrift 10s ease-in-out 2s infinite reverse;
@@ -988,7 +1015,11 @@
   height: 100%;
   width: 99.9%;
   border-radius: var(--ds-radius-full);
-  background: linear-gradient(to left, var(--ds-brand-600), color-mix(in oklch, var(--ds-brand-500) 50%, transparent));
+  background: linear-gradient(
+    to left,
+    var(--ds-brand-600),
+    color-mix(in oklch, var(--ds-brand-500) 50%, transparent)
+  );
   box-shadow: 0 0 8px color-mix(in oklch, var(--ds-brand-500) 40%, transparent);
   animation: uptimeGrow 1.5s var(--ds-ease-out-quart) 0.8s both;
 }
@@ -1074,8 +1105,8 @@
   border: 1px solid color-mix(in oklch, var(--ds-brand-600) 22%, transparent);
   background: oklch(100% 0 0 / 0.55);
   backdrop-filter: blur(20px) saturate(1.8);
-  box-shadow: 0 0 0 0.5px color-mix(in oklch, var(--ds-brand-600) 15%, transparent), 0 8px 32px -8px color-mix(in oklch, var(--ds-brand-600) 15%, transparent),
-    inset 0 1px 0 oklch(100% 0 0 / 0.8);
+  box-shadow: 0 0 0 0.5px color-mix(in oklch, var(--ds-brand-600) 15%, transparent), 0 8px 32px -8px
+    color-mix(in oklch, var(--ds-brand-600) 15%, transparent), inset 0 1px 0 oklch(100% 0 0 / 0.8);
   overflow: hidden;
   position: relative;
 }
@@ -1103,8 +1134,8 @@
 :global(.dark) .mobileRateCard {
   background: oklch(16% 0.025 250 / 0.85);
   border-color: color-mix(in oklch, var(--ds-brand-600) 30%, transparent);
-  box-shadow: 0 0 0 0.5px color-mix(in oklch, var(--ds-brand-600) 20%, transparent), 0 8px 32px -8px oklch(0% 0 0 / 0.4), inset 0
-    1px 0 oklch(100% 0 0 / 0.06);
+  box-shadow: 0 0 0 0.5px color-mix(in oklch, var(--ds-brand-600) 20%, transparent), 0 8px 32px -8px
+    oklch(0% 0 0 / 0.4), inset 0 1px 0 oklch(100% 0 0 / 0.06);
 }
 
 .mobileRateHeader {
@@ -1325,7 +1356,8 @@
   .badgeDot {
     width: 10px;
     height: 10px;
-    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 25%, transparent), 0 0 12px color-mix(in oklch, var(--ds-brand-500) 55%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ds-brand-500) 25%, transparent), 0 0 12px
+      color-mix(in oklch, var(--ds-brand-500) 55%, transparent);
   }
 
   .headline {
@@ -1377,8 +1409,9 @@
     width: 100%;
     font-size: 1rem;
     border-radius: var(--ds-radius-xl);
-    box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-600) 45%, transparent), 0 10px 32px -10px color-mix(in oklch, var(--ds-brand-600) 55%, transparent),
-      inset 0 1px 0 oklch(100% 0 0 / 0.18);
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-brand-600) 45%, transparent), 0 10px 32px
+      -10px color-mix(in oklch, var(--ds-brand-600) 55%, transparent), inset 0 1px 0
+      oklch(100% 0 0 / 0.18);
   }
 
   .ctaSecondary,
