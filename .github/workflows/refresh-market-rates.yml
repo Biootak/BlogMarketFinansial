@@ -5,8 +5,9 @@ name: Refresh Market Rates
 # web dyno فقط نتیجه JSON را می‌گیره، ذخیره می‌کنه، cache bust می‌کنه.
 # → هیچ scraping روی web dyno انجام نمی‌شه → صفر spike RAM.
 on:
-  schedule:
-    - cron: '*/5 * * * *'
+  # 2026-08-16: پس از مهاجرت Azure، scrape روی VM انجام می‌شود (cron-loop
+  # کانتینر sidecar هر ۶۰ ثانیه /api/cron/refresh-market-rates را می‌زند).
+  # این workflow با GitHub runner به Azure PG فایروال نمی‌رسید — غیرفعال شد.
   workflow_dispatch:
 
 jobs:
