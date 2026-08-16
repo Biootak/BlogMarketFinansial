@@ -50,7 +50,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          tags: ghcr.io/${{ lower(github.repository_owner) }}/fm-blog-web:main
+          tags: ghcr.io/biootak/fm-blog-web:main
           build-args: |
             NODE_IMAGE=node:22-alpine
             DATABASE_URL=postgresql://ci:ci@localhost:5432/ci
@@ -64,7 +64,7 @@ jobs:
           context: .
           file: Dockerfile.cron
           push: true
-          tags: ghcr.io/${{ lower(github.repository_owner) }}/fm-blog-cron:main
+          tags: ghcr.io/biootak/fm-blog-cron:main
           build-args: |
             CRON_IMAGE=alpine:3.20
           cache-from: type=gha
