@@ -555,6 +555,32 @@ interface RouteErrorProps {
 /* duration: 2800ms linear infinite — موج نور بدون JS */
 ```
 
+### 🏦 Design Language — بررسی زنده MCP (Stripe × Wise — 2026-08-16)
+
+> **یاد گرفته شد 2026-08-16 — بررسی زنده با Playwright MCP (نه اسکرین‌شات):**
+> با `node scripts/pw-eval.mjs scripts/probes/live-design-probe.js` روی خودِ
+> stripe.com و wise.com مقدارهای real گرفته شد (getComputedStyle + getAnimations).
+> ابزار زنده همیشه قبل از تصمیم طراحی سایت/کامپوننت استفاده شود — اسکرین‌شات
+> تعامل و انیمیشن را نشان نمی‌دهد.
+
+| چک | Stripe (real) | Wise (real) | قانون ما |
+|-----|---------------|-------------|----------|
+| **فونت بدنه** | sohne-var، 16px، w400 | Inter، **18px**، w400 | بدنه ما: `--fs-base` 16px — اختیار 18px برای landing |
+| **H1** | **40px، w300 (لایت!)**، `letter-spacing: -0.02em`، line-height 1.15 | **Wise Sans 90px، w900**، line-height 0.85 | Hero تایپوگرافی bold — برای «ظرافت» از tracking منفی + وزن کمی سبک‌تر استفاده کن، نه از فونت سبک فارسی |
+| **Accent** | بنفش `#533afd` (hover `#665efd`) — یک رنگ واحد | لیمویی `#9fe870` — یک رنگ واحد | **یک accent در هر صفحه** (قانون §3.7) — از `--ds-accent-emerald` ما |
+| **دکمه** | radius **4px**، transition `0.24s cubic-bezier(0.45,0.05,0.55,0.95)` | **pill 9999px**، padding 19px 24px، `0.15s ease-in-out` | دکمه‌های ما: pill موجود؛ transition همه `--ds-duration-fast` + `--ds-ease-out-quart` |
+| **انیمیشن در حال اجرا** | فقط nav detect-scroll — **هیچ loop در hero** | ۱ انیمیشن coin 3000ms | «quiet luxury»: در حالت سکون تقریباً هیچ انیمیشن لوپ‌شونده — پولیش در **transition ها** است نه loop ها |
+| **Spacing** | توکن کامل `--hds-space-core-*` (24px/152px/160px) | `clamp()` fluid + ریتم ثابت marginBlock ~57px | ریتم بخش‌ها با `--ds-space-8/10`؛ فضای باز در layout |
+| **بنتو** | `modular-solutions-bento-card` — Payments/Billing/Issuing | — | برای marketplace: گرید کارت با accent per-card مجاز (یک accent غالب) |
+| **تغییر عدد در calculator** | — | CSS counter + fade (بدون JS animation) | عدد نتیجه با fade opacity 280ms — نه slide |
+
+**قوانین عملی (اجباری):**
+1. **Hero تایپوگرافی:** tracking منفی (`-0.02em` تا `-0.04em`) روی عنوان‌های بزرگ؛ وزن 300–400 برای فارسی فقط در سایزهای ≥ 34px؛ bold برای عنوان‌های کوچک‌تر.
+2. **Restraint در انیمیشن:** حداکثر ۱ انیمیشن لوپ ambient در هر صفحه (dot-pulse یا coin) — بقیه حرکت‌ها transition-on-interaction.
+3. **Transition یکسان:** همه دکمه/کارت/اینپوت: `transition: … var(--ds-duration-fast) var(--ds-ease-out-quart)` — هرگز `0.2s ease` پراکنده.
+4. **لایو پروب قبل از طراحی:** برای الهام از رقیب → `node scripts/pw-cmd.mjs browser_navigate '{"url":"..."}'` بعد `node scripts/pw-eval.mjs scripts/probes/live-design-probe.js` — مقادیر real را بگیر، حدس نزن.
+5. **Bento یکپارچه:** گرید کارت‌های سرویس با accent per-card (`--service-accent`) — حداکثر ۳ tone، بقیه از همان خانواده.
+
 ---
 
 ## 🔄 Rule Failure Loop (خودتصحیحی — اجباری)
