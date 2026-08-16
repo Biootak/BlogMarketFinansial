@@ -7,6 +7,16 @@
 
 import prisma from '@/lib/db';
 
+/** Escape HTML special characters so user-supplied strings can't inject
+ *  tags or links when parse_mode=HTML is used with Telegram's sendMessage. */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 interface DealInfo {
   trackingCode: string;
   customerName: string;
@@ -67,7 +77,7 @@ async function sendTelegram(message: string): Promise<void> {
 export async function notifyDealStatusChange(deal: DealInfo, newStatus: string): Promise<void> {
   try {
     const label = DEAL_STATUS_FA[newStatus] ?? newStatus;
-    const msg = `📊 <b>تغییر وضعیت معامله</b>\n🔑 کد: <code>${deal.trackingCode}</code>\n📌 وضعیت: ${label}\n👤 مشتری: ${deal.customerName}\n💱 ${deal.fromAmount} ${deal.fromCurrency} → ${deal.toAmount} ${deal.toCurrency}\n🏢 صرافی: ${deal.exchangeName}`;
+    const msg = `📊 <b>تغییر وضعیت معامله</b>\n🔑 کد: <code>${escapeHtml(deal.trackingCode)}</code>\n📌 وضعیت: ${label}\n👤 مشتری: ${escapeHtml(deal.customerName)}\n💱 ${escapeHtml(deal.fromAmount)} ${escapeHtml(deal.fromCurrency)} → ${escapeHtml(deal.toAmount)} ${escapeHtml(deal.toCurrency)}\n🏢 صرافی: ${escapeHtml(deal.exchangeName)}`;
     await sendTelegram(msg);
   } catch {
     // fire-and-forget — notification failure must never crash the caller
@@ -76,7 +86,7 @@ export async function notifyDealStatusChange(deal: DealInfo, newStatus: string):
 
 export async function notifyNewDeal(deal: DealInfo): Promise<void> {
   try {
-    const msg = `🆕 <b>معامله جدید</b>\n🔑 <code>${deal.trackingCode}</code>\n👤 ${deal.customerName} — ${deal.customerPhone}\n💱 ${deal.fromAmount} ${deal.fromCurrency}`;
+    const msg = `🆕 <b>معامله جدید</b>\n🔑 <code>${escapeHtml(deal.trackingCode)}</code>\n👤 ${escapeHtml(deal.customerName)} — ${escapeHtml(deal.customerPhone)}\n💱 ${escapeHtml(deal.fromAmount)} ${escapeHtml(deal.fromCurrency)}`;
     await sendTelegram(msg);
   } catch {
     // fire-and-forget
