@@ -1,6 +1,6 @@
 # Deploy on Azure (Azure for Students) — Financial Market Blog
 
-> وضعیت: ۲۰۲۶-۰۸-۱۶ — مهاجرت از Heroku به Azure VM در حال انجام.
+> وضعیت: ۲۰۲۶-۰۸-۱۶ ✅ — مهاجرت از Heroku به Azure VM **تکمیل شد** (DNS + TLS + CI + cron-poll).
 > آرشیو راهنمای قبلی (Heroku): `deploy/HEROKU.md`
 
 ---
@@ -25,15 +25,17 @@
 ## 🗺️ چیدمان VM (Ubuntu 24.04)
 
 ```
-nginx (80/443) → 127.0.0.1:3000  ← کانتینر web (fm-blog-web:latest)
-                                     کانتینر cron (fm-blog-cron:latest) → http://web:3000/api/cron/*
+Cloudflare (proxy) → nginx 80/443 (TLS real) → 127.0.0.1:3000 ← کانتینر web (ghcr.io/biootak/fm-blog-web:main)
+                                                 کانتینر cron (ghcr.io/biootak/fm-blog-cron:main) → http://web:3000/api/cron/*
 ```
 
 - کد: `~/fm-blog` (clone از GitHub — رپو پابلیک است)
 - compose: `~/fm-blog/deploy/docker-compose.azure.yml` (سرویس db ندارد — DB خارجی Azure)
 - .env: `~/fm-blog/.env` (از کانفیگ Heroku + DATABASE_URL جدید Azure)
 - دیتابیس: `fm-pg.postgres.database.azure.com:5432/blog` (sslmode=require)
-- فایروال Postgres: فقط IP لوکال + IP VM (`20.109.177.20`)
+- فایروال Postgres: IP VM (`20.109.177.20`) + بازه IP لوکال (`95.142.115.0/24` — IP خانه داینامیک است) + `allow-azure-services` (برای GitHub Actions backup)
+- DNS: `financialmarket.page` → Cloudflare proxy → `20.109.177.20` (VM)؛ `www` CNAME → root
+- TLS: Let's Encrypt (certbot) با renewal خودکار — گواهی واقعی روی nginx 443
 
 ## 🚀 دیپلوی روزمره — push به GitHub (روش استاندارد — فقط همین را استفاده کن)
 
