@@ -8,7 +8,8 @@
  *   2. verifyPhoneOtp({ phone, code }) — تأیید کد + ذخیره phoneNumber در User + mark verified
  *
  * امنیت:
- *   - rate-limit per IP و per user
+ *   - rate-limit per user (در CGNAT مخابرات افغانستان per-IP کاربر عادی را
+ *     بی‌دلیل بلاک می‌کرد — حذف شد، ر.ک sendPhoneOtp)
  *   - کد ۶ رقمی با OTP_EXPIRES_MS = 10 دقیقه
  *   - OTP روی email+intent کاربر ذخیره می‌شود (از جدول VerificationToken موجود)
  */
@@ -16,10 +17,9 @@
 import { auth } from '@/auth';
 import prisma from '@/lib/db';
 import { isPhoneValid, normalizeToE164 } from '@/lib/phone-validation';
-import { checkRateLimit } from '@/lib/rate-limiter';
+import { checkRateLimit, resetRateLimit } from '@/lib/rate-limiter';
 import { revalidatePath } from '@/lib/revalidate';
-import { consumeOtpToken, generateOtpToken } from '@/lib/tokens';
-import { headers } from 'next/headers';
+import { consumeOtpToken, generateOtpToken, invalidateOtpTokens } from '@/lib/tokens';
 
 // intent اختصاصی برای تأیید موبایل
 const PHONE_VERIFY_INTENT = 'service-verify' as const;
@@ -43,41 +43,25 @@ export async function sendPhoneOtp(args: {
       return { success: false, message: 'ابتدا وارد حساب کاربری شوید.' };
     }
 
-    const headersList = await headers();
-    const _xff = headersList.get('x-forwarded-for') ?? '';
-    const ip =
-      _xff
-        .split(',')
-        .map((p) => p.trim())
-        .filter(Boolean)
-        .pop() ||
-      headersList.get('x-real-ip')?.trim() ||
-      'unknown';
-
-    // rate-limit per IP
-    const ipRate = await checkRateLimit(`phone-otp-ip:${ip}`, 'auth');
-    if (!ipRate.success) {
-      const ms = Math.max(0, ipRate.reset - Date.now());
-      return {
-        success: false,
-        message: 'تعداد درخواست‌ها بیش از حد است. چند دقیقه صبر کنید.',
-        retryAfterMs: ms,
-      };
+    // ۱) اعتبارسنجی شماره — قبل از rate-limit تا شمارهٔ نامعتبر بودجه نسوزاند.
+    const phone = args.phone.trim();
+    if (!isPhoneValid(phone)) {
+      return { success: false, message: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)' };
     }
+    const e164 = normalizeToE164(phone);
 
-    // rate-limit per user
+    // ۲) rate-limit per user.
+    // 2026-08-17 (UX-fix): bucket جداگانهٔ per-IP حذف شد — این اکشن auth لازم
+    // دارد و ضد-اسپم واقعی همین per-user + cooldown ۶۰ثانیه‌ای OTP است؛ در
+    // CGNAT مخابرات افغانستان یک IP عمومی بین صدها کاربر شریک است و bucket
+    // هر-IP با چند درخواست کاربران دیگر پر می‌شود → کاربر عادی بی‌دلیل بلاک
+    // می‌شد. (ساخت حساب هم خودش rate-limit دارد، پس چند-اکانتی‌سازی هم گیت
+    // دارد.)
     const userRate = await checkRateLimit(`phone-otp-user:${session.user.id}`, 'auth');
     if (!userRate.success) {
       const ms = Math.max(0, userRate.reset - Date.now());
       return { success: false, message: 'تعداد درخواست‌ها بیش از حد است.', retryAfterMs: ms };
     }
-
-    // اعتبارسنجی شماره
-    const phone = args.phone.trim();
-    if (!isPhoneValid(phone)) {
-      return { success: false, message: 'شماره موبایل معتبر نیست (مثال: ۰۷۰۱۲۳۴۵۶۷)' };
-    }
-    const _e164 = normalizeToE164(phone);
 
     // تولید کد OTP — از email کاربر به عنوان کلید VerificationToken استفاده می‌کنیم
     const email = session.user.email.trim().toLowerCase();
@@ -101,7 +85,7 @@ export async function sendPhoneOtp(args: {
       {
         telegramChatId: user?.telegramChatId,
         email: session.user.email,
-        phone: _e164,
+        phone: e164,
       },
       otpResult.code,
       'phone-verify',
@@ -109,12 +93,20 @@ export async function sendPhoneOtp(args: {
     );
 
     if (!delivery.success) {
+      // 2026-08-17 (UX-fix): تحویل fail شد — مشکل سمت سرور است، نه تلاش کاربر.
+      // قبلاً هر تلاش ناموفق (۱) سهمیهٔ rate-limit را می‌سوزاند، (۲) توکن OTP
+      // ساخته‌شده را نگه می‌داشت تا تلاش بعدی با cooldown ۶۰ثانیه‌ای «لطفاً
+      // صبر کنید» بلاک شود. نتیجه: کاربر بعد از ۲-۳ کلیک پشت سر هم برای ۳ دقیقه
+      // قفل می‌شد. حالا: توکن هرگز تحویل‌نشده حذف می‌شود (تلاش بعدی از صفر) و
+      // سهمیهٔ کاربر برگشت داده می‌شود (فقط ارسال‌های موفق حساب می‌شوند).
+      await invalidateOtpTokens({ email, intent: PHONE_VERIFY_INTENT });
+      await resetRateLimit(`phone-otp-user:${session.user.id}`, 'auth');
       return {
         success: false,
         message:
           delivery.errorCode === 'NO_CHANNEL'
-            ? 'کانال ارسال کد در دسترس نیست. لطفاً بعداً تلاش کنید.'
-            : 'ارسال کد تأیید ناموفق بود. لطفاً دوباره تلاش کنید.',
+            ? 'کانال ارسال کد در دسترس نیست. تلگرام را وصل کنید (مطمئن‌ترین راه) یا بعداً تلاش کنید.'
+            : 'ارسال کد ناموفق بود. تلگرام را وصل کنید یا چند لحظه بعد دوباره تلاش کنید.',
       };
     }
 

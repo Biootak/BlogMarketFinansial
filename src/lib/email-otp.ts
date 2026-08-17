@@ -12,6 +12,7 @@
 import { getEmailProvider } from '@/lib/email';
 import { otpEmail } from '@/lib/email/templates';
 import type { OtpEmailIntent } from '@/lib/email/templates';
+import { serverLog } from '@/lib/server-logger';
 import { sendSms } from '@/lib/sms';
 import { sendTelegramMessage } from '@/lib/telegram';
 
@@ -52,7 +53,14 @@ export async function sendOtp(
   if (target.telegramChatId) {
     const res = await sendTelegramMessage(target.telegramChatId, smsBody);
     if (res.success) return { success: true, channel: 'telegram' };
-    // USER_BLOCKED: تلگرام را skip کن، به ایمیل برو
+    // USER_BLOCKED و…: تلگرام را skip کن، به ایمیل برو — ولی اگر chatId وجود
+    // داشت و ارسال واقعاً fail شد، لاگ کن (اتصال کاربر خراب است و OTP فقط از
+    // کانال بعدی می‌رسد — قابل مشاهده در مرکز پایش).
+    serverLog.warn('email-otp', `telegram-send-failed (${res.errorCode ?? 'UNKNOWN'})`, {
+      intent,
+      hasEmail: !!target.email,
+      hasPhone: !!target.phone,
+    });
   }
 
   // ۲. ایمیل — رایگان (Resend 3000/روز)، برای همه کاربران
@@ -61,7 +69,12 @@ export async function sendOtp(
       const provider = getEmailProvider();
       await provider.send(otpEmail({ to: target.email, code, intent, expiresLabel: '۵ دقیقه' }));
       return { success: true, channel: 'email' };
-    } catch {
+    } catch (err) {
+      // 2026-08-17: قبلاً `catch {}` بود — خطای واقعی (کلید معتبر نبودن، دامنه
+      // verify نشده، recipient نامعتبر، محدودیت Resend و…) کاملاً ناپیدا می‌ماند
+      // و کاربر فقط پیام عمومی «ارسال کد تأیید ناموفق بود» می‌دید. حالا خطا در
+      // SystemLog + Sentry ثبت می‌شود تا علت قابل‌تشخیص باشد.
+      serverLog.error('email-otp', 'email-send-failed', err);
       // ایمیل fail شد — به SMS برو
     }
   }
@@ -77,6 +90,15 @@ export async function sendOtp(
       // biome-ignore lint/suspicious/noConsole: dev-only OTP logging
       console.log(`[DEV OTP] intent=${intent} code=${res.devCode}`);
       return { success: true, channel: 'sms', devCode: res.devCode };
+    }
+    // فقط وقتی Twilio واقعاً ست شده باشد لاگ بگیر (ناموجود بودن Twilio حالت
+    // عادی است و هر ارسال را پر از لاگ می‌کند) — fail واقعی یعنی مشکل حساب.
+    if (
+      process.env.TWILIO_ACCOUNT_SID &&
+      process.env.TWILIO_AUTH_TOKEN &&
+      process.env.TWILIO_FROM_NUMBER
+    ) {
+      serverLog.error('email-otp', 'sms-send-failed', { intent, phone: target.phone });
     }
     return { success: false, errorCode: 'SEND_FAILED' };
   }
