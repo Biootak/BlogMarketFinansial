@@ -28,6 +28,7 @@ scripts/*
 !scripts/rules-gate.mjs
 !scripts/rules-watch.mjs
 !scripts/perf-gate.mjs
+!scripts/check-oauth.mjs
 !scripts/git-hooks/
 !scripts/git-hooks/pre-commit
 

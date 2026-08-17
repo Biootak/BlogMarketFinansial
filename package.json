@@ -25,6 +25,7 @@
     "rules:stamp": "node scripts/rules-gate.mjs stamp",
     "rules:log": "node scripts/rules-gate.mjs log",
     "rules:watch": "node scripts/rules-watch.mjs",
+    "check:oauth": "node scripts/check-oauth.mjs",
     "setup:hooks": "git config core.hooksPath scripts/git-hooks",
     "bundle:audit": "node scripts/bundle-audit.mjs",
     "perf:snapshot": "node scripts/perf-gate.mjs snapshot",

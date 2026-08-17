@@ -89,6 +89,17 @@ docker compose --env-file .env -f deploy/docker-compose.azure.yml logs -f web
 docker compose --env-file .env -f deploy/docker-compose.azure.yml logs -f cron
 ```
 
+### چک ورود اجتماعی (Google / GitHub)
+
+```bash
+npm run check:oauth        # از هر ماشینی؛ یا node scripts/check-oauth.mjs
+```
+
+- باید خروجی `✅ [google]` و `✅ [github]` بدهد (هدایت به accounts.google.com / github.com).
+- اگر `error=Configuration` دیدی → در `.env` روی VM مقادیر `AUTH_GOOGLE_ID/SECRET` و `AUTH_GITHUB_ID/SECRET`
+  خالی/غایب‌اند (در live site 2026-08-17 همین خطا دیده شد) — یا callback در کنسول provider با
+  دامنهٔ فعلی ناسازگار است. بعد از اصلاح .env: `docker compose ... restart web`.
+
 ### رول‌بک (بازگشت به نسخهٔ قبلی)
 
 > ⚠️ 2026-08-17: روش قبلی (`git reset --hard` + `azure-update.sh`) **کار نمی‌کرد** —
