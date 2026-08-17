@@ -4,6 +4,10 @@ import db from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
+// 2026-08-17: گزارش‌های مالی دادهٔ خصوصی مالک است — کش CDN ممنوع (Cloudflare
+// Cache Rule همهٔ GETها را به‌جز /api/auth کش می‌کند).
+const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
+
 async function ensureReportAccess(): Promise<NextResponse | null> {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
@@ -190,7 +194,7 @@ export async function GET(): Promise<NextResponse> {
       },
     );
 
-    return NextResponse.json({ success: true, data: systemReport });
+    return NextResponse.json({ success: true, data: systemReport }, { headers: PRIVATE_HEADERS });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       return NextResponse.json(

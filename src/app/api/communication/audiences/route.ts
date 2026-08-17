@@ -12,11 +12,14 @@ export async function GET() {
       { status: 403 },
     );
   }
+  // 2026-08-17: قبلاً `private, s-maxage=60` بود — s-maxage دقیقاً به CDN
+  // می‌گوید کش کن (private با s-maxage متناقض است و Cloudflare Cache Rule
+  // اکسپایر ۵دقیقه‌ای خودش را اعمال می‌کند) → دادهٔ مخاطبان به کش عمومی می‌رفت.
   return NextResponse.json(
     { success: true, data: result.data },
     {
       headers: {
-        'Cache-Control': 'private, s-maxage=60, stale-while-revalidate=120',
+        'Cache-Control': 'no-store, private',
       },
     },
   );

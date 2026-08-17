@@ -4,6 +4,10 @@ import { auth } from '@/auth';
 import { Role } from '@prisma/client';
 import { type NextRequest, NextResponse } from 'next/server';
 
+// 2026-08-17: آمار ترافیک دادهٔ خصوصی ادمین است — کش CDN ممنوع (Cloudflare
+// Cache Rule همهٔ GETها را به‌جز /api/auth کش می‌کند).
+const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
+
 /**
  * GET /api/traffic-stats?period=7d|30d|90d
  *
@@ -49,7 +53,7 @@ export async function GET(request: NextRequest) {
           { status: 500 },
         );
       }
-      return NextResponse.json({ success: true, data: result.data });
+      return NextResponse.json({ success: true, data: result.data }, { headers: PRIVATE_HEADERS });
     }
 
     // 30d / 90d — Jalali date labels, one bucket per day.
@@ -60,7 +64,7 @@ export async function GET(request: NextRequest) {
         { status: 500 },
       );
     }
-    return NextResponse.json({ success: true, data: result.data });
+    return NextResponse.json({ success: true, data: result.data }, { headers: PRIVATE_HEADERS });
   } catch {
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطا در دریافت آمار بازدید' } },

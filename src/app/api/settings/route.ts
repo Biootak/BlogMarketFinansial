@@ -2,6 +2,10 @@ import { auth } from '@/auth';
 import db from '@/lib/db';
 import { NextResponse } from 'next/server';
 
+// 2026-08-17: تنظیمات (شامل SMTP credentials) دادهٔ خصوصی مالک است — کش CDN
+// نباید آن را نگه دارد (Cloudflare Cache Rule همهٔ GETها را کش می‌کند).
+const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
+
 export async function GET() {
   try {
     const session = await auth();
@@ -19,9 +23,9 @@ export async function GET() {
     // L5 fix: never return the SMTP password (secret) in the API response.
     if (settings) {
       const { smtpPassword: _omit, ...safeSettings } = settings as Record<string, unknown>;
-      return NextResponse.json({ success: true, data: safeSettings });
+      return NextResponse.json({ success: true, data: safeSettings }, { headers: PRIVATE_HEADERS });
     }
-    return NextResponse.json({ success: true, data: settings });
+    return NextResponse.json({ success: true, data: settings }, { headers: PRIVATE_HEADERS });
   } catch {
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطای داخلی سرور' } },

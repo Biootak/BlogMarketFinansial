@@ -5,6 +5,10 @@ import { NextResponse } from 'next/server';
 
 const STATUS_ROLES = new Set(['OWNER', 'SUPERADMIN']);
 
+// 2026-08-17: متریک‌های سیستم دادهٔ خصوصی ادمین است — نباید در کش CDN بماند
+// (Cloudflare Cache Rule همهٔ GETها را به‌جز /api/auth کش می‌کند).
+const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
+
 export async function GET() {
   try {
     const session = await auth();
@@ -97,15 +101,18 @@ export async function GET() {
       // appStats stays at zero defaults — safe
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        system: systemInfo,
-        database: dbStatus,
-        application: appStats,
-        timestamp: new Date().toISOString(),
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          system: systemInfo,
+          database: dbStatus,
+          application: appStats,
+          timestamp: new Date().toISOString(),
+        },
       },
-    });
+      { headers: PRIVATE_HEADERS },
+    );
   } catch {
     return NextResponse.json(
       {

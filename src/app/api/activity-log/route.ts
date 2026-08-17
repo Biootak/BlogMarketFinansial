@@ -2,6 +2,10 @@ import { auth } from '@/auth';
 import db from '@/lib/db';
 import { NextResponse } from 'next/server';
 
+// 2026-08-17: private admin data — Cloudflare Cache Rule (استثنای فقط /api/auth)
+// همهٔ GETها را کش می‌کند؛ بدون no-store لاگ‌های کاربر A به کاربر B سرو می‌شد.
+const PRIVATE_HEADERS = { 'Cache-Control': 'no-store, private' };
+
 export async function GET() {
   try {
     const session = await auth();
@@ -35,7 +39,10 @@ export async function GET() {
       createdAt: activity.createdAt,
     }));
 
-    return NextResponse.json({ success: true, data: formattedActivities });
+    return NextResponse.json(
+      { success: true, data: formattedActivities },
+      { headers: PRIVATE_HEADERS },
+    );
   } catch {
     return NextResponse.json(
       { success: false, error: { code: 'INTERNAL_ERROR', message: 'خطای داخلی سرور' } },
