@@ -29,6 +29,12 @@ LOG="${AZURE_DEPLOY_LOG:-/var/log/fm-blog-azure-deploy.log}"
 
 cd "$REPO_DIR"
 
+# حالت رولبک (deploy/rollback.sh): تا وقتی سنتینل هست، آپدیت خودکار بی‌صدا متوقف است
+# تا رولبک را برنگرداند. کاربر با `rm $REPO_DIR/.azure-rollback` دوباره فعالش می‌کند.
+if [[ -f "$REPO_DIR/.azure-rollback" ]]; then
+    exit 0
+fi
+
 # آخرین وضعیت GitHub — اگر fetch نشد (قطع اینترنت و…) بی‌صدا رد شو
 git fetch origin "$BRANCH" >/dev/null 2>&1 || exit 0
 

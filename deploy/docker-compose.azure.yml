@@ -14,11 +14,14 @@
 #   2) docker compose --env-file .env -f deploy/docker-compose.azure.yml pull
 #   3) docker compose --env-file .env -f deploy/docker-compose.azure.yml up -d
 #
-# pull_policy: always — هر `up -d` آخرین تصویر :main را دوباره می‌کشد.
+# pull_policy: always — هر `up -d` آخرین تصویر را دوباره می‌کشد.
+#
+# IMAGE_TAG (اختیاری): رولبک — deploy/rollback.sh با IMAGE_TAG=sha-<short>
+# تصویر قدیمی (تگ immutable از CI) را بالا می‌آورد. پیش‌فرض: main.
 # ============================================================================
 services:
   web:
-    image: ghcr.io/biootak/fm-blog-web:main
+    image: ghcr.io/biootak/fm-blog-web:${IMAGE_TAG:-main}
     pull_policy: always
     ports:
       - "3000:3000"
@@ -54,7 +57,7 @@ services:
 
   cron:
     # Sidecar — همان کرون‌های cron-job.org را داخل VM اجرا می‌کند
-    image: ghcr.io/biootak/fm-blog-cron:main
+    image: ghcr.io/biootak/fm-blog-cron:${IMAGE_TAG:-main}
     pull_policy: always
     mem_limit: 128m
     mem_reservation: 64m

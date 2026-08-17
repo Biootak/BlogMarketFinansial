@@ -44,13 +44,22 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # کوتاه SHA برای تگ immutable (رولبک: deploy/rollback.sh با sha-<short>)
+      # به این صورت کار می‌کند که تصویر قبلی همیشه با تگ sha-<short> قابل ارجاع است
+      # و docker image prune آن را حذف نمی‌کند (برخلاف :main که همیشه بازنویسی می‌شود).
+      - name: Compute short SHA
+        id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push web image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           push: true
-          tags: ghcr.io/biootak/fm-blog-web:main
+          tags: |
+            ghcr.io/biootak/fm-blog-web:main
+            ghcr.io/biootak/fm-blog-web:sha-${{ steps.sha.outputs.short }}
           build-args: |
             NODE_IMAGE=node:22-alpine
             DATABASE_URL=postgresql://ci:ci@localhost:5432/ci
@@ -64,7 +73,9 @@ jobs:
           context: .
           file: Dockerfile.cron
           push: true
-          tags: ghcr.io/biootak/fm-blog-cron:main
+          tags: |
+            ghcr.io/biootak/fm-blog-cron:main
+            ghcr.io/biootak/fm-blog-cron:sha-${{ steps.sha.outputs.short }}
           build-args: |
             CRON_IMAGE=alpine:3.20
           cache-from: type=gha

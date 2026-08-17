@@ -1,7 +1,7 @@
 name: Nightly DB Backup → B2
 
 # بکاپ شبانهٔ دیتابیس در ابر (GitHub Actions) — کاملاً مستقل از هر کامپیوتر.
-# هر شب: pg_dump از دیتابیس production (Heroku Postgres) → آپلود به باکت
+# هر شب: pg_dump از دیتابیس production (Azure Postgres) → آپلود به باکت
 # Backblaze B2 (مقصد دوم / برون‌سایتی — قانون 3-2-1) + نگهداری ۳۰ نسخه.
 #
 # رنجر هر شب دیتابیس را dump می‌کند و به B2 می‌فرستد؛ نیازی به هیچ

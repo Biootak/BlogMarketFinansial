@@ -91,11 +91,24 @@ docker compose --env-file .env -f deploy/docker-compose.azure.yml logs -f cron
 
 ### رول‌بک (بازگشت به نسخهٔ قبلی)
 
+> ⚠️ 2026-08-17: روش قبلی (`git reset --hard` + `azure-update.sh`) **کار نمی‌کرد** —
+> `git pull --ff-only` داخل azure-update.sh رول‌بک را برمی‌گرداند و تگ `:main` + `pull_policy: always`
+> هم آخرین تصویر را بالا می‌آورد. حالا از `deploy/rollback.sh` استفاده کن:
+
 ```bash
 cd ~/fm-blog
-git reset --hard <commit-sha-prev>
-bash deploy/azure-update.sh
+bash deploy/rollback.sh <commit-sha>     # sha کامل یا کوتاه
 ```
+
+چه می‌کند: تصویر `sha-<short>` را pull می‌کند (تگ immutable که CI کنار `:main` می‌زند) →
+سنتینل `.azure-rollback` می‌سازد (cron-poll بی‌صدا متوقف می‌شود) → کد و کانتینرها به همان
+نسخه برمی‌گردند — بدون downtime.
+
+- **تست کن** (صفحه، لاگین، تیکر) — بعد `rm ~/fm-blog/.azure-rollback` تا آپدیت خودکار دوباره فعال شود
+  (cron-poll تا ~۱ دقیقه بعد خودش آخرین نسخه را اعمال می‌کند).
+- ⚠️ **دیتابیس:** مایگریشن‌های Prisma دستی‌اند — رول‌بک کد فقط وقتی امن است که نسخهٔ قبلی با
+  schema فعلی دیتابیس سازگار باشد؛ وگرنه اول دیتابیس را از بکاپ شبانه restore کن.
+- کامیت‌های قبل از فعال‌شدن تگ‌های sha (فیکس 2026-08-17) تگ ندارند → رول‌بک به آن‌ها فقط با digest دستی.
 
 ### ⚠️ نکته‌ها
 
@@ -154,8 +167,8 @@ bash deploy/azure-update.sh
 
 ## 🔧 بکاپ و بازیابی
 
-- **بکاپ دیتابیس:** روی VM — اسکریپت pg_dump (مطابق BACKUP_S3_* فعلی به B2). (خودکارسازی بعد از تست اولیه)
-- **بازیابی:** `pg_restore` با pg client 18.
+- **بکاپ دیتابیس:** خودکار روی GitHub Actions هر شب (`.github/workflows/backup-nightly.yml`) — pg_dump 18 از Azure Postgres → Backblaze B2 (مقصد برون‌سایتی، نگهداری ۳۰ نسخه).
+- **بازیابی:** `pg_restore` با pg client 18 (از آخرین نسخهٔ باکت B2).
 
 ---
 
