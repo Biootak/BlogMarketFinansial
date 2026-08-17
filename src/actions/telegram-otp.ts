@@ -63,7 +63,20 @@ export async function getTelegramLink(): Promise<FintechActionResult<TelegramLin
     select: { telegramChatId: true, pendingPhone: true },
   });
 
-  if (user?.telegramChatId) {
+  // 2026-08-17 (UX-fix): session یتیم — JWT معتبر است ولی کاربر در DB نیست
+  // (بعد از wipe/بازیابی دیتابیس). بدون این گارد، createTelegramLinkToken با
+  // FK violation پرتاب می‌کرد و کل صفحه با 500 crash می‌شد. حالا پیام واضح + re-login.
+  if (!user) {
+    return {
+      success: false,
+      error: {
+        code: 'USER_NOT_FOUND',
+        message: 'حساب شما در سیستم یافت نشد. لطفاً دوباره وارد شوید.',
+      },
+    };
+  }
+
+  if (user.telegramChatId) {
     return {
       success: true,
       data: {
@@ -144,6 +157,13 @@ export async function requestPhoneOtpOrTelegramLink(phone: string): Promise<Phon
     where: { id: authResult.user.id },
     select: { telegramChatId: true },
   });
+
+  // 2026-08-17 (UX-fix): session یتیم — کاربر در DB نیست (بعد از wipe/بازیابی
+  // دیتابیس یا login از DB دیگر). بدون این گارد، user.update پرتاب می‌کرد و
+  // Server Action crash می‌شد → error boundary کل صفحه. حالا پیام واضح + re-login.
+  if (!user) {
+    return { kind: 'error', message: 'حساب شما در سیستم یافت نشد. لطفاً دوباره وارد شوید.' };
+  }
 
   // ثبت شمارهٔ در انتظار — اگر با شمارهٔ تلگرام یکی بود، خودکار تأیید می‌شود
   await prisma.user.update({

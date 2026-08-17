@@ -49,7 +49,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { KYC_TIER_LIMITS } from '@/lib/kyc-tier';
-import { PHONE_COUNTRIES, combineDialAndNumber } from '@/lib/phone-countries';
+import { PHONE_COUNTRIES, combineDialAndNumber, detectCountryCode } from '@/lib/phone-countries';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -120,8 +120,10 @@ export default function KycContent({ profile, records }: Props) {
 
   // سطح ۱ — موبایل و تلگرام
   const [phone, setPhone] = useState(profile.phone ?? '');
-  // کد کشور (ISO) — پیش‌فرض افغانستان
-  const [dialCountry, setDialCountry] = useState('AF');
+  // کد کشور (ISO) — از فرمت شمارهٔ ذخیره‌شده تشخیص داده می‌شود، وگرنه افغانستان
+  // (2026-08-17: شمارهٔ ایرانی 0913… با کد پیش‌فرض AF ترکیب می‌شد → نامعتبر →
+  // «تأیید نمیشه». detectCountryCode آن را خودکار به IR می‌برد.)
+  const [dialCountry, setDialCountry] = useState(() => detectCountryCode(profile.phone ?? ''));
   const dialCode = PHONE_COUNTRIES.find((o) => o.code === dialCountry)?.dial ?? '+93';
   const [otpCode, setOtpCode] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -224,7 +226,7 @@ export default function KycContent({ profile, records }: Props) {
 
   function resetFields() {
     setPhone(profile.phone ?? '');
-    setDialCountry('AF');
+    setDialCountry(detectCountryCode(profile.phone ?? ''));
     setOtpCode('');
     setOtpSent(false);
     setOtpInfo(null);

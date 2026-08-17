@@ -74,3 +74,43 @@ export function combineDialAndNumber(dialCode: string, raw: string): string {
   // صفر ابتدایی محلی را حذف کن: ۰۷۰۱۲۳۴۵۶۷ → +93701234567
   return `+${dialDigits}${digits.replace(/^0+/, '')}`;
 }
+
+/**
+ * پیشوندهای محلی شناخته‌شده برای تشخیص کد کشور از شمارهٔ بدون `+`
+ * (فرمت ذخیره‌شده در پروفایل — مثلاً seed دمو مشتری). AF همیشه fallback است.
+ */
+const LOCAL_PREFIX_TO_COUNTRY: Array<{ prefix: string; code: string }> = [
+  // ایران: 0913… (شمارهٔ موبایل با صفر ابتدایی)
+  { prefix: '09', code: 'IR' },
+  // افغانستان: 070… / 078… (موبایل با 07)
+  { prefix: '07', code: 'AF' },
+  // پاکستان: 030…
+  { prefix: '03', code: 'PK' },
+  // امارات: 050…
+  { prefix: '05', code: 'AE' },
+];
+
+/**
+ * تشخیص کد کشور از شمارهٔ ذخیره‌شده/واردشده (بدون وابستگی جدید — AF-first).
+ * - با `+` → پیشوند کد کشور از PHONE_COUNTRIES (طولانی‌ترین match، مثل 971 قبل از 97)
+ * - با `0` (شمارهٔ محلی) → پیشوندهای محلی شناخته‌شدهٔ بالا؛ هر چیز دیگر → AF
+ *
+ * کاربرد: فرم‌هایی که شمارهٔ پروفایل را پیش‌پر می‌کنند (مثل KYC Level 1) — اگر
+ * شمارهٔ مشتری ایرانی باشد (0913…) ولی کد پیش‌فرض AF بماند، ترکیب +93+09…
+ * نامعتبر می‌شود و «تأیید» هرگز انجام نمی‌شود.
+ */
+export function detectCountryCode(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return 'AF';
+
+  if (trimmed.startsWith('+')) {
+    const dial = detectDialCode(trimmed);
+    return dial ? (PHONE_COUNTRIES.find((o) => o.dial === dial)?.code ?? 'AF') : 'AF';
+  }
+
+  const digits = trimmed.replace(/\D/g, '');
+  for (const { prefix, code } of LOCAL_PREFIX_TO_COUNTRY) {
+    if (digits.startsWith(prefix)) return code;
+  }
+  return 'AF';
+}
