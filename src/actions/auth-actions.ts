@@ -266,12 +266,23 @@ async function dispatchOtpEmail(
 async function issueOtp(
   email: string,
   intent: OtpEmailIntent,
-): Promise<{ ok: true } | { ok: false; retryAfterMs: number }> {
+): Promise<{ ok: true } | { ok: false; retryAfterMs: number; deliveryFailed?: boolean }> {
   const minted = await generateOtpToken({ email, intent });
   if (!minted.ok) {
     return { ok: false, retryAfterMs: minted.retryAfterMs };
   }
-  await dispatchOtpEmail(email, minted.code, intent);
+  try {
+    await dispatchOtpEmail(email, minted.code, intent);
+  } catch (err) {
+    // 2026-08-17 (UX-fix — همان الگوی phone-verify): fail تحویل ایمیل مشکل سمت
+    // سرور است، نه تلاش کاربر. قبلاً توکن minted‌شده در DB می‌ماند → ارسال بعدی
+    // با cooldown ۶۰ثانیه‌ای قفل می‌شد و سهمیهٔ rate-limit می‌سوخت. حالا توکن
+    // تحویل‌نشده حذف می‌شود (تلاش بعدی از صفر) و خطای واقعی لاگ می‌شود؛ caller
+    // سهمیه را برمی‌گرداند.
+    await invalidateOtpTokens({ email, intent });
+    serverLog.error('auth-actions', `otp-email-delivery-failed (${intent})`, err);
+    return { ok: false, retryAfterMs: 0, deliveryFailed: true };
+  }
   return { ok: true };
 }
 
@@ -316,7 +327,21 @@ async function lookupEmailImpl(formData: FormData): Promise<AuthResult> {
     }
 
     if (!user.emailVerified) {
-      await issueOtp(email, 'reverify');
+      const sent = await issueOtp(email, 'reverify');
+      if (!sent.ok) {
+        if (sent.deliveryFailed) {
+          await resetRateLimit(`email-lookup:${email}`, 'auth');
+          return {
+            success: false,
+            error: 'ارسال کد تأیید ناموفق بود. لطفاً چند لحظه بعد دوباره تلاش کنید',
+          };
+        }
+        return {
+          success: false,
+          error: 'لطفاً کمی صبر کنید و دوباره درخواست کنید',
+          cooldownMs: sent.retryAfterMs,
+        };
+      }
       return {
         success: true,
         step: 'verify',
@@ -335,7 +360,21 @@ async function lookupEmailImpl(formData: FormData): Promise<AuthResult> {
       };
     }
 
-    await issueOtp(email, 'login');
+    const loginSent = await issueOtp(email, 'login');
+    if (!loginSent.ok) {
+      if (loginSent.deliveryFailed) {
+        await resetRateLimit(`email-lookup:${email}`, 'auth');
+        return {
+          success: false,
+          error: 'ارسال کد ورود ناموفق بود. لطفاً چند لحظه بعد دوباره تلاش کنید',
+        };
+      }
+      return {
+        success: false,
+        error: 'لطفاً کمی صبر کنید و دوباره درخواست کنید',
+        cooldownMs: loginSent.retryAfterMs,
+      };
+    }
     return {
       success: true,
       step: 'verify',
@@ -430,6 +469,13 @@ async function registerUserImpl(formData: FormData): Promise<AuthResult> {
 
     const sent = await issueOtp(input.email, 'register');
     if (!sent.ok) {
+      if (sent.deliveryFailed) {
+        await resetRateLimit(`register:${input.email}`, 'auth');
+        return {
+          success: false,
+          error: 'ارسال کد تأیید ناموفق بود. لطفاً چند لحظه بعد دوباره تلاش کنید',
+        };
+      }
       return {
         success: false,
         error: 'لطفاً کمی صبر کنید و دوباره درخواست کد کنید',
@@ -1008,6 +1054,13 @@ async function resendOtpImpl(formData: FormData): Promise<AuthResult> {
 
     const sent = await issueOtp(input.email, input.intent);
     if (!sent.ok) {
+      if (sent.deliveryFailed) {
+        await resetRateLimit(`resend:${input.email}`, 'auth');
+        return {
+          success: false,
+          error: 'ارسال کد ناموفق بود. لطفاً چند لحظه بعد دوباره تلاش کنید',
+        };
+      }
       return {
         success: false,
         error: 'لطفاً کمی صبر کنید و دوباره درخواست کنید',
@@ -1085,6 +1138,13 @@ async function recoverPasswordImpl(formData: FormData): Promise<AuthResult> {
 
     const sent = await issueOtp(email, 'recover');
     if (!sent.ok) {
+      if (sent.deliveryFailed) {
+        await resetRateLimit(`recover:${email}`, 'auth');
+        return {
+          success: false,
+          error: 'ارسال کد بازنشانی ناموفق بود. لطفاً چند لحظه بعد دوباره تلاش کنید',
+        };
+      }
       return {
         success: false,
         error: 'لطفاً کمی صبر کنید و دوباره درخواست کنید',
