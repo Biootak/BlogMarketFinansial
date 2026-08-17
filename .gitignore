@@ -29,6 +29,7 @@ scripts/*
 !scripts/rules-watch.mjs
 !scripts/perf-gate.mjs
 !scripts/check-oauth.mjs
+!scripts/migrate-kyc-urls.mjs
 !scripts/git-hooks/
 !scripts/git-hooks/pre-commit
 

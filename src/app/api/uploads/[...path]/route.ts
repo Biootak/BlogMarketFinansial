@@ -1,4 +1,7 @@
 import path from 'node:path';
+import { getExchangeForUser } from '@/actions/exchanges';
+import { auth } from '@/auth';
+import db from '@/lib/db';
 import { getFileStream } from '@/lib/storage';
 import { type NextRequest, NextResponse } from 'next/server';
 
@@ -26,10 +29,17 @@ const MIME_TYPES: Record<string, string> = {
   // falls through to the "نوع فایل مجاز نیست" 400 below.
 };
 
-// 2026-06-14: weak ETag so the browser/CDN can do conditional
-// requests (If-None-Match → 304). Without it, every page view
-// refetches the whole image even if it's in the browser cache
-// and hasn't changed.
+// 2026-08-17 (security): مدارک KYC (ملی، سلفی) هرگز نباید در کش عمومی CDN/مرورگر
+// بمانند — `private, no-store`. بقیهٔ رسانه‌ها public immutable می‌مانند.
+const KYC_CACHE_CONTROL = 'private, no-store';
+const PUBLIC_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+
+/**
+ * 2026-06-14: weak ETag so the browser/CDN can do conditional
+ * requests (If-None-Match → 304). Without it, every page view
+ * refetches the whole image even if it's in the browser cache
+ * and hasn't changed.
+ */
 const buildEtag = (folder: string, filename: string, mtimeMs?: number) => {
   const seed = mtimeMs ? `${folder}/${filename}@${mtimeMs}` : `${folder}/${filename}`;
   // Simple djb2 hash; we don't need crypto strength here.
@@ -39,6 +49,53 @@ const buildEtag = (folder: string, filename: string, mtimeMs?: number) => {
   }
   return `W/"${(hash >>> 0).toString(36)}"`;
 };
+
+/**
+ * ماتریس دسترسی مدارک KYC (2026-08-17 — قبلاً هر کسی با URL می‌توانست ببیند):
+ *   - OWNER / SUPERADMIN / ADMIN → بررسی پلتفرم (dashboard/kyc-review)
+ *   - EXCHANGE staff → مدارک KycVerification صرافی خودشان (exchange/kyc-review)
+ *   - صاحب مدرک → KycRecord (پلتفرم) یا KycVerification متصل به Customer خودش
+ * بقیه → 403 یکسان (تا وجود فایل لو نرود).
+ */
+async function canViewKycFile(
+  userId: string,
+  role: string | undefined,
+  filename: string,
+): Promise<boolean> {
+  if (role === 'OWNER' || role === 'SUPERADMIN' || role === 'ADMIN') return true;
+
+  const suffix = `kyc/${filename}`;
+  const [record, verification] = await Promise.all([
+    db.kycRecord.findFirst({
+      where: {
+        userId,
+        OR: [
+          { selfieUrl: { endsWith: suffix } },
+          { docFrontUrl: { endsWith: suffix } },
+          { docBackUrl: { endsWith: suffix } },
+        ],
+      },
+      select: { id: true },
+    }),
+    db.kycVerification.findFirst({
+      where: { fileUrl: { endsWith: suffix }, Customer: { userId } },
+      select: { id: true },
+    }),
+  ]);
+  if (record || verification) return true;
+
+  if (role === 'EXCHANGE') {
+    const membership = await getExchangeForUser();
+    if (!membership) return false;
+    const forExchange = await db.kycVerification.findFirst({
+      where: { exchangeId: membership.exchange.id, fileUrl: { endsWith: suffix } },
+      select: { id: true },
+    });
+    return !!forExchange;
+  }
+
+  return false;
+}
 
 export async function GET(
   request: NextRequest,
@@ -79,13 +136,38 @@ export async function GET(
       );
     }
 
+    // ── گیت دسترسی برای فولدر خصوصی kyc ──────────────────────────────────
+    // قبل از هر چیز (حتی قبل از ETag) تا وجود فایل برای افراد غیرمجاز لو نرود.
+    let cacheControl = PUBLIC_CACHE_CONTROL;
+    if (folder === 'kyc') {
+      const session = await auth();
+      if (!session?.user?.id) {
+        return NextResponse.json(
+          { success: false, error: { code: 'UNAUTHENTICATED', message: 'احراز هویت الزامی است' } },
+          { status: 401 },
+        );
+      }
+      const allowed = await canViewKycFile(
+        session.user.id,
+        session.user.role ?? undefined,
+        filename,
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          { success: false, error: { code: 'FORBIDDEN', message: 'دسترسی غیرمجاز' } },
+          { status: 403 },
+        );
+      }
+      cacheControl = KYC_CACHE_CONTROL;
+    }
+
     const etag = buildEtag(folder, filename);
     if (request.headers.get('if-none-match') === etag) {
       return new NextResponse(null, {
         status: 304,
         headers: {
           ETag: etag,
-          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Cache-Control': cacheControl,
         },
       });
     }
@@ -107,7 +189,7 @@ export async function GET(
       status: 200,
       headers: {
         'Content-Type': MIME_TYPES[ext],
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Cache-Control': cacheControl,
         ETag: etag,
         'X-Content-Type-Options': 'nosniff',
       },

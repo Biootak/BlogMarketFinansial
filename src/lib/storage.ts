@@ -188,6 +188,14 @@ export async function uploadFile(
   const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
   const key = `${safeFolder}/${safeFilename}`;
 
+  // 2026-08-17 (security): مدارک KYC (ملی/سلفی) خصوصی‌اند —
+  //  ۱) آبجکت S3 با `private, no-store` آپلود می‌شود تا CDN هرگز آن را نکشد؛
+  //  ۲) URL ذخیره‌شده همیشه مسیر دروازهٔ احراز-گیت‌شده است (`/uploads/kyc/...`)
+  //     — نه URL عمومی S3 — تا سرو همیشه از /api/uploads/[...path] با کنترل
+  //     دسترسی رد شود (getFileStream همانجا اول S3 را می‌خواند؛ پس ماندگاری
+  //     S3 حفظ است، فقط نمایش گیت می‌شود).
+  const isKyc = safeFolder === 'kyc';
+
   const localPromise = writeLocal(buffer, folder, filename).then((p) => ({
     kind: 'local' as const,
     path: p,
@@ -208,7 +216,7 @@ export async function uploadFile(
             Body: buffer,
             ContentType: contentType,
             ContentLength: buffer.length,
-            CacheControl: 'public, max-age=31536000, immutable',
+            CacheControl: isKyc ? 'private, no-store' : 'public, max-age=31536000, immutable',
             Metadata: {
               'uploaded-at': String(Date.now()),
               ...(typeof dims?.width === 'number' ? { 'img-width': String(dims.width) } : {}),
@@ -240,7 +248,7 @@ export async function uploadFile(
   const s3Url = s3Result?.url ?? null;
 
   return {
-    url: s3Url ?? localResult.path,
+    url: isKyc ? localResult.path : (s3Url ?? localResult.path),
     s3Url,
     localPath: localResult.path,
     filename,
