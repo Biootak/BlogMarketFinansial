@@ -30,6 +30,34 @@ const MARKET_RATES_TTL = 180;
  */
 const SNAPSHOT_MAX_AGE_MS = 10 * 60 * 1000; // ۱۰ دقیقه
 
+/**
+ * 2026-08-17 (P0 — قانون «AFN اول»): ترتیب نمایش نرخ‌ها.
+ * قبلاً فقط priority (asc) مرتب می‌کرد و IRAN_USD و SARA_USD هر دو priority=1
+ * داشتند → در ticker/API اول تومان (ایران) می‌آمد، نه افغانی. حالا اول گروه‌بندی
+ * (افغانستان → ایران → ...)، بعد priority درون گروه. منطبق با
+ * GROUP_ORDER همین پروژه (money-transfer/ExchangeRateTableView).
+ */
+const GROUP_ORDER: MarketRateItem['group'][] = [
+  'afghan',
+  'iran-forex',
+  'iran-gold',
+  'iran-coin',
+  'global',
+  'minor',
+];
+
+function sortMarketRates(items: MarketRateItem[]): MarketRateItem[] {
+  return [...items].sort((a, b) => {
+    const ga = GROUP_ORDER.indexOf(a.group);
+    const gb = GROUP_ORDER.indexOf(b.group);
+    const ia = ga === -1 ? GROUP_ORDER.length : ga;
+    const ib = gb === -1 ? GROUP_ORDER.length : gb;
+    if (ia !== ib) return ia - ib;
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return a.symbol.localeCompare(b.symbol);
+  });
+}
+
 function snapToItem(s: SnapshotItem): MarketRateItem {
   return {
     symbol: s.symbol,
@@ -92,7 +120,7 @@ export const getMarketRates = safeCache(
           );
         }
       }
-      return snap.items.map(snapToItem);
+      return sortMarketRates(snap.items.map(snapToItem));
     }
     // 2) fallback: DB last-known-good (مقادیر push قبلی) — بدون scrape
     const rows = await prisma.exchangeRate.findMany({
@@ -125,7 +153,7 @@ export const getMarketRates = safeCache(
         `snapshot missing → DB last-known-good (${items.length} items)`,
       );
     }
-    return items;
+    return sortMarketRates(items);
   },
   [] as MarketRateItem[],
   {
