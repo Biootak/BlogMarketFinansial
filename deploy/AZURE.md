@@ -144,14 +144,11 @@ bash deploy/azure-update.sh
 
 ### 🗺️ ریجن (میان‌مدت)
 
-- بهترین: جابه‌جایی **هم VM و هم Postgres** به یک ریجن نزدیک به افغانستان
-  (مثلاً `Qatar Central` / `UAE North` / `India Central`) — هر دو با هم، چون
-  DB و وب نباید از هم دور باشند. B1ms/B2ats رایگان آفر دانشجویی را اول با
-  `az postgres flexible-server list-skus` چک کن.
-- اگر ریجن رایگان در دسترس نبود → حداقل DB را به westus2 بیاور تا کوئری‌ها
-  cross-region نباشند.
-- راهکار دیگر: **کش لبه** (قسمت بالا) بخش عمدهٔ مشکل را بدون مهاجرت حل می‌کند —
-  اول Cache Rule، بعد مهاجرت ریجن.
+- **رانبوک کامل (az CLI + cutover بدون downtime):** [`deploy/migration-region-runbook.md`](migration-region-runbook.md)
+- خلاصه: انتخاب ریجن `uaenorth` (دبی) — تنها ریجن نزدیک افغانستان که هم `B2ats_v2` و هم `B1ms` دارد
+  (قطر هیچ‌کدام را ندارد؛ هند گزینهٔ دوم است — تأیید با API واقعی 2026-08-17).
+- cutover بدون downtime با logical replication (Plan B) یا dual-dump ساده (Plan A) — ترتیب دقیق گام‌ها در رانبوک.
+- قبل از مهاجرت، Cache Rule همین بخش را بزن — بخش عمدهٔ کندی را بدون مهاجرت حل می‌کند.
 
 ---
 
