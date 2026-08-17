@@ -92,13 +92,22 @@ docker compose --env-file .env -f deploy/docker-compose.azure.yml logs -f cron
 ### چک ورود اجتماعی (Google / GitHub)
 
 ```bash
-npm run check:oauth        # از هر ماشینی؛ یا node scripts/check-oauth.mjs
+npm run check:oauth        # از هر ماشینی؛ یا node scripts/check-oauth.mjs [base-url]
 ```
 
 - باید خروجی `✅ [google]` و `✅ [github]` بدهد (هدایت به accounts.google.com / github.com).
-- اگر `error=Configuration` دیدی → در `.env` روی VM مقادیر `AUTH_GOOGLE_ID/SECRET` و `AUTH_GITHUB_ID/SECRET`
-  خالی/غایب‌اند (در live site 2026-08-17 همین خطا دیده شد) — یا callback در کنسول provider با
-  دامنهٔ فعلی ناسازگار است. بعد از اصلاح .env: `docker compose ... restart web`.
+  ✅ **2026-08-17:** هر دو سبز شدند — بعد از اصلاح (۱) Cache Rule (استثنای `/api/auth`) و
+  (۲) callback های کنسول provider که هنوز به دامنهٔ قدیمی `market-finansial.vercel.app`
+  اشاره داشتند → `financialmarket.page/api/auth/callback/{google,github}` اضافه شد.
+- **2026-08-17:** چک با جریان واقعی است (GET `/api/auth/csrf` → POST `/api/auth/signin/{id}`)
+  — دقیقاً مثل کلیک روی دکمهٔ ورود. ⚠️ GET به `/api/auth/signin/{provider}` در Auth.js v5
+  ذاتاً `error=Configuration` برمی‌گرداند (فقط صفحهٔ signin رندر می‌شود) و معیار درستی نیست.
+- `error=Configuration` روی POST → در `.env` روی VM مقادیر `AUTH_GOOGLE_ID/SECRET` و
+  `AUTH_GITHUB_ID/SECRET` خالی/غایب/ناسازگارند یا callback در کنسول provider با دامنهٔ فعلی
+  ناسازگار است. بعد از اصلاح .env: `docker compose ... up -d web` (نه فقط restart — env_file
+  موقع create اعمال می‌شود).
+- پیام `cf-cache-status: HIT` یا `error=MissingCSRF` → Cloudflare Cache Rule دارد
+  `/api/auth/*` را کش می‌کند → بخش «اقدام لازم» بالا را اجرا کن.
 
 ### رول‌بک (بازگشت به نسخهٔ قبلی)
 
@@ -159,12 +168,22 @@ bash deploy/rollback.sh <commit-sha>     # sha کامل یا کوتاه
 
 ### ⚡ اقدام لازم (داشبورد Cloudflare — قابل‌انجام از کد نیست)
 
-1. Cloudflare → `financialmarket.page` → **Caching → Cache Rules → Create**
-2. **When incoming requests match:** `Hostname equals financialmarket.page` **AND** `URI Path starts with /`
+> ⚠️ **2026-08-17 — استثنای `/api/auth` حیاتی است:** نسخهٔ اول این Rule
+> (`URI Path starts with /`) باعث شد Cloudflare پاسخ `/api/auth/csrf` را هم کش کند
+> (بدون `Set-Cookie`) و **کل لاگین اجتماعی و OTP با `error=MissingCSRF` بشکند**
+> — `npm run check:oauth` آن را با `cf-cache-status: HIT` تشخیص می‌دهد. اگر Rule
+> قبلاً ساخته شده، همان را Edit کن و شرط استثنا را اضافه کن (یا Rule جدید بساز).
+
+1. Cloudflare → `financialmarket.page` → **Caching → Cache Rules**
+2. **When incoming requests match:**
+   `Hostname equals financialmarket.page` **AND** `URI Path starts with /`
+   **AND** `URI Path does not start with /api/auth`
 3. **Then:** Cache Eligibility → **Eligible for cache**؛ Edge TTL → **5 minutes**؛
    Browser TTL → 5 minutes؛ **Cache by device type → On**
 4. Save. (هدر `s-maxage=300, stale-while-revalidate=86400` از قبل هست.)
-5. Effect: TTFB برای بازدیدکنندگان از ~۱.۳s به ~۰.۱–۰.۳s می‌رسد (لبهٔ ایران/افغانستان).
+5. بعد از Save، **Caching → Purge → Purge Everything** بزن تا نسخه‌های کش‌شدهٔ قدیمی
+   `/api/auth/*` (بدون کوکی) حذف شوند.
+6. Effect: TTFB برای بازدیدکنندگان از ~۱.۳s به ~۰.۱–۰.۳s می‌رسد (لبهٔ ایران/افغانستان).
 
 ### 🗺️ ریجن (میان‌مدت)
 
