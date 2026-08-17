@@ -1,6 +1,8 @@
 # 📦 رانبوک مهاجرت ریجن: westus2 / Norway East → UAE North (uaenorth)
 
-> **وضعیت:** برنامهریزی — اجرا نشده. قبل از اجرا، بخش «هشدارها و هزینه» را بخوان.
+> **وضعیت:** ⛔ **بلاک‌شده — 2026-08-17 (اجرای واقعی فاز ۱).** سیاست اشتراک
+> `sys.regionrestriction` اجازهٔ ساخت هیچ منبعی در uaenorth را نمی‌دهد — فاز ۱/۲ بدون
+> تغییر سیاست قابل اجرا نیست. جزئیات + راه‌حل: **§1.5**. قبل از اجرا، بخش «هشدارها و هزینه» را بخوان.
 > **هدف:** کوتاهکردن مسیر کاربران افغانستان/ایران به سرور و حذف فاصلهٔ DB↔Web.
 > **منبع حقایق:** اندازهگیری واقعی 2026-08-17 (TTFB ایران→westus2 ≈ ۱.۲–۱.۳s؛
 > فاصلهٔ DB (Norway) تا VM (westus2) ≈ ۷۰۰۰km) + در دسترس بودن SKU از API واقعی Azure.
@@ -16,6 +18,10 @@
 | `qatarcentral` (قطر) | ❌ **غیرموجود** (فقط اینتل) | ❌ غیرموجود | ~۲٬۱۰۰ km | ❌ حذف |
 | `westus2` (فعلی) | ✅ | ✅ | ~۱۱٬۵۰۰ km | فعلی |
 | `norwayeast` (DB فعلی) | — | ✅ | ~۴٬۸۰۰ km | فعلی |
+
+> ⚠️ **2026-08-17:** موجودی SKU از API Azure تأیید شده بود، ولی سیاست اشتراک (`sys.regionrestriction`)
+> در عمل دیپلوی به uaenorth را **deny** کرد (اولین دستور اجرا: ساخت IP). ر.ک §1.5 — «انتخاب نهایی»
+> تا زمان رفع بلوکر عملاً اجرایی نیست.
 
 - **اندازهگیری موجود:** RTT ایران→westus2 ≈ ۱.۲–۱.۳s. با uaenorth این عدد به
   **~۰.۱–۰.۲s** میرسد (با کش Cloudflare حتی کمتر). DB و Web هم در یک ریجن
@@ -33,6 +39,44 @@
 | **pg client** | pg_dump/pg_restore نسخه ≥ 16 (سرور فعلی PG16 است). روی VM قدیمی `postgresql-client` نصب است. |
 | **هیچ state روی VM نیست** | آپلودها روی S3/Filebase، state در Postgres → VM جدید فقط docker + .env لازم دارد (همان تصویر ghcr). |
 | **رولبک همیشه باز است** | تا ۷ روز بعد از cutover، VM و PG قدیمی را نگه دار → با یک تغییر DNS برمی‌گردی. |
+
+---
+
+## 1.5 ⛔ بلوکر: سیاست ریجن اشتراک (کشف‌شده هنگام اجرای واقعی — 2026-08-17)
+
+> **یاد گرفته شد از اجرای واقعی فاز ۱:** رانبوک موجودی SKU (B1ms / B2ats_v2) را از API Azure
+> چک کرده بود، اما **سیاست ریجن اشتراک را نه**. اولین دستور اجرا (`az network public-ip create
+> --location uaenorth`) با خطای `RequestDisallowedByAzure` رد شد.
+
+| چک | نتیجهٔ واقعی |
+|-----|-------------|
+| دستور اجراشده | `az network public-ip create -g fm-prod -n fm-vm-uae-ip --location uaenorth --sku Standard --allocation-method Static` |
+| خطا | `ERROR: (RequestDisallowedByAzure) ... This policy maintains a set of best available regions ...` |
+| سیاست فعال | `sys.regionrestriction` → تعریف built-in `b86dabb9-b578-4d7b-b842-3b45e95769a1` «Allowed resource deployment regions» — effect: `deny` |
+| scope سیاست | `/subscriptions/8085f760-3706-447c-a07b-003e52047640` |
+| لیست مجاز (پارامتر) | `westus2`, `norwayeast`, `canadacentral`, `eastus`, `westus` — **uaenorth در لیست نیست** |
+| دسترسی لازم برای رفع | Owner روی اشتراک (✅ موجود است) |
+
+**نتیجه:** هیچ منبعی (حتی IP) در uaenorth ساخته نمی‌شود مگر `uaenorth` به
+`listOfAllowedLocations` سیاست اضافه شود. هیچ‌کدام از ریجن‌های مجاز فعلی به افغانستان
+نزدیک نیستند → هدف کل رانبوک بدون تغییر سیاست قابل اجرا نیست.
+
+**راه‌حل (تغییر governance کل اشتراک — قبل از اجرا تأیید کاربر لازم است):**
+
+```bash
+az policy assignment update --name sys.regionrestriction \
+  --parameters '{"listOfAllowedLocations":{"value":["westus2","norwayeast","canadacentral","eastus","westus","uaenorth"]}}'
+```
+
+- این تغییر **فقط-افزودنی** است (uaenorth اضافه می‌شود، بقیهٔ ریجن‌ها دست‌نخورده می‌مانند) و قابل بازگشت است.
+- **قبل از تغییر:** تأیید اینکه SKU های رایگان (B1ms / B2ats_v2) در uaenorth واقعاً مشمول آفر
+  دانشجویی هستند — سیاست احتمالاً عمداً به ریجن‌های رایگان محدود شده است.
+- دستور بررسی سیاست (برای بازتولید): `az policy assignment show --name sys.regionrestriction --query parameters`
+
+**یافتهٔ جانبی همان اجرا (برای فاز ۱ مهم — ر.ک §2):** ادمین واقعی PG فعلی `fmpgadmin` است
+(نه `postgres` که در دستورهای این رانبوک آمده) و رمزِ `.env` داخل `DATABASE_URL` به‌صورت
+URL-encoded است → `--admin-password` و اتصال‌های `pg_dump`/`pg_restore` باید یوزر/رمز را
+دقیقاً از `.env` فعلی استخراج کنند (decode شده).
 
 ---
 
