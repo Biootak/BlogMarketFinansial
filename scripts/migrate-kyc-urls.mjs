@@ -68,7 +68,13 @@ async function main() {
     for (const v of verifications) {
       const next = rewriteKycUrl(v.fileUrl);
       if (next && next !== v.fileUrl) {
-        updates.push({ model: 'KycVerification', id: v.id, field: 'fileUrl', from: v.fileUrl, to: next });
+        updates.push({
+          model: 'KycVerification',
+          id: v.id,
+          field: 'fileUrl',
+          from: v.fileUrl,
+          to: next,
+        });
       }
     }
 
