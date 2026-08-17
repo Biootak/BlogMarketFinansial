@@ -22,6 +22,12 @@ services:
     pull_policy: always
     ports:
       - "3000:3000"
+    # 2026-08-17: B2ats_v2 فقط 897MB RAM دارد. قبلاً کانتینر بدون سقف بود و
+    # Node می‌توانست کل RAM + swap (۶۶۵MB) را بخورد. سقف 512m + heap 256m
+    # (NODE_OPTIONS زیر) = ۵۰٪ سقف → طبق راهنمای 2026 (netdata/IBM) heap باید
+    # ~۷۰٪ سقف باشد ولی اینجا non-heap + بافرهای Next را هم باید جا داد.
+    mem_limit: 512m
+    mem_reservation: 256m
     env_file:
       # نسبت به همین فایل (deploy/) — .env در ریشه رپو است
       - ../.env
@@ -50,6 +56,8 @@ services:
     # Sidecar — همان کرون‌های cron-job.org را داخل VM اجرا می‌کند
     image: ghcr.io/biootak/fm-blog-cron:main
     pull_policy: always
+    mem_limit: 128m
+    mem_reservation: 64m
     environment:
       - APP_URL=http://web:3000
       - CRON_SECRET=${CRON_SECRET:?CRON_SECRET must be set}
