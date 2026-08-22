@@ -5,6 +5,7 @@
 // This marks the module server-only so the client bundle stays slim.
 import 'server-only';
 
+import { randomUUID } from 'node:crypto';
 import authConfig from '@/auth.config';
 import { getUserByEmail } from '@/data/user';
 import { createAuthAdapter } from '@/lib/auth-adapter';
@@ -13,6 +14,7 @@ import prisma from '@/lib/db';
 import { devOwnerRoleForEmail } from '@/lib/dev-access';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
+import { isSessionRevoked } from '@/lib/session-denylist';
 import { consumeLoginToken, createTwoFactorChallenge } from '@/lib/tokens';
 import { LoginSchema } from '@/schemas';
 import type { Role } from '@/types/types';
@@ -404,6 +406,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.emailVerified = user.emailVerified;
         token.email = user.email;
         token.name = user.name;
+        // SECURITY-fix (2026-08-22): شناسهٔ یکتای توکن برای denylist خروج —
+        // logout() همین jti را در Redis با TTL ۳روز ثبت می‌کند و چکِ
+        // هر-درخواستِ پایین، توکن ردیشده را null می‌کند (الگوی استاندارد
+        // revocation برای JWT؛ WorkOS 2026-08 / jsonic 2026-05).
+        token.jti = randomUUID();
         // Store tokenVersion at sign-in time so we can detect revocations later.
         // tokenVersion is incremented in the DB whenever a role change or forced
         // sign-out occurs. If the value in the token no longer matches the DB,
@@ -456,6 +463,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // The DB query is a single indexed lookup on the primary key —
       // negligible overhead.
       if (!user && token.sub) {
+        // ── SECURITY-fix (2026-08-22): denylist خروج ─────────────────────────
+        // توکنِ ثبت‌شده در denylist (بعد از logout) فوراً null می‌شود — حتی
+        // کوکی کپی‌شده. Fail-open داخل خود isSessionRevoked است.
+        const tokenJti = typeof token.jti === 'string' ? token.jti : null;
+        if (tokenJti && (await isSessionRevoked(tokenJti))) return null;
         // 2026-08-11: fail-open. This DB query runs on EVERY authenticated
         // request; with the dev single-connection pool, a busy DB (pageview
         // writes, market tickers, parallel tabs) makes it time out. Letting

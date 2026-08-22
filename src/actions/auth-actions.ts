@@ -19,6 +19,7 @@
 //      password → bcrypt + emailVerified; after_otp → trust pre-verified marker.
 
 import { auth, signIn, signOut } from '@/auth';
+import { getAuthSecret } from '@/lib/auth-secret';
 // SECURITY-fix (2026-08-22): منطق invalidation از '@/actions/cacheActions'
 // به lib منتقل شد — logout باید برای همهٔ کاربران بدون گارد ادمین کار کند.
 import {
@@ -31,6 +32,7 @@ import { getEmailProviderAsync } from '@/lib/email';
 import { type OtpEmailIntent, otpEmail, otpExpiresLabel } from '@/lib/email/templates';
 import { checkRateLimit, resetRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
+import { resolveSessionCookieName, revokeSessionJti } from '@/lib/session-denylist';
 import {
   type VerificationEmailIntent,
   beginTwoFactorChallenge,
@@ -53,10 +55,12 @@ import {
   SetPasswordSchema,
   VerifyOtpSchema,
 } from '@/schemas';
+import { decode } from '@auth/core/jwt';
 import { Role } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { AuthError } from 'next-auth';
+import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
 import { v4 as createId } from 'uuid';
 import { z } from 'zod';
@@ -1331,6 +1335,26 @@ export async function logout(): Promise<AuthResult> {
     try {
       await invalidateDashboardCache();
       await invalidatePublicCache();
+    } catch {
+      // best-effort
+    }
+    // SECURITY-fix (2026-08-22): denylist خروج — jti این توکن در Redis با
+    // TTL ۳روز ثبت می‌شود؛ چکِ هر-درخواستِ jwt callback توکن‌های ردیشده را
+    // null می‌کند. یعنی کوکیِ کپی‌شده از همین مرورگر بعد از خروج بی‌اثر است
+    // (سایر دستگاه‌ها با jti جداگانه‌شان سالم می‌مانند). Best-effort — خطای
+    // Redis خروج را نباید بشکند.
+    try {
+      const jar = await cookies();
+      const raw = jar.get(resolveSessionCookieName())?.value;
+      if (raw) {
+        const decoded = await decode({
+          token: raw,
+          secret: getAuthSecret(),
+          salt: resolveSessionCookieName(),
+        });
+        const jti = typeof decoded?.jti === 'string' ? decoded.jti : null;
+        if (decoded?.sub && jti) await revokeSessionJti(jti);
+      }
     } catch {
       // best-effort
     }

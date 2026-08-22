@@ -32,5 +32,7 @@ declare module 'next-auth/jwt' {
     emailVerified?: Date | null;
     permissions?: string[];
     deniedPermissions?: string[];
+    /** 2026-08-22: شناسهٔ یکتای توکن برای denylist خروج (session-denylist) */
+    jti?: string;
   }
 }
