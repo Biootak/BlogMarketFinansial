@@ -427,7 +427,6 @@ export async function createDeal(
     fromCurrency,
     toCurrency,
     fromAmount,
-    toAmount: inputToAmount,
     channel,
     note,
     idempotencyKey,
@@ -490,13 +489,15 @@ export async function createDeal(
 
     // نرخ فروش صرافی = مشتری می‌خرد
     // مثال: fromAmount=100 USD، sellRate=56000 تومان → toAmount=5,600,000 تومان
+    // SECURITY-fix (2026-08-22): مقدار toAmount کلاینت هرگز بازنویسی نمی‌کند.
+    // قبلاً ورودی کلاینت مقدارِ محاسبه‌شدهٔ سرور را override می‌کرد — یعنی یک
+    // فراخوان دست‌کاری‌شده با fromAmount=1 و toAmount=999999999 بعد از تأیید
+    // کارمند، اعتبار دلخواه به کیف پول مشتری می‌نوشت. سرور تنها منبع حقیقت است؛
+    // فیلد اختیاری toAmount در CreateDealSchema فقط برای سازگاری API پذیرفته
+    // می‌شود و کاملاً نادیده گرفته می‌شود (بدون quote هم staff در confirm
+    // نرخ/مبلغ را ثبت می‌کند).
     appliedRate = lockResult.quote.sellRate;
     calculatedToAmount = new Decimal(fromAmount).mul(appliedRate);
-    // M5: اگر کاربر toAmount داده است و quote ندارد، از ورودی استفاده کن
-    // اگر quote دارد، toAmount محاسبه‌شده اولویت دارد
-    if (inputToAmount != null) {
-      calculatedToAmount = new Decimal(inputToAmount);
-    }
   }
 
   // ── Fraud screening (فقط برای کاربران لاگین) ──────────────────────────────
@@ -610,7 +611,7 @@ export async function createDeal(
     fromCurrency,
     toCurrency,
     fromAmount: String(fromAmount),
-    toAmount: String(inputToAmount ?? 0),
+    toAmount: String(calculatedToAmount),
     status: 'PENDING',
     exchangeName: exchangeId,
   });
@@ -619,7 +620,7 @@ export async function createDeal(
   if (userId) {
     void notifyTelegramUser(
       userId,
-      `🆕 <b>معامله ثبت شد</b>\n\n🔑 کد پیگیری: <code>${trackingCode}</code>\n💱 ${fromAmount} ${fromCurrency} → ${inputToAmount ?? '—'} ${toCurrency}\n📌 وضعیت: در انتظار بررسی`,
+      `🆕 <b>معامله ثبت شد</b>\n\n🔑 کد پیگیری: <code>${trackingCode}</code>\n💱 ${fromAmount} ${fromCurrency} → ${calculatedToAmount.isZero() ? '—' : calculatedToAmount.toFixed(2)} ${toCurrency}\n📌 وضعیت: در انتظار بررسی`,
       {
         inlineKeyboard: [[{ text: '🌐 پیگیری معامله', url: getPortalUrl('/customer/dashboard') }]],
       },
@@ -888,147 +889,179 @@ export async function completeDeal(
   // هر complete deal باید موجودی مشتری را آپدیت کند.
   // اگر مشتری Customer ندارد (مهمان)، فقط deal کامل می‌شود.
   try {
-    await prisma.$transaction(async (tx) => {
-      await tx.currencyDeal.update({
-        where: { id: dealId },
-        data: {
-          status: 'COMPLETED',
-          completedAt: new Date(),
-          ...(internalNote ? { internalNote } : {}),
-        },
-      });
+    await prisma.$transaction(
+      async (tx) => {
+        // SECURITY-fix (2026-08-22): ادعای اتمیک وضعیت — همان الگوی confirmDeal
+        // و refundDeal. قبلاً وضعیت بیرون از تراکنش خوانده و بدون شرط update
+        // می‌شد؛ دو complete هم‌زمان هر دو از pre-check رد می‌شدند و هر دو
+        // اعتبار مقصد را به کیف پول می‌نوشتند (double-credit).
+        const completeClaim = await tx.currencyDeal.updateMany({
+          where: { id: dealId, status: { in: ['CONFIRMED', 'PROCESSING'] } },
+          data: {
+            status: 'COMPLETED',
+            completedAt: new Date(),
+            ...(internalNote ? { internalNote } : {}),
+          },
+        });
+        if (completeClaim.count === 0) throw new Error('ALREADY_COMPLETED');
 
-      await tx.dealStatusLog.create({
-        data: {
-          dealId,
-          fromStatus,
-          toStatus: 'COMPLETED',
-          actorId: access.userId,
-          actorRole: 'SARAFI',
-        },
-      });
-
-      // AuditLog (M6) — با IP برای ردیابی (P0-4)
-      await tx.auditLog.create({
-        data: {
-          id: createId(),
-          exchangeId: deal.exchangeId,
-          actorId: access.userId,
-          actorRole: 'SARAFI',
-          action: 'DEAL_COMPLETED',
-          entityType: 'CurrencyDeal',
-          entityId: dealId,
-          ip,
-          meta: {
-            fromCurrency: deal.fromCurrency,
-            toCurrency: deal.toCurrency,
-            fromAmount: deal.fromAmount.toString(),
-            toAmount: deal.toAmount.toString(),
-            appliedRate: deal.appliedRate.toString(),
-          } as Prisma.InputJsonValue,
-        },
-      });
-
-      // اگر مشتری Customer دارد → LedgerEntry با txnId ثبت کن (H1 + P1-1)
-      if (deal.userId) {
-        const customer = await tx.customer.findFirst({
-          where: { userId: deal.userId, exchangeId: deal.exchangeId },
-          select: { id: true },
+        await tx.dealStatusLog.create({
+          data: {
+            dealId,
+            fromStatus,
+            toStatus: 'COMPLETED',
+            actorId: access.userId,
+            actorRole: 'SARAFI',
+          },
         });
 
-        if (customer) {
-          // پیدا کردن یا ساختن حساب مشتری برای ارز مقصد
-          let account = await tx.fintechAccount.findFirst({
-            where: {
-              customerId: customer.id,
-              exchangeId: deal.exchangeId,
-              currency: deal.toCurrency,
-            },
-            select: { id: true, balance: true },
+        // AuditLog (M6) — با IP برای ردیابی (P0-4)
+        await tx.auditLog.create({
+          data: {
+            id: createId(),
+            exchangeId: deal.exchangeId,
+            actorId: access.userId,
+            actorRole: 'SARAFI',
+            action: 'DEAL_COMPLETED',
+            entityType: 'CurrencyDeal',
+            entityId: dealId,
+            ip,
+            meta: {
+              fromCurrency: deal.fromCurrency,
+              toCurrency: deal.toCurrency,
+              fromAmount: deal.fromAmount.toString(),
+              toAmount: deal.toAmount.toString(),
+              appliedRate: deal.appliedRate.toString(),
+            } as Prisma.InputJsonValue,
+          },
+        });
+
+        // اگر مشتری Customer دارد → LedgerEntry با txnId ثبت کن (H1 + P1-1)
+        if (deal.userId) {
+          const customer = await tx.customer.findFirst({
+            where: { userId: deal.userId, exchangeId: deal.exchangeId },
+            select: { id: true },
           });
-          if (!account) {
-            account = await tx.fintechAccount.create({
+
+          if (customer) {
+            // پیدا کردن یا ساختن حساب مشتری برای ارز مقصد
+            let account = await tx.fintechAccount.findFirst({
+              where: {
+                customerId: customer.id,
+                exchangeId: deal.exchangeId,
+                currency: deal.toCurrency,
+              },
+              select: { id: true, balance: true },
+            });
+            if (!account) {
+              account = await tx.fintechAccount.create({
+                data: {
+                  id: createId(),
+                  exchangeId: deal.exchangeId,
+                  customerId: customer.id,
+                  currency: deal.toCurrency,
+                  type: 'WALLET',
+                  status: 'ACTIVE',
+                  updatedAt: new Date(),
+                },
+                select: { id: true, balance: true },
+              });
+            }
+
+            // F6-fix: چک کنید netAmount منفی نباشد
+            // مثال: toAmount=5,600,000، feeAmount=56,000 → netAmount=5,544,000 ✓
+            //        toAmount=50,000،   feeAmount=60,000 → netAmount<0 → خطا ✗
+            const toAmountBig = BigInt(new Decimal(deal.toAmount.toString()).toFixed(0));
+            const feeBig = BigInt(new Decimal(deal.feeAmount.toString()).toFixed(0));
+            if (feeBig > toAmountBig) {
+              throw new Error('FEE_EXCEEDS_AMOUNT: کارمزد از مبلغ معامله بیشتر است');
+            }
+            const netAmount = toAmountBig - feeBig;
+            const newBalance = account.balance + netAmount;
+            const fromAmountBig = BigInt(new Decimal(deal.fromAmount.toString()).toFixed(0));
+
+            await tx.fintechAccount.update({
+              where: { id: account.id },
+              data: { balance: newBalance, updatedAt: new Date() },
+            });
+
+            // ── P1-1: ابتدا Transaction ثبت می‌شود تا txnId داشته باشیم ─────────
+            // مثال: deal.id='abc123' → transaction.id='tx456' → ledgerEntry.txnId='tx456'
+            const transaction = await tx.transaction.create({
               data: {
                 id: createId(),
                 exchangeId: deal.exchangeId,
                 customerId: customer.id,
-                currency: deal.toCurrency,
-                type: 'WALLET',
-                status: 'ACTIVE',
+                accountId: account.id,
+                kind: 'EXCHANGE',
+                status: 'COMPLETED',
+                // CONVENTION-fix (2026-08-22): قرارداد واحد با fx-trade و
+                // exchange-transactions — amount = سمت مبدا (پرداخت مشتری) و
+                // destAmount = مقدار واقعاً واریزشده به کیف مقصد. جمع AML روزانه
+                // در kyc-limits روی amount+currency می‌چرخد؛ قرارداد معکوس قبلی
+                // سقف روزانه را تا ~۹۰× اشتباه محاسبه می‌کرد (مثال: deal
+                // 100USD→7M AFN به‌جای ~7,500 معادل، ۷٬۰۰۰٬۰۰۰ AFN در سقف
+                // ثبت می‌شد). ردیف‌های تاریخی قبل از این فیکس با قرارداد قدیمی‌اند.
+                amount: fromAmountBig,
+                currency: deal.fromCurrency,
+                rate: Number(deal.appliedRate),
+                fee: feeBig,
+                destAmount: netAmount,
+                destCurrency: deal.toCurrency,
+                note: `معامله ارزی — کد: ${dealId.slice(-8)}`,
                 updatedAt: new Date(),
+              },
+            });
+
+            // A4-fix: دو LedgerEntry برای double-entry accounting
+            // CREDIT: ارز مقصد (مشتری دریافت می‌کند)
+            await tx.ledgerEntry.create({
+              data: {
+                id: createId(),
+                exchangeId: deal.exchangeId,
+                accountId: account.id,
+                customerId: customer.id,
+                txnId: transaction.id,
+                direction: 'CREDIT',
+                amount: netAmount,
+                currency: deal.toCurrency,
+                runningBalance: newBalance,
+                description: `تکمیل معامله ارزی — کد: ${dealId.slice(-8)}`,
+                createdById: access.userId,
+              },
+            });
+
+            // DEBIT: ارز مبدا (مشتری پرداخت کرده)
+            // SECURITY-fix (2026-08-22): حساب مبدا اگر وجود نداشته باشد ساخته
+            // می‌شود و debit همیشه ثبت می‌گردد. قبلاً کل شاخهٔ debit داخل
+            // «if (fromAccount)» بود — مشتریِ بدون کیف مبدا اعتبار مقصد را بدون
+            // هیچ debit (و بدون رکورد آشتی) دریافت می‌کرد: مسیر دیگر ساخت پول.
+            // رفتار create-if-missing دقیقاً همانند حساب مقصد در بالاست؛ اگر
+            // موجودی کافی نباشد کل تراکنش با DEAL_INSUFFICIENT_BALANCE rollback
+            // می‌شود (B-DEAL-BAL fix حفظ شده).
+            // مثال: مشتری 100 USD داد → DEBIT 100 USD از حساب USD او
+            let fromAccount = await tx.fintechAccount.findFirst({
+              where: {
+                customerId: customer.id,
+                exchangeId: deal.exchangeId,
+                currency: deal.fromCurrency,
               },
               select: { id: true, balance: true },
             });
-          }
-
-          // F6-fix: چک کنید netAmount منفی نباشد
-          // مثال: toAmount=5,600,000، feeAmount=56,000 → netAmount=5,544,000 ✓
-          //        toAmount=50,000،   feeAmount=60,000 → netAmount<0 → خطا ✗
-          const toAmountBig = BigInt(new Decimal(deal.toAmount.toString()).toFixed(0));
-          const feeBig = BigInt(new Decimal(deal.feeAmount.toString()).toFixed(0));
-          if (feeBig > toAmountBig) {
-            throw new Error('FEE_EXCEEDS_AMOUNT: کارمزد از مبلغ معامله بیشتر است');
-          }
-          const netAmount = toAmountBig - feeBig;
-          const newBalance = account.balance + netAmount;
-
-          await tx.fintechAccount.update({
-            where: { id: account.id },
-            data: { balance: newBalance, updatedAt: new Date() },
-          });
-
-          // ── P1-1: ابتدا Transaction ثبت می‌شود تا txnId داشته باشیم ─────────
-          // مثال: deal.id='abc123' → transaction.id='tx456' → ledgerEntry.txnId='tx456'
-          const transaction = await tx.transaction.create({
-            data: {
-              id: createId(),
-              exchangeId: deal.exchangeId,
-              customerId: customer.id,
-              accountId: account.id,
-              kind: 'EXCHANGE',
-              status: 'COMPLETED',
-              // برای EXCHANGE: amount = ارز مقصد، destAmount = ارز مبدا (A4-fix)
-              amount: toAmountBig,
-              currency: deal.toCurrency,
-              rate: Number(deal.appliedRate),
-              fee: feeBig,
-              destAmount: BigInt(new Decimal(deal.fromAmount.toString()).toFixed(0)),
-              destCurrency: deal.fromCurrency,
-              note: `معامله ارزی — کد: ${dealId.slice(-8)}`,
-              updatedAt: new Date(),
-            },
-          });
-
-          // A4-fix: دو LedgerEntry برای double-entry accounting
-          // CREDIT: ارز مقصد (مشتری دریافت می‌کند)
-          await tx.ledgerEntry.create({
-            data: {
-              id: createId(),
-              exchangeId: deal.exchangeId,
-              accountId: account.id,
-              customerId: customer.id,
-              txnId: transaction.id,
-              direction: 'CREDIT',
-              amount: netAmount,
-              currency: deal.toCurrency,
-              runningBalance: newBalance,
-              description: `تکمیل معامله ارزی — کد: ${dealId.slice(-8)}`,
-              createdById: access.userId,
-            },
-          });
-
-          // DEBIT: ارز مبدا (مشتری پرداخت کرده) — فقط اگر حساب مبدا وجود دارد
-          // مثال: مشتری 100 USD داد → DEBIT 100 USD از حساب USD او
-          const fromAccount = await tx.fintechAccount.findFirst({
-            where: {
-              customerId: customer.id,
-              exchangeId: deal.exchangeId,
-              currency: deal.fromCurrency,
-            },
-            select: { id: true, balance: true },
-          });
-          if (fromAccount) {
-            const fromAmountBig = BigInt(new Decimal(deal.fromAmount.toString()).toFixed(0));
+            if (!fromAccount) {
+              fromAccount = await tx.fintechAccount.create({
+                data: {
+                  id: createId(),
+                  exchangeId: deal.exchangeId,
+                  customerId: customer.id,
+                  currency: deal.fromCurrency,
+                  type: 'WALLET',
+                  status: 'ACTIVE',
+                  updatedAt: new Date(),
+                },
+                select: { id: true, balance: true },
+              });
+            }
             const newFromBalance = fromAccount.balance - fromAmountBig;
             // B-DEAL-BAL fix: اگر موجودی کافی نباشد، transaction باید rollback شود
             // نه اینکه balance به صفر clamp شود — این باعث می‌شد مشتری بدون موجودی
@@ -1060,8 +1093,9 @@ export async function completeDeal(
             });
           }
         }
-      }
-    });
+      },
+      { isolationLevel: 'Serializable' },
+    );
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'خطای داخلی';
     if (msg.startsWith('FEE_EXCEEDS_AMOUNT')) {
