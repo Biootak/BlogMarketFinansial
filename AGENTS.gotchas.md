@@ -162,3 +162,17 @@ stays plain Arial forever (the real Latin font is never even downloaded — chec
   `src/app/fonts/index.ts` (Vazirmatn Arabic + Inter Latin).
 - Symptom to look for: English text looks like a system font while `document.fonts`
   shows the Latin font as `unloaded`.
+
+### PowerShell 5.1 on Windows — file/CLI encoding & quoting hazards (learned 2026-08-22)
+
+Two real corruptions in one session; both silently mangled Persian/UTF-8 content:
+
+1. **Never round-trip source files via `Get-Content`/`Set-Content`** (and never redirect
+   with `>`): PS 5.1 decodes UTF-8 as Windows-1252 and writes UTF-16/BOM — double-encoded
+   mojibake (`â€”`, `Ø«Ø¨Øª`). Always use the agent's Edit/Write tools for file edits;
+   recover corrupted files with `git checkout -- <file>`.
+2. **`az` CLI + nested quotes**: inner double quotes in a `--scripts "..."` arg are eaten
+   passing PS→native exe (`unrecognized arguments`). Keep remote commands quote-free
+   (use `docker exec ... rm path` directly, no `sh -c "..."`) or base64 the payload.
+3. **Long args**: PS 5.1 caps a single native argument near ~8k chars — gzip+base64 a
+   script before sending it through `az vm run-command` (8KB .mjs → 3.3KB gz+b64).
