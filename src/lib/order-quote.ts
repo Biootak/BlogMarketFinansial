@@ -14,6 +14,7 @@
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
+import { getAuthSecret } from '@/lib/auth-secret';
 import { type SnapshotItem, readMarketRatesSnapshot } from '@/lib/market-rates/snapshot-reader';
 
 // ─── سیاست کارمزد (اعداد تجاری پلتفرم — قابل تنظیم در یک نقطه) ────────────── //
@@ -127,8 +128,12 @@ interface QuoteTokenPayload {
 // ─── امضا / تأیید (HMAC-SHA256) ────────────────────────────────────────────── //
 
 function getSecret(): string {
-  // AUTH_SECRET در NextAuth v5 همیشه وجود دارد؛ fallback برای محیط تست
-  return process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || 'dev-order-quote-secret';
+  // SECURITY-fix (2026-08-22): fallback هاردکد «dev-order-quote-secret» حذف
+  // شد. این HMAC تنها سدِ مقابل دستکاری نرخ/کارمزد توسط کلاینت است؛ با کلید
+  // عمومیِ داخل سورس، هر کسی می‌توانست توکن quote جعل کند و نرخ/مبلغ دلخواه
+  // قفل کند. getAuthSecret در production بدون env fail-closed است و در dev
+  // secret پایدار می‌سازد — همان کلیدی که Auth.js خودش استفاده می‌کند.
+  return getAuthSecret();
 }
 
 function b64url(input: Buffer | string): string {
@@ -188,7 +193,16 @@ function parseAmount(raw: string): number | null {
  * نرخ snapshot برای یک ارز (واحد افغانی).
  * buy = بازار از مشتری می‌خرد (مشتری ارز می‌فروشد)
  * sell = بازار به مشتری می‌فروشد (مشتری ارز می‌خرد)
+ *
+ * FIX (2026-08-22): گیت تازگی snapshot — برخلاف getMarketRates و
+ * executeFxTrade که max-age چک می‌کنند، این‌جا snapshot با هر سنی پذیرفته
+ * می‌شد؛ outage طولانی cron یعنی سفارش‌ها با نرخ چند-روزه قفل می‌شدند.
+ * TTL توکن هم از لحظهٔ محاسبه شروع می‌شود نه لحظهٔ نرخ — پس stale-check در
+ * همین نقطه الزامی است. null = UI به جریان «کارشناس نرخ را قفل می‌کند»
+ * برمی‌گردد.
  */
+const QUOTE_SNAPSHOT_MAX_AGE_MS = 10 * 60 * 1000; // ۱۰ دقیقه — هم‌راستا با SNAPSHOT_MAX_AGE_MS
+
 export async function findMarketRate(currency: string): Promise<{
   buy: number;
   sell: number;
@@ -200,6 +214,10 @@ export async function findMarketRate(currency: string): Promise<{
   if (!symbol) return null;
   const snapshot = await readMarketRatesSnapshot();
   if (!snapshot) return null;
+  const ageMs = snapshot.generatedAt
+    ? Date.now() - snapshot.generatedAt.getTime()
+    : Number.POSITIVE_INFINITY;
+  if (ageMs > QUOTE_SNAPSHOT_MAX_AGE_MS) return null;
   const item: SnapshotItem | undefined = snapshot.items.find((i) => i.symbol === symbol);
   if (!item || item.unit !== 'afn') return null;
   const sell = item.sellValue ?? item.value;
