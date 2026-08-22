@@ -396,7 +396,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // dashboard layout او را به /2fa-setup می‌فرستد) → اجازهٔ ورود.
       return true;
     },
-    async jwt({ token, trigger, session, user }) {
+    async jwt({ token, user }) {
       // ── First sign-in: populate all fields from the DB user object ──────────
       if (user) {
         token.role = user.role || 'USER';
@@ -435,10 +435,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
 
-      // ── Explicit session.update() call (e.g. from useCurrentUser) ───────────
-      if (trigger === 'update' && session?.user) {
-        token.role = session.user.role || 'USER';
-      }
+      // ── SECURITY-fix (2026-08-22): بلوک قبلی «trigger === 'update'» حذف شد ──
+      // POST /api/auth/session بدنهٔ درخواست را بدون اعتبارسنجی به عنوان
+      // newSession به همین callback می‌رساند (داک Auth.js v5: «⚠ session data
+      // را قبل از استفاده validate کنید»). کد قبلی role را مستقیم از آن کپی
+      // می‌کرد → هر کاربر لاگین‌شده با یک fetch سادهٔ
+      // update({ user: { role: 'OWNER' } }) می‌توانست JWT امضاشدهٔ OWNER بگیرد.
+      // حالا هیچ داده‌ای از کلاینت خوانده نمی‌شود؛ فراخوانی update() فقط باعث
+      // refresh ادعاها از DB می‌شود (شرط پایین دیگر trigger را مستثنا نمی‌کند).
 
       // ── Every subsequent request: verify tokenVersion matches DB ────────────
       // This is the 2026 Auth.js pattern for immediate role invalidation:
@@ -446,10 +450,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       //   → next request this check fires → token.role is refreshed from DB
       //   → user loses access within one request, not after 24 h.
       //
-      // We only do this when the token already has a sub (i.e. not first sign-in)
-      // and no explicit update trigger is in flight. The DB query is a single
-      // indexed lookup on the primary key — negligible overhead.
-      if (!user && !trigger && token.sub) {
+      // We only do this when the token already has a sub (i.e. not first
+      // sign-in). Runs on normal requests AND explicit update() triggers —
+      // claims (role/permissions) have exactly one source: the database.
+      // The DB query is a single indexed lookup on the primary key —
+      // negligible overhead.
+      if (!user && token.sub) {
         // 2026-08-11: fail-open. This DB query runs on EVERY authenticated
         // request; with the dev single-connection pool, a busy DB (pageview
         // writes, market tickers, parallel tabs) makes it time out. Letting
