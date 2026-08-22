@@ -3,6 +3,18 @@
   display: none;
 }
 
+/* FIX (2026-08-22 — گزارش کاربر «لرزش هنگام تعویض صفحه»): رزرو همیشگی
+   فضای اسکرول‌بار — بین صفحات کوتاه/بلوند layout افقی شیفت نمی‌شود. */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hiddenScrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 /* Hide scrollbar for IE, Edge and Firefox */
 .hiddenScrollbar {
   -ms-overflow-style: none; /* IE and Edge */
