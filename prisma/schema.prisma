@@ -950,7 +950,9 @@ model AuditLog {
   afterHash  String?
   meta       Json?
   createdAt  DateTime  @default(now())
-  Exchange   Exchange? @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  // SECURITY-fix (2026-08-22): AuditLog رکورد انطباق است — حذف صرافی نباید
+  // تاریخچه ممیزی را نابود کند (Cascade → Restrict)
+  Exchange   Exchange? @relation(fields: [exchangeId], references: [id], onDelete: Restrict)
 
   @@index([action])
   @@index([actorId])
@@ -1420,7 +1422,10 @@ model LedgerEntry {
   createdAt      DateTime        @default(now())
   FintechAccount FintechAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
   Customer       Customer?       @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  Exchange       Exchange        @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  // SECURITY-fix (2026-08-22): LedgerEntry فقط-الحاقی است — حذف صرافی با
+  // Cascade کل دفتر مالی را پاک می‌کرد؛ Restrict حذف را تا زمانی که هر
+  // رکورد مالی وجود دارد بلاک می‌کند (بایگانی/بستن رسمی به‌جای delete)
+  Exchange       Exchange        @relation(fields: [exchangeId], references: [id], onDelete: Restrict)
   Transaction    Transaction?    @relation(fields: [txnId], references: [id], onDelete: SetNull)
 
   @@index([accountId, createdAt(sort: Desc)])
@@ -1472,7 +1477,8 @@ model Transaction {
   StatusLogs     TransactionStatusLog[]
   FintechAccount FintechAccount?   @relation(fields: [accountId], references: [id], onDelete: Cascade)
   Customer       Customer?         @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  Exchange       Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  // SECURITY-fix (2026-08-22): Transaction رکورد مالی تاریخی است — Restrict
+  Exchange       Exchange          @relation(fields: [exchangeId], references: [id], onDelete: Restrict)
 
   @@index([accountId, createdAt(sort: Desc)])
   @@index([createdAt(sort: Desc)])
@@ -2112,7 +2118,8 @@ model CurrencyDeal {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
-  Exchange    Exchange           @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  // SECURITY-fix (2026-08-22): CurrencyDeal رکورد معامله مالی است — Restrict
+  Exchange    Exchange           @relation(fields: [exchangeId], references: [id], onDelete: Restrict)
   Quote       ExchangeRateQuote? @relation(fields: [quoteId], references: [id], onDelete: SetNull)
   User        User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
   StatusLogs  DealStatusLog[]
@@ -2194,7 +2201,8 @@ model Settlement {
   paidAt       DateTime?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
-  Exchange     Exchange         @relation(fields: [exchangeId], references: [id], onDelete: Cascade)
+  // SECURITY-fix (2026-08-22): Settlement رکورد تسویه مالی است — Restrict
+  Exchange     Exchange         @relation(fields: [exchangeId], references: [id], onDelete: Restrict)
 
   @@index([exchangeId, status])
   @@index([periodStart, periodEnd])

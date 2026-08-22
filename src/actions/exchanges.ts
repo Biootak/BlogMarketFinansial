@@ -318,7 +318,30 @@ export async function deleteExchange(id: string): Promise<FintechActionResult<{ 
   const auth = await requireAdmin();
   if (!auth.success) return { success: false, error: { code: auth.code, message: auth.message } };
 
-  await prisma.exchange.delete({ where: { id } });
+  try {
+    await prisma.exchange.delete({ where: { id } });
+  } catch (err) {
+    // SECURITY-fix (2026-08-22): با migration «exchange_financial_restrict»
+    // حذف صرافیِ دارای رکورد مالی (LedgerEntry/Transaction/CurrencyDeal/
+    // Settlement/AuditLog) در سطح DB با P2003 بلاک می‌شود — پیام دوستانه
+    // به‌جای 500 خام. مسیر درست برای پایان کار صرافی، status=CLOSED است.
+    if (
+      typeof err === 'object' &&
+      err !== null &&
+      'code' in err &&
+      (err as { code?: unknown }).code === 'P2003'
+    ) {
+      return {
+        success: false,
+        error: {
+          code: 'EXCHANGE_HAS_FINANCIAL_RECORDS',
+          message:
+            'این صرافی رکورد مالی (دفتر/تراکنش/معامله/تسویه) دارد و قابل حذف نیست. برای پایان فعالیت، وضعیت را «بسته» (CLOSED) کنید.',
+        },
+      };
+    }
+    throw err;
+  }
   revalidateTag('exchanges');
   safeRevalidateTag('exchanges');
   return { success: true, data: { id } };
