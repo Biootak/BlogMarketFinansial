@@ -1,9 +1,11 @@
 'use server';
 
-import { invalidateHomePageCache } from '@/actions/cacheActions';
 import { auth } from '@/auth';
 import { logActivity } from '@/lib/activity-logger';
 import { checkRole } from '@/lib/auth';
+// SECURITY-fix (2026-08-22): نسخهٔ lib بدون گارد ادمین — نویسنده‌های AUTHOR
+// هم پست می‌سازند و گارد ادمین روی مسیر داخلی، انتشارشان را می‌شکست.
+import { invalidateHomePageCache } from '@/lib/cache-invalidation';
 import prisma from '@/lib/db';
 import { authFailureToActionResult, requirePermission } from '@/lib/require-auth';
 import { revalidatePath, revalidateTag } from '@/lib/revalidate';

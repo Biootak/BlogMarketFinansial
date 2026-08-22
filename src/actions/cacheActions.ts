@@ -1,128 +1,49 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from '@/lib/revalidate';
-import { safeRevalidateTag } from '@/lib/safe-cache';
-import { revalidateTag as redisRevalidateTag } from '@/lib/tiered-cache';
+import { checkAdmin } from '@/lib/auth';
+import {
+  invalidateDashboardCache as _invalidateDashboardCache,
+  invalidateHomePageCache as _invalidateHomePageCache,
+  invalidatePostCache as _invalidatePostCache,
+  invalidatePublicCache as _invalidatePublicCache,
+  invalidateSidebarCache as _invalidateSidebarCache,
+  invalidateUserCache as _invalidateUserCache,
+} from '@/lib/cache-invalidation';
 
-async function invalidateAllTiers(...tags: string[]) {
-  for (const tag of tags) {
-    revalidateTag(tag); // Next.js Data Cache
-    safeRevalidateTag(tag); // L1 in-memory safeCache
-    await redisRevalidateTag(tag); // L2 Redis
-  }
-}
+// SECURITY-fix (2026-08-22): این فایل 'use server' است — هر export یک
+// endpoint عمومی است. قبلاً شش اکشن invalidation بدون هیچ گاردی بودند و یک
+// کاربر ناشناس با action-id عمومی می‌توانست کشِ سه‌لایه را پاک کند.
+// منطق خام به `@/lib/cache-invalidation` منتقل شده (برای مصرف سرور-به-سرور
+// مثل logout و postActions) و اینجا فقط wrapperهای گارددار ادمین صادر
+// می‌شوند. `checkAdmin` در صورت عدم دسترسی redirect می‌کند؛ یعنی بدنهٔ
+// اکشن هرگز برای فراخوان غیرمجاز اجرا نمی‌شود.
 
 export async function invalidateUserCache(userId: string) {
-  await invalidateAllTiers(
-    `user-${userId}`,
-    'user-posts',
-    'user-comments',
-    'user-likes',
-    'user-subscription',
-    'user-billing',
-    `dashboard-user-${userId}`,
-  );
-  revalidatePath('/dashboard');
-  revalidatePath('/dashboard/edit-profile');
-  revalidatePath('/dashboard/subscription');
-  revalidatePath('/dashboard/billing-address');
-  await invalidateSidebarCache();
+  await checkAdmin();
+  await _invalidateUserCache(userId);
 }
 
 export async function invalidatePublicCache() {
-  await invalidateAllTiers(
-    'posts',
-    'archive',
-    'categories',
-    'tags',
-    'comments',
-    'system-settings',
-    'transfer-providers',
-    'money-transfer',
-    'rate-lists',
-  );
-  await invalidateSidebarCache();
+  await checkAdmin();
+  await _invalidatePublicCache();
 }
 
 export async function invalidateHomePageCache() {
-  // 2026-06-19: `posts` is the umbrella tag that getLatestPosts,
-  // getPublishedPostCount, getPosts (gallery) and getFeaturedPosts all
-  // listen on. Without busting it, a freshly published post stays stale
-  // on the home page for up to 60s.
-  await invalidateAllTiers(
-    'posts',
-    'featured-posts',
-    'latest-posts',
-    'popular-posts',
-    'gallery-posts',
-    'top-authors',
-    'recent-posts',
-    'popular-categories-home',
-  );
+  await checkAdmin();
+  await _invalidateHomePageCache();
 }
 
 export async function invalidatePostCache(postId: string) {
-  await invalidateAllTiers(
-    `post-${postId}`,
-    'post-slug',
-    'posts',
-    'archive',
-    'comments',
-    'dashboard-stats',
-  );
+  await checkAdmin();
+  await _invalidatePostCache(postId);
 }
 
 export async function invalidateSidebarCache() {
-  // 2026-07-09: purge the actual safeCache tags produced by
-  // `sidebarActions` (`recent-posts`, `popular-tags`, `popular-categories`,
-  // `popular-authors`). The previous `sidebar-*` keys never matched any
-  // producer, so the sidebar stayed stale up to its 3600s TTL after publish.
-  await invalidateAllTiers(
-    'recent-posts',
-    'popular-tags',
-    'popular-categories',
-    'popular-categories-home',
-    'popular-authors',
-    'sidebar-data',
-    'sidebar-posts',
-    'sidebar-tags',
-    'sidebar-categories',
-    'sidebar-authors',
-    'sidebar-ads',
-    'top-authors',
-    'rate-lists',
-    'crypto-rates',
-  );
+  await checkAdmin();
+  await _invalidateSidebarCache();
 }
 
 export async function invalidateDashboardCache() {
-  await invalidateAllTiers(
-    'dashboard',
-    'dashboard-posts',
-    'dashboard-categories',
-    'dashboard-users',
-    'dashboard-reports',
-    'dashboard-settings',
-    'dashboard-advertisements',
-    'dashboard-exchange-rates',
-    'dashboard-credit-rates',
-    'dashboard-rate-lists',
-    'dashboard-subscription',
-    'dashboard-stats',
-  );
-
-  revalidatePath('/dashboard');
-  revalidatePath('/dashboard/posts');
-  revalidatePath('/dashboard/categories');
-  revalidatePath('/dashboard/users');
-  revalidatePath('/dashboard/reports');
-  revalidatePath('/dashboard/settings');
-  revalidatePath('/dashboard/advertisements');
-  revalidatePath('/dashboard/exchange-rates');
-  revalidatePath('/dashboard/credit-rates');
-  revalidatePath('/dashboard/rate-lists');
-  revalidatePath('/dashboard/subscription');
-  revalidatePath('/dashboard/billing-address');
-  revalidatePath('/dashboard/edit-profile');
-  await invalidateSidebarCache();
+  await checkAdmin();
+  await _invalidateDashboardCache();
 }

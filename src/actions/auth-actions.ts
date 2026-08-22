@@ -18,12 +18,14 @@
 //   4. Auth.js Credentials.authorize stays the single session gate:
 //      password → bcrypt + emailVerified; after_otp → trust pre-verified marker.
 
+import { auth, signIn, signOut } from '@/auth';
+// SECURITY-fix (2026-08-22): منطق invalidation از '@/actions/cacheActions'
+// به lib منتقل شد — logout باید برای همهٔ کاربران بدون گارد ادمین کار کند.
 import {
   invalidateDashboardCache,
   invalidatePublicCache,
   invalidateUserCache,
-} from '@/actions/cacheActions';
-import { auth, signIn, signOut } from '@/auth';
+} from '@/lib/cache-invalidation';
 import prisma from '@/lib/db';
 import { getEmailProviderAsync } from '@/lib/email';
 import { type OtpEmailIntent, otpEmail, otpExpiresLabel } from '@/lib/email/templates';
@@ -1305,6 +1307,15 @@ export async function getEnabledSocialProviders(): Promise<string[]> {
  *   - caller سمت کلاینت فقط باید `router.replace(result.redirect)` کند —
  *     بدون `router.refresh()` (refresh بعد از پاک شدن کوکی روی صفحهٔ
  *     محافظت‌شده لوپ رندر/ریدایرکت می‌سازد).
+ *
+ * SECURITY-note (2026-08-22 — محدودیت شناخته‌شدهٔ JWT، نه رگرسیون):
+ * با strategy='jwt' خروجِ تک‌دستگاه فقط کوکی همین مرورگر را پاک می‌کند؛
+ * کوکیِ کپی‌شده تا انقضا (۳ روز) از نظر ریاضی معتبر می‌ماند. نسخه‌های
+ * tokenVersion/passwordVersion هر درخواست چک می‌شوند، پس بن/تغییر نقش/
+ * تغییر رمز همهٔ کپی‌ها را فوراً می‌کُشد — اما «خروج» به‌تنهایی خیر.
+ * راه‌حل کامل (denylist مبتنی بر sub+iat در Redis یا جدول Session) یک
+ * تصمیم معماری است و باید جداگانه پیاده شود؛ bump کردن tokenVersion اینجا
+ * راه‌حل نیست چون mismatch فقط claims را refresh می‌کند نه سشن را باطل.
  */
 export async function logout(): Promise<AuthResult> {
   try {
