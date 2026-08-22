@@ -111,7 +111,7 @@ export function otpEmail(args: OtpEmailArgs): EmailMessage {
     subject: copy.subject,
     html,
     text,
-    tags: [{ name: 'category', value: `otp:${args.intent}` }],
+    tags: [{ name: 'category', value: `otp-${args.intent}` }],
   };
 }
 
@@ -229,7 +229,7 @@ export function serviceRequestConfirmationEmail(
     subject: `تأییدیه درخواست ${args.trackingCode} / Service Request Confirmation`,
     html,
     text,
-    tags: [{ name: 'category', value: 'service-request:confirmation' }],
+    tags: [{ name: 'category', value: 'service-request-confirmation' }],
   };
 }
 
@@ -320,7 +320,7 @@ export function serviceRequestStatusEmail(args: ServiceRequestStatusEmailArgs): 
     subject: `وضعیت درخواست ${args.trackingCode}: ${statusLabel}`,
     html,
     text,
-    tags: [{ name: 'category', value: 'service-request:status-change' }],
+    tags: [{ name: 'category', value: 'service-request-status-change' }],
   };
 }
 
@@ -387,7 +387,7 @@ export function serviceVerifyOtpEmail(args: ServiceVerifyOtpArgs): EmailMessage 
     subject: `کد تأیید درخواست ${args.trackingCode}`,
     html,
     text,
-    tags: [{ name: 'category', value: 'service-request:otp' }],
+    tags: [{ name: 'category', value: 'service-request-otp' }],
   };
 }
 
@@ -474,7 +474,7 @@ export function welcomeSetPasswordEmail(args: WelcomeSetPasswordArgs): EmailMess
     subject: 'حساب کاربری شما آماده است — رمز عبور بسازید',
     html,
     text,
-    tags: [{ name: 'category', value: 'account:welcome-set-password' }],
+    tags: [{ name: 'category', value: 'account-welcome-set-password' }],
   };
 }
 
@@ -602,7 +602,7 @@ export function serviceRequestReceiptEmail(args: ServiceRequestReceiptArgs): Ema
     subject: `رسید تکمیل درخواست ${args.trackingCode}`,
     html,
     text,
-    tags: [{ name: 'category', value: 'service-request:receipt' }],
+    tags: [{ name: 'category', value: 'service-request-receipt' }],
   };
 }
 
@@ -742,7 +742,7 @@ export function exchangeServiceRequestEmail(args: ExchangeServiceRequestEmailArg
     html,
     text,
     tags: [
-      { name: 'category', value: 'service-request:exchange-notification' },
+      { name: 'category', value: 'service-request-exchange-notification' },
       { name: 'service', value: args.serviceKey },
       { name: 'urgency', value: args.urgency },
     ],
