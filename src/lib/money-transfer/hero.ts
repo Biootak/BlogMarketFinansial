@@ -90,10 +90,16 @@ export function parseLocaleNumber(raw: string | number | null | undefined): numb
     '٨': '8',
     '٩': '9',
   };
+  // FIX (2026-08-22): ممیز فارسی (٫ U+066B) و عربی قبل از whitelist به نقطه
+  // نگاشت می‌شود — قبلاً در regex پاک‌سازی حذف می‌شد و «۱٫۵» به «۱۵» (۱۰×
+  // بزرگ‌تر) پارس می‌شد. جداکنندهٔ هزارگان (٬ / ، / ,) حذف می‌شود.
+  // الگوی مرجع: parseAmount در src/lib/order-quote.ts.
   const normalized = String(raw)
     .split('')
     .map((c) => faMap[c] ?? c)
     .join('')
+    .replace(/[٫]/g, '.')
+    .replace(/[٬،,]/g, '')
     .replace(/[^\d.\-]/g, '');
   return Number.parseFloat(normalized);
 }
