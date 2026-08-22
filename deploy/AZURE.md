@@ -10,7 +10,7 @@
 | سرویس | منبع Azure | پلن | هزینه |
 |---|---|---|---|
 | 🌐 وب‌اپلیکیشن (Next.js) | VM `fm-vm` — **Standard_B2ats_v2** (2 vCPU / 1 GiB) | رایگان: **750h/ماه** (B2ats v2 در آفر دانشجویی) | $0 |
-| 🗄️ دیتابیس | PostgreSQL Flexible Server `fm-pg` — **Standard_B1ms** + 32GB | رایگان: **750h/ماه + 32GB** (آفر دانشجویی) | $0 |
+| 🗄️ دیتابیس | PostgreSQL Flexible Server `fm-pg-wus` — **Standard_B1ms** + 32GB (**West US** — هم‌ریجن با VM) | رایگان: **750h/ماه + 32GB** (آفر دانشجویی) | $0 |
 | 💾 دیسک OS | Managed Disk StandardSSD 32GB | رایگان: 64GB×2 P6 در آفر | $0 |
 | 🧰 رجیستری (اختیاری) | ACR `fmacr2026` (Standard, 100GB) | رایگان در آفر | $0 (فعلاً استفاده نمی‌شود) |
 | 🌐 IP استاتیک | Public IP Standard `fm-vm-ip` | — | ~$3.6/ماه (فقط همین هزینه) |
@@ -32,7 +32,8 @@ Cloudflare (proxy) → nginx 80/443 (TLS real) → 127.0.0.1:3000 ← کانتی
 - کد: `~/fm-blog` (clone از GitHub — رپو پابلیک است)
 - compose: `~/fm-blog/deploy/docker-compose.azure.yml` (سرویس db ندارد — DB خارجی Azure)
 - .env: `~/fm-blog/.env` (از کانفیگ Heroku + DATABASE_URL جدید Azure)
-- دیتابیس: `fm-pg.postgres.database.azure.com:5432/blog` (sslmode=require)
+- دیتابیس: `fm-pg-wus.postgres.database.azure.com:5432/blog` (sslmode=require)
+  - 2026-08-22: از `fm-pg` (norwayeast) به `fm-pg-wus` (westus — هم‌ریجن با VM) مهاجرت شد تا RTT ترنس‌اطلسیِ هر کوئری (~140ms) حذف شود. سرور قدیمی `fm-pg` موقتاً **Stopped** است (پنجرهٔ rollback — بعد از یک هفته تأیید، حذف شود). ساخت سرور PG جدید در westus2 روی اشتراک دانشجویی restricted بود؛ westus مجاز بود.
 - فایروال Postgres: IP VM (`20.109.177.20`) + بازه IP لوکال (`95.142.115.0/24` — IP خانه داینامیک است) + `allow-azure-services` (برای GitHub Actions backup)
 - DNS: `financialmarket.page` → Cloudflare proxy → `20.109.177.20` (VM)؛ `www` CNAME → root
 - TLS: Let's Encrypt (certbot) با renewal خودکار — گواهی واقعی روی nginx 443
@@ -146,6 +147,7 @@ bash deploy/rollback.sh <commit-sha>     # sha کامل یا کوتاه
 
 1. ✅ **VM:** Resource Group `fm-prod` → VM `fm-vm` (westus2, B2ats_v2, 32GB, SSH ed25519) + NSG (فقط 22/80/443) + IP استاتیک `20.109.177.20` + swap 8G + docker/compose/nginx/certbot/pg-client.
 2. ✅ **Postgres:** `fm-pg` (norwayeast — نزدیک‌ترین ریجن مجاز به افغانستان، B1ms رایگان، PG16) + DB `blog` + فایروال (لوکال + VM).
+   - **2026-08-22:** مهاجرت ریجن → `fm-pg-wus` (westus، هم‌ریجن با VM): dump/restore کامل (88 جدول، diff صفر)، سوییچ `.env` روی VM، آپدیت secret گیت‌هاب، توقف سرور قدیمی. دلیل: حذف تأخیر ترنس‌اطلسی App↔DB. (westus2 برای ساخت PG جدید restricted بود؛ westus مجاز.)
 3. ✅ **دیتای:** dump از Heroku (pg_dump 18 — چون Heroku روی PG18 است) با حذف `_heroku` schema و خطوط ناسازگار (`transaction_timeout`، `pg_stat_statements`، `default_table_access_method`) → restore به Azure. تأیید: **88 جدول / 9209 ردیف / 15 مایگریشن Prisma**.
 4. ✅ **.env:** همه متغیرهای Heroku (S3/Filebase، بکاپ B2، AUTH_SECRET، TOTP_ENCRYPTION_KEY، Telegram، Resend...) + `DATABASE_URL`/`DIRECT_URL` → Azure.
 5. ✅ **Build:** build لوکال روی VM با swap (نسخه اولیه) → سپس نهایی‌شده به CI: `docker-build-push.yml` روی GitHub Actions (build در runner قوی → ghcr.io/biootak/fm-blog-{web,cron}:main → VM فقط pull می‌کند).
