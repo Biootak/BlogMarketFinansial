@@ -102,20 +102,25 @@ describe('sendTelegramMessage', () => {
 });
 
 describe('formatTelegramPhone', () => {
-  it('E.164 ایران → گروه‌بندی خوانا', () => {
-    expect(formatTelegramPhone('+989165200952')).toBe('+98 916 520 0952');
+  // FIX 2026-08-22: خروجی با ایزولیت‌های LRI/PDI پیچیده می‌شود تا در متن
+  // RTL تلگرام، شماره همیشه LTR رندر شود.
+  const L = '\u2066';
+  const R = '\u2069';
+
+  it('E.164 ایران → گروه‌بندی خوانا + ایزولیت LTR', () => {
+    expect(formatTelegramPhone('+989165200952')).toBe(`${L}+98 916 520 0952${R}`);
   });
 
-  it('E.164 افغانستان → گروه‌بندی خوانا', () => {
-    expect(formatTelegramPhone('+93700000000')).toBe('+93 700 000 000');
+  it('E.164 افغانستان → گروه‌بندی خوانا + ایزولیت LTR', () => {
+    expect(formatTelegramPhone('+93700000000')).toBe(`${L}+93 700 000 000${R}`);
   });
 
   it('بدون + → همان رفتار', () => {
-    expect(formatTelegramPhone('989165200952')).toBe('+98 916 520 0952');
+    expect(formatTelegramPhone('989165200952')).toBe(`${L}+98 916 520 0952${R}`);
   });
 
-  it('کوتاه/نامعتبر → بدون تغییر', () => {
-    expect(formatTelegramPhone('+98')).toBe('+98');
+  it('کوتاه/نامعتبر → بدون تغییر (خام)', () => {
+    expect(formatTelegramPhone('+98')).toBe(`${L}+98${R}`);
     expect(formatTelegramPhone('')).toBe('');
   });
 });

@@ -741,26 +741,72 @@ export async function submitKycPhone(raw: unknown): Promise<{
 
   const { v4: createId } = await import('uuid');
 
+  // FIX (2026-08-22 — درخواست کاربر): سطح ۱ (فقط موبایل) بلافاصله APPROVED
+  // می‌شود — اثبات مالکیت شماره از طریق OTP/تلگرام خودِ احراز است؛ منتظر
+  // بررسی دستی نماند (قبلاً PENDING می‌شد و تا تأیید ادمین، داشبورد «در
+  // انتظار» نشان می‌داد). فیلدها دقیقاً همان مسیر reviewCustomerKycRecord:
+  // reviewedAt + expiresAt ۲۴ ماه + بازمحاسبهٔ kycStatus/kycLevel با
+  // computeKycProgression روی کل رکوردها.
+  const now = new Date();
+  const expiresAt = new Date(now.getFullYear(), now.getMonth() + 24, now.getDate());
+  const verId = createId();
+
   await prisma.$transaction(async (tx) => {
     await tx.kycVerification.create({
       data: {
-        id: createId(),
+        id: verId,
         exchangeId: customer.exchangeId,
         customerId: access.customerId,
         level: 'LEVEL_1',
-        status: 'PENDING',
+        status: 'APPROVED',
         docType: 'PHONE',
         docNumber: e164,
-        updatedAt: new Date(),
+        reviewedAt: now,
+        expiresAt,
+        updatedAt: now,
       },
-    });
-    await tx.customer.updateMany({
-      where: { id: access.customerId, kycStatus: { not: 'PENDING' } },
-      data: { kycStatus: 'PENDING', updatedAt: new Date() },
     });
     await tx.user.update({
       where: { id: access.userId },
       data: { phoneNumber: e164, pendingPhone: null },
+    });
+
+    // وضعیت مشتری از مجموعهٔ کامل رکوردها — همان قرارداد reviewCustomerKycRecord
+    const allRecords = await tx.kycVerification.findMany({
+      where: { customerId: access.customerId },
+      select: { level: true, docType: true, status: true },
+    });
+    const progression = computeKycProgression(allRecords);
+    let nextKycStatus: 'APPROVED' | 'PENDING' | 'REJECTED' = 'APPROVED';
+    if (progression.finalLevel !== 'LEVEL_3') {
+      if (progression.pendingAtNext) nextKycStatus = 'PENDING';
+      else if (progression.rejectedAtNext) nextKycStatus = 'REJECTED';
+    }
+    await tx.customer.update({
+      where: { id: access.customerId },
+      data: {
+        kycStatus: nextKycStatus,
+        kycLevel: progression.finalLevel === 'NONE' ? 'NONE' : progression.finalLevel,
+        updatedAt: now,
+      },
+    });
+
+    await tx.auditLog.create({
+      data: {
+        id: createId(),
+        exchangeId: customer.exchangeId,
+        actorId: access.userId,
+        actorRole: 'CUSTOMER',
+        action: 'CUSTOMER_KYC_APPROVED',
+        entityType: 'KycVerification',
+        entityId: verId,
+        meta: {
+          auto: true,
+          level: 'LEVEL_1',
+          method: 'phone-otp',
+          customerId: access.customerId,
+        } as Prisma.InputJsonValue,
+      },
     });
   });
 

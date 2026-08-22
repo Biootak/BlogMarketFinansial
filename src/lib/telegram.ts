@@ -54,12 +54,13 @@ export function getPortalUrl(path = '/customer/dashboard'): string {
 /**
  * formatTelegramPhone — نمایش خوانای شمارهٔ E.164 در پیام‌های ربات.
  * cc طول صحیح از PHONE_COUNTRIES شناسایی می‌شود (۱، ۲ یا ۳ رقم).
- * `+989165200952` → `+98 916 520 0952`
- * `+97150123456`  → `+971 50 123 456`
+ * `+989165200952` → `\u2066+98 916 520 0952\u2069` (با ایزولیت LTR)
+ * `+97150123456`  → `\u2066+971 50 123 456\u2069`
  */
 export function formatTelegramPhone(e164: string): string {
   const digits = e164.replace(/\D/g, '');
-  if (digits.length < 4) return e164;
+  if (!e164) return '';
+  if (digits.length < 4) return `\u2066${e164}\u2069`;
 
   // شناسایی طول cc از لیست کشورها (طولانی‌ترین match اول — مثل 971 قبل از 97)
   const CC_LENGTHS = [3, 2, 1] as const;
@@ -74,17 +75,24 @@ export function formatTelegramPhone(e164: string): string {
 
   const cc = digits.slice(0, ccLen);
   const rest = digits.slice(ccLen);
-  if (!rest) return `+${cc}`;
-  if (rest.length <= 4) return `+${cc} ${rest}`;
-  const groups: string[] = [];
-  for (let i = 0; i < rest.length; i += 3) {
-    if (rest.length - i <= 4) {
-      groups.push(rest.slice(i));
-      break;
+  let out: string;
+  if (!rest) out = `+${cc}`;
+  else if (rest.length <= 4) out = `+${cc} ${rest}`;
+  else {
+    const groups: string[] = [];
+    for (let i = 0; i < rest.length; i += 3) {
+      if (rest.length - i <= 4) {
+        groups.push(rest.slice(i));
+        break;
+      }
+      groups.push(rest.slice(i, i + 3));
     }
-    groups.push(rest.slice(i, i + 3));
+    out = `+${cc} ${groups.join(' ')}`;
   }
-  return `+${cc} ${groups.join(' ')}`;
+  // FIX (2026-08-22 — گزارش کاربر): در متن RTL تلگرام، شماره با + ابتدایی
+  // به‌هم می‌ریخت («98+» سمت راست). ایزولیت‌های یونیکد LRI…PDI کل شماره را
+  // به یک ران LTR مستقل تبدیل می‌کنند — بدون اثر بر متن اطراف.
+  return `\u2066${out}\u2069`;
 }
 
 /**

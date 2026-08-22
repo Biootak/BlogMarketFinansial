@@ -7,15 +7,13 @@
  * الگو را به خط تیره تبدیل کند تا ارسال هرگز به‌خاطر tag شکست نخورد.
  */
 
-import { describe, expect, it } from 'vitest';
 import { __sanitizeResendTagForTests as sanitize } from '@/lib/email/resend';
+import { describe, expect, it } from 'vitest';
 
 describe('sanitizeResendTag', () => {
   it('کالن (علت حادثه) → خط تیره', () => {
     expect(sanitize('otp:phone-verify')).toBe('otp-phone-verify');
-    expect(sanitize('service-request:status-change')).toBe(
-      'service-request-status-change',
-    );
+    expect(sanitize('service-request:status-change')).toBe('service-request-status-change');
   });
 
   it('حروف غیر-ASCII (فارسی) → خط تیره', () => {

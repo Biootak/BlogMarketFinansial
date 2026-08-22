@@ -961,6 +961,37 @@
   padding-block-start: var(--ds-space-3);
 }
 
+/* FIX (2026-08-22): ارسال مجدد کد — ghost کنار submit اصلی، بدون رنگ اضافه
+   (قانون تکفام: فقط border hairline + متن muted) */
+.resendBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+  font-family: inherit;
+  font-size: var(--ds-text-sm);
+  font-weight: 700;
+  padding-block: 0.65rem;
+  padding-inline: var(--ds-space-4);
+  color: var(--ds-text-muted);
+  background: transparent;
+  border: 1px solid var(--ds-border-subtle);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: color var(--ds-duration-fast) var(--ds-ease-out-quart), border-color
+    var(--ds-duration-fast) var(--ds-ease-out-quart), opacity var(--ds-duration-fast)
+    var(--ds-ease-out-quart);
+}
+
+.resendBtn:hover:not(:disabled) {
+  color: var(--ds-text-primary);
+  border-color: var(--ds-border-strong, var(--ds-border-subtle));
+}
+
+.resendBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Submit button — premium gradient ─────────────────────────────────── */
 
 .submitBtn {

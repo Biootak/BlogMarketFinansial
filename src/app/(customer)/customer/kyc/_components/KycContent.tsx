@@ -683,9 +683,18 @@ export default function KycContent({ profile, records }: Props) {
                                   type="tel"
                                   className={`${s.formControl} ${s.phoneInput}`}
                                   value={phone}
-                                  onChange={(e) =>
-                                    setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''))
-                                  }
+                                  onChange={(e) => {
+                                    setPhone(e.target.value.replace(/[^0-9+\s-]/g, ''));
+                                    // FIX (2026-08-22): تغییر شماره بعد از ارسال کد =
+                                    // کد قبلی برای شمارهٔ دیگر است — state ریست شود تا
+                                    // کاربر بدون ریلود بتواند کد جدید بخواهد.
+                                    if (otpSent) {
+                                      stopVerifyPoll();
+                                      setOtpSent(false);
+                                      setOtpCode('');
+                                      setOtpInfo(null);
+                                    }
+                                  }}
                                   placeholder="۰۷۰ ۱۲۳ ۴۵۶۷"
                                   disabled={isPending || otpPending}
                                   autoComplete="tel-national"
@@ -961,19 +970,38 @@ export default function KycContent({ profile, records }: Props) {
                                 {otpPending ? 'در حال ارسال...' : 'ارسال کد تأیید'}
                               </button>
                             ) : (
-                              <button
-                                type="button"
-                                className={s.submitBtn}
-                                disabled={isPending || otpCode.length < 4}
-                                onClick={handlePhoneSubmit}
-                              >
-                                {isPending ? (
-                                  <Loader2 size={13} className={s.iconSpin} aria-hidden />
-                                ) : (
-                                  <CheckCircle2 size={13} aria-hidden />
-                                )}
-                                {isPending ? 'در حال ثبت...' : 'تأیید و ثبت سطح ۱'}
-                              </button>
+                              <div className={s.formFoot}>
+                                <button
+                                  type="button"
+                                  className={s.submitBtn}
+                                  disabled={isPending || otpCode.length < 4}
+                                  onClick={handlePhoneSubmit}
+                                >
+                                  {isPending ? (
+                                    <Loader2 size={13} className={s.iconSpin} aria-hidden />
+                                  ) : (
+                                    <CheckCircle2 size={13} aria-hidden />
+                                  )}
+                                  {isPending ? 'در حال ثبت...' : 'تأیید و ثبت سطح ۱'}
+                                </button>
+                                {/* FIX (2026-08-22): ارسال مجدد بدون ریلود — سرور
+                                   cooldown ۶۰ثانیه‌ای را با پیام فارسی مدیریت می‌کند */}
+                                <button
+                                  type="button"
+                                  className={s.resendBtn}
+                                  disabled={otpPending || isPending}
+                                  onClick={() =>
+                                    handleSendOtp({
+                                      preventDefault: () => {},
+                                    } as React.FormEvent)
+                                  }
+                                >
+                                  {otpPending ? (
+                                    <Loader2 size={13} className={s.iconSpin} aria-hidden />
+                                  ) : null}
+                                  {otpPending ? 'در حال ارسال...' : 'ارسال مجدد کد'}
+                                </button>
+                              </div>
                             )
                           ) : (
                             <button type="submit" className={s.submitBtn} disabled={isPending}>
