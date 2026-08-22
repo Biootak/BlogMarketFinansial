@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from '@/lib/db';
+import { bookFeeRevenue } from '@/lib/fintech/revenue';
 import { screenTransaction } from '@/lib/fraud/screener';
 import { assertOutgoingKycLimit } from '@/lib/kyc-limits';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -451,6 +452,18 @@ export async function executeFxTrade(raw: unknown): Promise<FintechActionResult<
             description: `تبدیل ${fromCurrency} → ${toCurrency}`,
             createdAt: now,
           },
+        });
+        // REVENUE-fix (2026-08-22): کارمزد پلتفرم به‌عنوان درآمد book می‌شود.
+        // قبلاً کارمزد بین debit کاملِ مشتری (amountCents شامل کارمزد) و
+        // credit خالصِ مقصد «ناپدید» می‌شد — الگوی غلط رایج «missing fee
+        // line» که جمع دوطرفه را نمی‌بست و درآمد غیرقابل حسابرسی می‌کرد.
+        await bookFeeRevenue(tx, {
+          exchangeId: customer.exchangeId,
+          txnId: txn.id,
+          amount: BigInt(feeCents),
+          currency: fromCurrency,
+          actorId: auth.user.id,
+          detail: `تبدیل ${fromCurrency} → ${toCurrency}`,
         });
         await tx.auditLog.create({
           data: {

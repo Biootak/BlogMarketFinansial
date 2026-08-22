@@ -30,6 +30,7 @@
 import { randomBytes } from 'node:crypto';
 import prisma from '@/lib/db';
 import { requireExchangeAccess } from '@/lib/exchange-auth';
+import { bookFeeRevenue } from '@/lib/fintech/revenue';
 import { screenTransaction } from '@/lib/fraud/screener';
 import { notifyDealStatusChange, notifyNewDeal } from '@/lib/notifications/fintech';
 import { notifyTelegramUser } from '@/lib/notifications/telegram-user';
@@ -1031,6 +1032,18 @@ export async function completeDeal(
               },
             });
 
+            // REVENUE-fix (2026-08-22): کارمزد به‌عنوان درآمد پلتفرم book
+            // می‌شود — مشتری netAmount گرفته، مبلغ کامل مبدا debit شده؛
+            // اختلافِ همان کارمزد است که باید در دفتر «خانه» داشته باشد.
+            await bookFeeRevenue(tx, {
+              exchangeId: deal.exchangeId,
+              txnId: transaction.id,
+              amount: feeBig,
+              currency: deal.toCurrency,
+              actorId: access.userId,
+              detail: `معامله ارزی ${deal.fromCurrency} → ${deal.toCurrency}`,
+            });
+
             // DEBIT: ارز مبدا (مشتری پرداخت کرده)
             // SECURITY-fix (2026-08-22): حساب مبدا اگر وجود نداشته باشد ساخته
             // می‌شود و debit همیشه ثبت می‌گردد. قبلاً کل شاخهٔ debit داخل
@@ -1520,33 +1533,42 @@ async function _refundDealImpl(
           `;
           const lockedAccount = lockedRows && lockedRows.length > 0 ? lockedRows[0] : null;
           if (lockedAccount) {
-            const refundAmount = BigInt(new Decimal(deal.toAmount.toString()).toFixed(0));
-            // اگر balance کمتر از مبلغ بازگشتی است → خطا به‌جای silent clamp
-            // مثال: مشتری 100 AFN داشت، معامله 200 AFN بود → نمی‌توان 200 AFN debit کرد
-            if (lockedAccount.balance < refundAmount) {
-              throw new Error(
-                `INSUFFICIENT_BALANCE: موجودی حساب (${lockedAccount.balance}) کمتر از مبلغ بازگشتی (${refundAmount}) است`,
-              );
+            // L1-fix (2026-08-22): مشتری در تکمیل معامله فقط netAmount گرفته
+            // (toAmount منهای کارمزد) — قبلاً مبلغ ناخالص debit می‌شد و با
+            // موجودی واقعی نمی‌خواند (خطای INSUFFICIENT_BALANCE کاذب).
+            // کارمزد محفوظ می‌ماند: عرف صرافی‌ها در انصراف/استرداد و جریان
+            // درآمد FEE_REVENUE را متوازن نگه می‌دارد.
+            const grossAmount = BigInt(new Decimal(deal.toAmount.toString()).toFixed(0));
+            const bookedFee = BigInt(new Decimal((deal.feeAmount ?? 0).toString()).toFixed(0));
+            const refundAmount = grossAmount >= bookedFee ? grossAmount - bookedFee : BigInt(0);
+            if (refundAmount > BigInt(0)) {
+              // اگر balance کمتر از مبلغ بازگشتی است → خطا به‌جای silent clamp
+              // مثال: مشتری 100 AFN داشت، معامله 200 AFN بود → نمی‌توان 200 AFN debit کرد
+              if (lockedAccount.balance < refundAmount) {
+                throw new Error(
+                  `INSUFFICIENT_BALANCE: موجودی حساب (${lockedAccount.balance}) کمتر از مبلغ بازگشتی (${refundAmount}) است`,
+                );
+              }
+              const newBalance = lockedAccount.balance - refundAmount;
+              await tx.fintechAccount.update({
+                where: { id: lockedAccount.id },
+                data: { balance: newBalance, updatedAt: new Date() },
+              });
+              await tx.ledgerEntry.create({
+                data: {
+                  id: createId(),
+                  exchangeId: deal.exchangeId,
+                  accountId: lockedAccount.id,
+                  customerId: customer.id,
+                  direction: 'DEBIT',
+                  amount: refundAmount,
+                  currency: deal.toCurrency,
+                  runningBalance: newBalance,
+                  description: `بازگشت وجه — معامله ${dealId.slice(-8)}`,
+                  createdById: user.id,
+                },
+              });
             }
-            const newBalance = lockedAccount.balance - refundAmount;
-            await tx.fintechAccount.update({
-              where: { id: lockedAccount.id },
-              data: { balance: newBalance, updatedAt: new Date() },
-            });
-            await tx.ledgerEntry.create({
-              data: {
-                id: createId(),
-                exchangeId: deal.exchangeId,
-                accountId: lockedAccount.id,
-                customerId: customer.id,
-                direction: 'DEBIT',
-                amount: refundAmount,
-                currency: deal.toCurrency,
-                runningBalance: newBalance,
-                description: `بازگشت وجه — معامله ${dealId.slice(-8)}`,
-                createdById: user.id,
-              },
-            });
           }
         }
       }

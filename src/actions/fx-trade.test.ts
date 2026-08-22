@@ -35,7 +35,11 @@ vi.mock('@/lib/db', () => ({
           update: vi.fn().mockResolvedValue({ balance: BigInt(10_000) }),
           findUniqueOrThrow: vi.fn().mockResolvedValue({ balance: BigInt(500_000) }),
         },
-        ledgerEntry: { create: vi.fn().mockResolvedValue({}) },
+        ledgerEntry: {
+          create: vi.fn().mockResolvedValue({}),
+          // REVENUE-fix: bookFeeRevenue برای runningBalance تجمعی aggregate می‌زند
+          aggregate: vi.fn().mockResolvedValue({ _sum: { amount: BigInt(0) } }),
+        },
         transaction: {
           create: vi.fn().mockResolvedValue({ id: 'txn-fx-1' }),
           update: vi.fn().mockResolvedValue({}),
