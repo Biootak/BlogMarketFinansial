@@ -5,6 +5,14 @@ import { TwoFactorSection } from '@/components/Dashboard/Profile/TwoFactorSectio
 import { FormField } from '@/components/Dashboard/primitives/FormField';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
@@ -245,9 +253,17 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
   );
 
   /* ── submit handlers ── */
-  const onInfoSubmit = async (data: UpdateProfileInput) => {
-    setIsInfoSubmitting(true);
-    try {
+
+  // SECURITY-fix (2026-08-22): تغییر ایمیل = عملیات حساس — سرور رمز عبور
+  // فعلی را الزامی کرده است. اگر ایمیل عوض شده باشد، قبل از ارسال، دیالوگ
+  // تأیید رمز باز می‌شود و رمز به‌صورت currentPassword به action می‌رود.
+  const [emailConfirmOpen, setEmailConfirmOpen] = useState(false);
+  const [emailConfirmPassword, setEmailConfirmPassword] = useState('');
+  const [pendingInfoData, setPendingInfoData] = useState<UpdateProfileInput | null>(null);
+  const [isEmailConfirmSubmitting, setIsEmailConfirmSubmitting] = useState(false);
+
+  const submitInfoData = useCallback(
+    async (data: UpdateProfileInput, currentPassword?: string) => {
       const formData = new FormData();
       formData.append('name', data.name || '');
       formData.append('email', data.email || '');
@@ -256,11 +272,42 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
       formData.append('jobName', data.jobName || '');
       formData.append('imageUrl', avatarPreview || '');
       formData.append('bgImage', bgImagePreview || '');
+      if (currentPassword) formData.append('currentPassword', currentPassword);
       await submitProfile(formData, router, 'پروفایل با موفقیت بروزرسانی شد');
+    },
+    [avatarPreview, bgImagePreview, router],
+  );
+
+  const onInfoSubmit = async (data: UpdateProfileInput) => {
+    const emailChanged =
+      Boolean(data.email) && (data.email || '').trim().toLowerCase() !== (initialData.email ?? '');
+    if (emailChanged && !data.currentPassword) {
+      setPendingInfoData(data);
+      setEmailConfirmPassword('');
+      setEmailConfirmOpen(true);
+      return;
+    }
+    setIsInfoSubmitting(true);
+    try {
+      await submitInfoData(data, data.currentPassword || undefined);
     } catch {
       toast({ title: 'خطا', description: 'خطا در بروزرسانی پروفایل', variant: 'destructive' });
     } finally {
       setIsInfoSubmitting(false);
+    }
+  };
+
+  const onEmailConfirmSubmit = async () => {
+    if (!pendingInfoData || !emailConfirmPassword) return;
+    setIsEmailConfirmSubmitting(true);
+    try {
+      await submitInfoData(pendingInfoData, emailConfirmPassword);
+      setEmailConfirmOpen(false);
+      setPendingInfoData(null);
+    } catch {
+      toast({ title: 'خطا', description: 'خطا در بروزرسانی پروفایل', variant: 'destructive' });
+    } finally {
+      setIsEmailConfirmSubmitting(false);
     }
   };
 
@@ -764,6 +811,50 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initialData }) => {
         title="تغییر تصویر پس‌زمینه"
         folder="avatars"
       />
+
+      {/* ── تأیید رمز هنگام تغییر ایمیل (SECURITY-fix 2026-08-22) ── */}
+      <Dialog open={emailConfirmOpen} onOpenChange={setEmailConfirmOpen}>
+        <DialogContent className="max-w-sm" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-start">
+              <Lock className="size-4" aria-hidden />
+              تأیید تغییر ایمیل
+            </DialogTitle>
+            <DialogDescription className="text-start">
+              برای امنیت حساب، برای تغییر ایمیل باید رمز عبور فعلی خود را وارد کنید.
+            </DialogDescription>
+          </DialogHeader>
+          <FormField label="رمز عبور فعلی">
+            <Input
+              type="password"
+              value={emailConfirmPassword}
+              onChange={(e) => setEmailConfirmPassword(e.target.value)}
+              autoComplete="current-password"
+              placeholder="••••••••"
+            />
+          </FormField>
+          <DialogFooter className="gap-2 sm:justify-start">
+            <Button
+              type="button"
+              disabled={!emailConfirmPassword || isEmailConfirmSubmitting}
+              onClick={onEmailConfirmSubmit}
+            >
+              {isEmailConfirmSubmitting ? 'در حال ارسال…' : 'تأیید و ذخیره'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isEmailConfirmSubmitting}
+              onClick={() => {
+                setEmailConfirmOpen(false);
+                setPendingInfoData(null);
+              }}
+            >
+              انصراف
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

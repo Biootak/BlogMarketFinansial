@@ -213,9 +213,8 @@ export const UpdateProfileSchema = z
   })
   .refine(
     (data) => {
-      if (data.currentPassword && !data.newPassword) {
-        return false;
-      }
+      // 2026-08-22: رمز فعلی به‌تنهایی مجاز است — re-auth برای عملیات حساس
+      // (تغییر ایمیل). رمز جدید همچنان نیازمند رمز فعلی + تکرارِ یکسان است.
       if (!data.currentPassword && data.newPassword) {
         return false;
       }
