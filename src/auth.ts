@@ -12,6 +12,7 @@ import { createAuthAdapter } from '@/lib/auth-adapter';
 import { getAuthSecret } from '@/lib/auth-secret';
 import prisma from '@/lib/db';
 import { devOwnerRoleForEmail } from '@/lib/dev-access';
+import { upsertLoginDevice } from '@/lib/device-registration';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { serverLog } from '@/lib/server-logger';
 import { isSessionRevoked } from '@/lib/session-denylist';
@@ -618,6 +619,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (!loginToken) return null;
           const consumed = await consumeLoginToken({ email, token: loginToken });
           if (!consumed.ok) return null;
+          // FIX (2026-08-22): ثبت/به‌روزرسانی Device هنگام ورود — جدول از قبل
+          // خالی می‌ماند چون هیچ مسیری create نمی‌زد. best-effort.
+          await upsertLoginDevice({
+            userId: user.id,
+            ip,
+            userAgent: req?.headers?.get('user-agent'),
+            acceptLanguage: req?.headers?.get('accept-language'),
+          });
           return user;
         }
 
@@ -626,6 +635,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const ok = await bcrypt.compare(password, user.password);
         if (!ok) return null;
         if (!user.emailVerified) return null;
+        await upsertLoginDevice({
+          userId: user.id,
+          ip,
+          userAgent: req?.headers?.get('user-agent'),
+          acceptLanguage: req?.headers?.get('accept-language'),
+        });
         return user;
       },
     }),
