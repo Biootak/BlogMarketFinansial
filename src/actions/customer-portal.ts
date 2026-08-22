@@ -709,10 +709,20 @@ export async function submitKycPhone(raw: unknown): Promise<{
   // مصرف کد OTP — کلید همان ایمیل کاربر است (هماهنگ با phone-verify)
   const user = await prisma.user.findUnique({
     where: { id: access.userId },
-    select: { email: true },
+    select: { email: true, pendingPhone: true },
   });
   if (!user?.email) {
     return { success: false, error: 'کاربر یافت نشد' };
+  }
+  // SECURITY-fix (2026-08-22): کد باید برای همین شماره صادر شده باشد —
+  // pendingPhone در sendPhoneOtp هنگام صدور ثبت می‌شود؛ بدون این چک، کاربر
+  // با کدِ شمارهٔ خودش هر شمارهٔ دلخواهی را به‌عنوان «تأییدشده» در KYC
+  // سطح ۱ ثبت می‌کرد.
+  if (!user.pendingPhone || user.pendingPhone !== e164) {
+    return {
+      success: false,
+      error: 'این کد برای این شماره موبایل صادر نشده است. برای همین شماره کد جدید بگیرید.',
+    };
   }
   const otpResult = await consumeOtpToken({
     email: user.email.trim().toLowerCase(),

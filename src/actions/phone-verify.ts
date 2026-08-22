@@ -115,6 +115,16 @@ export async function sendPhoneOtp(args: {
       email: 'کد تأیید به ایمیل شما ارسال شد. 📧',
       sms: 'کد تأیید به شماره شما پیامک شد. 📱',
     };
+
+    // SECURITY-fix (2026-08-22): کد صادرشده به همین شماره bind می‌شود —
+    // pendingPhone مبنای مقایسه در verifyPhoneOtp و KYC LEVEL_1 است تا کدِ
+    // دریافتیِ خود کاربر برای شمارهٔ A نتواند یک شمارهٔ دلخواه B را
+    // «تأییدشده» ثبت کند (دور زدن تأیید موبایل در پلتفرم مالی).
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { pendingPhone: e164 },
+    });
+
     return {
       success: true,
       message: channelMsg[delivery.channel ?? 'sms'] ?? 'کد تأیید ارسال شد.',
@@ -144,6 +154,21 @@ export async function verifyPhoneOtp(args: {
     }
     const e164 = normalizeToE164(phone);
 
+    // SECURITY-fix (2026-08-22): کد باید برای همین شماره صادر شده باشد.
+    // pendingPhone در sendPhoneOtp هنگام صدور کد ثبت می‌شود؛ عدم تطابق یعنی
+    // این کد برای شمارهٔ دیگری رفته — قبل از مصرف کد، fail-fast می‌کنیم تا
+    // تلاش کاربر هم نسوزد و شمارهٔ دلخواه قابل تأیید نباشد.
+    const userForBinding = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { pendingPhone: true },
+    });
+    if (!userForBinding?.pendingPhone || userForBinding.pendingPhone !== e164) {
+      return {
+        success: false,
+        message: 'این کد برای این شماره موبایل صادر نشده است. برای همین شماره کد جدید بگیرید.',
+      };
+    }
+
     // verify OTP
     const email = session.user.email.trim().toLowerCase();
     const result = await consumeOtpToken({
@@ -162,10 +187,10 @@ export async function verifyPhoneOtp(args: {
       return { success: false, message: messages[result.reason] ?? 'کد نامعتبر است.' };
     }
 
-    // ذخیره شماره تأیید شده در DB
+    // ذخیره شماره تأیید شده در DB + مصرف binding (تک‌بارمصرف)
     await prisma.user.update({
       where: { id: session.user.id },
-      data: { phoneNumber: e164 },
+      data: { phoneNumber: e164, pendingPhone: null },
     });
 
     // sync داشبورد — صفحه مدیریت کاربران را revalidate کن
