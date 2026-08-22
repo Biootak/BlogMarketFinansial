@@ -65,6 +65,10 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
   const [isBusy, setIsBusy] = useState(false);
   const [isDisableOpen, setIsDisableOpen] = useState(false);
   const [disableCode, setDisableCode] = useState('');
+  // SECURITY-fix (2026-08-22): فعال‌سازی 2FA رمز عبور فعلی می‌خواهد —
+  // جلوگیری از ثبتِ secret مهاجم روی حساب قربانی با سشن ربایش‌شده.
+  const [isSetupConfirmOpen, setIsSetupConfirmOpen] = useState(false);
+  const [setupPassword, setSetupPassword] = useState('');
 
   useEffect(() => {
     let cancelled = false;
@@ -87,14 +91,24 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
   const isVerifying = verifyCode.length === 6;
 
   const handleStartSetup = useCallback(async () => {
+    if (!setupPassword) {
+      toast({
+        title: 'رمز عبور لازم است',
+        description: 'برای فعال‌سازی احراز دو مرحله‌ای، رمز عبور فعلی را وارد کنید.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setIsBusy(true);
     try {
-      const res = await setup2FA();
+      const res = await setup2FA(setupPassword);
       if (res.success && res.data) {
         setSetupData(res.data);
         setView('setup');
         setVerifyCode('');
         setBackupCodes(null);
+        setIsSetupConfirmOpen(false);
+        setSetupPassword('');
       } else {
         toast({
           title: 'خطا',
@@ -107,7 +121,7 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
     } finally {
       setIsBusy(false);
     }
-  }, []);
+  }, [setupPassword]);
 
   const handleConfirmEnable = useCallback(async () => {
     if (!setupData || !isVerifying) return;
@@ -237,7 +251,11 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
                 </p>
               </div>
             </div>
-            <Button onClick={handleStartSetup} disabled={isBusy} className={s.primaryCta}>
+            <Button
+              onClick={() => setIsSetupConfirmOpen(true)}
+              disabled={isBusy}
+              className={s.primaryCta}
+            >
               {isBusy ? (
                 <Loader2 className={s.spinner} size={16} aria-hidden />
               ) : (
@@ -443,6 +461,34 @@ export function TwoFactorSection({ userEmail }: TwoFactorSectionProps) {
               <AlertTriangle size={13} aria-hidden />
               <span>حساب شما فقط با رمز عبور محافظت خواهد شد. این عملیات قابل بازگشت است.</span>
             </div>
+          </div>
+        }
+      />
+      {/* SECURITY-fix (2026-08-22): تأیید رمز پیش از شروع فعال‌سازی 2FA */}
+      <ConfirmDialog
+        open={isSetupConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) setSetupPassword('');
+          setIsSetupConfirmOpen(open);
+        }}
+        title="فعال‌سازی احراز هویت دو مرحله‌ای"
+        description="برای اطمینان از هویت شما، ابتدا رمز عبور فعلی حساب را وارد کنید."
+        confirmLabel="ادامه و نمایش QR"
+        cancelLabel="انصراف"
+        loading={isBusy}
+        onConfirm={handleStartSetup}
+        body={
+          <div className={s.dialogBody}>
+            <FormField label="رمز عبور فعلی">
+              <Input
+                type="password"
+                value={setupPassword}
+                onChange={(e) => setSetupPassword(e.target.value)}
+                autoComplete="current-password"
+                placeholder="••••••••"
+                dir="ltr"
+              />
+            </FormField>
           </div>
         }
       />

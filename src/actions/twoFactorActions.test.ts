@@ -62,6 +62,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { requireUser } from '@/lib/require-auth';
 import { generateOtpAuthUri, verifyTotp } from '@/lib/totp';
 import { decryptTotpSecret, encryptTotpSecret } from '@/lib/totp-secrets';
+import bcrypt from 'bcryptjs';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -89,40 +90,73 @@ describe('setup2FA', () => {
     vi.clearAllMocks();
     // پیش‌فرض مجدد — mockResolvedValue پایدار می‌تواند به تست بعدی leak کند
     vi.mocked(checkRateLimit).mockResolvedValue(RL_OK);
+    vi.mocked(bcrypt.compare).mockResolvedValue(true as never);
   });
 
   it('بدون auth → UNAUTHORIZED', async () => {
     vi.mocked(requireUser).mockResolvedValue(UNAUTH);
-    const r = await setup2FA();
+    const r = await setup2FA('current-pass');
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('UNAUTHORIZED');
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it('بدون رمز عبور فعلی → VALIDATION', async () => {
+    vi.mocked(requireUser).mockResolvedValue(USER);
+    const r = await setup2FA();
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.code).toBe('VALIDATION');
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
   it('rate-limit اختصاصی → RATE_LIMITED', async () => {
     vi.mocked(requireUser).mockResolvedValue(USER);
     vi.mocked(checkRateLimit).mockResolvedValueOnce(RATE_LIMITED);
-    const r = await setup2FA();
+    const r = await setup2FA('current-pass');
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('RATE_LIMITED');
     expect(checkRateLimit).toHaveBeenCalledWith('2fa-setup:u1', 'auth');
   });
 
+  it('کاربر بدون رمز عبور (OAuth-only) → NO_PASSWORD', async () => {
+    vi.mocked(requireUser).mockResolvedValue(USER);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ password: null } as never);
+    const r = await setup2FA('current-pass');
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.code).toBe('NO_PASSWORD');
+  });
+
+  it('رمز عبور فعلی اشتباه → WRONG_PASSWORD', async () => {
+    vi.mocked(requireUser).mockResolvedValue(USER);
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      password: '$2b$12$hash',
+    } as never);
+    vi.mocked(bcrypt.compare).mockResolvedValue(false as never);
+    const r = await setup2FA('wrong-pass');
+    expect(r.success).toBe(false);
+    if (!r.success) expect(r.error.code).toBe('WRONG_PASSWORD');
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
   it('کاربر یافت نشد → NOT_FOUND', async () => {
     vi.mocked(requireUser).mockResolvedValue(USER);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue(null);
-    const r = await setup2FA();
+    vi.mocked(prisma.user.findUnique)
+      .mockResolvedValueOnce({ password: '$2b$12$hash' } as never)
+      .mockResolvedValueOnce(null as never);
+    const r = await setup2FA('current-pass');
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('NOT_FOUND');
   });
 
   it('2FA قبلاً فعال → ALREADY_ENABLED', async () => {
     vi.mocked(requireUser).mockResolvedValue(USER);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      email: 'u@x.com',
-      twoFactorEnabled: true,
-    } as never);
-    const r = await setup2FA();
+    vi.mocked(prisma.user.findUnique)
+      .mockResolvedValueOnce({ password: '$2b$12$hash' } as never)
+      .mockResolvedValueOnce({
+        email: 'u@x.com',
+        twoFactorEnabled: true,
+      } as never);
+    const r = await setup2FA('current-pass');
     expect(r.success).toBe(false);
     if (!r.success) expect(r.error.code).toBe('ALREADY_ENABLED');
     expect(prisma.user.update).not.toHaveBeenCalled();
@@ -130,12 +164,14 @@ describe('setup2FA', () => {
 
   it('موفق → secret با پیشوند pending: رمزنگاری و ذخیره می‌شود', async () => {
     vi.mocked(requireUser).mockResolvedValue(USER);
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({
-      email: 'u@x.com',
-      twoFactorEnabled: false,
-    } as never);
+    vi.mocked(prisma.user.findUnique)
+      .mockResolvedValueOnce({ password: '$2b$12$hash' } as never)
+      .mockResolvedValueOnce({
+        email: 'u@x.com',
+        twoFactorEnabled: false,
+      } as never);
     vi.mocked(prisma.user.update).mockResolvedValue({} as never);
-    const r = await setup2FA();
+    const r = await setup2FA('current-pass');
     expect(r.success).toBe(true);
     if (!r.success) return;
     // plaintext هرگز ذخیره نمی‌شود — همیشه pending:encrypted

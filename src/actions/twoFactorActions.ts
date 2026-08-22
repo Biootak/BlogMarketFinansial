@@ -14,16 +14,49 @@ import { v4 as createId } from 'uuid';
 export type TwoFASetupData = { otpauthUri: string; secret: string };
 export type TwoFAStatus = { enabled: boolean; hasBackupCodes: boolean; backupCodesCount: number };
 
-export async function setup2FA(): Promise<FintechActionResult<TwoFASetupData>> {
+export async function setup2FA(
+  currentPassword?: string,
+): Promise<FintechActionResult<TwoFASetupData>> {
   const auth = await requireUser();
   if (!auth.success)
     return { success: false, error: { code: 'UNAUTHORIZED', message: 'وارد شوید' } };
+  // SECURITY-fix (2026-08-22): فعال‌سازی 2FA نیازمند اثبات هویت با رمز فعلی.
+  // قبلاً فقط سشن کافی بود — مهاجمی که سشن را ربوده بود می‌توانست secret خودش
+  // را روی حساب قربانی ثبت کند؛ حتی بعد از بازیابی رمز، قربانی در چالش TOTP
+  // گیر می‌کرد (کدهای پشتیبان هم برای مهاجم ساخته می‌شد) = قفل دائمی حساب.
+  // غیرفعال‌سازی از قبل TOTP می‌خواهد؛ حالا فعال‌سازی هم re-auth دارد.
   const limited = await checkRateLimit(`2fa-setup:${auth.user.id}`, 'auth');
   if (!limited.success)
     return {
       success: false,
       error: { code: 'RATE_LIMITED', message: 'تعداد تلاش‌ها بیش از حد مجاز است' },
     };
+  if (!currentPassword || typeof currentPassword !== 'string') {
+    return {
+      success: false,
+      error: { code: 'VALIDATION', message: 'رمز عبور فعلی برای فعال‌سازی ۲FA الزامی است' },
+    };
+  }
+  const userForAuth = await prisma.user.findUnique({
+    where: { id: auth.user.id },
+    select: { password: true },
+  });
+  if (!userForAuth?.password) {
+    return {
+      success: false,
+      error: {
+        code: 'NO_PASSWORD',
+        message: 'ابتدا برای حساب خود رمز عبور تنظیم کنید',
+      },
+    };
+  }
+  const passwordOk = await bcrypt.compare(currentPassword, userForAuth.password);
+  if (!passwordOk) {
+    return {
+      success: false,
+      error: { code: 'WRONG_PASSWORD', message: 'رمز عبور فعلی اشتباه است' },
+    };
+  }
   const user = await prisma.user.findUnique({
     where: { id: auth.user.id },
     select: { email: true, twoFactorEnabled: true },

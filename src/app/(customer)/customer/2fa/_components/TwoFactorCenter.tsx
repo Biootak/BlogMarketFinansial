@@ -21,6 +21,7 @@ import {
 import { ConfirmDialog, EmptyState, FormField, Spotlight } from '@/components/Dashboard/primitives';
 import CellCodeInput, { type CellCodeInputHandle } from '@/components/ui/CellCodeInput';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -149,17 +150,27 @@ export default function TwoFactorCenter({ initial, redirectTo, canDisable = true
     return () => clearTimeout(t);
   }, [flow, redirectTo]);
 
-  const startSetup = useCallback(() => {
+  // SECURITY-fix (2026-08-22): فعال‌سازی 2FA رمز عبور فعلی می‌خواهد
+  const [confirmSetupPassword, setConfirmSetupPassword] = useState(false);
+  const [setupPasswordInput, setSetupPasswordInput] = useState('');
+
+  const startSetup = useCallback((password?: string) => {
     setError(null);
     setBackupCodes(null);
+    if (!password) {
+      setSetupPasswordInput('');
+      setConfirmSetupPassword(true);
+      return;
+    }
     startTransition(async () => {
-      const r = await setup2FA();
+      const r = await setup2FA(password);
       if (!r.success) {
         setError(r.error?.message ?? 'خطا در شروع فرایند');
         return;
       }
       setSetup(r.data);
       setFlow('AWAITING_CODE');
+      setConfirmSetupPassword(false);
       setTimeout(() => tokenInputRef.current?.focus(), 80);
     });
   }, []);
@@ -319,7 +330,12 @@ export default function TwoFactorCenter({ initial, redirectTo, canDisable = true
               استاندارد صنعتی TOTP (RFC 6238) — بدون نیاز به SMS
             </li>
           </ul>
-          <button type="button" className={s.primaryCta} onClick={startSetup} disabled={pending}>
+          <button
+            type="button"
+            className={s.primaryCta}
+            onClick={() => startSetup()}
+            disabled={pending}
+          >
             {pending ? (
               <Loader2 size={14} className={s.spin} />
             ) : (
@@ -559,6 +575,38 @@ export default function TwoFactorCenter({ initial, redirectTo, canDisable = true
               cellClassName={s.tokenCell}
               filledClassName={s.tokenCellFilled}
               invalidClassName={s.tokenCellInvalid}
+            />
+          </FormField>
+        }
+      />
+
+      {/* ── Confirm Setup Password Dialog (SECURITY-fix 2026-08-22) ──── */}
+      <ConfirmDialog
+        open={confirmSetupPassword}
+        onOpenChange={(open) => {
+          setConfirmSetupPassword(open);
+          if (!open) setError(null);
+        }}
+        title="فعال‌سازی احراز دو مرحله‌ای"
+        description="برای اطمینان از هویت شما، ابتدا رمز عبور فعلی حساب را وارد کنید."
+        confirmLabel="ادامه و نمایش QR"
+        cancelLabel="انصراف"
+        loading={pending}
+        onConfirm={() => startSetup(setupPasswordInput)}
+        body={
+          <FormField label="رمز عبور فعلی" htmlFor="setup-password">
+            <Input
+              id="setup-password"
+              type="password"
+              value={setupPasswordInput}
+              onChange={(e) => {
+                setSetupPasswordInput(e.target.value);
+                setError(null);
+              }}
+              autoComplete="current-password"
+              placeholder="••••••••"
+              dir="ltr"
+              disabled={pending}
             />
           </FormField>
         }
