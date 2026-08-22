@@ -46,8 +46,20 @@ cd "$REPO_DIR"
 info "── آپدیت شروع شد (branch=$BRANCH, repo=$REPO_DIR) ──"
 
 # آخرین کد — فقط fast-forward
+HEAD_BEFORE=$(git rev-parse HEAD)
 git fetch origin "$BRANCH"
 git pull --ff-only origin "$BRANCH"
+HEAD_AFTER=$(git rev-parse HEAD)
+GIT_CHANGED=$([[ "$HEAD_BEFORE" != "$HEAD_AFTER" ]] && echo 1 || echo 0)
+
+# FIX (2026-08-22 — رِیس واقعی): اگر git جلو رفت ولی compose pull تصویر قدیمی
+# را گرفت (CI هنوز تمام نکرده و تگ :main هنوز عوض نشده)، pull «موفق» است ولی
+# هیچ چیز آپدیت نمی‌شود؛ قبلاً سنتینل نوشته می‌شد و دیپلوی برای همیشه می‌ماند.
+# حالا: اگر git تغییر کرده ولی ID تصویر وب بعد از up عوض نشد → بدون نوشتن
+# sentinel خارج می‌شویم تا دقیقهٔ بعد دوباره تلاش شود تا تصویر جدید بیاید.
+
+IMG_BEFORE=$(docker compose --env-file "$REPO_DIR/.env" \
+    -f "$REPO_DIR/deploy/docker-compose.azure.yml" images -q web 2>/dev/null || true)
 
 # pull تصویرهای جدید از ghcr — با retry تا CI build تمام شود
 for i in 1 2 3 4 5; do
@@ -66,6 +78,14 @@ done
 # بالا آوردن کانتینرها (فقط در صورت تغییر تصویر recreate می‌شوند)
 docker compose --env-file "$REPO_DIR/.env" \
     -f "$REPO_DIR/deploy/docker-compose.azure.yml" up -d
+
+IMG_AFTER=$(docker compose --env-file "$REPO_DIR/.env" \
+    -f "$REPO_DIR/deploy/docker-compose.azure.yml" images -q web 2>/dev/null || true)
+
+if [[ "$GIT_CHANGED" == "1" && -n "$IMG_BEFORE" && "$IMG_BEFORE" == "$IMG_AFTER" ]]; then
+    info "⚠️ git جلو رفت ولی تصویر web همان قبلی است — CI هنوز publish نکرده. بدون sentinel خارج می‌شوم تا دقیقهٔ بعد دوباره..."
+    exit 1
+fi
 
 # تصاویر قدیمی را پاک کن (دیسک 32GB)
 docker image prune -f >/dev/null 2>&1 || true
