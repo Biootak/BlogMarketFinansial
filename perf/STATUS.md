@@ -21,31 +21,38 @@
 
 ---
 
-## ۲) بازلاین پروداکشن — 2026-08-23 (~06:50 UTC)
+## ۲) بازلاین پروداکشن — 2026-08-23 (بعد از دیپلوی defer-hydration؛ سویپ کامل ۳۶ صفحه)
 
-| صفحه | Perf | FCP | LCP | TBT | SI | CLS | وضعیت |
-|------|-----:|----:|----:|----:|---:|----:|-------|
-| `/` (home) | **32** | 2.9s | 8.4s | **2720ms** | 8.7s | 0.075 | 🔴 بحرانی |
-| `/archive` | **54** | 2.6s | 8.4s | 390ms | 7.9s | 0.073 | 🔴 |
-| `/money-transfer` | **62** | 2.7s | 7.8s | 180ms | 6.4s | 0.074 | 🟠 |
-| `/exchange-rates` | **65** | 2.1s | 4.8s | 510ms | 4.8s | 0.005 | 🟠 |
-| `/about` | **74** | 2.4s | 4.3s | 200ms | 5.8s | 0.075 | 🟡 |
-| `/exchanges` | **85** | 2.0s | 3.6s | 90ms | 3.9s | 0.075 | 🟡 |
+| صفحه | Perf | LCP | TBT | CLS | | صفحه | Perf | LCP | TBT | CLS |
+|------|-----:|----:|----:|----:|---|------|-----:|----:|----:|----:|
+| `/` home | **46** | 5.6s | 1.1s | 0.008 | | `/money-transfer` | **46** | 5.2s | 1.5s | 0.010 |
+| `/about` | **64** | 4.6s | 0.4s | 0.008 | | `/market-analysis` | **41** | 6.5s | 1.3s | 0.072 |
+| `/apply-exchange` | **37** | 4.8s | 0.8s | **0.44** ⚠️ | | `/online-payment` | **57** | 3.9s | 1.0s | 0.008 |
+| `/authors` | **53** | 4.1s | 1.4s | 0.041 | | `/posts` | **45** | 6.1s | 1.1s | 0.072 |
+| `/beneficiaries` | **47** | 5.6s | 1.1s | 0.115 | | `/privacy-policy` | **62** | 4.1s | 0.8s | 0.041 |
+| `/blog` | **70** | 3.9s | 0.5s | 0.083 | | `/search` | **79** | 3.0s | 0.1s | 0.078 |
+| `/categories` | **39** | 6.7s | 1.3s | 0.072 | | `/services` | **91** | 2.8s | 0.0s | 0.082 |
+| `/contact` | **46** | 4.0s | 0.6s | **0.407** ⚠️ | | `/services/compare` | **85** | 3.3s | 0.1s | 0.074 |
+| `/credit-rates` | **59** | 4.1s | 0.8s | 0.074 | | `/services/order` | **81** | 3.4s | 0.3s | 0.074 |
+| `/exchanges` | **57** | 3.8s | 0.3s | **0.418** ⚠️ | | `/signin` | **74** | 3.8s | 0.1s | **0.197** ⚠️ |
+| `/faq` | **83** | 3.7s | 0.1s | 0.062 | | `/signup` | **82** | 3.7s | 0.1s | 0.128 |
+| `/feedback` | **70** | 3.9s | 0.5s | 0.035 | | `/subscription` | **80** | 3.7s | 0.1s | 0.082 |
+| `/financial-news` | **41** | 6.4s | 1.1s | 0.072 | | `/support` | **94** 🟢-نزدیک | 2.5s | 0.1s | 0.042 |
+| `/help-center` | **60** | 4.2s | 0.8s | 0.041 | | `/tags` | **72** | 5.0s | 0.1s | 0.072 |
+| `/kyc` | **59** | 4.1s | 0.9s | 0.074 | | `/terms` | **82** | 3.8s | 0.1s | 0.082 |
+| `/track` | **86** | 2.1s | 0.0s | 0.074 | | `/transfer` | **63** | 4.9s | 0.3s | 0.009 |
+| `/wallet` | **78** | 3.8s | 0.1s | 0.099 | | `/single/<post>` | **69** | 5.4s | 0.1s | 0.074 |
+| `/archive/category/<slug>` | **72** | 4.6s | 0.2s | 0.080 | | `/exchanges/abantether` | **59** | 4.2s | 0.8s | 0.082 |
 
-نکته: accessibility/best-practices/seo همه ≥91 هستند — فقط performance مشکل دارد.
+**جمع‌بندی سویپ:** هیچ صفحه‌ای ≥95 نیست (بهترین: support=94، services=91).
+- ✅ **TBT عملاً حل شد** (اثر defer hydration): اکثر صفحات 0.0–0.5s — قبلاً home=2720ms بود.
+- ❌ **LCP همه‌جا کند است** (2.1–6.7s): TTFB ریشه‌ای ~730ms + render-blocking CSS/fونت + تصاویر.
+- 🔴 **CLS روی دسته‌ای از صفحات منفجر شده** (⚠️ در جدول): مکانیزم تأییدشده برای کلاس «برد نرخ» (`/exchanges` و مشابه): `ExchangeQuotesBoard` اول اسکلتِ کوتاه رندر می‌کند و بعد از fetch کلاینی جدول بلند می‌آید → کل main هل داده می‌شود (shift score 0.939 روی main). صفحات فرم/احراز (contact/apply-exchange/signin) منبع شیفت جداگانه دارند — هنوز root-cause نشده.
+- مقایسه با قبل از دیپلوی: home 32→46، money-transfer 62→46 (نوسان LCP)، exchanges 85→57 (CLS جدید!). یعنی defer ها TBT را کشتند ولی CLS جدیدی روی بعضی صفحات ساختند یا قبلاً پنهان بود.
 
-⚠️ **تصحیح پوشش (2026-08-23):** گزارش `lighthouse-exchange-rates.json` در واقع `/money-transfer` را تست کرده (`finalUrl` در JSON) → بازلاین بالا فقط **۵ صفحه متمایز از ~۳۳+ صفحه عمومی** است. جدول §۲.۱ فهرست کامل و وضعیت اندازه‌گیری هرکدام است.
-
-### ۲.۱) فهرست کامل صفحات ایستای عمومی — وضعیت اندازه‌گیری
-
-| اندازه‌گیری‌شده | هنوز اندازه گرفته نشده (⬜ = با قدم ۰ یا اولین lh-audit کامل پر می‌شود) |
-|---|---|
-| `/` 🔴32 · `/archive` 🔴54 · `/money-transfer` 🟠62 · `/about` 🟡74 · `/exchanges` 🟡85 | `/apply-exchange` · `/authors` · `/beneficiaries` · `/blog` · `/categories` · `/contact` · `/credit-rates` · `/faq` · `/feedback` · `/financial-news` · `/help-center` · `/kyc` · `/market-analysis` · `/online-payment` · `/posts` · `/privacy-policy` · `/search` · `/services` · `/services/compare` · `/services/order` · `/signin` · `/signup` · `/subscription` · `/support` · `/tags` · `/terms` · `/track` · `/transfer` · `/wallet` |
-
-قالب‌های داینامیک (با نمونهٔ واقعی): `/single/<slug>` · `/archive/category/<slug>` · `/archive/tag/<slug>` · `/author/<id>` · `/exchanges/<slug>` (+`about`/`hours`/`markets`) · `/credit-rates/<bank>` · `/track/<code>` · `/subscription/<plan>` · `/about/<slug>` · زیر‌صفحات محتوایی money-transfer/online-payment/market-analysis/financial-news
-
-### ۲.۲) Tier 2 — صفحات لاگین‌دار (بعد از سبزشدن tier 1)
-`/customer/*` (~۲۰ مسیر) · `/exchange/*` (~۲۵ مسیر) · `/dashboard/*` (~۷۰ مسیر) — سنجش با session واقعی (LH روی پروداکشن با کوکی) یا حداقل بیلد-چک وزن چانک هر route از `perf/bundle-baseline.json`. معیار عملی: بودجهٔ چانک + Lighthouse دستی دوره‌ای.
+### ۲.۱) وضعیت پوشش اندازه‌گیری
+✅ **تکمیل شد 2026-08-23:** هر ۳۳ صفحه ایستای عمومی + ۳ نمونه داینامیک (`/single/<post>`، `/archive/category/<slug>`، `/exchanges/<slug>`) اندازه گرفته شد — جدول §۲. اعداد داینامیک‌ها نمایندهٔ قالب است؛ برای هر slug جدید همان الگو انتظار می‌رود.
+⬜ **باقی‌مانده (Tier-2 لاگین‌دار):** `/customer/*` (~۲۰) · `/exchange/*` (~۲۵) · `/dashboard/*` (~۷۰) — سنجش با session واقعی یا بودجهٔ چانک از `perf/bundle-baseline.json`. بعد از سبزشدن tier 1.
 
 ---
 
@@ -67,10 +74,9 @@
 - `/money-transfer` و `/exchange-rates`: چانک route-specific خودشان هم سنگین است (bootup تا 4.9s) → widgetهای calculator باید dynamic شوند.
 - `/archive`: LCP=8.4s با TBT کم (390ms) → مشکل اصلی LCP resource/CSS است نه JS.
 
-### واقعیت دیپلوی (خیلی مهم)
-- **بیلد پروداکشن قدیمی‌تر از working tree است** — WIP زیر هنوز دیپلوی نشده:
-  `DeferredToaster` · `DeferredMarketRatesTicker` · `DeferredPageViewTracker` (جدید)، حذف `ViewLink`/`useViewTransition`، تغییرات `layout.tsx`/`globals.css`/`archive-hub.css`/dashboard css ها، تغییرات `package.json`.
-- پس بخشی از شکاف فعلی ممکن است با دیپلوی همین WIP بسته شود → **اول دیپلوی، بعد اندازه‌گیری مجدد، بعد کار جدید.**
+### واقعیت دیپلوی (به‌روز 2026-08-23 عصر)
+- WIP قبلی **دیپلوی شد** (کانتینر web = کامیت `85c9060e`، شامل defer ها). جدول §۲ همین بیلد را اندازه گرفته است.
+- نکتهٔ تفسیر چانک‌ها: نام `3rwqtu5fxuzvl.js` در بیلد جدید هم هست — hash محتوایی است و محتوای vendor تغییر نکرده؛ نشانهٔ بیلد قدیمی «نیست» (نشانهٔ درست: مارکرهای DOM مثل حذف `data-scroll-behavior`).
 
 ---
 
@@ -91,14 +97,14 @@ de32253c fix(ui): reserve scrollbar gutter — page-transition layout shake
 
 ## ۵) بعدی‌ها — به همین ترتیب اجرا کن (یک آیتم در هر بار)
 
-- [ ] **قدم ۰ — WIP را ببند و دیپلوی کن:** بررسی staged changes (لیست بالا) → `npx tsc --noEmit` + `npm run verify` → کامیت‌های منطقی جدا → `git push origin main` → صبر pull خودکار Azure → اندازه‌گیری مجدد پروداکشن (`lh-audit`) → جدول بازلاین بالا را آپدیت کن. *(تا وقتی این انجام نشود، هر بهینه‌سازی جدید کورکورانه است.)*
-- [ ] **قدم ۰.۵ — سویپ کامل:** `node scripts/lh-audit.mjs https://financialmarket.page` (لیست پیش‌فرض = همهٔ ۳۳ صفحه ایستا) + یک نمونه از هر قالب داینامیک با slug واقعی → جدول §۲.۱ را پر کن؛ صفحات قرمز را به لیست کار اضافه کن.
-- [ ] **CLS مشترک 0.075:** با trace Lighthouse (layout-shift items در گزارش JSON، فیلد `audits.layout-shifts`) عناصر شیفت‌یابنده را در هر صفحه پیدا کن؛ علت مشترک را یک‌جا رفع کن.
-- [ ] **home TBT=2720ms:** لیست client component هایی که روی home hydrate می‌شوند (Header، ticker، فرم newsletter، toaster، analytics…)؛ هرچه below-fold یا non-critical است → deferred/dynamic. هدف TBT<200ms.
-- [ ] **home styleLayout=3905ms:** dom-size را چک کن؛ انیمیشن‌های layout-triggering و selector های گران در CSS حذف/ساده شوند (قانون §Motion: فقط opacity+transform).
-- [ ] **route chunks سنگین:** money-transfer/exchange-rates → widgetهای محاسبه‌گر با `next/dynamic` (بدون SSR برای interactive-only).
-- [ ] **CSS بلااستفاده:** بررسی چرا چند فایل CSS بزرگ per-page شپ می‌شود (archive=0.62s صرفه) — احتمالاً import های global زنجیره‌ای؛ به co-located module.css منتقل کن.
-- [ ] **حلقه پایانی:** `node scripts/lh-audit.mjs https://financialmarket.page --threshold=95` سبز شود → گزارش‌های JSON را replace کن → جدول §۲ را آپدیت کن → کامیت.
+- [x] **قدم ۰ — WIP را ببند و دیپلوی کن** ✅ 2026-08-23: ۸ کامیت منطقی (docs/hydration-defer/nav-refactor/css-dead/chore/lint) + verify سبز (۹۴۴ تست) + push.
+  - ⚠️ **مانع کشف‌شده در مسیر دیپلوی:** اولین push ها با failure ی Docker build برگشتند — علت: `package-lock.json` با `package.json` ناهمگام بود (`npm ci` در مرحله deps): «Missing: webpack@5.109.2 …». فیکس: `npm install` لوکال برای sync کردن lock (postinstall پرisma لوکال ممکن است روی DB شکست بخورد — بی‌اهمیت؛ lock قبلش نوشته می‌شود) → کامیت `fix(deps)` → بیلد سبز. **قانون جدید:** بعد از هر merge dependabot یا دست‌کاری دستی lock، قبل از push اجرا شود: `npm ci --dry-run --ignore-scripts`.
+- [x] **قدم ۰.۵ — سویپ کامل** ✅ 2026-08-23: ۳۶ صفحه اندازه گرفته شد → جدول §۲. یافته اصلی: TBT حل شد؛ LCP و CLS(دسته‌ای) مانده.
+- [ ] **CLS کلاس «برد-نرخ»** (`/exchanges` و صفحات دارای `ExchangeQuotesBoard`): اسکلتِ loading با جدول واقعی هم‌ارتفاع نیست → شیفت 0.939 روی main. فیکس درست: دادهٔ اولیه را SSR بده (server action/props به‌جای fetch کلاینی) یا ارتفاع اسکلت را دقیقاً برابر ردیف‌های QUOTES_INITIAL رزرو کن.
+- [ ] **CLS صفحات فرم/احراز** (contact=0.407، apply-exchange=0.44، signin=0.197، signup=0.128): برای هرکدام یک `npx lighthouse <url> --output=json` بگیر و `layout-shifts` را باز کن؛ منابع محتمل: font-swap متن فارسی، فرم‌های کلاینتی که بعداً mount می‌شوند.
+- [ ] **LCP همه‌جا (2.1–6.7s):** سه اهرم به ترتیب سود: (۱) preload فونت اصلی + `font-display` و fallback-metrics درست، (۲) ابعاد/priority تصاویر hero بالای فولد، (۳) حذف CSS رندربلاک بلااستفاده (آرشیو قبلاً 0.62s صرفه نشان می‌داد). TTFB ریشه ~730ms با CF cache-rule فعلی قابل قبول است — دست نزن مگر بعد از این دو.
+- [ ] **TBT باقی‌مانده** روی `/authors`(1.4s)، `/market-analysis`(1.3s)، `/financial-news`، `/posts`, `/categories` (~1.1-1.3s): island های تعاملی همین صفحات را dynamic کن.
+- [ ] **حلقه پایانی:** re-sweep کامل با `lh-audit` تا همه ≥95؛ گزارش JSON ها را replace و جدول §۲ را آپدیت کن.
 
 ---
 
@@ -112,10 +118,12 @@ de32253c fix(ui): reserve scrollbar gutter — page-transition layout shake
 6. اگر کشف کردی یک تشخیص §۳ غلط بوده → اصلاحش کن، خط نزن، تاریخ بزن.
 
 ### موانع شناخته‌شدهٔ این ماشین (وقت را تلف نکن)
+- **«CI سبز است ولی سایت آپدیت نشده»** (رخ داد 2026-08-23): اسکریپت قدیمی `azure-update.sh` در تلاشِ دقیقهٔ بعدِ push، چون git دیگر جلو نمی‌رفت گارد را رد می‌کرد و با ایمیج قدیمی sentinel می‌نوشت → cron هرگز تلاش مجدد نمی‌کرد. فیکس شد: حالا وجود تگ immutable `sha-<short>` در ghcr شرط دیپلوی است. **تشخیص سریع:** روی VM `docker ps` بزن و Created کانتینر web را با زمان بیلد CI مقایسه کن؛ اگر قدیمی بود: `cd ~/fm-blog && git pull && bash deploy/azure-update.sh`.
 - Prisma shadow-DB روی verify بلاک است → مسیر: `prisma migrate diff → push → resolve`.
 - capture داخل `tmp/` typecheck را می‌شکند — خروجی موقت را آنجا نریز.
 - Playwright driver گاهی lock می‌شود («Browser is already in use») → قبل از باز کردن مرورگر با curl چک کن سایت بالا است.
-- دیپلوی = فقط `git push origin main`؛ cron هر دقیقه روی Azure VM pull+build می‌کند (`deploy/AZURE.md`).
+- کش Cloudflare (Edge TTL 5min + stale-while-revalidate=86400) و کش Next (`x-nextjs-prerender`) بعد از دیپلوی تا چند دقیقه HTML قدیمی می‌دهند — برای تست واقعی اورجین: `curl --resolve financialmarket.page:443:20.109.177.20 https://...`
+- دیپلوی = فقط `git push origin main`؛ CI تصویر را می‌سازد (~۸-۱۲ دقیقه)، VM cron-pull می‌کند (`deploy/AZURE.md`).
 
 ---
 
@@ -123,4 +131,8 @@ de32253c fix(ui): reserve scrollbar gutter — page-transition layout shake
 
 | تاریخ | تغییر |
 |-------|-------|
-| 2026-08-23 | ایجاد SSOT + بازلاین ۶ صفحه پروداکشن + تشخیص اولیه (vendor chunk, styleLayout, CLS مشترک, WIP undeployed) |
+| 2026-08-23 | ایجاد SSOT + بازلاین ۶ گزارش (۵ صفحه متمایز) + تشخیص اولیه (vendor chunk, styleLayout, CLS مشترک, WIP undeployed) |
+| 2026-08-23 | دامنه به کل سایت گسترش یافت: لیست پیش‌فرض `lh-audit.mjs` = ۳۳ صفحه ایستای عمومی + پروتکل نمونه‌های داینامیک؛ Tier-2 لاگین‌دار تعریف شد |
+| 2026-08-23 | قدم ۰ کامل شد: WIP در ۸ کامیت منطقی بسته و push شد؛ مانع `npm ci` (lock ناهمگام) کشف و فیکس شد — ر.ک §۵ |
+| 2026-08-23 | **دیپلوی گیر کرده بود حل شد:** کانتینر وب ۷ ساعت روی ایمیج قدیمی ماند (sentinel زودهنگام). فیکس `azure-update.sh`: gate روی تگ immutable `sha-<short>` — ر.ک §۶ موانع |
+| 2026-08-23 | **بازلاین کامل ۳۶ صفحه** بعد از دیپلوی defer ها: TBT حل، LCP کند مانده، CLS انفجاری روی دسته برد-نرخ/فرم — اولویت‌های جدید در §۵ |
