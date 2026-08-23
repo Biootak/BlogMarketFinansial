@@ -83,7 +83,27 @@ for i in 1 2 3 4 5 6 7 8 9 10; do
     sleep 30
 done
 if [[ "$IMAGE_READY" != "1" ]]; then
-    info "❌ بعد از ۵ دقیقه تصویر $SHA_IMAGE منتشر نشد — نسخهٔ قبلی همچنان سرویس می‌دهد."
+    info "❌ بعد از ۵ دقیقه تصویر $SHA_IMAGE منتشر نشد — بررسی کامیت‌های فقط-مستندات..."
+    # FIX v5 (2026-08-23): workflow برای کامیت‌های فقط-md/deploy/docs/perf اصلاً
+    # build نمی‌سازد (paths-ignore) → تگ sha-<HEAD> هیچ‌وقت نمی‌آید و گیت بالا
+    # برای همیشه می‌ماند و cron قفل می‌شود. اگر دیفِ نسخهٔ دیپلوی‌شده تا HEAD
+    # فقط همین فایل‌های بی‌اثر بر ایمیج است، همان ایمیج موجود کافی است؛ pull+up
+    # و sentinel را جلو ببر.
+    LAST_SHA="$(cat "$REPO_DIR/.azure-last-deployed" 2>/dev/null || true)"
+    if [[ -n "$LAST_SHA" ]]; then
+        CODE_DIFF="$(git diff --name-only "$LAST_SHA" HEAD -- \
+            . ':(exclude)*.md' ':(exclude).github/**' ':(exclude)deploy/**' \
+            ':(exclude)docs/**' ':(exclude)perf/**' 2>/dev/null || echo CHECK-FAILED)"
+        if [[ -z "$CODE_DIFF" ]]; then
+            info "ℹ️ تغییرات فقط مستندات/اسکریپت بوده — بدون ایمیج جدید، sentinel جلو می‌رود."
+            docker compose --env-file "$REPO_DIR/.env" \
+                -f "$REPO_DIR/deploy/docker-compose.azure.yml" pull >/dev/null 2>&1 || true
+            docker compose --env-file "$REPO_DIR/.env" \
+                -f "$REPO_DIR/deploy/docker-compose.azure.yml" up -d
+            info "✅ آپدیت کامل شد (بدون ایمیج جدید) — $(git rev-parse --short HEAD)"
+            exit 0
+        fi
+    fi
     exit 1
 fi
 
