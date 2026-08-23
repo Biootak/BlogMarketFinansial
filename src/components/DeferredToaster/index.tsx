@@ -3,13 +3,10 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
-const Toaster = dynamic(
-  () => import('@/components/ui/toaster').then((module) => module.Toaster),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-);
+const Toaster = dynamic(() => import('@/components/ui/toaster').then((module) => module.Toaster), {
+  ssr: false,
+  loading: () => null,
+});
 
 export function DeferredToaster() {
   const [ready, setReady] = useState(false);

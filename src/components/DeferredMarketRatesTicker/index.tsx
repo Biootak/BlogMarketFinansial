@@ -5,16 +5,18 @@ import type { MarketRateItem } from '@/lib/market-rates/types';
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 
-const MarketRatesTicker = dynamic(
-  () => import('@/components/MarketRates/MarketRatesTicker'),
-  {
-    ssr: false,
-    loading: () => <TickerSkeleton />,
-  },
-);
+const MarketRatesTicker = dynamic(() => import('@/components/MarketRates/MarketRatesTicker'), {
+  ssr: false,
+  loading: () => <TickerSkeleton />,
+});
 
 function TickerSkeleton() {
-  return <Skeleton className="h-10 sm:h-11 w-full rounded-2xl" aria-label="در حال بارگذاری نرخ‌های زنده" />;
+  return (
+    <Skeleton
+      className="h-10 sm:h-11 w-full rounded-2xl"
+      aria-label="در حال بارگذاری نرخ‌های زنده"
+    />
+  );
 }
 
 function isMarketRateItem(value: unknown): value is MarketRateItem {
