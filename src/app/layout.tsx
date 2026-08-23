@@ -12,7 +12,7 @@
  * need server-side session data (e.g. `MainNav` for sign-in/avatar gating)
  * call `auth()` themselves in their server-component path.
  */
-import { Toaster } from '@/components/ui/toaster';
+import DeferredToaster from '@/components/DeferredToaster';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
 
@@ -26,7 +26,7 @@ import './globals.css';
 // wraps all public routes, so those pages still get the styles.
 
 import { DevScriptInjector } from '@/components/DevScriptInjector';
-import PageViewTracker from '@/components/PageViewTracker';
+import DeferredPageViewTracker from '@/components/DeferredPageViewTracker';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 import Providers from '@/components/providers';
 import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
@@ -112,7 +112,6 @@ export default function RootLayout({
     <html
       lang="fa-IR"
       dir="rtl"
-      data-scroll-behavior="smooth"
       className={`${fontVariables} rtl`}
       suppressHydrationWarning
     >
@@ -175,11 +174,11 @@ export default function RootLayout({
           <DevScriptInjector id="strip-extension-attrs" code={STRIP_EXTENSION_ATTRS_SCRIPT} />
         )}
         <Providers>
-          <PageViewTracker />
+          <DeferredPageViewTracker />
           {children}
         </Providers>
         <ServiceWorkerRegister />
-        <Toaster />
+        <DeferredToaster />
         {process.env.NODE_ENV === 'development' && <DevInspector />}
       </body>
     </html>

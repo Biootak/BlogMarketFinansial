@@ -9,7 +9,7 @@ import Sidebar from '@/components/Dashboard/DashboardPage/Sidebar';
 import SidebarInitializer from '@/components/Dashboard/DashboardPage/SidebarInitializer';
 import SidebarToggle from '@/components/Dashboard/DashboardPage/SidebarToggle';
 import { DensityProvider } from '@/components/Dashboard/primitives';
-import { Toaster } from '@/components/ui/toaster';
+import DeferredToaster from '@/components/DeferredToaster';
 import { DirectionProvider } from '@radix-ui/react-direction';
 import type { ReactNode } from 'react';
 
@@ -77,7 +77,7 @@ export function DashboardProviders({
               <ScrollRestoration />
             </div>
           </BreadcrumbProvider>
-          <Toaster />
+          <DeferredToaster />
         </div>
       </DensityProvider>
     </DirectionProvider>

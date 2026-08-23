@@ -17,7 +17,7 @@
  * 2026-06-17: لیست‌های فعال RateList از سرور برای مگامنوی «بازار» در MainNav
  *  پاس داده می‌شه. منبع داده یک‌تا و مشترک با PulseBoard است.
  */
-import MarketRatesTickerSection from '@/components/Sections/MarketRatesTickerSection';
+import DeferredMarketRatesTicker from '@/components/DeferredMarketRatesTicker';
 import type { RateListData } from '@/types/types';
 import HeaderAdBar from './HeaderAdBar';
 import MainNav from './MainNav';
@@ -65,8 +65,8 @@ const Header = ({ activeRateLists = [] }: { activeRateLists?: RateListData[] }) 
 
       <MainNav activeRateLists={activeRateLists} />
 
-      {/* نوار زنده‌ی نرخ‌های بازار — همیشه زیر MainNav، sticky همراه هدر */}
-      <MarketRatesTickerSection />
+      {/* نرخ‌های بازار بعد از اولین paint بارگذاری می‌شوند تا هدر مسیر بحرانی را مسدود نکند. */}
+      <DeferredMarketRatesTicker />
     </header>
   );
 };
