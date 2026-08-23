@@ -64,6 +64,29 @@ GIT_CHANGED=$([[ "$HEAD_BEFORE" != "$HEAD_AFTER" ]] && echo 1 || echo 0)
 # نیاورده باشد (ID قبل==بعد) → یعنی هنوز چیزی برای دیپلوی نیست؛ بدون sentinel
 # خارج شو تا دقیقهٔ بعد دوباره تلاش شود. هر شرط برعکس ⇒ ادامه و recreate.
 
+IMG_REF="${WEB_IMAGE:-ghcr.io/biootak/fm-blog-web:main}"
+WEB_REPO="${IMG_REF%:*}"
+SHORT_SHA="$(git rev-parse --short HEAD)"
+SHA_IMAGE="$WEB_REPO:sha-$SHORT_SHA"
+
+# FIX v3 (2026-08-23): شرط قطعیِ «ایمیجِ همین کامیت منتشر شده است». CI برای هر
+# کامیت تگ immutable «sha-<short>» می‌سازد؛ `docker pull` آن با auth دیمون کار
+# می‌کند (برخلاف manifest inspect که auth کلاینت می‌خواهد). اگر پول نشد، هنوز
+# چیزی برای دیپلوی نیست — بدون sentinel خارج شو تا دقیقهٔ بعد دوباره.
+IMAGE_READY=0
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    if docker pull -q "$SHA_IMAGE" >/dev/null 2>&1; then
+        IMAGE_READY=1
+        break
+    fi
+    info "⏳ تصویر $SHA_IMAGE هنوز منتشر نشده (CI در حال build؟) — تلاش $i/10..."
+    sleep 30
+done
+if [[ "$IMAGE_READY" != "1" ]]; then
+    info "❌ بعد از ۵ دقیقه تصویر $SHA_IMAGE منتشر نشد — نسخهٔ قبلی همچنان سرویس می‌دهد."
+    exit 1
+fi
+
 IMG_BEFORE=$(docker compose --env-file "$REPO_DIR/.env" \
     -f "$REPO_DIR/deploy/docker-compose.azure.yml" images -q web 2>/dev/null || true)
 
