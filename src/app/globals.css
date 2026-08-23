@@ -1,4 +1,7 @@
-@import "tailwindcss";
+@import "tailwindcss" source("../");
+/* ↑ 2026-08-23 perf: detection root = src/ فقط. حالت پیش‌فرض v4 همهٔ فایل‌های
+   غیر-gitignore (docs، design-system، perf، scripts…) را برای class-token
+   اسکن می‌کرد و خروجی utilities به ~519KB raw رسیده بود. */
 @import "../components/ds/styles/tokens.css";
 
 /* ============================================================================

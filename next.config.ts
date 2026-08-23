@@ -345,6 +345,13 @@ const nextConfig: NextConfig = {
   // The `cpus: 1` workaround was also removed — proven unnecessary once
   // retryCount returned to default; the default `cpus` (os.cpus()-1) is fine.
   experimental: {
+    // 2026-08-23 perf (official docs — next-config-js/cssChunking): default
+    // `true` merges CSS of ALL route groups into shared chunks, so every site
+    // page shipped ~236KB raw of dashboard-only CSS Modules (AdminCustomer
+    // Switcher/StatCard/ConfirmDialog… measured in prod HTML). `'graph'`
+    // (Turbopack) uses a cost-based graph so each route downloads ~only its
+    // own CSS — render-blocking bytes drop for every public page.
+    cssChunking: 'graph',
     // 2026-08-13 mem-fix (official Next.js docs — guides/memory-usage):
     // Next.js preloads ALL page JS modules into memory when the server
     // starts. With 150+ routes on a 512MB dyno this held ~60-70MB of
