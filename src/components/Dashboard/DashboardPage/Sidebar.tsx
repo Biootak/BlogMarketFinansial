@@ -28,12 +28,12 @@
 import { useSignOut } from '@/components/Auth/useSignOut';
 import Avatar from '@/components/Avatar/Avatar';
 import Logo from '@/components/Logo/Logo';
-import { ViewLink } from '@/components/ui/ViewLink';
 import { useSidebarStore } from '@/hooks/sidebarStore';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { isAlwaysAllowedRoute, isSectionAllowed, sectionForRoute } from '@/lib/dashboard-sections';
 import { cn } from '@/lib/utils';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HiOutlineArrowRightOnRectangle, HiOutlineHome, HiOutlineXMark } from 'react-icons/hi2';
@@ -297,13 +297,13 @@ const Sidebar = ({ userRole, staffRole }: SidebarProps) => {
               (admin / customer / exchange) بدون logout به صفحهٔ اصلی سایت برگردد.
               از کلاس پایهٔ dash-side__item استفاده می‌کند؛ global CSS دست‌نخورده
               می‌ماند (AGENTS.md: no new rules in dashboard.css). */}
-          <ViewLink href="/" className="dash-side__item" aria-label="بازگشت به سایت">
+          <Link href="/" className="dash-side__item" aria-label="بازگشت به سایت">
             <span className="dash-side__diamond" aria-hidden />
             <span className="dash-side__item-ico">
               <HiOutlineHome className="w-[19px] h-[19px]" aria-hidden />
             </span>
             {isOpen && <span className="dash-side__item-label">بازگشت به سایت</span>}
-          </ViewLink>
+          </Link>
         </footer>
       </aside>
 

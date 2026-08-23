@@ -39,7 +39,6 @@ import {
   StatusPill,
 } from '@/app/(customer)/customer/_lib/customer-ui';
 import { useSignOut } from '@/components/Auth/useSignOut';
-import { ViewLink } from '@/components/ui/ViewLink';
 import {
   Building2,
   CheckCircle2,
@@ -714,12 +713,10 @@ function ActionCard({
       </button>
     );
   }
-  // مسیرهای داخلی پنل → view transition
-  const withTransition = href.startsWith('/customer') || href.startsWith('/dashboard');
   return (
-    <ViewLink href={href} withTransition={withTransition} className={className}>
+    <Link href={href} className={className}>
       {inner}
-    </ViewLink>
+    </Link>
   );
 }
 

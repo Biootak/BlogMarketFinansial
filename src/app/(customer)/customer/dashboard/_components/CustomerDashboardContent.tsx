@@ -50,7 +50,6 @@ import {
   DashboardTableHeader,
   DashboardTableRow,
 } from '@/components/Dashboard/shared/DashboardTableWrapper';
-import { ViewLink } from '@/components/ui/ViewLink';
 import { cn } from '@/lib/utils';
 import {
   AlertCircle,
@@ -791,14 +790,10 @@ function QuickActions() {
       <ul className={s.quickGrid}>
         {QUICK_ACTIONS.map((a, i) => {
           const Icon = a.icon;
-          // انتقال‌های داخلی: با view-transition (میلیون‌دلاری)
-          // انتقال به سایت (money-transfer): بدون transition
-          const isInternal = a.href.startsWith('/customer') || a.href.startsWith('/dashboard');
           return (
             <li key={a.href} className={s.quickItem} style={{ animationDelay: `${i * 40}ms` }}>
-              <ViewLink
+              <Link
                 href={a.href}
-                withTransition={isInternal}
                 className={cn(s.quickCard, s[`quickCard--${a.accent}`])}
                 aria-label={`${a.label} — ${a.hint}`}
               >
@@ -808,7 +803,7 @@ function QuickActions() {
                 <span className={s.quickLabel}>{a.label}</span>
                 <span className={s.quickHint}>{a.hint}</span>
                 <ChevronLeft size={11} className={s.quickChevron} aria-hidden />
-              </ViewLink>
+              </Link>
             </li>
           );
         })}

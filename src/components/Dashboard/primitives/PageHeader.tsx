@@ -138,7 +138,6 @@ export interface PageHeaderProps {
   icon?: PageHeaderIcon;
   accent?: PageHeaderAccent;
   variant?: PageHeaderVariant;
-  transition?: 'default' | 'none';
   className?: string;
   /** فقط در compact/minimal: متریک‌های inline کنار title */
   meta?: Array<{ label: string; value: string | number }>;
@@ -164,7 +163,6 @@ export function PageHeader({
   icon,
   accent = 'emerald',
   variant = 'default',
-  transition = 'none',
   className,
   meta,
   bookmarkId,
@@ -174,11 +172,7 @@ export function PageHeader({
   // ── strip variant: breadcrumb bar بدون card ──────────────────────────────
   if (variant === 'strip') {
     return (
-      <header
-        className={cn(s.strip, ACCENT_CLASS[accent], className)}
-        style={transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined}
-        dir="rtl"
-      >
+      <header className={cn(s.strip, ACCENT_CLASS[accent], className)} dir="rtl">
         {breadcrumb && breadcrumb.length > 0 && (
           <nav aria-label="مسیر" className={s.breadcrumb}>
             {breadcrumb.map((item, i) => {
@@ -241,11 +235,7 @@ export function PageHeader({
   // ── minimal variant: inline بدون card ────────────────────────────────────
   if (variant === 'minimal') {
     return (
-      <header
-        className={cn(s.minimal, ACCENT_CLASS[accent], className)}
-        style={transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined}
-        dir="rtl"
-      >
+      <header className={cn(s.minimal, ACCENT_CLASS[accent], className)} dir="rtl">
         {eyebrow && <span className={s.minimalEyebrow}>{eyebrow}</span>}
         <div className={s.minimalRow}>
           {Icon && (
@@ -274,11 +264,7 @@ export function PageHeader({
   // ── compact variant: کارت کوتاه‌تر بدون SVG mark ─────────────────────────
   if (variant === 'compact') {
     return (
-      <header
-        className={cn(s.compact, ACCENT_CLASS[accent], className)}
-        style={transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined}
-        dir="rtl"
-      >
+      <header className={cn(s.compact, ACCENT_CLASS[accent], className)} dir="rtl">
         <div className={s.compactTop}>
           <div className={s.metaRow}>
             <span className={s.dot} aria-hidden />
@@ -344,11 +330,7 @@ export function PageHeader({
 
   // ── default variant: کارت پانورامیک کامل با SVG mark ────────────────────
   return (
-    <header
-      className={cn(s.header, ACCENT_CLASS[accent], className)}
-      style={transition === 'default' ? { viewTransitionName: 'dash-page' } : undefined}
-      dir="rtl"
-    >
+    <header className={cn(s.header, ACCENT_CLASS[accent], className)} dir="rtl">
       {/* ── SVG geometric mark — eight-point star, آروم می‌چرخه ── */}
       <div className={s.mark} aria-hidden>
         <svg viewBox="0 0 200 200" width="100%" height="100%">
