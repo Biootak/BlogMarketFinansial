@@ -230,8 +230,6 @@
    Modern 2026 techniques used below:
      - CSS subgrid via .dash-bento2 (12-col asymmetric bento with container
        queries, so cards re-shape without media-query explosions)
-     - View Transitions API hooks (::view-transition-old/new) for the
-       analytics tab cross-fade (component uses startViewTransition())
      - content-visibility: auto on every .dash-pane - off-screen panes do
        not pay paint cost on first scroll
      - scroll-driven animations on .dash-pane (subtle reveal on enter)
@@ -2148,37 +2146,6 @@
       oklch(100% 0 0) 47%,
       transparent 47%
     );
-  }
-
-  /* ---- View transition hook (analytics tab swap) ------------------------- */
-  .dash-vt {
-    view-transition-name: dash-vt;
-  }
-  @supports (view-transition-name: dash-vt) {
-    ::view-transition-old(dash-vt) {
-      animation: dash-vt-out 220ms var(--ds-ease-in-out-quart) both;
-    }
-    ::view-transition-new(dash-vt) {
-      animation: dash-vt-in 260ms var(--ds-ease-out-quart) both;
-    }
-    @keyframes dash-vt-out {
-      to {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-    }
-    @keyframes dash-vt-in {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    ::view-transition-old(dash-vt),
-    ::view-transition-new(dash-vt) {
-      animation: none !important;
-    }
   }
 
   /* ---- Scroll-driven reveal (subtle) ------------------------------------- */

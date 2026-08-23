@@ -5960,48 +5960,6 @@
     }
   }
 
-  /* ---- View transitions Ø¨Ø±Ø§ÛŒ Ø¬Ø§Ø¨Ø¬Ø§ÛŒÛŒ grid/list --------------------------- */
-  @view-transition {
-    navigation: auto;
-  }
-  ::view-transition-old(arc-grid),
-  ::view-transition-new(arc-grid) {
-    animation-duration: 320ms;
-    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  ::view-transition-old(arc-grid) {
-    animation: arc-fade-scale-out 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  ::view-transition-new(arc-grid) {
-    animation: arc-fade-scale-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
-  @keyframes arc-fade-scale-out {
-    from {
-      opacity: 1;
-      transform: scale(1);
-    }
-    to {
-      opacity: 0;
-      transform: scale(0.98);
-    }
-  }
-  @keyframes arc-fade-scale-in {
-    from {
-      opacity: 0;
-      transform: scale(1.02);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    ::view-transition-old(arc-grid),
-    ::view-transition-new(arc-grid) {
-      animation: none;
-    }
-  }
-
   /* ---- Eyebrow v4 (badge Ø¨Ø§ conic glow) ---------------------------------- */
   .arc-eyebrow-v4 {
     display: inline-flex;
