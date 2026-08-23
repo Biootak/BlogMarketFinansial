@@ -53,22 +53,17 @@ const SearchModal: FC<Props> = ({ renderTrigger, open: controlledOpen, onClose: 
     }
   }, [isControlled, onCloseProp]);
 
-  // Prevent body scroll and layout shift when modal opens
+  // Prevent body scroll when the modal opens. Layout shift is already handled
+  // globally by `html { scrollbar-gutter: stable }` (__theme_custom.scss): the
+  // gutter stays reserved while the scrollbar hides, so no manual padding
+  // compensation is needed — measuring innerWidth/clientWidth here forced a
+  // synchronous reflow on every open, and with the reserved gutter it would
+  // now double-compensate and leave an extra gap on the inline-end side.
   useEffect(() => {
-    if (open) {
-      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      document.body.style.overflow = 'hidden';
-      // In RTL the vertical scrollbar sits on the inline-end (left) side.
-      // Use the logical property so we compensate the correct edge and
-      // avoid a layout shift / gap on modal open.
-      document.body.style.paddingInlineEnd = `${scrollbarWidth}px`;
-    } else {
-      document.body.style.overflow = '';
-      document.body.style.paddingInlineEnd = '';
-    }
+    if (!open) return;
+    document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = '';
-      document.body.style.paddingInlineEnd = '';
     };
   }, [open]);
 
