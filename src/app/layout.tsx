@@ -25,8 +25,8 @@ import './globals.css';
 // CSS to pages that never render a single NC class. The `(site)` layout
 // wraps all public routes, so those pages still get the styles.
 
-import { DevScriptInjector } from '@/components/DevScriptInjector';
 import DeferredPageViewTracker from '@/components/DeferredPageViewTracker';
+import { DevScriptInjector } from '@/components/DevScriptInjector';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 import Providers from '@/components/providers';
 import { STRIP_EXTENSION_ATTRS_SCRIPT } from '@/lib/strip-extension-attrs';
@@ -109,12 +109,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="fa-IR"
-      dir="rtl"
-      className={`${fontVariables} rtl`}
-      suppressHydrationWarning
-    >
+    <html lang="fa-IR" dir="rtl" className={`${fontVariables} rtl`} suppressHydrationWarning>
       <head>
         {/* 2026-08-05 perf: MutationObserver روی کل subtree در prod فقط
             CPU می‌سوزاند. hydration mismatch warning فقط در dev نمایش داده

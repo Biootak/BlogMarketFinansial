@@ -56,7 +56,6 @@
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
-
       "semicolons": "always"
     }
   },
@@ -105,7 +104,8 @@
       "src/styles/ad-primitives.css",
       "src/styles/money-transfer.css",
       ".harness/**",
-      ".Trash-1000/**"
+      ".Trash-1000/**",
+      "perf/**"
     ]
   },
   "overrides": [

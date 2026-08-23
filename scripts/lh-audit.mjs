@@ -34,7 +34,7 @@ const FORM_FACTOR = getOpt('form-factor', 'mobile'); // mobile | desktop
 // Full public static inventory (src/app/(site) + fintech + auth).
 // Dynamic templates (/single/[slug], /archive/category/[slug], /exchanges/[slug], ...)
 // need a real slug from DB — pass them via --pages=/single/<slug>,... per run.
-const PAGES = (getOpt(
+const PAGES = getOpt(
   'pages',
   [
     '/',
@@ -71,7 +71,7 @@ const PAGES = (getOpt(
     '/transfer',
     '/wallet',
   ].join(','),
-))
+)
   .split(',')
   .filter(Boolean);
 
@@ -102,7 +102,9 @@ function runLighthouse(url) {
       { shell: process.platform === 'win32', stdio: ['ignore', 'pipe', 'inherit'] },
     );
     let out = '';
-    child.stdout.on('data', (d) => (out += d));
+    child.stdout.on('data', (d) => {
+      out += d;
+    });
     child.on('close', () => {
       try {
         resolveRun(JSON.parse(out));
@@ -115,7 +117,9 @@ function runLighthouse(url) {
 
 const fmtMs = (ms) => `${(ms / 1000).toFixed(1)}s`;
 
-console.log(`${C.cyan}${C.bold}▶ Lighthouse audit (${FORM_FACTOR}, threshold ${THRESHOLD})${C.reset}`);
+console.log(
+  `${C.cyan}${C.bold}▶ Lighthouse audit (${FORM_FACTOR}, threshold ${THRESHOLD})${C.reset}`,
+);
 console.log(`  ${BASE_URL}\n`);
 
 const failures = [];
@@ -158,7 +162,9 @@ for (const r of rows) {
 console.log('');
 
 if (failures.length || rows.some((r) => r.score < THRESHOLD)) {
-  const bad = [...new Set([...failures, ...rows.filter((r) => r.score < THRESHOLD).map((r) => r.path)])];
+  const bad = [
+    ...new Set([...failures, ...rows.filter((r) => r.score < THRESHOLD).map((r) => r.path)]),
+  ];
   console.log(`${C.red}${C.bold}✗ زیر آستانه: ${bad.join(', ')}${C.reset}`);
   console.log('  این لیست را برای ایجنت بفرستید تا همان صفحات بهینه شوند.');
   process.exit(1);
@@ -170,7 +176,7 @@ function fmtShort(displayValue) {
   if (!displayValue || displayValue === '-') return '-';
   const m = displayValue.match(/([\d.,]+)\s*(s|ms|KiB|MiB)/);
   if (!m) return displayValue;
-  const n = parseFloat(m[1].replace(/,/g, ''));
+  const n = Number.parseFloat(m[1].replace(/,/g, ''));
   if (m[2] === 'ms') return `${(n / 1000).toFixed(1)}s`;
   return `${n.toFixed(n >= 10 ? 0 : 1)}${m[2]}`;
 }
