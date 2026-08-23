@@ -16,7 +16,8 @@
  */
 
 export type CategoryTheme = {
-  gradient: string;
+  /** CSS gradient string for inline style — e.g. "linear-gradient(to top right, #7c3aed, #9333ea, #4338ca)" */
+  gradientStyle: string;
   accent: string;
   accentSoft: string;
   text: string;
@@ -24,7 +25,6 @@ export type CategoryTheme = {
   glow: string;
   badge: string;
   ring: string;
-  /** رنگ‌های واقعی CSS برای conic-gradient border animation */
   glowA: string;
   glowB: string;
 };
@@ -34,7 +34,7 @@ export type SentimentType = 'bullish' | 'bearish' | 'neutral';
 export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   // ارز دیجیتال — بنفش تکنولوژیک
   crypto: {
-    gradient: 'from-violet-600 via-purple-600 to-indigo-700',
+    gradientStyle: 'linear-gradient(to top right, #7c3aed, #9333ea, #4338ca)',
     accent: 'bg-violet-500',
     accentSoft: 'bg-violet-500/20',
     text: 'text-violet-100',
@@ -46,7 +46,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glowB: '#4338ca',
   },
   bitcoin: {
-    gradient: 'from-amber-500 via-orange-500 to-amber-600',
+    gradientStyle: 'linear-gradient(to top right, #f59e0b, #f97316, #d97706)',
     accent: 'bg-amber-500',
     accentSoft: 'bg-amber-500/20',
     text: 'text-amber-100',
@@ -59,7 +59,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   // بورس و بازار سرمایه — سبز کلاسیک
   bourse: {
-    gradient: 'from-emerald-600 via-teal-600 to-cyan-700',
+    gradientStyle: 'linear-gradient(to top right, #059669, #0d9488, #0e7490)',
     accent: 'bg-emerald-500',
     accentSoft: 'bg-emerald-500/20',
     text: 'text-emerald-100',
@@ -71,7 +71,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glowB: '#0891b2',
   },
   stock: {
-    gradient: 'from-emerald-600 via-teal-600 to-cyan-700',
+    gradientStyle: 'linear-gradient(to top right, #059669, #0d9488, #0e7490)',
     accent: 'bg-emerald-500',
     accentSoft: 'bg-emerald-500/20',
     text: 'text-emerald-100',
@@ -84,7 +84,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   // طلا و سکه — طلایی گرم
   gold: {
-    gradient: 'from-yellow-500 via-amber-500 to-orange-600',
+    gradientStyle: 'linear-gradient(to top right, #eab308, #f59e0b, #f97316)',
     accent: 'bg-amber-500',
     accentSoft: 'bg-amber-500/20',
     text: 'text-amber-100',
@@ -97,7 +97,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   // مسکن — قهوه‌ای گرم
   realestate: {
-    gradient: 'from-stone-600 via-stone-700 to-stone-800',
+    gradientStyle: 'linear-gradient(to top right, #78716c, #57534e, #44403c)',
     accent: 'bg-stone-500',
     accentSoft: 'bg-stone-500/20',
     text: 'text-stone-100',
@@ -110,7 +110,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   // اقتصاد کلان — آبی حرفه‌ای
   economy: {
-    gradient: 'from-sky-600 via-blue-600 to-indigo-700',
+    gradientStyle: 'linear-gradient(to top right, #0284c7, #2563eb, #4338ca)',
     accent: 'bg-blue-500',
     accentSoft: 'bg-blue-500/20',
     text: 'text-blue-100',
@@ -122,7 +122,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
     glowB: '#4338ca',
   },
   forex: {
-    gradient: 'from-sky-600 via-blue-600 to-indigo-700',
+    gradientStyle: 'linear-gradient(to top right, #0284c7, #2563eb, #4338ca)',
     accent: 'bg-blue-500',
     accentSoft: 'bg-blue-500/20',
     text: 'text-blue-100',
@@ -135,7 +135,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   // خودرو — قرمز پویا
   car: {
-    gradient: 'from-rose-600 via-red-600 to-pink-700',
+    gradientStyle: 'linear-gradient(to top right, #e11d48, #dc2626, #db2777)',
     accent: 'bg-rose-500',
     accentSoft: 'bg-rose-500/20',
     text: 'text-rose-100',
@@ -148,7 +148,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   // فناوری — فیروزه‌ای مدرن
   tech: {
-    gradient: 'from-cyan-600 via-teal-600 to-emerald-700',
+    gradientStyle: 'linear-gradient(to top right, #0891b2, #0d9488, #059669)',
     accent: 'bg-cyan-500',
     accentSoft: 'bg-cyan-500/20',
     text: 'text-cyan-100',
@@ -161,7 +161,7 @@ export const CATEGORY_THEMES: Record<string, CategoryTheme> = {
   },
   // پیش‌فرض — نوترال
   default: {
-    gradient: 'from-slate-700 via-slate-800 to-neutral-900',
+    gradientStyle: 'linear-gradient(to top right, #475569, #334155, #171717)',
     accent: 'bg-slate-500',
     accentSoft: 'bg-slate-500/20',
     text: 'text-slate-100',
@@ -297,7 +297,7 @@ export const SENTIMENT_CONFIG: Record<
   {
     label: string;
     shortLabel: string;
-    gradient: string;
+    gradientStyle: string;
     icon: 'up' | 'down' | 'flat';
     ring: string;
     text: string;
@@ -306,7 +306,7 @@ export const SENTIMENT_CONFIG: Record<
   bullish: {
     label: 'صعودی',
     shortLabel: '↑',
-    gradient: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+    gradientStyle: 'linear-gradient(to right, #10b981, #14b8a6)',
     icon: 'up',
     ring: 'ring-emerald-400/40',
     text: 'text-emerald-50',
@@ -314,7 +314,7 @@ export const SENTIMENT_CONFIG: Record<
   bearish: {
     label: 'نزولی',
     shortLabel: '↓',
-    gradient: 'bg-gradient-to-r from-rose-500 to-pink-600',
+    gradientStyle: 'linear-gradient(to right, #f43f5e, #db2777)',
     icon: 'down',
     ring: 'ring-rose-400/40',
     text: 'text-rose-50',
@@ -322,7 +322,7 @@ export const SENTIMENT_CONFIG: Record<
   neutral: {
     label: 'خنثی',
     shortLabel: '–',
-    gradient: 'bg-gradient-to-r from-amber-500 to-orange-500',
+    gradientStyle: 'linear-gradient(to right, #f59e0b, #f97316)',
     icon: 'flat',
     ring: 'ring-amber-400/40',
     text: 'text-amber-50',

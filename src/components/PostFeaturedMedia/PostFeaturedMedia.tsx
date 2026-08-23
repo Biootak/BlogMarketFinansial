@@ -20,6 +20,20 @@ export interface PostFeaturedMediaProps {
    * loading="lazy" so the hero image starts fetching immediately.
    */
   priority?: boolean;
+  /**
+   * Responsive sizes hint — helps the browser pick the right resolution.
+   * When omitted, a conservative default is used that matches the most
+   * common contexts (archive cards, sidebar widgets). Pages that know
+   * their exact column width (single article hero, gallery hero) should
+   * pass a more specific value.
+   *
+   * Common presets:
+   *  • archive grid card (3-col): "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+   *  • archive grid card (2-col): "(max-width: 768px) 100vw, 50vw"
+   *  • single article hero:    "(max-width: 1023px) 100vw, (max-width: 1535px) 62vw, 1010px"
+   *  • sidebar thumbnail:      "(max-width: 1023px) 80px, 120px"
+   */
+  sizes?: string;
 }
 
 const aspectRatioClasses = {
@@ -36,6 +50,7 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
   isHover = false,
   imageRatio = 'landscape',
   priority = false,
+  sizes,
 }) => {
   const { featuredImage, postType, videoUrl, galleryImages, audioUrl, slug } = post;
 
@@ -100,7 +115,7 @@ const PostFeaturedMedia: FC<PostFeaturedMediaProps> = ({
           }
           alt={post.title ?? 'Featured'}
           fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes={sizes ?? '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'}
           className="object-cover"
           priority={priority}
           {...(priority ? {} : { loading: 'lazy' })}

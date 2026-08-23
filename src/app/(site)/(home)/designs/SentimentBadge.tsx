@@ -47,7 +47,8 @@ export default memo(function SentimentBadge({
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.3 }}
-      className={`inline-flex items-center font-bold rounded-full ${config.gradient} ${config.text} shadow-lg ${sizeClasses[size]} ${className}`}
+      className={`inline-flex items-center font-bold rounded-full ${config.text} shadow-lg ${sizeClasses[size]} ${className}`}
+      style={{ backgroundImage: config.gradientStyle }}
     >
       <Icon className={iconSize[size]} strokeWidth={2.5} />
       {showLabel && <span>{config.label}</span>}

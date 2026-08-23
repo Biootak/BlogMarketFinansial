@@ -2,39 +2,6 @@
 @import "../components/ds/styles/tokens.css";
 
 /* ============================================================================
-   Safelist — کلاس‌های داینامیک که از string interpolation می‌آیند
-   ----------------------------------------------------------------------------
-   این کلاس‌ها به صورت literal در `categoryTheme.ts` و `SENTIMENT_CONFIG`
-   ذخیره شدن و در runtime به className اضافه میشن. Tailwind scanner
-   نمی‌تونه string داخل فایل TS رو parse کنه، پس باید صریح اعلام بشن.
-
-   اگر تم جدیدی به CATEGORY_THEMES اضافه شد، کلاس‌هاش رو اینجا هم اضافه کن.
-   ============================================================================ */
-@source inline("from-violet-600", "via-purple-600", "to-indigo-700");
-@source inline("from-amber-500", "via-orange-500", "to-amber-600");
-@source inline("from-emerald-600", "via-teal-600", "to-cyan-700");
-@source inline("from-yellow-500", "to-amber-500", "via-amber-500", "to-orange-600");
-@source inline("from-stone-600", "via-stone-700", "to-stone-800");
-@source inline("from-sky-600", "via-blue-600", "to-indigo-700");
-@source inline("from-rose-600", "via-red-600", "to-pink-700");
-@source inline("from-cyan-600", "via-teal-600", "to-emerald-700");
-@source inline("from-slate-700", "via-slate-800", "to-neutral-900");
-
-/* badge gradients (bg-gradient-to-r from-X to-Y) */
-@source inline("bg-gradient-to-r", "from-violet-500", "to-indigo-500");
-@source inline("from-emerald-500", "to-teal-500");
-@source inline("from-stone-500", "to-stone-700");
-@source inline("from-sky-500", "to-blue-500");
-@source inline("from-rose-500", "to-pink-500");
-@source inline("from-cyan-500", "to-teal-500");
-@source inline("from-slate-500", "to-neutral-700");
-
-/* glow shadows */
-@source inline("shadow-violet-500\\/40", "shadow-amber-500\\/40", "shadow-emerald-500\\/40");
-@source inline("shadow-stone-500\\/40", "shadow-blue-500\\/40", "shadow-rose-500\\/40");
-@source inline("shadow-cyan-500\\/40", "shadow-slate-500\\/40");
-
-/* ============================================================================
    @theme â€” Tailwind v4 utility generators ONLY
    ----------------------------------------------------------------------------
    Ø§ÛŒÙ† Ø¨Ù„Ø§Ú© ØµØ±ÙØ§Ù‹ Ø¨Ø±Ø§ÛŒ expose Ú©Ø±Ø¯Ù† Ù…ØªØºÛŒØ±Ù‡Ø§ Ø¨Ù‡ Tailwind utilities Ø§Ø³Øª.

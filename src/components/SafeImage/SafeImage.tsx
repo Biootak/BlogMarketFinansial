@@ -53,6 +53,20 @@ const RATIO_BY_VARIANT: Record<ImageVariant, string> = {
   thumbnail: '4/3',
 };
 
+/**
+ * Responsive sizes hints per variant — matched to actual rendered widths.
+ * Card: 3-col grid → ~33vw desktop, 50vw tablet, 100vw mobile.
+ * Thumbnail: sidebar/small slot → 80-160px.
+ * Hero: full-width above-fold → 100vw.
+ * Avatar: tiny → 32-64px.
+ */
+const SIZES_BY_VARIANT: Record<ImageVariant, string> = {
+  card: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
+  avatar: '(max-width: 640px) 48px, 64px',
+  hero: '(max-width: 1024px) 100vw, 90vw',
+  thumbnail: '(max-width: 640px) 80px, 120px',
+};
+
 const VARIANT_OVERLAY: Record<ImageVariant, string> = {
   card: 'rounded-2xl',
   avatar: 'rounded-full',
@@ -115,7 +129,7 @@ export default function SafeImage({
   variant = 'card',
   containerClassName = '',
   className = 'object-cover',
-  sizes = '(max-width: 600px) 480px, 800px',
+  sizes: sizesProp,
   priority = false,
   fill = true,
   placeholderIcon,
@@ -124,6 +138,9 @@ export default function SafeImage({
   ...props
 }: SafeImageProps) {
   const [hasError, setHasError] = useState(false);
+
+  // sizes: caller-provided > variant-based > no value (browser default)
+  const effectiveSizes = sizesProp ?? SIZES_BY_VARIANT[variant];
 
   // وقتی fill فعال است، width/height نباید پاس داده شوند — Next.js خطای
   // "has both width and fill properties" می‌دهد (مثلاً SearchResult با width={88}).
@@ -191,7 +208,7 @@ export default function SafeImage({
             aria-hidden
             className="object-cover scale-125 blur-3xl brightness-75 saturate-150"
             alt=""
-            sizes={sizes}
+            sizes={effectiveSizes}
             priority={priority}
             fill
             src={normalizeRasterUrl(src as string)}
@@ -202,7 +219,7 @@ export default function SafeImage({
             <Image
               className={cn('object-contain', className === 'object-cover' ? undefined : className)}
               alt={alt}
-              sizes={sizes}
+              sizes={effectiveSizes}
               priority={priority}
               fill
               src={normalizeRasterUrl(src as string)}
@@ -215,7 +232,7 @@ export default function SafeImage({
         <Image
           className={className}
           alt={alt}
-          sizes={sizes}
+          sizes={effectiveSizes}
           priority={priority}
           loading={priority ? 'eager' : undefined}
           fill={fill}

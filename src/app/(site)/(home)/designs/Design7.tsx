@@ -238,7 +238,8 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
-            className={`absolute inset-0 bg-gradient-to-br ${mainTheme.gradient} pointer-events-none`}
+            className="absolute inset-0 pointer-events-none"
+            style={{ backgroundImage: mainTheme.gradientStyle }}
           />
         </AnimatePresence>
 
@@ -313,7 +314,8 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.6 }}
-                      className={`absolute inset-0 bg-gradient-to-tr ${mainTheme.gradient} mix-blend-overlay opacity-30`}
+                      className="absolute inset-0 mix-blend-overlay opacity-30"
+                      style={{ backgroundImage: mainTheme.gradientStyle }}
                     />
 
                     {/* Top Badge Group */}
@@ -381,7 +383,8 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                         mainPost.categories[0] && (
                           <motion.span
                             key={`cat-${mainPost.id}`}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 mb-3 ${mainTheme.badge} text-white text-[11px] sm:text-xs font-bold rounded-lg shadow-lg ${mainTheme.glow}`}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 mb-3 text-white text-[11px] sm:text-xs font-bold rounded-lg shadow-lg ${mainTheme.glow}`}
+                            style={{ backgroundImage: mainTheme.gradientStyle }}
                             initial={{ x: -20, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ delay: 0.3 }}
@@ -542,7 +545,8 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                           duration: isPaused ? 0 : AUTO_PLAY_INTERVAL / 1000,
                           ease: 'linear',
                         }}
-                        className={`h-full bg-gradient-to-r ${mainTheme.gradient}`}
+                        className="h-full"
+                        style={{ backgroundImage: mainTheme.gradientStyle }}
                       />
                     </div>
                   </motion.div>
@@ -622,7 +626,8 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
 
                       {/* Theme tint overlay */}
                       <div
-                        className={`absolute inset-0 bg-gradient-to-tr ${theme.gradient} mix-blend-overlay opacity-25 group-hover:opacity-40 transition-opacity`}
+                        className="absolute inset-0 mix-blend-overlay opacity-25 group-hover:opacity-40 transition-opacity"
+                        style={{ backgroundImage: theme.gradientStyle }}
                       />
 
                       {/* Gradient */}
@@ -654,7 +659,8 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                         )}
                         {post.categories && post.categories.length > 0 && post.categories[0] && (
                           <span
-                            className={`px-2 py-0.5 ${theme.badge} text-white text-[9px] font-bold rounded-md shadow-md line-clamp-1 max-w-full`}
+                            className="px-2 py-0.5 text-white text-[9px] font-bold rounded-md shadow-md line-clamp-1 max-w-full"
+                            style={{ backgroundImage: theme.gradientStyle }}
                           >
                             {post.categories[0].name}
                           </span>
@@ -694,7 +700,8 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
 
                       {/* Active indicator stripe on left */}
                       <div
-                        className={`absolute top-0 bottom-0 start-0 w-1 bg-gradient-to-b ${theme.gradient} opacity-0 group-hover:opacity-100 transition-opacity`}
+                        className="absolute top-0 bottom-0 start-0 w-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ backgroundImage: theme.gradientStyle }}
                       />
                     </MagneticSpotlightCard>
                   </motion.article>
@@ -732,7 +739,8 @@ export default function Design7({ initialPosts, rateLists, marketRates, classNam
                 {i === activeIndex && theme ? (
                   <motion.span
                     layoutId="activeDotIndicator"
-                    className={`absolute inset-y-2.5 inset-x-0 rounded-full bg-gradient-to-r ${theme.gradient}`}
+                    className="absolute inset-y-2.5 inset-x-0 rounded-full"
+                    style={{ backgroundImage: theme.gradientStyle }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     aria-hidden
                   />

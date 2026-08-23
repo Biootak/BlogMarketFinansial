@@ -150,6 +150,7 @@ export default function RootLayout({
         <Script
           id="speculation-rules"
           type="speculationrules"
+          strategy="lazyOnload"
           // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON استاتیک از regex ثابت — هیچ ورودی کاربری ندارد (Speculation Rules رسمی Chrome)
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
