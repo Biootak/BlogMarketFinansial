@@ -176,7 +176,7 @@
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.0",
     "require-in-the-middle": "8.0.1",
-    "resend": "^4.0.1",
+    "resend": "^6.19.0",
     "sharp": "^0.35.3",
     "slugify": "^1.6.6",
     "swr": "^2.3.7",
