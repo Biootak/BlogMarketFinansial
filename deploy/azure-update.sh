@@ -58,6 +58,34 @@ GIT_CHANGED=$([[ "$HEAD_BEFORE" != "$HEAD_AFTER" ]] && echo 1 || echo 0)
 # حالا: اگر git تغییر کرده ولی ID تصویر وب بعد از up عوض نشد → بدون نوشتن
 # sentinel خارج می‌شویم تا دقیقهٔ بعد دوباره تلاش شود تا تصویر جدید بیاید.
 
+# FIX (2026-08-23 — سناریوی واقعی 332a6d7c): گارد قبلی فقط وقتی کار می‌کرد که
+# در همان اجرا git جلو رفته باشد (GIT_CHANGED=1). اما در تلاشِ دقیقهٔ بعد git
+# دیگر جلو نمی‌رود (pull قبلی انجام شده) → گارد رد می‌شد → با تصویر قدیمی
+# «موفق» اعلام و sentinel نوشته می‌شد → cron هرگز دوباره تلاش نمی‌کرد و سایت
+# ساعت‌ها روی بیلد قبلی ماند.
+#
+# راه‌حل قطعی: CI برای هر کامیت تگ immutable «sha-<short>» هم publish می‌کند
+# (docker-build-push.yml). پس قبل از هر چیز باید آن تگ برای HEAD فعلی در
+# ghcr موجود باشد؛ نبودِ آن = CI هنوز تمام نکرده، بدون توجه به وضعیت git
+# بدون sentinel خارج شو تا دقیقهٔ بعد دوباره تلاش شود.
+
+IMG_REF="${WEB_IMAGE:-ghcr.io/biootak/fm-blog-web:main}"
+SHA_TAG="${IMG_REF%:*}:sha-$(git rev-parse --short HEAD)"
+
+IMAGE_READY=0
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    if docker manifest inspect "$SHA_TAG" >/dev/null 2>&1; then
+        IMAGE_READY=1
+        break
+    fi
+    info "⏳ تصویر $SHA_TAG هنوز در ghcr نیست (CI در حال build؟) — تلاش $i/10، ۳۰ ثانیه بعد..."
+    sleep 30
+done
+if [[ "$IMAGE_READY" != "1" ]]; then
+    info "❌ بعد از ۵ دقیقه تصویر $SHA_TAG منتشر نشد — نسخهٔ قبلی همچنان سرویس می‌دهد."
+    exit 1
+fi
+
 IMG_BEFORE=$(docker compose --env-file "$REPO_DIR/.env" \
     -f "$REPO_DIR/deploy/docker-compose.azure.yml" images -q web 2>/dev/null || true)
 
