@@ -65,6 +65,12 @@
 2. **CLS ≈ 0.073–0.075 در ۵ صفحه از ۶** (فقط exchange-rates سالم=0.005). یک علت مشترک دارد — احتمالاً font-swap / scrollbar / تصویر بدون ابعاد. هنوز root-cause نشده.
 3. **CSS بلااستفاده:** `1o-qveruoccg0.css` در چند صفحه (۰.۱۵–۰.۴۴s صرفه) + آرشیو: `3kslbvmdmgs25.css` = 0.62s.
 
+### یافته‌های راند ۲ (2026-08-23 عصر — بعد از سویپ کامل)
+4. **LCP همهٔ صفحات H1 متنی است** (نه تصویر): فازها = TTFB ~۱s + renderDelay تا ~۱.۹s (منتظر CSS رندربلاک روی شبکهٔ شبیه‌سازی‌شده).
+5. **CSS سراسری غول:** یک چانک Tailwind **۵۰۹–۵۱۹KB خام** روی همهٔ صفحات (`.dark`×۲۴۸۷، gradient×۳۲۰۳ — پالت کامل v4) + دو چانک ~۱۱۸KB از CSS Modules داشبورد که به‌خاطر merge پیش‌فرض (`cssChunking:true`) به همهٔ صفحات سایت می‌نشند. فیکس اعمال‌شده: `experimental.cssChunking:'graph'` + `@import "tailwindcss" source("../")` → بیلد لوکال: صفحات سایت ۷۹۵→**۶۵۹KB** و چانک‌های داشبورد جدا شدند.
+6. **تیکر defer بدون رزرو ارتفاع** = منبع شیفت‌های بزرگ صفحه‌ای (contact 0.407 / apply-exchange 0.44). فیکس: ظرف `h-10 sm:h-11` همیشه رندر می‌شود؛ حالت خالی دیگر `null` برنمی‌گرداند.
+7. **برد نرخ‌ها:** `ExchangeQuotesBoard` اول اسکلت کوتاه، بعد جدول بلند پس از fetch کلاینی (shift score 0.939 روی main در /exchanges). فیکس: دادهٔ اولیه SSR با همان safeCache actions به هر دو مصرف‌کننده (`/exchanges`, `/money-transfer`).
+
 ### مخصوص home (بدترین صفحه)
 - main-thread کل: **13.9s** → «other»=5099ms · **styleLayout=3905ms (!)** · scriptEvaluation=3315ms
 - styleLayout این‌قدر بزرگ یعنی reflow اجباری یا CSS گران حین hydration — نه فقط JS.
@@ -136,3 +142,4 @@ de32253c fix(ui): reserve scrollbar gutter — page-transition layout shake
 | 2026-08-23 | قدم ۰ کامل شد: WIP در ۸ کامیت منطقی بسته و push شد؛ مانع `npm ci` (lock ناهمگام) کشف و فیکس شد — ر.ک §۵ |
 | 2026-08-23 | **دیپلوی گیر کرده بود حل شد:** کانتینر وب ۷ ساعت روی ایمیج قدیمی ماند (sentinel زودهنگام). فیکس `azure-update.sh`: gate روی تگ immutable `sha-<short>` — ر.ک §۶ موانع |
 | 2026-08-23 | **بازلاین کامل ۳۶ صفحه** بعد از دیپلوی defer ها: TBT حل، LCP کند مانده، CLS انفجاری روی دسته برد-نرخ/فرم — اولویت‌های جدید در §۵ |
+| 2026-08-23 | راند CLS push شد (SSR board + ticker slot)؛ راند CSS push شد (`cssChunking:'graph'` + `@source src`) — گیت دیپلوی تا v4 تکامل یافت: gate نهایی = pull موفق تگ `sha-<short>` با دیمون + assert کانتینر==ID تگ :main. **درس:** `docker compose images` ایمیج کانتینر را می‌دهد نه آخرین تگ؛ `manifest inspect` auth کلاینت می‌خواهد و روی VM کار نمی‌کند |
