@@ -12,7 +12,7 @@
  * قرار گرفته و راهنمای سایت هم به همین مسیر لینک می‌دهد.
  */
 
-import { RouteError } from '@/components/Dashboard/primitives';
+import { RouteError } from '@/components/Dashboard/primitives/RouteError';
 import { useRouter } from 'next/navigation';
 
 export default function ErrorPage() {

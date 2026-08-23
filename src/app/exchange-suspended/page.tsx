@@ -5,7 +5,7 @@
  * (همان طراحی premium صفحهٔ ۴۰۳) با نماد هشدار و شناسهٔ پیگیری استفاده می‌کند.
  */
 
-import { StateHero } from '@/components/Dashboard/primitives';
+import { StateHero } from '@/components/Dashboard/primitives/StateHero';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 import type { Metadata } from 'next';
 

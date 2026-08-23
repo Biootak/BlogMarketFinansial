@@ -1,4 +1,4 @@
-import { StateHero } from '@/components/Dashboard/primitives';
+import { StateHero } from '@/components/Dashboard/primitives/StateHero';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
  * /offline — حالت آفلاین (همان زبان طراحی صفحهٔ ۴۰۳).

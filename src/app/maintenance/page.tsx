@@ -1,4 +1,4 @@
-import { StateHero } from '@/components/Dashboard/primitives';
+import { StateHero } from '@/components/Dashboard/primitives/StateHero';
 import { getSystemSettingsData } from '@/data/getSystemSettings';
 /**
  * /maintenance — وضعیت تعمیرات (همان زبان طراحی صفحهٔ ۴۰۳).

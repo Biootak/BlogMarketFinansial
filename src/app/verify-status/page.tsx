@@ -1,4 +1,4 @@
-import { StateHero } from '@/components/Dashboard/primitives';
+import { StateHero } from '@/components/Dashboard/primitives/StateHero';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

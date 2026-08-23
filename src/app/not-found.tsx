@@ -1,4 +1,7 @@
-import { NotFound } from '@/components/Dashboard/primitives';
+// 2026-08-23 perf: deep import — the barrel re-exports every dashboard
+// primitive (ActivityFeed + admin module CSS), which landed ~450KB of
+// admin assets on every public page via this global boundary.
+import { NotFound } from '@/components/Dashboard/primitives/NotFound';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

@@ -1,4 +1,6 @@
-import { Forbidden } from '@/components/Dashboard/primitives';
+// Forbidden lives in StateHero.tsx — deep import keeps the primitives
+// barrel (and its admin CSS/JS) out of public bundles.
+import { Forbidden } from '@/components/Dashboard/primitives/StateHero';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
