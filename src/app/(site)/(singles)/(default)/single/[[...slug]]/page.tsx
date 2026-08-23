@@ -156,6 +156,10 @@ export default async function PageSingle({ params }: PageProps) {
               />
 
               {/* Image — priority=true for LCP preload */}
+              {/* 2026-08-23 perf: sizes reflects the real article column
+                  (~62vw ≤1535px, ~1010px above — 68–70% of the capped
+                  container), so the browser fetches a 1080w LCP variant
+                  instead of 1920w on desktop. Mobile keeps 100vw. */}
               <NcImage
                 alt={post.title}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -165,7 +169,7 @@ export default async function PageSingle({ params }: PageProps) {
                 }
                 width={1400}
                 height={600}
-                sizes="(max-width: 1024px) 100vw, 1400px"
+                sizes="(max-width: 1023px) 100vw, (max-width: 1535px) 62vw, 1010px"
                 fill={false}
                 priority
               />

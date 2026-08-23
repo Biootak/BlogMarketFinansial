@@ -133,7 +133,7 @@ const GalleryImages: React.FC<GalleryImagesProps> = ({ post }) => {
               alt={`${post.title} - ${currentImageIndex + 1}`}
               src={IMAGES_GALLERY[currentImageIndex] || '/images/placeholder-large.png'}
               fill
-              sizes="(max-width: 1024px) 100vw, 1200px"
+              sizes="(max-width: 1023px) 100vw, (max-width: 1535px) 62vw, 1010px"
               priority={true}
               className="object-contain"
             />
