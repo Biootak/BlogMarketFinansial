@@ -30,6 +30,7 @@
     "bundle:audit": "node scripts/bundle-audit.mjs",
     "perf:snapshot": "node scripts/perf-gate.mjs snapshot",
     "perf:gate": "node scripts/perf-gate.mjs gate",
+    "audit:lighthouse": "node scripts/lh-audit.mjs",
     "postinstall": "prisma migrate deploy && prisma generate",
     "db:seed": "node prisma/seed.js",
     "db:seed:quotes": "node prisma/seed-exchange-quotes.js",

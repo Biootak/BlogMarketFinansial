@@ -27,6 +27,7 @@ scripts/*
 !scripts/reencrypt-totp-secrets.ts
 !scripts/rules-gate.mjs
 !scripts/rules-watch.mjs
+!scripts/lh-audit.mjs
 !scripts/perf-gate.mjs
 !scripts/check-oauth.mjs
 !scripts/migrate-kyc-urls.mjs
@@ -302,3 +303,4 @@ public/data/market-rates.json
 # Local DB backups (contains real user rows — never commit)
 /.local-backups/
 .azure-last-deployed
+.dyad/
