@@ -87,8 +87,11 @@ if [[ "$IMAGE_READY" != "1" ]]; then
     exit 1
 fi
 
-IMG_BEFORE=$(docker compose --env-file "$REPO_DIR/.env" \
-    -f "$REPO_DIR/deploy/docker-compose.azure.yml" images -q web 2>/dev/null || true)
+# FIX v4 (2026-08-23): `docker compose images` ایمیج کانتینِر در حال اجرا را
+# می‌دهد نه آخرین تگ پول‌شده — برای مقایسهٔ «آیا pull چیزی تازه آورد؟» باید ID
+# خودِ تگ :main قبل/بعد از pull سنجیده شود (docker image inspect .Id).
+
+IMG_BEFORE=$(docker image inspect -f '{{.Id}}' "$IMG_REF" 2>/dev/null || true)
 
 # pull تصویرهای جدید از ghcr — با retry تا CI build تمام شود
 for i in 1 2 3 4 5; do
@@ -104,11 +107,10 @@ for i in 1 2 3 4 5; do
     fi
 done
 
-IMG_AFTER_PULL=$(docker compose --env-file "$REPO_DIR/.env" \
-    -f "$REPO_DIR/deploy/docker-compose.azure.yml" images -q web 2>/dev/null || true)
+IMG_AFTER_PULL=$(docker image inspect -f '{{.Id}}' "$IMG_REF" 2>/dev/null || true)
 
 if [[ "$GIT_CHANGED" == "0" && "$IMG_BEFORE" == "$IMG_AFTER_PULL" ]]; then
-    info "⏳ نه کامیت جدید نه ایمیج جدید (CI احتمالاً هنوز publish نکرده) — بدون sentinel خارج می‌شوم تا دقیقهٔ بعد دوباره..."
+    info "⏳ تصویر :main تغییری نکرده و کامیت جدیدی هم نیست — بدون sentinel خارج می‌شوم..."
     exit 1
 fi
 
@@ -116,11 +118,13 @@ fi
 docker compose --env-file "$REPO_DIR/.env" \
     -f "$REPO_DIR/deploy/docker-compose.azure.yml" up -d
 
-IMG_AFTER=$(docker compose --env-file "$REPO_DIR/.env" \
-    -f "$REPO_DIR/deploy/docker-compose.azure.yml" images -q web 2>/dev/null || true)
+# FIX v4: تأیید نهایی — کانتینر web باید واقعاً روی ID تگ :main اجرا شود.
+# اگر up -d به هر دلیلی recreate نکرده بود، بدون sentinel خارج شو تا تلاش مجدد.
+IMG_TAG_ID=$(docker image inspect -f '{{.Id}}' "$IMG_REF" 2>/dev/null || true)
+IMG_RUNNING=$(docker inspect deploy-web-1 --format '{{.Image}}' 2>/dev/null || true)
 
-if [[ "$GIT_CHANGED" == "1" && -n "$IMG_BEFORE" && "$IMG_BEFORE" == "$IMG_AFTER" ]]; then
-    info "⚠️ git جلو رفت ولی تصویر web همان قبلی است — CI هنوز publish نکرده. بدون sentinel خارج می‌شوم تا دقیقهٔ بعد دوباره..."
+if [[ -z "$IMG_TAG_ID" || "$IMG_RUNNING" != "$IMG_TAG_ID" ]]; then
+    info "⚠️ کانتینر web روی ایمیج تگ :main نیست (recreate نشد؟) — بدون sentinel خارج می‌شوم تا دقیقهٔ بعد دوباره..."
     exit 1
 fi
 
