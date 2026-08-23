@@ -1,17 +1,16 @@
 'use client';
 
 import PostCardCommentBtn from '@/components/PostCardCommentBtn/PostCardCommentBtn';
+import ShareDropdown from '@/components/ShareDropdown/ShareDropdown';
 import Tag from '@/components/Tag/Tag';
+import { getPostLink } from '@/lib/getPostLink';
 import type { PostWithRelations } from '@/types/types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HiArrowUp, HiChatBubbleLeftRight, HiHashtag } from 'react-icons/hi2';
+import { HiShare } from 'react-icons/hi2';
 import SingleAuthor from './SingleAuthor';
 import SingleCommentForm from './SingleCommentForm';
 import SingleCommentLists from './SingleCommentLists';
-import '@/components/Editor1/styles/renderer.scss';
-import ShareDropdown from '@/components/ShareDropdown/ShareDropdown';
-import { getPostLink } from '@/lib/getPostLink';
-import { HiShare } from 'react-icons/hi2';
 
 interface SingleContentClientProps {
   post: PostWithRelations;
@@ -34,10 +33,8 @@ const SingleContentClient = ({ post, commentCount, children }: SingleContentClie
     return postLink;
   }, [post.postType, post.slug]);
 
-  // biome-ignore lint/style/noNonNullAssertion: ref is guaranteed non-null — element is always mounted when hook is used
-  const endedAnchorRef = useRef<HTMLDivElement>(null!);
   const contentRef = useRef<HTMLDivElement>(null);
-  const progressRef = useRef<HTMLButtonElement>(null);
+  const progressRef = useRef<HTMLSpanElement>(null);
   const [isShowScrollToTop, setIsShowScrollToTop] = useState<boolean>(false);
   // Sticky action bar visibility — true only once the reader has scrolled to
   // (or past) the end of the article body. Derived in the scroll handler below
@@ -45,17 +42,14 @@ const SingleContentClient = ({ post, commentCount, children }: SingleContentClie
   // it can't drift from what the reader actually sees.
   const [showStickyBar, setShowStickyBar] = useState(false);
 
-  // Height of the content block is measured once via ResizeObserver (no layout
-  // read on every scroll frame). Scroll progress updates a CSS variable on the
-  // progress button — zero React re-renders during scroll. The only state
-  // writes (isShowScrollToTop, showStickyBar) are guarded so they fire only on
-  // threshold crossings, not on every frame.
+  // Height of the content block is measured via ResizeObserver (no layout read
+  // on every scroll event). Scroll work is coalesced into one animation frame,
+  // and state writes happen only when a threshold actually changes.
   const totalEntryHRef = useRef(0);
 
   useEffect(() => {
     const entryContent = contentRef.current;
-    const progressBarContent = progressRef.current;
-    if (!entryContent || !progressBarContent) return;
+    if (!entryContent || !progressRef.current) return;
 
     const measure = () => {
       totalEntryHRef.current = entryContent.offsetTop + entryContent.offsetHeight;
@@ -66,42 +60,58 @@ const SingleContentClient = ({ post, commentCount, children }: SingleContentClie
     ro.observe(entryContent);
 
     let lastPct = '';
-    const onScroll = () => {
+    let lastAtBottom = false;
+    let lastNearEnd = false;
+    let frameId: number | null = null;
+
+    const updateScrollState = () => {
+      frameId = null;
       const totalEntryH = totalEntryHRef.current || 1;
-      const scrolled = (window.scrollY / totalEntryH) * 100;
+      const viewportBottom = window.scrollY + window.innerHeight;
+      const scrollableDistance = Math.max(totalEntryH - window.innerHeight, 1);
+      const scrolled = (window.scrollY / scrollableDistance) * 100;
       // Update the leaf % label only when the integer digit changes — a
       // textContent write on this one span is cheap and never re-renders React.
+      // The span stays mounted while the arrow icon toggles, so the ref remains stable.
+      const progressBarContent = progressRef.current;
       const pct = `${Math.min(99, Math.floor(scrolled))}%`;
-      if (pct !== lastPct) {
+      if (pct !== lastPct && progressBarContent) {
         lastPct = pct;
         progressBarContent.textContent = pct;
       }
-      // Threshold state update — only on crossing the 100% boundary.
-      const atBottom = scrolled >= 100;
-      setIsShowScrollToTop((prev) => (prev === atBottom ? prev : atBottom));
+
+      const atBottom = window.scrollY > 0 && viewportBottom >= totalEntryH;
+      if (atBottom !== lastAtBottom) {
+        lastAtBottom = atBottom;
+        setIsShowScrollToTop(atBottom);
+      }
+
       // Sticky bar: visible once the reader has actually scrolled and the end
       // of the content block reaches the bottom of the viewport.
-      // (scrollY + innerHeight >= contentEnd). The scrollY > 0 guard keeps it
-      // hidden on initial mount (content height may not be measured yet).
-      const nearEnd = window.scrollY > 0 && window.scrollY + window.innerHeight >= totalEntryH;
-      setShowStickyBar((prev) => (prev === nearEnd ? prev : nearEnd));
+      const nearEnd = window.scrollY > 0 && viewportBottom >= totalEntryH;
+      if (nearEnd !== lastNearEnd) {
+        lastNearEnd = nearEnd;
+        setShowStickyBar(nearEnd);
+      }
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    onScroll();
+
+    const scheduleScrollUpdate = () => {
+      if (frameId === null) {
+        frameId = window.requestAnimationFrame(updateScrollState);
+      }
+    };
+
+    window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
+    window.addEventListener('resize', scheduleScrollUpdate, { passive: true });
+    scheduleScrollUpdate();
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('scroll', scheduleScrollUpdate);
+      window.removeEventListener('resize', scheduleScrollUpdate);
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
       ro.disconnect();
     };
   }, []);
-
-  // Placeholder: comment submission is handled by CommentForm's own Server Action.
-  // This handler is kept for compatibility with the CommentSection callback prop.
-  const handleCommentSubmit = (_content: string) => {
-    // intentionally empty — CommentForm submits via Server Action
-  };
 
   return (
     <div className="relative">
@@ -181,7 +191,7 @@ const SingleContentClient = ({ post, commentCount, children }: SingleContentClie
           </div>
 
           {/* Comment Form */}
-          <SingleCommentForm postId={post.id} onClickSubmit={handleCommentSubmit} />
+          <SingleCommentForm postId={post.id} />
         </div>
 
         {/* Comments List */}
@@ -189,7 +199,6 @@ const SingleContentClient = ({ post, commentCount, children }: SingleContentClie
           {post.comments && post.comments.length > 0 ? (
             <SingleCommentLists comments={post.comments} />
           ) : null}
-          <div ref={endedAnchorRef} />
         </div>
       </div>
 
@@ -250,13 +259,13 @@ const SingleContentClient = ({ post, commentCount, children }: SingleContentClie
             onClick={() => isShowScrollToTop && window.scrollTo({ top: 0, behavior: 'smooth' })}
             aria-label="بازگشت به بالا"
           >
-            {isShowScrollToTop ? (
-              <HiArrowUp className="w-5 h-5" />
-            ) : (
-              <span ref={progressRef} className="text-xs font-semibold">
-                0%
-              </span>
-            )}
+            <HiArrowUp className={`w-5 h-5 ${isShowScrollToTop ? '' : 'hidden'}`} aria-hidden />
+            <span
+              ref={progressRef}
+              className={`text-xs font-semibold ${isShowScrollToTop ? 'hidden' : ''}`}
+            >
+              0%
+            </span>
           </button>
         </div>
       </div>

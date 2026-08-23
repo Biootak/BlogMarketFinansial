@@ -15,7 +15,7 @@ import type { QuoteRow } from '@/actions/exchange-quotes';
 import DealModal from '@/components/MoneyTransfer/DealModal';
 import { useVisibilityAwareInterval } from '@/hooks/useVisibilityAwareInterval';
 import { AlertCircle, Clock, ShoppingCart, TrendingDown, TrendingUp } from 'lucide-react';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import s from './ExchangeQuotesBoard.module.css';
 
 interface QuotesData {
@@ -66,17 +66,81 @@ function formatCountdown(expiresAt: Date | string | null, now: number): string {
 }
 
 /**
- * CountdownText — فقط همین span هر ثانیه tick می‌خورد، نه کل جدول.
- * قبلاً یک `now` مشترک در board هر ثانیه setNow می‌کرد و کل جدول
- * (ردیف دسکتاپ + ردیف موبایل هر quote) re-render می‌شد. حالا ردیف‌ها
- * memo هستند و فقط این سلول کوچک interval خودش را دارد.
+ * One shared clock for all countdown labels. The board renders both desktop
+ * and mobile markup for responsive CSS, so a per-label interval would create
+ * two timers per quote. External-store subscribers update only their small
+ * countdown label; the table rows themselves remain memoized.
  */
-function CountdownText({ expiresAt }: { expiresAt: Date | string | null }) {
-  const [now, setNow] = useState(() => Date.now());
-  const label = formatCountdown(expiresAt, now);
-  const live = !!expiresAt && new Date(expiresAt).getTime() > now;
+const countdownClock = (() => {
+  let now: number | null = null;
+  let interval: ReturnType<typeof setInterval> | null = null;
+  const listeners = new Set<() => void>();
 
-  useVisibilityAwareInterval(() => setNow(Date.now()), live ? 1000 : 0);
+  const notify = () => {
+    for (const listener of listeners) listener();
+  };
+
+  const tick = () => {
+    now = Date.now();
+    notify();
+  };
+
+  const stop = () => {
+    if (interval !== null) {
+      clearInterval(interval);
+      interval = null;
+    }
+  };
+
+  const start = () => {
+    if (interval !== null || typeof document === 'undefined' || document.hidden) return;
+    now = Date.now();
+    interval = setInterval(tick, 1000);
+  };
+
+  const onVisibilityChange = () => {
+    if (document.hidden) {
+      stop();
+    } else {
+      start();
+      tick();
+    }
+  };
+
+  const subscribe = (listener: () => void) => {
+    listeners.add(listener);
+    if (listeners.size === 1 && typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', onVisibilityChange);
+      start();
+    }
+
+    return () => {
+      listeners.delete(listener);
+      if (listeners.size === 0) {
+        stop();
+        if (typeof document !== 'undefined') {
+          document.removeEventListener('visibilitychange', onVisibilityChange);
+        }
+        now = null;
+      }
+    };
+  };
+
+  return {
+    subscribe,
+    getSnapshot: () => now,
+    getServerSnapshot: () => null,
+  };
+})();
+
+function CountdownText({ expiresAt }: { expiresAt: Date | string | null }) {
+  const hasActiveExpiry = !!expiresAt && new Date(expiresAt).getTime() > Date.now();
+  const now = useSyncExternalStore(
+    hasActiveExpiry ? countdownClock.subscribe : () => () => {},
+    countdownClock.getSnapshot,
+    countdownClock.getServerSnapshot,
+  );
+  const label = now === null ? '' : formatCountdown(expiresAt, now);
 
   if (!label) return null;
   return (
@@ -128,12 +192,7 @@ function QuoteTableRow({
             <span className={s.rateUnit}>{unit}</span>
           </span>
         </td>
-        <td
-          className={s.countdownCell}
-          aria-label={
-            quote.expiresAt ? `انقضا: ${formatCountdown(quote.expiresAt, Date.now())}` : undefined
-          }
-        >
+        <td className={s.countdownCell} aria-label="زمان باقی‌مانده تا انقضا">
           <CountdownText expiresAt={quote.expiresAt} />
         </td>
         <td className={s.badgeCell}>
