@@ -4,17 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { motion } from '@/lib/motion-shim';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2, Mail } from 'lucide-react';
 import { type FC, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import * as z from 'zod';
 
-const schema = z.object({
-  email: z.string().email({ message: 'ایمیل معتبر وارد کنید' }),
-});
+/**
+ * 2026-08-23 perf: full `zod` + `@hookform/resolvers/zod` pulled ~64KB raw
+ * into every public page just to validate a single email field. RHF's native
+ * register rules give the same live onChange validation at zero dependency
+ * cost. The server action still runs its own authoritative zod validation.
+ */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type FormData = z.infer<typeof schema>;
+interface FormData {
+  email: string;
+}
 
 interface SubscribeFormProps {
   onSubmit: (email: string) => Promise<{ success: boolean; message: string }>;
@@ -28,7 +32,6 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
     reset,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: zodResolver(schema),
     mode: 'onChange', // validation زنده — خطای ایمیل همان لحظه که تایپ می‌شود دیده شود
   });
 
@@ -76,7 +79,10 @@ const SubscribeForm: FC<SubscribeFormProps> = ({ onSubmit }) => {
             <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white/40" />
           </div>
           <Input
-            {...register('email')}
+            {...register('email', {
+              required: 'ایمیل معتبر وارد کنید',
+              pattern: { value: EMAIL_PATTERN, message: 'ایمیل معتبر وارد کنید' },
+            })}
             placeholder="ایمیل خود را وارد کنید"
             type="email"
             className="w-full ps-10 sm:ps-12 pe-24 sm:pe-32 py-3 sm:py-4 h-11 sm:h-14 bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl sm:rounded-2xl text-white text-sm sm:text-base placeholder:text-white/50 focus:border-amber-400/50 focus:bg-white/15 transition-all duration-300"
