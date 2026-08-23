@@ -12,7 +12,9 @@
  *   • Marks the section with `data-board-root` so the listener can find it.
  */
 
-import ExchangeQuotesBoard from '@/components/MoneyTransfer/ExchangeQuotesBoard';
+import ExchangeQuotesBoard, {
+  type QuotesData,
+} from '@/components/MoneyTransfer/ExchangeQuotesBoard';
 import { ArrowDown, BarChart3, Sparkles } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import s from './LiveRateBoard.module.css';
@@ -20,6 +22,8 @@ import s from './LiveRateBoard.module.css';
 type Props = {
   heading?: string;
   subheading?: string;
+  /** دادهٔ اولیهٔ SSR — اگر داده شود، برد از رندر اول کامل است (CLS fix) */
+  initialData?: QuotesData;
 };
 
 const SWITCH_EVENT = 'exchanges:switch-currency';
@@ -38,6 +42,7 @@ export function switchBoardCurrency(code: string): void {
 export function LiveRateBoardAsync({
   heading = 'تابلوی نرخ‌های زنده',
   subheading = 'نرخ‌ها مستقیماً توسط صرافی‌های تأییدشده ثبت می‌شوند و هر ۳۰ ثانیه به‌روز می‌گردند. بهترین نرخ در هر ردیف با نشانگر سبز مشخص شده است.',
+  initialData,
 }: Props) {
   const rootRef = useRef<HTMLDivElement | null>(null);
 
@@ -88,7 +93,7 @@ export function LiveRateBoardAsync({
           <span>برای تغییر ارز، روی یکی از بلوک‌های «نگاه کلی» بزنید</span>
         </div>
       </header>
-      <ExchangeQuotesBoard />
+      <ExchangeQuotesBoard initialData={initialData} />
     </section>
   );
 }

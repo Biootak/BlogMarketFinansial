@@ -18,7 +18,7 @@ import { AlertCircle, Clock, ShoppingCart, TrendingDown, TrendingUp } from 'luci
 import { memo, useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import s from './ExchangeQuotesBoard.module.css';
 
-interface QuotesData {
+export interface QuotesData {
   quotes: QuoteRow[];
   currencies: string[];
 }
@@ -271,9 +271,11 @@ const QuoteTableRowMemo = memo(QuoteTableRow);
 const QUOTES_INITIAL = 4;
 const QUOTES_STEP = 4;
 
-export default function ExchangeQuotesBoard() {
-  const [data, setData] = useState<QuotesData | null>(null);
-  const [loading, setLoading] = useState(true);
+export default function ExchangeQuotesBoard({ initialData }: { initialData?: QuotesData }) {
+  // CLS fix (2026-08-23): با دادهٔ اولیهٔ SSR جدول از همان رندر اول سرور می‌آید و
+  // تعویض اسکلتِ کوتاه→جدول بلند دیگر کل main را هل نمی‌دهد.
+  const [data, setData] = useState<QuotesData | null>(initialData ?? null);
+  const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState<string | null>(null);
   const [activeCurrencyIdx, setActiveCurrencyIdx] = useState(0);
   const [shownQuotes, setShownQuotes] = useState(QUOTES_INITIAL);
@@ -311,11 +313,12 @@ export default function ExchangeQuotesBoard() {
   useVisibilityAwareInterval(() => void fetchData(), 30_000);
 
   useEffect(() => {
+    if (initialData) return; // اولین fetch لازم نیست — polling هر ۳۰s خودش refresh می‌کند
     void fetchData();
     return () => {
       fetchRef.current?.abort();
     };
-  }, [fetchData]);
+  }, [fetchData, initialData]);
 
   if (loading) {
     return (

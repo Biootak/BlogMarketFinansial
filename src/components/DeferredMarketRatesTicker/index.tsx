@@ -53,7 +53,7 @@ export function DeferredMarketRatesTicker() {
         const nextRates = payload.data.filter(isMarketRateItem);
         if (!cancelled) setRates(nextRates);
       } catch {
-        if (!cancelled) setRates([]);
+        // عمداً بی‌صدا: اسکلت سرجای خودش می‌ماند تا layout ثابت بماند
       }
     };
 
@@ -69,17 +69,22 @@ export function DeferredMarketRatesTicker() {
     };
   }, []);
 
-  if (rates === null) return <TickerSkeleton />;
-  if (rates.length === 0) return null;
-
+  // CLS (2026-08-23): ظرف با ارتفاع ثابت همیشه رندر می‌شود تا تعویض
+  // اسکلت→تیکر (یا خالی‌بودن نرخ‌ها) هرگز ارتفاع هدر را تغییر ندهد.
   return (
-    <MarketRatesTicker
-      rates={rates}
-      duration={75}
-      maxItems={Math.min(rates.length, 18)}
-      label="نرخ‌های زنده"
-      showEmptyState={false}
-    />
+    <div className="h-10 sm:h-11 w-full" data-market-ticker-slot>
+      {rates === null ? (
+        <TickerSkeleton />
+      ) : rates.length === 0 ? null : (
+        <MarketRatesTicker
+          rates={rates}
+          duration={75}
+          maxItems={Math.min(rates.length, 18)}
+          label="نرخ‌های زنده"
+          showEmptyState={false}
+        />
+      )}
+    </div>
   );
 }
 

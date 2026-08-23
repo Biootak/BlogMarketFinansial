@@ -6,11 +6,13 @@
  *   ۲. RateComparisonTable: مقایسه کارمزد provider های آنلاین — با context واضح
  */
 
-import ExchangeQuotesBoard from '@/components/MoneyTransfer/ExchangeQuotesBoard';
+import ExchangeQuotesBoard, {
+  type QuotesData,
+} from '@/components/MoneyTransfer/ExchangeQuotesBoard';
 import RateComparisonTable from '@/components/MoneyTransfer/RateComparisonTable';
 import { Building2, Scale } from 'lucide-react';
 
-export default function RateComparisonSection() {
+export default function RateComparisonSection({ initialData }: { initialData?: QuotesData }) {
   return (
     <div className="space-y-10 sm:space-y-12">
       {/* بخش اول: قیمت‌های واقعی صرافی‌ها */}
@@ -26,7 +28,7 @@ export default function RateComparisonSection() {
             ارز با بهترین نرخ خرید مشخص شده است.
           </p>
         </header>
-        <ExchangeQuotesBoard />
+        <ExchangeQuotesBoard initialData={initialData} />
       </div>
 
       {/* بخش دوم: مقایسه کارمزد provider های انتقال */}

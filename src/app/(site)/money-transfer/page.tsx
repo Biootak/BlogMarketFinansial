@@ -1,6 +1,7 @@
 // 2026-08-04: CSS مربوط به money-transfer از globals.css استخراج شد تا
 // روی صفحات عمومی render-blocking نباشد. این فایل فقط در این مسیر لود می‌شود.
 import '@/styles/money-transfer.css';
+import { getActiveCurrencies, getActiveQuotes } from '@/actions/exchange-quotes';
 import { fetchCryptoTickerRates } from '@/actions/fetchCryptoTickerRates';
 import { getMarketRates } from '@/actions/market-rates';
 import { getRateLists } from '@/actions/rate-lists';
@@ -165,6 +166,13 @@ export default async function MoneyTransferPage() {
   const market = await loadMarketRates();
   const [hero] = await Promise.all([buildHeroInitial(market.rates, market.items)]);
 
+  // CLS fix (2026-08-23): برد نرخ‌ها با دادهٔ SSR رندر می‌شود، نه اسکلت→جدول
+  const [initialQuotes, initialCurrencies] = await Promise.all([
+    getActiveQuotes(),
+    getActiveCurrencies(),
+  ]);
+  const boardInitialData = { quotes: initialQuotes, currencies: initialCurrencies };
+
   return (
     <div
       style={{
@@ -193,7 +201,7 @@ export default async function MoneyTransferPage() {
         {/* Provider Comparison */}
         <ScrollReveal className="mt-section">
           <section aria-labelledby="mt-compare-title">
-            <RateComparisonSection />
+            <RateComparisonSection initialData={boardInitialData} />
           </section>
         </ScrollReveal>
 

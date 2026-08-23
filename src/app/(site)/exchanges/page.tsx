@@ -17,6 +17,7 @@
  *     • CurrencyPulseGrid: interactive — کلیک روی هر بلوک به جدول اسکرول می‌کند
  */
 
+import { getActiveCurrencies, getActiveQuotes } from '@/actions/exchange-quotes';
 import ScrollReveal from '@/app/(site)/money-transfer/ScrollReveal';
 import prisma from '@/lib/db';
 import { safeCache } from '@/lib/safe-cache';
@@ -494,6 +495,14 @@ export default async function ExchangesPage() {
 
   const hasQuotes = exchanges.some((e) => e.ExchangeRateQuote.length > 0);
 
+  // CLS fix (2026-08-23): برد نرخ‌ها با دادهٔ اولیهٔ سرور رندر می‌شود تا اسکلت→جدول
+  // main را هل ندهد (actions از قبل safeCache شده‌اند — هزینهٔ اضافی ندارد).
+  const [initialQuotes, initialCurrencies] = await Promise.all([
+    getActiveQuotes(),
+    getActiveCurrencies(),
+  ]);
+  const boardInitialData = { quotes: initialQuotes, currencies: initialCurrencies };
+
   return (
     <main className={s.page} dir="rtl">
       {/* ═══ HERO — Trading Floor (no ScrollReveal — first paint must be visible) ═══ */}
@@ -569,7 +578,7 @@ export default async function ExchangesPage() {
             >
               {/* id="rate-board" در LiveRateBoardAsync تعریف شده
                   (برای اسکرول CurrencyPulseGrid). */}
-              <LiveRateBoardAsync />
+              <LiveRateBoardAsync initialData={boardInitialData} />
             </Suspense>
           </ScrollReveal>
         </div>
