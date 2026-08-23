@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-23T05:32:47.284Z",
+  "capturedAt": "2026-08-23T06:48:32.001Z",
   "commit": "local",
   "distDir": "C:\\Users\\Bioootak\\Desktop\\FinancialMarket\\.next",
   "budgets": {
@@ -14,14 +14,20 @@
   },
   "chunks": {
     "chunkCount": 525,
-    "totalRaw": 10194954,
-    "totalGzip": 3045281,
-    "top5Raw": [389744, 366630, 301741, 264155, 233412]
+    "totalRaw": 10193602,
+    "totalGzip": 3044648,
+    "top5Raw": [
+      389744,
+      366630,
+      301741,
+      264155,
+      233412
+    ]
   },
   "pages": {
     "/": {
       "firstLoadRaw": 1241494,
-      "firstLoadGzip": 374621
+      "firstLoadGzip": 374623
     },
     "/archive": {
       "firstLoadRaw": 1169269,

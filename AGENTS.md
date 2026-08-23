@@ -483,6 +483,7 @@ interface RouteErrorProps {
 | **UI Design Quality Gate** | **`AGENTS.uidqg.md`** | **Any UI task** |
 | **Quality Gates (19DQG)** | **`AGENTS.19dqg.md`** | **Before every "done"** |
 | **Market-rates pipeline** | **`AGENTS.market-rates.md`** | **Working on market-rates or crons** |
+| **🚀 Performance Status (SSOT)** | **`perf/STATUS.md`** | **هر کار سرعت/Lighthouse/bundle — قبل از شروع بخوان؛ آخر سشن آپدیت کن** |
 | **🎨 UI/UX Pro Max Skill** | **`AGENTS.ui-ux-skill.md`** | **Any UI task — قبل از کد + قبل از Show** |
 
 ### Always-loaded
