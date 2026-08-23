@@ -2,23 +2,15 @@
 .hiddenScrollbar::-webkit-scrollbar {
   display: none;
 }
+.hiddenScrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
 
 /* FIX (2026-08-22 — گزارش کاربر «لرزش هنگام تعویض صفحه»): رزرو همیشگی
    فضای اسکرول‌بار — بین صفحات کوتاه/بلوند layout افقی شیفت نمی‌شود. */
 html {
   scrollbar-gutter: stable;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.hiddenScrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.hiddenScrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
 }
 
 //
@@ -38,17 +30,6 @@ html {
 .z-max {
   z-index: 99999999;
 }
-//
-.nc-PostCardCommentBtn,
-.nc-PostCardLikeAction,
-.nc-CommentCardLikeReply > button {
-  &:hover {
-    span {
-      color: inherit;
-    }
-  }
-}
-
 //
 .nc-origin-100 {
   transform-origin: 100% 50% 0px;
@@ -174,8 +155,6 @@ html {
 
 //
 
-//
-
 .menuIsNew {
   > a::after {
     content: "New!";
@@ -204,17 +183,6 @@ html {
     color: #fff;
     font-size: 10px;
     font-weight: normal;
-  }
-}
-
-//
-.nc-PostCardCommentBtn,
-.nc-PostCardLikeAction,
-.nc-CommentCardLikeReply > button {
-  &:hover {
-    span {
-      color: inherit;
-    }
   }
 }
 
@@ -285,65 +253,4 @@ html {
   }
 }
 
-// Fade In Up Animation
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-// Fade In Animation
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-// Scale In Animation
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-// Slide In Right (for RTL)
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-// Utility classes for animations
-.animate-fadeInUp {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-.animate-scaleIn {
-  animation: scaleIn 0.3s ease-out forwards;
-}
-
-.animate-slideInRight {
-  animation: slideInRight 0.4s ease-out forwards;
-}

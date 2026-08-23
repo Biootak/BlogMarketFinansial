@@ -5,7 +5,6 @@ import Logo from '@/components/Logo/Logo';
 import SocialLinks from '@/components/SocialsList/SocialLinks';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { heading, radius, space, text } from '@/lib/design-tokens';
-import { motion } from '@/lib/motion-shim';
 import type { Advertisement } from '@/types/types';
 import {
   ArrowUpLeft,
@@ -124,12 +123,7 @@ const Footer = ({
 
       <div className="container relative z-10 pt-10 pb-8">
         {/* Social Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16 anim-fade-in-up">
           <div
             className={[
               'inline-flex items-center gap-2 px-4 py-2 mb-6',
@@ -147,8 +141,8 @@ const Footer = ({
             </span>
           </div>
           <h3 className={['mb-6', heading.h2].join(' ')}>ما را در شبکه‌های اجتماعی دنبال کنید</h3>
-          <SocialLinks className="flex justify-center gap-3" />
-        </motion.div>
+          <SocialLinks className="flex justify-center gap-3" />{' '}
+        </div>
 
         {/* Main Grid */}
         <div
@@ -157,12 +151,7 @@ const Footer = ({
           )}
         >
           {/* Brand Column */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="col-span-2 md:col-span-3 lg:col-span-1"
-          >
+          <div className="col-span-2 md:col-span-3 lg:col-span-1 anim-fade-in-up">
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <div className="relative group">
@@ -179,15 +168,14 @@ const Footer = ({
                 از فناوری‌های پیشرفته، بهترین تجربه معاملاتی را برای شما فراهم می‌کنیم.
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Menu Columns */}
           {widgetMenus.map((menu, index) => (
-            <motion.div
+            <div
               key={menu.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: (index + 1) * 0.08 }}
+              className="anim-fade-in-up"
+              style={{ animationDelay: `${(index + 1) * 80}ms` }}
             >
               <h3
                 className={[
@@ -224,7 +212,7 @@ const Footer = ({
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </div>
           ))}
         </div>
 
@@ -282,12 +270,7 @@ const Footer = ({
         </div>
 
         {/* Bottom Bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="relative"
-        >
+        <div className="relative anim-fade-in" style={{ animationDelay: '500ms' }}>
           <div className={`${s.hairline} ${s.hairlineDark}`} />
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -311,7 +294,7 @@ const Footer = ({
               </Link>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </footer>
   );
