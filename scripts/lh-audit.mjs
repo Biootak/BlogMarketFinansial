@@ -31,6 +31,11 @@ if (!BASE_URL || !/^https?:\/\//.test(BASE_URL)) {
 
 const THRESHOLD = Number(getOpt('threshold', '95'));
 const FORM_FACTOR = getOpt('form-factor', 'mobile'); // mobile | desktop
+// --host=<ip>: resolve the hostname straight to origin IP, bypassing the CDN
+// edge cache. After every deploy the edge can serve stale HTML (SWR up to 24h)
+// which poisons scores with old-HTML/new-assets mismatches — always measure
+// truth with --host=<vm-ip>, e.g. --host=20.109.177.20
+const HOST_IP = getOpt('host', '');
 // Full public static inventory (src/app/(site) + fintech + auth).
 // Dynamic templates (/single/[slug], /archive/category/[slug], /exchanges/[slug], ...)
 // need a real slug from DB — pass them via --pages=/single/<slug>,... per run.
@@ -94,7 +99,7 @@ function runLighthouse(url) {
         url,
         '--output=json',
         '--quiet',
-        '--chromeFlags=--headless=new --no-sandbox',
+        `--chromeFlags=--headless=new --no-sandbox${HOST_IP ? ` --host-resolver-rules=MAP ${new URL(BASE_URL).hostname} ${HOST_IP}` : ''}`,
         `--formFactor=${FORM_FACTOR}`,
         '--screenEmulation.mobile',
         '--onlyCategories=performance',

@@ -17,7 +17,11 @@ import {
   readInitialStep,
 } from './flow-shared';
 
-const EmailStep = lazy(() => import('./EmailStep'));
+// CLS fix (2026-08-23): مرحلهٔ پیش‌فرض (email) باید در SSR کامل رندر شود —
+// lazy بودنش یعنی سرور فقط اسپینر ۱۲rem بفرستد و فرم واقعی بعد از hydration
+// جای آن را بگیرد (شیفت ~0.2 روی همهٔ ورودی‌های auth). مراحل دیگر فقط بعد از
+// تعامل کاربر دیده می‌شوند و lazy می‌مانند.
+import EmailStep from './EmailStep';
 const RegisterStep = lazy(() => import('./RegisterStep'));
 const LoginStep = lazy(() => import('./LoginStep'));
 const RecoverStep = lazy(() => import('./RecoverStep'));
